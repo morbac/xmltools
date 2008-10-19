@@ -1,0 +1,7 @@
+; XMLTools.def : Declares the module parameters for the DLL.
+
+LIBRARY      "XMLTools"
+DESCRIPTION  'XMLTools Windows Dynamic Link Library'
+
+EXPORTS
+    ; Explicit exports can go here
