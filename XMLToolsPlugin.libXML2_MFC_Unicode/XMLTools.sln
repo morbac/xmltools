@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 7.00
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLTools", "XMLTools.vcproj", "{F3B3021B-2FF3-4059-9CEE-D2D3046C7C5D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLTools", "XMLTools.vcproj", "{7B694E9F-8927-4538-AF57-F9CA6E0FD389}"
 EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
@@ -9,10 +9,10 @@ Global
 	GlobalSection(ProjectDependencies) = postSolution
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
-		{F3B3021B-2FF3-4059-9CEE-D2D3046C7C5D}.Debug.ActiveCfg = Debug|Win32
-		{F3B3021B-2FF3-4059-9CEE-D2D3046C7C5D}.Debug.Build.0 = Debug|Win32
-		{F3B3021B-2FF3-4059-9CEE-D2D3046C7C5D}.Release.ActiveCfg = Release|Win32
-		{F3B3021B-2FF3-4059-9CEE-D2D3046C7C5D}.Release.Build.0 = Release|Win32
+		{7B694E9F-8927-4538-AF57-F9CA6E0FD389}.Debug.ActiveCfg = Debug|Win32
+		{7B694E9F-8927-4538-AF57-F9CA6E0FD389}.Debug.Build.0 = Debug|Win32
+		{7B694E9F-8927-4538-AF57-F9CA6E0FD389}.Release.ActiveCfg = Release|Win32
+		{7B694E9F-8927-4538-AF57-F9CA6E0FD389}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

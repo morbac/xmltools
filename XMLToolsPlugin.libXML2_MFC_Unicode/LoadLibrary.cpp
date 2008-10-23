@@ -67,17 +67,17 @@ void                   (*pXsltCleanupGlobals)(void);
 
 //-------------------------------------------------------------------------------------------------
 
-int loadLibXML(TCHAR* nppPath) {
+int loadLibXML(wchar_t* nppPath) {
   BOOL    bRet = FALSE;
   HKEY    hKey = NULL;
   DWORD   size = MAX_PATH;
-  TCHAR   pszPath[MAX_PATH] = { '\0' };
+  wchar_t   pszPath[MAX_PATH] = { '\0' };
 
-  hInstLibXML = LoadLibrary(TEXT("libxml2.dll"));
+  hInstLibXML = LoadLibrary(L"libxml2.dll");
   if (hInstLibXML == NULL) {
     Report::strcpy(pszPath, nppPath);
-    PathAppend(pszPath, TEXT("\\XMLTools"));
-    PathAppend(pszPath, _T("\\libxml2.dll"));
+    PathAppend(pszPath, L"\\XMLTools");
+    PathAppend(pszPath, L"\\libxml2.dll");
     //Report::_printf_inf(pszPath);
   
 	  hInstLibXML = LoadLibrary(pszPath);
@@ -127,11 +127,11 @@ int loadLibXML(TCHAR* nppPath) {
 
   //-----------------------------------------------------------------------------------------------
 
-  hInstLibXSL = LoadLibrary(TEXT("libxslt.dll"));
+  hInstLibXSL = LoadLibrary(L"libxslt.dll");
   if (hInstLibXSL == NULL) {
     Report::strcpy(pszPath, nppPath);
-    PathAppend(pszPath, TEXT("\\XMLTools"));
-    PathAppend(pszPath, TEXT("\\libxslt.dll"));
+    PathAppend(pszPath, L"\\XMLTools");
+    PathAppend(pszPath, L"\\libxslt.dll");
     //Report::_printf_inf(pszPath);
     
     hInstLibXSL = LoadLibrary(pszPath);

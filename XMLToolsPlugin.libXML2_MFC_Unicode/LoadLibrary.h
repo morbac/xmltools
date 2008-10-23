@@ -66,6 +66,6 @@ extern void (*pXsltFreeStylesheet)(xsltStylesheetPtr sheet);
 extern xmlDocPtr (*pXsltApplyStylesheet)(xsltStylesheetPtr style, xmlDocPtr doc, const char ** params);
 extern void (*pXsltCleanupGlobals)(void);
 
-int loadLibXML(TCHAR* nppPath);
+int loadLibXML(wchar_t* nppPath);
 
 #endif __LOAD_XML_LIBRARY__

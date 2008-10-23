@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="XMLTools"
+	ProjectGUID="{7B694E9F-8927-4538-AF57-F9CA6E0FD389}"
 	SccProjectName=""
 	SccLocalPath=""
 	Keyword="MFCProj">
@@ -97,7 +98,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="shlwapi.lib libXML2.lib libxslt.lib"
-				OutputFile=".\Debug/XMLTools.dll"
+				OutputFile="C:\Documents and Settings\Nicolas\Bureau\npp.v5.1.bin.RC\unicode\plugins\XMLTools.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile=".\XMLTools.def"

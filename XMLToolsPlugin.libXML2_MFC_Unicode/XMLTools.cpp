@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <sstream>
 #include <assert.h>
+#include <locale>
 
 // libxml
 #include "LoadLibrary.h"
@@ -67,9 +68,9 @@ static char THIS_FILE[] = __FILE__;
 //
 
 // This is the name which will be displayed in Plugins Menu
-const TCHAR PLUGIN_NAME[] = TEXT("XML Tools");
+const wchar_t PLUGIN_NAME[] = L"XML Tools";
 
-const TCHAR localConfFile[] = TEXT("doLocalConf.xml");
+const wchar_t localConfFile[] = L"doLocalConf.xml";
 
 // The number of functionality
 const int TOTAL_FUNCS = 27;
@@ -81,14 +82,14 @@ NppData nppData;
 int libloadstatus = -1;
 
 // INI file support
-TCHAR iniFilePath[MAX_PATH];
-const TCHAR sectionName[] = TEXT("XML Tools");
+wchar_t iniFilePath[MAX_PATH];
+const wchar_t sectionName[] = L"XML Tools";
 
 // Declaration of functionality (FuncItem) Array
 FuncItem funcItem[TOTAL_FUNCS];
 bool doCheckXML = false, doValidation = false, doCloseTag = false, doAutoIndent = false, doAttrAutoComplete = false, doAutoXMLType = false;
 int menuitemCheckXML = -1, menuitemValidation = -1, menuitemCloseTag = -1, menuitemAutoIndent = -1, menuitemAttrAutoComplete = -1, menuitemAutoXMLType = -1;
-std::wstring lastXMLSchema(TEXT(""));
+std::string lastXMLSchema("");
 
 // Here're the declaration my functions ///////////////////////////////////////
 void insertXMLCheckTag();
@@ -142,16 +143,6 @@ void registerShortcut(FuncItem *item, bool enableALT, bool enableCTRL, bool enab
   item->_pShKey->_isCtrl = enableCTRL;
   item->_pShKey->_isShift = enableSHIFT;
   item->_pShKey->_key = key;
-}
-
-/**
- * Macro for setting an int into a std::wstring variable
- * @param x The integer value
- * @param s The destination std::wstring
- */
-#define int_to_string(x,s) {                     \
-  std::ostringstream tmp;                        \
-  if (tmp << x) s += tmp.str();                  \
 }
 
 // get given lang as string (for debug purposes only)
@@ -218,7 +209,7 @@ END_MESSAGE_MAP()
 // CXMLToolsApp construction
 
 CXMLToolsApp::CXMLToolsApp() {
-  TCHAR nppPath[MAX_PATH];
+  wchar_t nppPath[MAX_PATH];
   GetModuleFileName(::GetModuleHandle(XMLTOOLS_DLLNAME), nppPath, sizeof(nppPath));
   
   // remove the module name : get plugins directory path
@@ -232,7 +223,7 @@ CXMLToolsApp::CXMLToolsApp() {
   if (libloadstatus < 0) nbFunc = 1;
   
   // Make localConf.xml path
-  TCHAR localConfPath[MAX_PATH];
+  wchar_t localConfPath[MAX_PATH];
   Report::strcpy(localConfPath, nppPath);
   PathAppend(localConfPath, localConfFile);
   //Report::_printf_err("%s", localConfPath);
@@ -242,13 +233,13 @@ CXMLToolsApp::CXMLToolsApp() {
   
   if (isLocal) {
 	  Report::strcpy(iniFilePath, nppPath);
-    PathAppend(iniFilePath, TEXT("XMLToolsExt.ini"));
+    PathAppend(iniFilePath, L"XMLToolsExt.ini");
   } else {
     ITEMIDLIST *pidl;
     SHGetSpecialFolderLocation(NULL, CSIDL_APPDATA, &pidl);
     SHGetPathFromIDList(pidl, iniFilePath);
     
-    PathAppend(iniFilePath, TEXT("Notepad++\\XMLToolsExt.ini"));
+    PathAppend(iniFilePath, L"Notepad++\\XMLToolsExt.ini");
   }
   
   int menuentry = 0;
@@ -257,128 +248,128 @@ CXMLToolsApp::CXMLToolsApp() {
   }
 
   if (!libloadstatus) {
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("Enable XML syntax auto-check"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"Enable XML syntax auto-check");
     funcItem[menuentry]._pFunc = insertXMLCheckTag;
-    funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, TEXT("doCheckXML"), 0, iniFilePath) != 0);
+    funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, L"doCheckXML", 0, iniFilePath) != 0);
     doCheckXML = funcItem[menuentry]._init2Check;
     menuitemCheckXML = menuentry;
     ++menuentry;
   
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("Check XML syntax now"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"Check XML syntax now");
     funcItem[menuentry]._pFunc = manualXMLCheck;
     ++menuentry;
 
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
   
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("Enable auto-validation"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"Enable auto-validation");
     funcItem[menuentry]._pFunc = insertValidationTag;
-    funcItem[menuentry]._init2Check = doValidation = (::GetPrivateProfileInt(sectionName, TEXT("doValidation"), 0, iniFilePath) != 0);
+    funcItem[menuentry]._init2Check = doValidation = (::GetPrivateProfileInt(sectionName, L"doValidation", 0, iniFilePath) != 0);
     doValidation = funcItem[menuentry]._init2Check;
     menuitemValidation = menuentry;
     ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("Validate now"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"Validate now");
     funcItem[menuentry]._pFunc = manualValidation;
     registerShortcut(funcItem+menuentry, true, true, true, 'M');
     ++menuentry;
   
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
   
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("Tag auto-close"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"Tag auto-close");
     funcItem[menuentry]._pFunc = insertXMLCloseTag;
-    funcItem[menuentry]._init2Check = doCloseTag = (::GetPrivateProfileInt(sectionName, TEXT("doCloseTag"), 0, iniFilePath) != 0);
+    funcItem[menuentry]._init2Check = doCloseTag = (::GetPrivateProfileInt(sectionName, L"doCloseTag", 0, iniFilePath) != 0);
     doCloseTag = funcItem[menuentry]._init2Check;
     menuitemCloseTag = menuentry;
     ++menuentry;
   /*
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("Tag auto-indent"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"Tag auto-indent");
     funcItem[menuentry]._pFunc = insertTagAutoIndent;
-    funcItem[menuentry]._init2Check = doAutoIndent = (::GetPrivateProfileInt(sectionName, TEXT("doAutoIndent"), 0, iniFilePath) != 0);
+    funcItem[menuentry]._init2Check = doAutoIndent = (::GetPrivateProfileInt(sectionName, L"doAutoIndent", 0, iniFilePath) != 0);
     doAutoIndent = funcItem[menuentry]._init2Check;
     menuitemAutoIndent = menuentry;
     ++menuentry;
   
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("Auto-complete attributes"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"Auto-complete attributes");
     funcItem[menuentry]._pFunc = insertAttributeAutoComplete;
-    funcItem[menuentry]._init2Check = doAttrAutoComplete = (::GetPrivateProfileInt(sectionName, TEXT("doAttrAutoComplete"), 0, iniFilePath) != 0);
+    funcItem[menuentry]._init2Check = doAttrAutoComplete = (::GetPrivateProfileInt(sectionName, L"doAttrAutoComplete", 0, iniFilePath) != 0);
     doAttrAutoComplete = funcItem[menuentry]._init2Check;
     menuitemAttrAutoComplete = menuentry;
     ++menuentry;*/
   
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
   
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("Set XML type automatically"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"Set XML type automatically");
     funcItem[menuentry]._pFunc = insertAutoXMLType;
-    funcItem[menuentry]._init2Check = doAutoXMLType = (::GetPrivateProfileInt(sectionName, TEXT("doAutoXMLType"), 0, iniFilePath) != 0);
+    funcItem[menuentry]._init2Check = doAutoXMLType = (::GetPrivateProfileInt(sectionName, L"doAutoXMLType", 0, iniFilePath) != 0);
     doAutoXMLType = funcItem[menuentry]._init2Check;
     menuitemAutoXMLType = menuentry;
     ++menuentry;
   
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
   
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("Pretty print (XML only)"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (XML only)");
     funcItem[menuentry]._pFunc = prettyPrintXML;
     ++menuentry;
   
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("Pretty print (XML only - with line breaks)"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (XML only - with line breaks)");
     registerShortcut(funcItem+menuentry, true, true, true, 'B');
     funcItem[menuentry]._pFunc = prettyPrintXMLBreaks;
     ++menuentry;
   
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("Pretty print (Text indent)"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (Text indent)");
     funcItem[menuentry]._pFunc = prettyPrintText;
     ++menuentry;
   
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("Linarize XML"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"Linarize XML");
     funcItem[menuentry]._pFunc = linarizeXML;
     ++menuentry;
   
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
   
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("Current XML Path"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"Current XML Path");
     registerShortcut(funcItem+menuentry, true, true, true, 'P');
     funcItem[menuentry]._pFunc = getCurrentXPath;
     ++menuentry;
   
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("Evaluate XPath expression"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"Evaluate XPath expression");
     funcItem[menuentry]._pFunc = evaluateXPath;
     ++menuentry;
   
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
   
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("XSL Transformation"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"XSL Transformation");
     funcItem[menuentry]._pFunc = performXSLTransform;
     ++menuentry;
   
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
   
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("Convert selection XML to text (<> => &&lt;&&gt;)"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"Convert selection XML to text (<> => &&lt;&&gt;)");
     funcItem[menuentry]._pFunc = convertXML2Text;
     ++menuentry;
   
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("Convert selection text to XML (&&lt;&&gt; => <>)"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"Convert selection text to XML (&&lt;&&gt; => <>)");
     funcItem[menuentry]._pFunc = convertText2XML;
     ++menuentry;
   
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
   
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("Comment selection"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"Comment selection");
     registerShortcut(funcItem+menuentry, true, true, true, 'C');
     funcItem[menuentry]._pFunc = commentSelection;
     ++menuentry;
   
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("Uncomment selection"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"Uncomment selection");
     registerShortcut(funcItem+menuentry, true, true, true, 'R');
     funcItem[menuentry]._pFunc = uncommentSelection;
     ++menuentry;
   
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
   
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("About XML Tools"));
+    Report::strcpy(funcItem[menuentry]._itemName, L"About XML Tools");
     funcItem[menuentry]._pFunc = aboutBox;
     ++menuentry;
   } else {
-    Report::strcpy(funcItem[menuentry]._itemName, TEXT("How to use..."));
+    Report::strcpy(funcItem[menuentry]._itemName, L"How to use...");
     funcItem[menuentry]._pFunc = howtoUse;
     ++menuentry;
   }
@@ -413,12 +404,12 @@ void savePluginParams() {
   //funcItem[menuitemAttrAutoComplete]._init2Check = doAttrAutoComplete;
   funcItem[menuitemAutoXMLType]._init2Check = doAutoXMLType;
 
-  ::WritePrivateProfileString(sectionName, TEXT("doCheckXML"), doCheckXML?TEXT("1"):TEXT("0"), iniFilePath);
-  ::WritePrivateProfileString(sectionName, TEXT("doValidation"), doValidation?TEXT("1"):TEXT("0"), iniFilePath);
-  ::WritePrivateProfileString(sectionName, TEXT("doCloseTag"), doCloseTag?TEXT("1"):TEXT("0"), iniFilePath);
-  //::WritePrivateProfileString(sectionName, TEXT("doAutoIndent"), doAutoIndent?TEXT("1"):TEXT("0"), iniFilePath);
-  //::WritePrivateProfileString(sectionName, TEXT("doAttrAutoComplete"), doAttrAutoComplete?TEXT("1"):TEXT("0"), iniFilePath);
-  ::WritePrivateProfileString(sectionName, TEXT("doAutoXMLType"), doAutoXMLType?TEXT("1"):TEXT("0"), iniFilePath);
+  ::WritePrivateProfileString(sectionName, L"doCheckXML", doCheckXML?L"1":L"0", iniFilePath);
+  ::WritePrivateProfileString(sectionName, L"doValidation", doValidation?L"1":L"0", iniFilePath);
+  ::WritePrivateProfileString(sectionName, L"doCloseTag", doCloseTag?L"1":L"0", iniFilePath);
+  //::WritePrivateProfileString(sectionName, L"doAutoIndent", doAutoIndent?L"1":L"0", iniFilePath);
+  //::WritePrivateProfileString(sectionName, L"doAttrAutoComplete", doAttrAutoComplete?L"1":L"0", iniFilePath);
+  ::WritePrivateProfileString(sectionName, L"doAutoXMLType", doAutoXMLType?L"1":L"0", iniFilePath);
 }
 
 /*
@@ -434,7 +425,7 @@ extern "C" __declspec(dllexport) void setInfo(NppData notpadPlusData) {
 }
 
 // The getName function tells Notepad++ plugins system its name
-extern "C" __declspec(dllexport) const TCHAR * getName() {
+extern "C" __declspec(dllexport) const wchar_t * getName() {
   return PLUGIN_NAME;
 }
 
@@ -544,7 +535,7 @@ void insertTagAutoIndent() {
     Report::_printf_inf("insertTagAutoIndent()");
   #endif
   if (!tagAutoIndentWarningDisplayed) {
-    Report::_printf_inf(TEXT("This function is in alpha state and might disappear in future release."));
+    Report::_printf_inf(L"This function is in alpha state and might disappear in future release.");
     tagAutoIndentWarningDisplayed = true;
   }
 
@@ -559,7 +550,7 @@ void insertAttributeAutoComplete() {
     Report::_printf_inf("insertAttributeAutoComplete()");
   #endif
   if (!insertAttributeAutoCompleteWarningDisplayed) {
-    Report::_printf_inf(TEXT("This function is in alpha state and might disappear in future release."));
+    Report::_printf_inf(L"This function is in alpha state and might disappear in future release.");
     insertAttributeAutoCompleteWarningDisplayed = true;
   }
   
@@ -627,12 +618,12 @@ void performXMLCheck(int informIfNoError) {
       if (err->line > 0)
         ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
 
-      Report::_printf_err(TEXT("XML Parsing error at line %d: \r\n:s"), err->message);
+      Report::_printf_err(L"XML Parsing error at line %d: \r\n:s", err->message);
     } else {
-      Report::_printf_err(TEXT("Failed to parse document"));
+      Report::_printf_err(L"Failed to parse document");
     }
   } else if (informIfNoError) {
-    Report::_printf_inf(TEXT("No error detected."));
+    Report::_printf_inf(L"No error detected.");
   }
 
   pXmlFreeDoc(doc);
@@ -664,7 +655,7 @@ void XMLValidation(int informIfNoError) {
   #endif
   // 1. On valide le XML
   bool abortValidation = false;
-  std::wstring xml_schema(TEXT(""));
+  std::string xml_schema("");
   int currentEdit, currentLength;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
@@ -701,9 +692,9 @@ void XMLValidation(int informIfNoError) {
       if (err->line > 0)
         ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
       
-      Report::_printf_err(TEXT("XML Parsing error at line %d: \r\n%s"), err->message);
+      Report::_printf_err(L"XML Parsing error at line %d: \r\n%s", err->message);
     } else {
-      Report::_printf_err(TEXT("Failed to parse document"));
+      Report::_printf_err(L"Failed to parse document");
     }
 
     abortValidation = true;
@@ -714,32 +705,32 @@ void XMLValidation(int informIfNoError) {
     // 2.1. On essaie de retrouver le schéma ou la dtd das le document
     rootnode = pXmlDocGetRootElement(doc);
     if (rootnode == NULL) {
-      Report::_printf_err(TEXT("Empty XML document"));
+      Report::_printf_err(L"Empty XML document");
     } else {
       // 2.1.a. On recherche l'attribut "xsi:noNamespaceSchemaLocation" dans la balise root
       // Exemple de balise root:
       //  <descript xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Descript_Shema.xsd">
       xmlChar* propval = pXmlGetProp(rootnode, reinterpret_cast<const unsigned char*>("noNamespaceSchemaLocation"));
       if (propval) {
-        xml_schema = std::wstring(reinterpret_cast<const TCHAR*>(propval));
+        xml_schema = std::string(reinterpret_cast<const char*>(propval));
         xsdValidation = true;
       }
 
       // 2.1.b On recheche un DOCTYPE avant la balise root
       dtdPtr = doc->intSubset;
       if (dtdPtr) {
-        std::wstring dtd_filename(TEXT(""));
+        std::string dtd_filename("");
         if (dtdPtr->SystemID) {
-          dtd_filename = std::wstring(reinterpret_cast<const TCHAR*>(dtdPtr->SystemID));
+          dtd_filename = std::string(reinterpret_cast<const char*>((LPCTSTR)dtdPtr->SystemID));
         } else if (dtdPtr->ExternalID) {
-          dtd_filename = std::wstring(reinterpret_cast<const TCHAR*>(dtdPtr->ExternalID));
+          dtd_filename = std::string(reinterpret_cast<const char*>((LPCTSTR)dtdPtr->ExternalID));
         }
         
         dtdPtr = pXmlParseDTD(dtdPtr->ExternalID, dtdPtr->SystemID);
         doFreeDTDPtr = true;
 
         if (dtdPtr == NULL) {
-          Report::_printf_err(TEXT("Unable to load the DTD\r\n%s"),dtd_filename.c_str());
+          Report::_printf_err(L"Unable to load the DTD\r\n%s",dtd_filename.c_str());
           abortValidation = true;
         } else {
           dtdValidation = true;
@@ -764,34 +755,34 @@ void XMLValidation(int informIfNoError) {
 
       dlg->m_sRootElementSample = rootSample;
       if (dlg->DoModal() == IDOK) {
-        xml_schema = dlg->m_sSelectedFilename;
+        xml_schema = std::string(reinterpret_cast<const char*>((LPCTSTR)dlg->m_sSelectedFilename));
       }
     }
 
     // 2.3.a. On procède à la validation par schéma
     if (xml_schema.length() > 0 && !dtdValidation) {
       if ((pctxt = pXmlSchemaNewParserCtxt(reinterpret_cast<const char*>(xml_schema.c_str()))) == NULL) {
-        Report::_printf_err(TEXT("Unable to initialize parser."));
+        Report::_printf_err(L"Unable to initialize parser.");
       } else {
         // Chargement du contenu du XML Schema
         schema = pXmlSchemaParse(pctxt);
         pXmlSchemaFreeParserCtxt(pctxt);
         if (schema == NULL) {
-          Report::_printf_err(TEXT("Unable to parse schema file."));
+          Report::_printf_err(L"Unable to parse schema file.");
         } else {
           // Création du contexte de validation
           if ((vctxt = pXmlSchemaNewValidCtxt(schema)) == NULL) {
             pXmlSchemaFree(schema);
-            Report::_printf_err(TEXT("Unable to create validation context."));
+            Report::_printf_err(L"Unable to create validation context.");
           } else {
             // Traitement des erreurs de validation
             Report::clearLog();
-            Report::registerMessage(NULL, TEXT("Validation of current file using XML schema:\r\n\r\n"));
+            Report::registerMessage(NULL, L"Validation of current file using XML schema:\r\n\r\n");
             pXmlSchemaSetValidErrors(vctxt, (xmlSchemaValidityErrorFunc) Report::registerError, (xmlSchemaValidityWarningFunc) Report::registerWarn, stderr);
 
             // Validation
             if (!pXmlSchemaValidateDoc(vctxt, doc)) {
-              if (informIfNoError) Report::_printf_inf(TEXT("XML Schema validation:\r\nXML is valid."));
+              if (informIfNoError) Report::_printf_inf(L"XML Schema validation:\r\nXML is valid.");
             } else {
               CMessageDlg* msgdlg = new CMessageDlg();
               msgdlg->m_sMessage = Report::getLog();
@@ -814,14 +805,14 @@ void XMLValidation(int informIfNoError) {
       if ((vctxt = pXmlNewValidCtxt())) {
         // Affichage des erreurs de validation
         Report::clearLog();
-        Report::registerMessage(NULL, TEXT("Validation of current file using DTD:\r\n\r\n"));
+        Report::registerMessage(NULL, L"Validation of current file using DTD:\r\n\r\n");
         vctxt->userData = (void *) stderr;
         vctxt->error = (xmlValidityErrorFunc) Report::registerError;
         vctxt->warning = (xmlValidityWarningFunc) Report::registerWarn;
 
         // Validation
         if (pXmlValidateDtd(vctxt, doc, dtdPtr)) {
-          if (informIfNoError) Report::_printf_inf(TEXT("DTD validation:\r\nXML is valid."));
+          if (informIfNoError) Report::_printf_inf(L"DTD validation:\r\nXML is valid.");
         } else {
           CMessageDlg* msgdlg = new CMessageDlg();
           msgdlg->m_sMessage = Report::getLog();
@@ -889,7 +880,7 @@ void closeXMLTag() {
       if (*pCur == '<') {
         ++pCur;
 
-        while (StrChr(TEXT(":_-."), *pCur) || IsCharAlphaNumeric(*pCur)) {
+        while (StrChr(L":_-.", *pCur) || IsCharAlphaNumeric(*pCur)) {
           insertString[insertStringSize++] = *pCur;
           ++pCur;
         }
@@ -981,9 +972,9 @@ void tagAutoIndent() {
 
 void attributeAutoComplete() {
   #ifdef __XMLTOOLS_DEBUG__
-    Report::_printf_inf(TEXT("attributeAutoComplete()"));
+    Report::_printf_inf(L"attributeAutoComplete()");
   #endif
-  Report::_printf_inf(TEXT("attributeAutoComplete()"));
+  Report::_printf_inf(L"attributeAutoComplete()");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1038,7 +1029,7 @@ void getCurrentXPath() {
   int endpos = str.find_last_of(">");
 
   // let's reach the end of current tag (if we are inside a tag)
-  std::wstring tmpmsg(TEXT("Current node cannot be resolved."));
+  std::wstring tmpmsg(L"Current node cannot be resolved.");
   if (currentPos > begpos && currentPos <= endpos){
     currentPos = str.find_last_of("<>", currentPos-1)+1;
     bool isinsideclosingtag = (currentPos > 0 && str.at(currentPos-1) == '<' && str.at(currentPos) == '/');
@@ -1060,11 +1051,11 @@ void getCurrentXPath() {
     xmlDocPtr doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, XML_PARSE_RECOVER);
     xmlNodePtr cur_node = pXmlDocGetRootElement(doc);
 
-    std::wstring nodepath(TEXT(""));
+    std::string nodepath("");
     while (cur_node != NULL && cur_node->last != NULL) {
       if (cur_node->type == XML_ELEMENT_NODE) {
-        nodepath += TEXT("/");
-        nodepath += std::wstring(reinterpret_cast<const TCHAR*>(cur_node->name));
+        nodepath += "/";
+        nodepath += reinterpret_cast<const char*>(cur_node->name);
       }
       cur_node = cur_node->last;
     }
@@ -1072,7 +1063,8 @@ void getCurrentXPath() {
     pXmlFreeDoc(doc);
 
     if (nodepath.length() > 0) {
-      tmpmsg = nodepath + TEXT("\n\n(Path has been copied into clipboard)");
+      tmpmsg = Report::widen(nodepath);
+      tmpmsg += L"\n\n(Path has been copied into clipboard)";
       
       ::OpenClipboard(NULL);
       ::EmptyClipboard();
@@ -1080,13 +1072,13 @@ void getCurrentXPath() {
       hClipboardData = GlobalAlloc(GMEM_DDESHARE, nodepath.length()+1);
       char * pchData;
       pchData = (char*)GlobalLock(hClipboardData);
-      Report::strcpy(pchData, nodepath.c_str());
+      strcpy(pchData, nodepath.c_str());
       ::GlobalUnlock(hClipboardData);
       ::SetClipboardData(CF_TEXT, pchData);
       ::CloseClipboard();
     }
   }
-
+  
   Report::_printf_inf(tmpmsg.c_str());
     
   delete [] data;
@@ -1167,7 +1159,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 
   doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
   if (doc == NULL) {
-    Report::_printf_err(TEXT("Errors detected in content. Please correct them before applying pretty print."));
+    Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
     delete [] data;
     return;
   }
@@ -1204,26 +1196,26 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
         if (prevspecchar >= 0 && str.at(prevspecchar) == '<') {
           // We have found a '>' char, let's see if next non space/tab is a '<'
           bool isclosingtag = (curpos > 0 && str.at(curpos-1) == '/');
-          int nextchar = str.find_first_not_of(" \t",curpos+1);
-          int deltapos = nextchar-curpos;
-          if (nextchar > -1 &&
-              str.at(nextchar) == '<' &&
+          int nexwchar_t = str.find_first_not_of(" \t",curpos+1);
+          int deltapos = nexwchar_t-curpos;
+          if (nexwchar_t > -1 &&
+              str.at(nexwchar_t) == '<' &&
               curpos < (long)str.length()-(deltapos+1)) {
             // we compare previous and next tags; if they are same, we don't add line break
             long startprev = str.rfind("<",curpos);
-            long endnext = str.find(">",nextchar);
+            long endnext = str.find(">",nexwchar_t);
 
             if (startprev > -1 && endnext > -1 &&
                 curpos > startprev &&
-                endnext > nextchar) {
+                endnext > nexwchar_t) {
               int tagend = str.find_first_of(" />",startprev+1);
               std::string tag1(str.substr(startprev+1,tagend-startprev-1));
-              tagend = str.find_first_of(" />",nextchar+2);
-              std::string tag2(str.substr(nextchar+2,tagend-nextchar-2));
+              tagend = str.find_first_of(" />",nexwchar_t+2);
+              std::string tag2(str.substr(nexwchar_t+2,tagend-nexwchar_t-2));
               if (strcmp(tag1.c_str(),tag2.c_str()) || isclosingtag) {
                 // Case of "<data><data>..." -> add a line break between tags
                 str.insert(++curpos,"\r\n");
-              } else if (str.at(nextchar+1) == '/' && !isclosingtag) {
+              } else if (str.at(nexwchar_t+1) == '/' && !isclosingtag) {
                 // Case of "<data id="..."></data>" -> replace by "<data id="..."/>"
                 str.replace(curpos,endnext-curpos,"/");
                 //str.insert(++curpos,"#");
@@ -1296,17 +1288,17 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
         prevspecchar = curpos++;
       } else if (cc == '\n') {
         // \n are ignored inside attributes
-        int nextchar = str.find_first_not_of(" \t",++curpos);
+        int nexwchar_t = str.find_first_not_of(" \t",++curpos);
 
         bool skipformat = false;
-        if (!autoindenttext && nextchar > -1) {
-          cc = str.at(nextchar);
+        if (!autoindenttext && nexwchar_t > -1) {
+          cc = str.at(nexwchar_t);
           skipformat = (cc != '<' && cc != '\r' && cc != '\n');
         }
-        if (nextchar >= curpos && xmllevel >= 0 && !skipformat) {
-          if (nextchar < 0) nextchar = curpos;
+        if (nexwchar_t >= curpos && xmllevel >= 0 && !skipformat) {
+          if (nexwchar_t < 0) nexwchar_t = curpos;
           int delta = 0;
-          str.erase(curpos,nextchar-curpos);
+          str.erase(curpos,nexwchar_t-curpos);
 
           strlength = str.length();
           if (curpos < strlength) {
@@ -1390,25 +1382,25 @@ void linarizeXML() {
 
   unsigned int curpos = 0;
   while ((curpos = str.find_first_of("\r\n", curpos)) > -1) {
-    unsigned int nextchar = str.find_first_not_of("\r\n", curpos);
-    str.erase(curpos, nextchar-curpos);
+    unsigned int nexwchar_t = str.find_first_not_of("\r\n", curpos);
+    str.erase(curpos, nexwchar_t-curpos);
 
     // on supprime aussi tous les espaces du début de ligne
     if (curpos < str.length()) {
-      nextchar = str.find_first_not_of(" \t", curpos);
-      if (nextchar >= curpos) {
+      nexwchar_t = str.find_first_not_of(" \t", curpos);
+      if (nexwchar_t >= curpos) {
         // et si le 1e caractère de la ligne suivante est différent de '<' et que
         // le dernier de la précédente est différent de '>', autrement dit si on
         // est dans du texte, on laisse un espace
 
         bool enableInsert = false;
-        if (curpos > 0 && str.at(nextchar) != '<' && str.at(curpos-1) != '>') {
+        if (curpos > 0 && str.at(nexwchar_t) != '<' && str.at(curpos-1) != '>') {
           enableInsert = true;
-          if (nextchar > curpos) --nextchar;
+          if (nexwchar_t > curpos) --nexwchar_t;
         }
 
-        if (nextchar > curpos) str.erase(curpos, nextchar-curpos);
-        else if (enableInsert) str.insert(nextchar, " ");
+        if (nexwchar_t > curpos) str.erase(curpos, nexwchar_t-curpos);
+        else if (enableInsert) str.insert(nexwchar_t, " ");
       }
     }
   }
@@ -1441,7 +1433,7 @@ void convertText2XML() {
   int sellength = selend-selstart;
 
   if (selend <= selstart) {
-    Report::_printf_err(TEXT("Please select text to transform before you call the function."));
+    Report::_printf_err(L"Please select text to transform before you call the function.");
     return;
   }
 
@@ -1521,7 +1513,7 @@ void convertXML2Text() {
   int sellength = selend-selstart;
 
   if (selend <= selstart) {
-    Report::_printf_err(TEXT("Please select text to transform before you call the function."));
+    Report::_printf_err(L"Please select text to transform before you call the function.");
     return;
   }
 
@@ -1645,7 +1637,7 @@ void commentSelection() {
   long sellength = selend-selstart;
   
   if (selend <= selstart) {
-    Report::_printf_err(TEXT("Please select text to transform before you call the function."));
+    Report::_printf_err(L"Please select text to transform before you call the function.");
     return;
   }
 
@@ -1663,9 +1655,9 @@ void commentSelection() {
 
   int errflag = validateSelectionForComment(str, sellength);
   if (errflag) {
-    TCHAR msg[512];
-    swprintf(msg, TEXT("The current selection covers part only one portion of another comment.\nUncomment process may be not applicable.\n\nDo you want to continue ?"), errflag);
-    if (::MessageBox(nppData._nppHandle, msg, TEXT("XML Tools plugin"), MB_YESNO | MB_ICONASTERISK) == IDNO) {
+    wchar_t msg[512];
+    swprintf(msg, L"The current selection covers part only one portion of another comment.\nUncomment process may be not applicable.\n\nDo you want to continue ?", errflag);
+    if (::MessageBox(nppData._nppHandle, msg, L"XML Tools plugin", MB_YESNO | MB_ICONASTERISK) == IDNO) {
       delete [] data;
       return;
     }
@@ -1752,7 +1744,7 @@ void uncommentSelection() {
   long sellength = selend-selstart;
 
   if (selend <= selstart) {
-    Report::_printf_err(TEXT("Please select text to transform before you call the function."));
+    Report::_printf_err(L"Please select text to transform before you call the function.");
     return;
   }
 
@@ -1766,8 +1758,8 @@ void uncommentSelection() {
 
   int errflag = validateSelectionForComment(str, sellength);
   if (errflag) {
-    TCHAR msg[512];
-    swprintf(msg, TEXT("Unable to uncomment the current selection.\nError code is %d."), errflag);
+    wchar_t msg[512];
+    swprintf(msg, L"Unable to uncomment the current selection.\nError code is %d.", errflag);
     Report::_printf_err(msg);
     delete [] data;
     return;

@@ -53,7 +53,7 @@ HWND CXPathEvalDlg::getCurrentHScintilla(int which) {
 void CXPathEvalDlg::OnBtnEvaluate() {
   this->UpdateData();
   if (!m_sExpression.GetLength()) {
-    Report::_printf_err(TEXT("Empty expression; evaluation aborted."));
+    Report::_printf_err(L"Empty expression; evaluation aborted.");
   } else {
     execute_xpath_expression(reinterpret_cast<const unsigned char*>((LPCTSTR)m_sExpression), NULL);
   }
@@ -73,7 +73,7 @@ int CXPathEvalDlg::execute_xpath_expression(const xmlChar* xpathExpr, const xmlC
   xmlDocPtr doc;
   xmlXPathContextPtr xpathCtx; 
   xmlXPathObjectPtr xpathObj; 
-  
+
   assert(xpathExpr);
 
   int currentEdit, currentLength;
@@ -97,7 +97,7 @@ int CXPathEvalDlg::execute_xpath_expression(const xmlChar* xpathExpr, const xmlC
   doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
 
   if (doc == NULL) {
-    Report::_printf_err(TEXT("Error: unable to parse XML."));
+    Report::_printf_err(L"Error: unable to parse XML.");
     delete [] data;
     return(-1);
   }
@@ -105,7 +105,7 @@ int CXPathEvalDlg::execute_xpath_expression(const xmlChar* xpathExpr, const xmlC
   /* Create xpath evaluation context */
   xpathCtx = pXmlXPathNewContext(doc);
   if(xpathCtx == NULL) {
-    Report::_printf_err(TEXT("Error: unable to create new XPath context\n"));
+    Report::_printf_err(L"Error: unable to create new XPath context\n");
     pXmlFreeDoc(doc); 
     delete [] data;
     return(-1);
@@ -113,7 +113,7 @@ int CXPathEvalDlg::execute_xpath_expression(const xmlChar* xpathExpr, const xmlC
   
   /* Register namespaces from list (if any) */
   if((nsList != NULL) && (register_namespaces(xpathCtx, nsList) < 0)) {
-    Report::_printf_err(TEXT("Error: failed to register namespaces list \"%s\"\n"), nsList);
+    Report::_printf_err(L"Error: failed to register namespaces list \"%s\"\n", nsList);
     pXmlXPathFreeContext(xpathCtx); 
     pXmlFreeDoc(doc);
     delete [] data;
@@ -123,7 +123,7 @@ int CXPathEvalDlg::execute_xpath_expression(const xmlChar* xpathExpr, const xmlC
   /* Evaluate xpath expression */
   xpathObj = pXmlXPathEvalExpression(xpathExpr, xpathCtx);
   if(xpathObj == NULL) {
-    Report::_printf_err(TEXT("Error: unable to evaluate xpath expression \"%s\"\n"), xpathExpr);
+    Report::_printf_err(L"Error: unable to evaluate xpath expression \"%s\"\n", xpathExpr);
     pXmlXPathFreeContext(xpathCtx); 
     pXmlFreeDoc(doc);
     delete [] data;
@@ -164,7 +164,7 @@ int CXPathEvalDlg::register_namespaces(xmlXPathContextPtr xpathCtx, const xmlCha
 
   nsListDup = pXmlStrdup(nsList);
   if(nsListDup == NULL) {
-    Report::_printf_err(TEXT("Error: unable to strdup namespaces list\n"));
+    Report::_printf_err(L"Error: unable to strdup namespaces list\n");
     return(-1);
   }
  
@@ -178,7 +178,7 @@ int CXPathEvalDlg::register_namespaces(xmlXPathContextPtr xpathCtx, const xmlCha
     prefix = next;
     next = (xmlChar*) pXmlStrchr(next, '=');
     if(next == NULL) {
-      Report::_printf_err(TEXT("Error: invalid namespaces list format\n"));
+      Report::_printf_err(L"Error: invalid namespaces list format\n");
       pXmlFree(nsListDup);
       return(-1);  
     }
@@ -193,7 +193,7 @@ int CXPathEvalDlg::register_namespaces(xmlXPathContextPtr xpathCtx, const xmlCha
 
     /* do register namespace */
     if (pXmlXPathRegisterNs(xpathCtx, prefix, href) != 0) {
-      Report::_printf_err(TEXT("Error: unable to register NS with prefix=\"%s\" and href=\"%s\"\n"), prefix, href);
+      Report::_printf_err(L"Error: unable to register NS with prefix=\"%s\" and href=\"%s\"\n", prefix, href);
       pXmlFree(nsListDup);
       return(-1);  
     }
@@ -225,13 +225,13 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
 
   switch (xpathObj->type) {
     case XPATH_UNDEFINED: {
-      Report::_printf_inf(TEXT("Undefined expression."));
+      Report::_printf_inf(L"Undefined expression.");
       break;
     }
     case XPATH_NODESET: {
       xmlNodeSetPtr	nodes = xpathObj->nodesetval;
       int size = (nodes) ? nodes->nodeNr : 0;
-      
+
       if (size == 0) {
         itemtype = "";
         itemname = "No result";
@@ -248,7 +248,7 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
           itemtype = "Node";
 
           if (cur->ns) { 
-            itemname = Report::cstring(TEXT("%s:%s"), cur->ns->href, cur->name);
+            itemname = Report::cstring(L"%s:%s", cur->ns->href, cur->name);
             itemvalue = cur->content;
           } else {
             itemname = cur->name;
@@ -273,11 +273,13 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
               itemvalue = "";
               while (attr != NULL) {
                 if (attr->type == XML_ATTRIBUTE_NODE)
-                  itemvalue += Report::cstring(TEXT("%s=\"%s\" "), attr->name, attr->children->content);
+                  itemvalue += Report::cstring(L"%s=\"%s\" ", attr->name, attr->children->content);
                 attr = attr->next;
               }
             }
           }
+        } else if (cur->type == XML_DOCUMENT_NODE) {
+         
         } else if(cur->type == XML_ATTRIBUTE_NODE) {
           itemtype = "Attr";
           itemname = cur->name;
@@ -287,7 +289,32 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
           } else {
             itemvalue = "";
           }
-        }
+        } else {
+          Report::_printf_inf(L"%d",cur->type);
+        /*
+          XML_ELEMENT_NODE = 1
+          XML_ATTRIBUTE_NODE = 2
+          XML_TEXT_NODE = 3
+          XML_CDATA_SECTION_NODE = 4
+          XML_ENTITY_REF_NODE = 5
+          XML_ENTITY_NODE = 6
+          XML_PI_NODE = 7
+          XML_COMMENT_NODE = 8
+          XML_DOCUMENT_NODE = 9
+          XML_DOCUMENT_TYPE_NODE = 10
+          XML_DOCUMENT_FRAG_NODE = 11
+          XML_NOTATION_NODE = 12
+          XML_HTML_DOCUMENT_NODE = 13
+          XML_DTD_NODE = 14
+          XML_ELEMENT_DECL = 15
+          XML_ATTRIBUTE_DECL = 16
+          XML_ENTITY_DECL = 17
+          XML_NAMESPACE_DECL = 18
+          XML_XINCLUDE_START = 19
+          XML_XINCLUDE_END = 20
+          XML_DOCB_DOCUMENT_NODE = 21*/
+      }
+
 
         AddToList(listresults, itemtype, itemname, itemvalue);
       }
@@ -306,7 +333,7 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
     case XPATH_NUMBER: {
       itemtype = "Num";
       itemname = "";
-      itemvalue = Report::cstring(TEXT("%f"), xpathObj->floatval);
+      itemvalue = Report::cstring(L"%f", xpathObj->floatval);
       AddToList(listresults, itemtype, itemname, itemvalue);
       break;
     }
@@ -325,16 +352,15 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
   }
 }
 
-BOOL CXPathEvalDlg::OnInitDialog() 
-{
+BOOL CXPathEvalDlg::OnInitDialog() {
 	CDialog::OnInitDialog();
 	
   CListCtrl *listresults = (CListCtrl*) this->GetDlgItem(IDC_LIST_XPATHRESULTS);
 
 	// Initialize the destination list control
-	listresults->InsertColumn(0, TEXT("Type"), LVCFMT_LEFT, 50);
-	listresults->InsertColumn(1, TEXT("Name"), LVCFMT_LEFT, 100);
-	listresults->InsertColumn(2, TEXT("Value"), LVCFMT_LEFT, 400);
+	listresults->InsertColumn(0, L"Type", LVCFMT_LEFT, 50);
+	listresults->InsertColumn(1, L"Name", LVCFMT_LEFT, 100);
+	listresults->InsertColumn(2, L"Value", LVCFMT_LEFT, 400);
 
   listresults->DeleteAllItems();
 
@@ -347,8 +373,7 @@ BOOL CXPathEvalDlg::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CXPathEvalDlg::OnSize(UINT nType, int cx, int cy) 
-{
+void CXPathEvalDlg::OnSize(UINT nType, int cx, int cy) {
 	CDialog::OnSize(nType, cx, cy);
 	
   CWnd *btn_wnd = GetDlgItem(IDC_BTN_EVALUATE);

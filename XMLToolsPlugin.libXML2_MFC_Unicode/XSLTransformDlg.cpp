@@ -78,31 +78,31 @@ int getNextParam(std::wstring str, int startpos, std::wstring *key, std::wstring
   if (startpos < 0 || startpos >= len || !key || !val) return -1;
   
   // on saute les espaces, les tabs et les retours à la ligne
-  int keypos = str.find_first_not_of(TEXT(" \t\r\n"), startpos);
+  int keypos = str.find_first_not_of(L" \t\r\n", startpos);
   if (keypos < 0 || keypos >= len) return -1;
   
   // le caractère suivant ne doit pas être un '='
   if (str.at(keypos) == '=') return -1;
   
   // keypos désigne le début de notre key, il faut trouver le '=' (ou le ' ')
-  int valpos = str.find_first_of(TEXT("="), keypos+1);
-  valpos = str.find_last_not_of(TEXT(" ="), valpos);  // on recherche la dernière lettre de la clé
+  int valpos = str.find_first_of(L"=", keypos+1);
+  valpos = str.find_last_not_of(L" =", valpos);  // on recherche la dernière lettre de la clé
   *key = str.substr(keypos, valpos-keypos+1);
 
   // on saute le '='
-  valpos = 1+str.find_first_of(TEXT("="), valpos+1);
+  valpos = 1+str.find_first_of(L"=", valpos+1);
 
-  if (str.at(valpos) == ' ') valpos = str.find_first_not_of(TEXT(" "), valpos);  // on saute les éventuels espaces
+  if (str.at(valpos) == ' ') valpos = str.find_first_not_of(L" ", valpos);  // on saute les éventuels espaces
   if (valpos < 0 || valpos >= len) return -1;
   
   // ici, il faut parser la string; si elle commence par un ', on recherche un autre ',
   // sinon on ne prend que le 1e mot que l'on trouve
   int valendpos = valpos;
   if (str.at(valendpos) == '\'') {
-    valendpos = str.find_first_of(TEXT("\'"), valendpos+1);
+    valendpos = str.find_first_of(L"\'", valendpos+1);
     *val = str.substr(valpos, valendpos-valpos+1);
   } else {
-    valendpos = str.find_first_of(TEXT(" \t\r\n"), valendpos);
+    valendpos = str.find_first_of(L" \t\r\n", valendpos);
     // si on est en bout de string, valendpos vaudra -1
     if (valendpos < 0) valendpos = len;
     *val = str.substr(valpos, valendpos-valpos);
@@ -111,7 +111,7 @@ int getNextParam(std::wstring str, int startpos, std::wstring *key, std::wstring
   return valendpos;
 }
 
-void cleanParams(char* params[], int nparams) {
+void cleanParams(wchar_t* params[], int nparams) {
   for (int i = 0; i < nparams; ++i) {
     if (params[i]) delete[] params[i];
   }
@@ -123,7 +123,7 @@ void CXSLTransformDlg::OnBtnTransform() {
 
   // proceed to transformation
   int i;
-  char *params[MAX_PARAMS + 1];
+  wchar_t *params[MAX_PARAMS + 1];
   int nbparams = 0;
   xsltStylesheetPtr cur = NULL;
   xmlDocPtr doc, res;
@@ -148,7 +148,7 @@ void CXSLTransformDlg::OnBtnTransform() {
   ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr)); 
   
   if (this->m_sXSLTFile.GetLength() <= 0) {
-    Report::_printf_err(TEXT("XSLT File missing. Cannot continue."));
+    Report::_printf_err(L"XSLT File missing. Cannot continue.");
     delete [] data;
     return;
   }
@@ -163,16 +163,16 @@ void CXSLTransformDlg::OnBtnTransform() {
 
     // param1=123 param2='abc' param3='xyz'
 
-    params[nbparams] = new char[1+key.length()];
-	Report::strcpy(params[nbparams], key.c_str());
+    params[nbparams] = new wchar_t[1+key.length()];
+    Report::strcpy(params[nbparams], key.c_str());
     ++nbparams;
 
-    params[nbparams] = new char[1+val.length()];
+    params[nbparams] = new wchar_t[1+val.length()];
     Report::strcpy(params[nbparams], val.c_str());
     ++nbparams;
 
     if (nbparams >= MAX_PARAMS) {
-      Report::_printf_err(TEXT("Too many params."));
+      Report::_printf_err(L"Too many params.");
       delete [] data;
       cleanParams(params, nbparams);
       return;
@@ -191,14 +191,14 @@ void CXSLTransformDlg::OnBtnTransform() {
     pXsltSaveResultToString(&doc_txt_ptr, &doc_txt_len, res, cur);
 
     if (doc_txt_ptr == NULL || doc_txt_ptr[0] == '\0') {
-      Report::_printf_err(TEXT("The transformation has generated empty document."));
+      Report::_printf_err(L"The transformation has generated empty document.");
     } else {
       ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FILE_NEW); 
       currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
       ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(doc_txt_ptr));
     }
   } else {
-    Report::_printf_err(TEXT("Unable to apply transformation on current source."));
+    Report::_printf_err(L"Unable to apply transformation on current source.");
   }
 
   pXsltFreeStylesheet(cur);

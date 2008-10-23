@@ -103,9 +103,9 @@ BOOL CHyperLink::FollowLink(CString url)
 	// This is a very simple and barebones way of opening the link.
 	// Anyway this member function is virtual and can be reimplemented
 	// to make way for improvements.
-	if (ShellExecute(NULL, TEXT("open"), url, NULL, NULL, SW_SHOWNORMAL) == 0)
+	if (ShellExecute(NULL, L"open", url, NULL, NULL, SW_SHOWNORMAL) == 0)
 	{
-		MessageBox(TEXT("Failed to open URL"), TEXT("Error"), MB_OK | MB_ICONERROR);
+		MessageBox(L"Failed to open URL", L"Error", MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
 	return TRUE;
@@ -122,7 +122,7 @@ BOOL CHyperLink::MailTo(CString url, CString name)
 	strcpy(lpszName, reinterpret_cast<const char*>((LPCTSTR)name));
 
 	// Load the MAPI Library
-	HINSTANCE hMapilib = LoadLibrary(TEXT("MAPI32.DLL"));
+	HINSTANCE hMapilib = LoadLibrary(L"MAPI32.DLL");
 
 	LPMAPISENDMAIL lpfnMAPISendMail = (LPMAPISENDMAIL) GetProcAddress(hMapilib, "MAPISendMail");
 
@@ -157,7 +157,7 @@ BOOL CHyperLink::MailTo(CString url, CString name)
 
 	if (Error != SUCCESS_SUCCESS)
 	{
-		MessageBox(TEXT("MAPI Failure."), TEXT("Error"), MB_OK | MB_ICONERROR);
+		MessageBox(L"MAPI Failure.", L"Error", MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
 
