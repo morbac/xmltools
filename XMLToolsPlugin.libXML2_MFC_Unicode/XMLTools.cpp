@@ -1179,7 +1179,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 
   // Proceed to first pass if break adds are enabled
   if (addlinebreaks) {
-    while (curpos < (long)str.length() && (curpos = str.find_first_of("<>",curpos)) > -1) {
+    while (curpos < (long)str.length() && (curpos = str.find_first_of("<>",curpos)) >= 0) {
       cc = str.at(curpos);
 
       if (cc == '<' && curpos < (long)str.length()-3 && !str.compare(curpos,4,"<!--")) {
@@ -1198,14 +1198,14 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           bool isclosingtag = (curpos > 0 && str.at(curpos-1) == '/');
           int nexwchar_t = str.find_first_not_of(" \t",curpos+1);
           int deltapos = nexwchar_t-curpos;
-          if (nexwchar_t > -1 &&
+          if (nexwchar_t >= 0 &&
               str.at(nexwchar_t) == '<' &&
               curpos < (long)str.length()-(deltapos+1)) {
             // we compare previous and next tags; if they are same, we don't add line break
             long startprev = str.rfind("<",curpos);
             long endnext = str.find(">",nexwchar_t);
 
-            if (startprev > -1 && endnext > -1 &&
+            if (startprev >= 0 && endnext >= 0 &&
                 curpos > startprev &&
                 endnext > nexwchar_t) {
               int tagend = str.find_first_of(" />",startprev+1);
@@ -1228,14 +1228,14 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
       ++curpos;           // go to next char
     }
   /*
-    while (curpos < str.length()-2 && (curpos = str.find("><",curpos)) > -1)
+    while (curpos < str.length()-2 && (curpos = str.find("><",curpos)) >= 0)
     {
       // we compare previous and next tags; if they are same, we don't add line break
       long startprev = str.rfind("<",curpos);
       long endnext = str.find(">",curpos+1);
     
-      if (startprev > -1 &&
-          endnext > -1 &&
+      if (startprev >= 0 &&
+          endnext >= 0 &&
           curpos > startprev &&
           endnext > curpos+1 &&
           strcmp(str.substr(startprev+1,curpos-startprev-1).c_str(),
@@ -1251,7 +1251,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 
   // Proceed to reformatting (second pass)
   int prevspecchar = -1;
-  while (curpos < (long)str.length() && (curpos = str.find_first_of("<>\n\"",curpos)) > -1) {
+  while (curpos < (long)str.length() && (curpos = str.find_first_of("<>\n\"",curpos)) >= 0) {
     strlength = str.length();
     if (str.at(curpos) != '\n') {
       if (curpos < strlength-3 && !str.compare(curpos,4,"<!--")) in_comment = true;
@@ -1291,7 +1291,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
         int nexwchar_t = str.find_first_not_of(" \t",++curpos);
 
         bool skipformat = false;
-        if (!autoindenttext && nexwchar_t > -1) {
+        if (!autoindenttext && nexwchar_t >= 0) {
           cc = str.at(nexwchar_t);
           skipformat = (cc != '<' && cc != '\r' && cc != '\n');
         }
@@ -1380,9 +1380,9 @@ void linarizeXML() {
 
   std::string str(data);
 
-  unsigned int curpos = 0;
-  while ((curpos = str.find_first_of("\r\n", curpos)) > -1) {
-    unsigned int nexwchar_t = str.find_first_not_of("\r\n", curpos);
+  long curpos = 0;
+  while ((curpos = str.find_first_of("\r\n", curpos)) >= 0) {
+    long nexwchar_t = str.find_first_not_of("\r\n", curpos);
     str.erase(curpos, nexwchar_t-curpos);
 
     // on supprime aussi tous les espaces du début de ligne
@@ -1446,7 +1446,7 @@ void convertText2XML() {
   std::string str(data);
   long curpos = sellength;
 
-  while (curpos >= 0 && (curpos = str.rfind("&quot;", curpos)) > -1) {
+  while (curpos >= 0 && (curpos = str.rfind("&quot;", curpos)) >= 0) {
     if (curpos >= 0) {
       str.replace(curpos,6,"\"");
       sellength -= 5;
@@ -1454,7 +1454,7 @@ void convertText2XML() {
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("&lt;", curpos)) > -1) {
+  while (curpos >= 0 && (curpos = str.rfind("&lt;", curpos)) >= 0) {
     if (curpos >= 0) {
       str.replace(curpos,4,"<");
       sellength -= 3;
@@ -1462,7 +1462,7 @@ void convertText2XML() {
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("&gt;", curpos)) > -1) {
+  while (curpos >= 0 && (curpos = str.rfind("&gt;", curpos)) >= 0) {
     if (curpos >= 0) {
       str.replace(curpos,4,">");
       sellength -= 3;
@@ -1470,7 +1470,7 @@ void convertText2XML() {
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("&amp;", curpos)) > -1) {
+  while (curpos >= 0 && (curpos = str.rfind("&amp;", curpos)) >= 0) {
     if (curpos >= 0) {
       str.replace(curpos,5,"&");
       sellength -= 4;
@@ -1526,7 +1526,7 @@ void convertXML2Text() {
   std::string str(data);
   long curpos = sellength;
 
-  while (curpos >= 0 && (curpos = str.rfind("&", curpos)) > -1) {
+  while (curpos >= 0 && (curpos = str.rfind("&", curpos)) >= 0) {
     if (curpos >= 0) {
       str.replace(curpos,1,"&amp;");
       sellength += 4;
@@ -1534,7 +1534,7 @@ void convertXML2Text() {
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("<", curpos)) > -1) {
+  while (curpos >= 0 && (curpos = str.rfind("<", curpos)) >= 0) {
     if (curpos >= 0) {
       str.replace(curpos,1,"&lt;");
       sellength += 3;
@@ -1542,7 +1542,7 @@ void convertXML2Text() {
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind(">", curpos)) > -1) {
+  while (curpos >= 0 && (curpos = str.rfind(">", curpos)) >= 0) {
     if (curpos >= 0) {
       str.replace(curpos,1,"&gt;");
       sellength += 3;
@@ -1550,7 +1550,7 @@ void convertXML2Text() {
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("\"", curpos)) > -1) {
+  while (curpos >= 0 && (curpos = str.rfind("\"", curpos)) >= 0) {
     if (curpos >= 0) {
       str.replace(curpos,1,"&quot;");
       sellength += 5;
@@ -1582,7 +1582,7 @@ int validateSelectionForComment(std::string str, long sellength) {
   std::stack<int> checkstack;
   long curpos = 0;
   int errflag = 0;
-  while (curpos <= sellength && !errflag && (curpos = str.find_first_of("<-*", curpos)) > -1) {
+  while (curpos <= sellength && !errflag && (curpos = str.find_first_of("<-*", curpos)) >= 0) {
     if (curpos > sellength) break;
 
     if (!str.compare(curpos, 4, "<!--")) {
@@ -1664,7 +1664,7 @@ void commentSelection() {
   }
 
   long curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("<!{", curpos)) > -1) {
+  while (curpos >= 0 && (curpos = str.rfind("<!{", curpos)) >= 0) {
     if (curpos >= 0) {
       int endvalpos = str.find("}**", curpos);
       int endval = atoi(str.substr(curpos+3,endvalpos).c_str());
@@ -1676,7 +1676,7 @@ void commentSelection() {
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("**{", curpos)) > -1) {
+  while (curpos >= 0 && (curpos = str.rfind("**{", curpos)) >= 0) {
     if (curpos >= 0) {
       int endvalpos = str.find("}>", curpos);
       int endval = atoi(str.substr(curpos+3,endvalpos).c_str());
@@ -1689,7 +1689,7 @@ void commentSelection() {
   }
 
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("<!--", curpos)) > -1) {
+  while (curpos >= 0 && (curpos = str.rfind("<!--", curpos)) >= 0) {
     if (curpos >= 0) {
       str.replace(curpos,4,"<!{1}**");
       sellength += 3;
@@ -1697,7 +1697,7 @@ void commentSelection() {
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("-->", curpos)) > -1) {
+  while (curpos >= 0 && (curpos = str.rfind("-->", curpos)) >= 0) {
     if (curpos >= 0) {
       str.replace(curpos,3,"**{1}>");
       sellength += 3;
@@ -1767,7 +1767,7 @@ void uncommentSelection() {
 
   // Proceed to uncomment
   long curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("-->", curpos)) > -1) {
+  while (curpos >= 0 && (curpos = str.rfind("-->", curpos)) >= 0) {
     if (curpos >= 0) {
       str.erase(curpos,3);
       sellength -= 3;
@@ -1775,7 +1775,7 @@ void uncommentSelection() {
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("<!--", curpos)) > -1) {
+  while (curpos >= 0 && (curpos = str.rfind("<!--", curpos)) >= 0) {
     if (curpos >= 0) {
       str.erase(curpos,4);
       sellength -= 4;
@@ -1784,7 +1784,7 @@ void uncommentSelection() {
   }
 
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("<!{", curpos)) > -1) {
+  while (curpos >= 0 && (curpos = str.rfind("<!{", curpos)) >= 0) {
     if (curpos >= 0) {
       int endvalpos = str.find("}**", curpos);
       int endval = atoi(str.substr(curpos+3,endvalpos).c_str());
@@ -1801,7 +1801,7 @@ void uncommentSelection() {
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("**{", curpos)) > -1) {
+  while (curpos >= 0 && (curpos = str.rfind("**{", curpos)) >= 0) {
     if (curpos >= 0) {
       int endvalpos = str.find("}>", curpos);
       int endval = atoi(str.substr(curpos+3,endvalpos).c_str());

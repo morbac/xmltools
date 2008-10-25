@@ -72,6 +72,14 @@ void Report::_printf_inf(const wchar_t* s, ...) {
   ::MessageBox(nppData._nppHandle, buffer, L"XML Tools plugin", MB_OK | MB_ICONINFORMATION);
 }
 
+void Report::_printf_inf(const std::wstring& ws) {
+  ::MessageBox(nppData._nppHandle, ws.c_str(), L"XML Tools plugin", MB_OK | MB_ICONINFORMATION);
+}
+
+void Report::_printf_inf(const std::string& s) {
+  ::MessageBox(nppData._nppHandle, Report::widen(s).c_str(), L"XML Tools plugin", MB_OK | MB_ICONINFORMATION);
+}
+
 void Report::_fprintf_inf(void * ctx, const wchar_t* s, ...) {
   if (!s || !wcslen(s)) return;
   

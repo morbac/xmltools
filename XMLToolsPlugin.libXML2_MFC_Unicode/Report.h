@@ -19,6 +19,8 @@ public:
   
   void static _printf_err(const wchar_t* s, ...);
   void static _printf_inf(const wchar_t* s, ...);
+  void static _printf_inf(const std::wstring& ws);
+  void static _printf_inf(const std::string& s);
   
   void static _fprintf_err(void * ctx, const wchar_t* s, ...);
   void static _fprintf_inf(void * ctx, const wchar_t* s, ...);
