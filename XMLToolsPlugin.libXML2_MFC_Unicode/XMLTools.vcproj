@@ -97,7 +97,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="shlwapi.lib libXML2.lib libxslt.lib"
+				AdditionalDependencies="shlwapi.lib"
 				OutputFile="C:\Documents and Settings\Nicolas\Bureau\npp.v5.1.bin.RC\unicode\plugins\XMLTools.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"

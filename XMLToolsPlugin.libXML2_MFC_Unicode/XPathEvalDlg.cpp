@@ -41,6 +41,7 @@ BEGIN_MESSAGE_MAP(CXPathEvalDlg, CDialog)
   ON_BN_CLICKED(IDC_BTN_EVALUATE, OnBtnEvaluate)
 	ON_WM_SIZE()
 	//}}AFX_MSG_MAP
+  ON_EN_CHANGE(IDC_EDIT_EXPRESSION, OnEnChangeEditExpression)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -55,7 +56,9 @@ void CXPathEvalDlg::OnBtnEvaluate() {
   if (!m_sExpression.GetLength()) {
     Report::_printf_err(L"Empty expression; evaluation aborted.");
   } else {
-    execute_xpath_expression(reinterpret_cast<const unsigned char*>((LPCTSTR)m_sExpression), NULL);
+    std::wstring wexpr(m_sExpression);
+    std::string expr = Report::narrow(wexpr);
+    execute_xpath_expression(reinterpret_cast<const xmlChar*>(expr.c_str()), NULL);
   }
 }
 
@@ -400,4 +403,14 @@ void CXPathEvalDlg::OnSize(UINT nType, int cx, int cy) {
                         cx-2*border,
                         cy-2*border-inheight-wndspace);
   }
+}
+
+void CXPathEvalDlg::OnEnChangeEditExpression()
+{
+  // TODO:  If this is a RICHEDIT control, the control will not
+  // send this notification unless you override the CDialog::OnInitDialog()
+  // function and call CRichEditCtrl().SetEventMask()
+  // with the ENM_CHANGE flag ORed into the mask.
+
+  // TODO:  Add your control notification handler code here
 }

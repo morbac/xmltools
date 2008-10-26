@@ -14,8 +14,8 @@
 
 #include "resource.h"    // main symbols
 
-#define XMLTOOLS_ABOUTINFO "XML Tools Plugin\r\nversion 2.3.1 r639"
-#define XMLTOOLS_DLLNAME   TEXT("XMLTools.dll")
+#define XMLTOOLS_ABOUTINFO "XML Tools Plugin\r\nversion 2.3.1 r664"
+#define XMLTOOLS_DLLNAME   L"XMLTools.dll"
 
 /////////////////////////////////////////////////////////////////////////////
 // CXMLToolsApp
