@@ -111,7 +111,7 @@ int getNextParam(std::wstring str, int startpos, std::wstring *key, std::wstring
   return valendpos;
 }
 
-void cleanParams(wchar_t* params[], int nparams) {
+void cleanParams(char* params[], int nparams) {
   for (int i = 0; i < nparams; ++i) {
     if (params[i]) delete[] params[i];
   }
@@ -123,7 +123,7 @@ void CXSLTransformDlg::OnBtnTransform() {
 
   // proceed to transformation
   int i;
-  wchar_t *params[MAX_PARAMS + 1];
+  char *params[MAX_PARAMS + 1];
   int nbparams = 0;
   xsltStylesheetPtr cur = NULL;
   xmlDocPtr doc, res;
@@ -163,11 +163,11 @@ void CXSLTransformDlg::OnBtnTransform() {
 
     // param1=123 param2='abc' param3='xyz'
 
-    params[nbparams] = new wchar_t[1+key.length()];
+    params[nbparams] = new char[1+key.length()];
     Report::strcpy(params[nbparams], key.c_str());
     ++nbparams;
 
-    params[nbparams] = new wchar_t[1+val.length()];
+    params[nbparams] = new char[1+val.length()];
     Report::strcpy(params[nbparams], val.c_str());
     ++nbparams;
 
@@ -183,7 +183,9 @@ void CXSLTransformDlg::OnBtnTransform() {
   pXmlSubstituteEntitiesDefault(1);
   //xmlLoadExtDtdDefaultValue = 1;
 
-  cur = pXsltParseStylesheetFile(reinterpret_cast<const unsigned char*>((LPCTSTR)m_sXSLTFile));
+  std::wstring wfile(m_sXSLTFile);
+  std::string file = Report::narrow(wfile);
+  cur = pXsltParseStylesheetFile(reinterpret_cast<const xmlChar*>(file.c_str()));
   doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
   res = pXsltApplyStylesheet(cur, doc, (const char**)params);
   

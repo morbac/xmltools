@@ -1386,7 +1386,7 @@ void linarizeXML() {
     str.erase(curpos, nexwchar_t-curpos);
 
     // on supprime aussi tous les espaces du début de ligne
-    if (curpos < str.length()) {
+    if (curpos >= 0 && (unsigned)curpos < str.length()) {
       nexwchar_t = str.find_first_not_of(" \t", curpos);
       if (nexwchar_t >= curpos) {
         // et si le 1e caractère de la ligne suivante est différent de '<' et que
@@ -1429,7 +1429,7 @@ void convertText2XML() {
   yOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
 
   int selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-  int selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0)-1;
+  int selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
   int sellength = selend-selstart;
 
   if (selend <= selstart) {
@@ -1448,32 +1448,32 @@ void convertText2XML() {
 
   while (curpos >= 0 && (curpos = str.rfind("&quot;", curpos)) >= 0) {
     if (curpos >= 0) {
-      str.replace(curpos,6,"\"");
-      sellength -= 5;
+      str.replace(curpos, strlen("&quot;"), "\"");
+      sellength = sellength - strlen("&quot;") + strlen("\"");
     }
     --curpos;
   }
   curpos = sellength;
   while (curpos >= 0 && (curpos = str.rfind("&lt;", curpos)) >= 0) {
     if (curpos >= 0) {
-      str.replace(curpos,4,"<");
-      sellength -= 3;
+      str.replace(curpos, strlen("&lt;"), "<");
+      sellength = sellength - strlen("&lt;") + strlen("<");
     }
     --curpos;
   }
   curpos = sellength;
   while (curpos >= 0 && (curpos = str.rfind("&gt;", curpos)) >= 0) {
     if (curpos >= 0) {
-      str.replace(curpos,4,">");
-      sellength -= 3;
+      str.replace(curpos, strlen("&gt;"), ">");
+      sellength = sellength - strlen("&gt;") + strlen(">");
     }
     --curpos;
   }
   curpos = sellength;
   while (curpos >= 0 && (curpos = str.rfind("&amp;", curpos)) >= 0) {
     if (curpos >= 0) {
-      str.replace(curpos,5,"&");
-      sellength -= 4;
+      str.replace(curpos, strlen("&amp;"), "&");
+      sellength = sellength - strlen("&amp;") + strlen("&");
     }
     --curpos;
   }
@@ -1509,7 +1509,7 @@ void convertXML2Text() {
   yOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
 
   int selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-  int selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0)-1;
+  int selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
   int sellength = selend-selstart;
 
   if (selend <= selstart) {
@@ -1528,32 +1528,32 @@ void convertXML2Text() {
 
   while (curpos >= 0 && (curpos = str.rfind("&", curpos)) >= 0) {
     if (curpos >= 0) {
-      str.replace(curpos,1,"&amp;");
-      sellength += 4;
+      str.replace(curpos, strlen("&"), "&amp;");
+      sellength = sellength + strlen("&amp;") - strlen("&");
     }
     --curpos;
   }
   curpos = sellength;
   while (curpos >= 0 && (curpos = str.rfind("<", curpos)) >= 0) {
     if (curpos >= 0) {
-      str.replace(curpos,1,"&lt;");
-      sellength += 3;
+      str.replace(curpos, strlen("<"), "&lt;");
+      sellength = sellength + strlen("&lt;") - strlen("<");
     }
     --curpos;
   }
   curpos = sellength;
   while (curpos >= 0 && (curpos = str.rfind(">", curpos)) >= 0) {
     if (curpos >= 0) {
-      str.replace(curpos,1,"&gt;");
-      sellength += 3;
+      str.replace(curpos, strlen(">"), "&gt;");
+      sellength = sellength + strlen("&gt;") - strlen(">");
     }
     --curpos;
   }
   curpos = sellength;
   while (curpos >= 0 && (curpos = str.rfind("\"", curpos)) >= 0) {
     if (curpos >= 0) {
-      str.replace(curpos,1,"&quot;");
-      sellength += 5;
+      str.replace(curpos, strlen("\""), "&quot;");
+      sellength = sellength + strlen("&quot;") - strlen("\"");
     }
     --curpos;
   }
