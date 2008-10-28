@@ -484,7 +484,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       }
       break;
     }
-    case NPPN_FILEOPENED: {
+    case NPPN_BUFFERACTIVATED: {
       // si le fichier n'a pas de type défini et qu'il commence par "<?xml ", on lui attribue le type L_XML
       LangType docType = L_EXTERNAL;
       ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
