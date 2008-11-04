@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by XMLTools.rc
 //
 #define IDD_INPUTDLG                    2000
@@ -24,6 +24,8 @@
 #define IDC_BTN_TRANSFORM               2014
 #define IDC_LIST1                       2015
 #define IDC_EXTLIBS_URL                 2018
+#define IDC_EXTLIBS_URL4                2019
+#define IDC_EXTLIBS_URL2                2019
 
 // Next default values for new objects
 // 

@@ -26,10 +26,10 @@ public:
   void static _fprintf_inf(void * ctx, const wchar_t* s, ...);
 
   void static clearLog();
-  CString static getLog();
-  void static registerError(void * ctx, const wchar_t* s, ...);
-  void static registerWarn(void * ctx, const wchar_t* s, ...);
-  void static registerMessage(void * ctx, const wchar_t* s, ...);
+  std::wstring static getLog();
+  void static registerError(void * ctx, const char* s, ...);
+  void static registerWarn(void * ctx, const char* s, ...);
+  void static registerMessage(void * ctx, const char* s, ...);
 
   #define _printf _printf_inf
 

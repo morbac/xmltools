@@ -13,6 +13,7 @@
 // CHowtoUseDlg dialog
 
 #define EXTLIBS_URL "http://sourceforge.net/project/showfiles.php?group_id=189927&package_id=264094&release_id=607029"
+#define EXTLIBS_URL2 "http://www.zlatkovic.com/pub/libxml/"
 
 class CHowtoUseDlg : public CDialog
 {
@@ -37,12 +38,15 @@ public:
 // Implementation
 protected:
   CHyperLink m_wndExtlibsURL;
+  CHyperLink m_wndExtlibsURL2;
 
 	// Generated message map functions
 	//{{AFX_MSG(CHowtoUseDlg)
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+public:
+  afx_msg void OnStnClickedExtlibsUrl2();
 };
 
 //{{AFX_INSERT_LOCATION}}

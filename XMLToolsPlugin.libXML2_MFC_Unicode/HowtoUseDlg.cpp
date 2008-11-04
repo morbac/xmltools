@@ -30,6 +30,7 @@ void CHowtoUseDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CHowtoUseDlg)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
     DDX_Control(pDX, IDC_EXTLIBS_URL, m_wndExtlibsURL);
+    DDX_Control(pDX, IDC_EXTLIBS_URL2, m_wndExtlibsURL2);
 	//}}AFX_DATA_MAP
 }
 
@@ -47,6 +48,7 @@ BOOL CHowtoUseDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 	
   m_wndExtlibsURL.SetURL(EXTLIBS_URL);
+  m_wndExtlibsURL2.SetURL(EXTLIBS_URL2);
   
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE

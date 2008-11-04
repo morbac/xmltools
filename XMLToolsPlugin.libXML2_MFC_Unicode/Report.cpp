@@ -16,7 +16,7 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CString currentLog;
+std::wstring currentLog;
 
 Report::Report() {
 }
@@ -129,67 +129,67 @@ CString Report::cstring(const wchar_t* s, ...) {
 }
 
 void Report::clearLog() {
-  currentLog.Empty();
+  currentLog.clear();
 }
 
-CString Report::getLog() {
+std::wstring Report::getLog() {
   return currentLog;
 }
 
-void Report::registerError(void * ctx, const wchar_t* s, ...) {
-  if (!s || !wcslen(s)) return;
+void Report::registerError(void * ctx, const char* s, ...) {
+  if (!s || !strlen(s)) return;
   
   va_list msg;
   const int MAX_BUFFER = 1024;
-  wchar_t buffer[MAX_BUFFER] = { '\0' };
+  char buffer[MAX_BUFFER] = { '\0' };
   
   va_start(msg, s);
-  _vsntprintf(buffer, MAX_BUFFER - 1, s, msg);
+  vsprintf(buffer + strlen(buffer), s, msg);
   va_end(msg);
   
-  if (wcslen(buffer) <= 0) return;
+  if (strlen(buffer) <= 0) return;
   
-  currentLog += "ERROR: ";
-  currentLog += buffer;
-  currentLog = currentLog.Mid(0, currentLog.GetLength()-1);
-  currentLog += "\r\n";
+  currentLog += L"ERROR: ";
+  currentLog += Report::widen(buffer).c_str();
+  currentLog = currentLog.substr(0, currentLog.length()-1);
+  currentLog += L"\r\n";
 }
 
-void Report::registerWarn(void * ctx, const wchar_t* s, ...) {
-  if (!s || !wcslen(s)) return;
+void Report::registerWarn(void * ctx, const char* s, ...) {
+  if (!s || !strlen(s)) return;
   
   va_list msg;
   const int MAX_BUFFER = 1024;
-  wchar_t buffer[MAX_BUFFER] = { '\0' };
+  char buffer[MAX_BUFFER] = { '\0' };
   
   va_start(msg, s);
-  _vsntprintf(buffer, MAX_BUFFER - 1, s, msg);
+  vsprintf(buffer + strlen(buffer), s, msg);
   va_end(msg);
   
-  if (wcslen(buffer) <= 0) return;
+  if (strlen(buffer) <= 0) return;
   
-  currentLog += "WARN: ";
-  currentLog += buffer;
-  currentLog = currentLog.Mid(0, currentLog.GetLength()-1);
-  currentLog += "\r\n";
+  currentLog += L"WARN: ";
+  currentLog += Report::widen(buffer).c_str();
+  currentLog = currentLog.substr(0, currentLog.length()-1);
+  currentLog += L"\r\n";
 }
 
-void Report::registerMessage(void * ctx, const wchar_t* s, ...) {
-  if (!s || !wcslen(s)) return;
+void Report::registerMessage(void * ctx, const char* s, ...) {
+  if (!s || !strlen(s)) return;
   
   va_list msg;
   const int MAX_BUFFER = 1024;
-  wchar_t buffer[MAX_BUFFER] = { '\0' };
+  char buffer[MAX_BUFFER] = { '\0' };
   
   va_start(msg, s);
-  _vsntprintf(buffer, MAX_BUFFER - 1, s, msg);
+  vsprintf(buffer + strlen(buffer), s, msg);
   va_end(msg);
   
-  if (wcslen(buffer) <= 0) return;
+  if (strlen(buffer) <= 0) return;
   
-  currentLog += buffer;
-  currentLog = currentLog.Mid(0, currentLog.GetLength()-1);
-  currentLog += "\r\n";
+  currentLog += Report::widen(buffer).c_str();
+  currentLog = currentLog.substr(0, currentLog.length()-1);
+  currentLog += L"\r\n";
 }
 
 void Report::strcpy(char* dest, const wchar_t* src) {

@@ -91,6 +91,8 @@ bool doCheckXML = false, doValidation = false, doCloseTag = false, doAutoIndent 
 int menuitemCheckXML = -1, menuitemValidation = -1, menuitemCloseTag = -1, menuitemAutoIndent = -1, menuitemAttrAutoComplete = -1, menuitemAutoXMLType = -1;
 std::string lastXMLSchema("");
 
+bool enableBufferActivated = false;
+
 // Here're the declaration my functions ///////////////////////////////////////
 void insertXMLCheckTag();
 void autoXMLCheck();
@@ -484,12 +486,19 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       }
       break;
     }
+    case NPPN_FILEOPENED: {
+      enableBufferActivated = true;
+      break;
+    }
     case NPPN_BUFFERACTIVATED: {
-      // si le fichier n'a pas de type défini et qu'il commence par "<?xml ", on lui attribue le type L_XML
-      LangType docType = L_EXTERNAL;
-      ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
-      //Report::_printf_inf("%s", getLangType(docType));
-      if (doAutoXMLType && docType == L_TXT) setAutoXMLType();
+      if (enableBufferActivated) {
+        enableBufferActivated = false;
+        // si le fichier n'a pas de type défini et qu'il commence par "<?xml ", on lui attribue le type L_XML
+        LangType docType = L_EXTERNAL;
+        ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
+        //Report::_printf_inf("%s", getLangType(docType));
+        if (doAutoXMLType && docType == L_TXT) setAutoXMLType();
+      }
       break;
     }
   }
@@ -746,7 +755,7 @@ void XMLValidation(int informIfNoError) {
     // 2.2. Si l'attribut est absent, on demande à l'utilisateur de fournir le chemin du fichier XSD
     if (xml_schema.length() == 0 && !dtdValidation) {
       CSelectFileDlg* dlg = new CSelectFileDlg();
-      dlg->m_sSelectedFilename = lastXMLSchema.c_str();
+      dlg->m_sSelectedFilename = Report::widen(lastXMLSchema).c_str();
 
       CString rootSample = "<";
       rootSample += reinterpret_cast<const char*>(rootnode->name);
@@ -755,7 +764,7 @@ void XMLValidation(int informIfNoError) {
 
       dlg->m_sRootElementSample = rootSample;
       if (dlg->DoModal() == IDOK) {
-        xml_schema = std::string(reinterpret_cast<const char*>((LPCTSTR)dlg->m_sSelectedFilename));
+        xml_schema = Report::narrow(std::wstring(dlg->m_sSelectedFilename).c_str());
       }
     }
 
@@ -777,7 +786,7 @@ void XMLValidation(int informIfNoError) {
           } else {
             // Traitement des erreurs de validation
             Report::clearLog();
-            Report::registerMessage(NULL, L"Validation of current file using XML schema:\r\n\r\n");
+            Report::registerMessage(NULL, "Validation of current file using XML schema:\r\n\r\n");
             pXmlSchemaSetValidErrors(vctxt, (xmlSchemaValidityErrorFunc) Report::registerError, (xmlSchemaValidityWarningFunc) Report::registerWarn, stderr);
 
             // Validation
@@ -785,7 +794,7 @@ void XMLValidation(int informIfNoError) {
               if (informIfNoError) Report::_printf_inf(L"XML Schema validation:\r\nXML is valid.");
             } else {
               CMessageDlg* msgdlg = new CMessageDlg();
-              msgdlg->m_sMessage = Report::getLog();
+              msgdlg->m_sMessage = Report::getLog().c_str();
               msgdlg->DoModal();
             }
           }
@@ -805,7 +814,7 @@ void XMLValidation(int informIfNoError) {
       if ((vctxt = pXmlNewValidCtxt())) {
         // Affichage des erreurs de validation
         Report::clearLog();
-        Report::registerMessage(NULL, L"Validation of current file using DTD:\r\n\r\n");
+        Report::registerMessage(NULL, "Validation of current file using DTD:\r\n\r\n");
         vctxt->userData = (void *) stderr;
         vctxt->error = (xmlValidityErrorFunc) Report::registerError;
         vctxt->warning = (xmlValidityWarningFunc) Report::registerWarn;
@@ -815,7 +824,7 @@ void XMLValidation(int informIfNoError) {
           if (informIfNoError) Report::_printf_inf(L"DTD validation:\r\nXML is valid.");
         } else {
           CMessageDlg* msgdlg = new CMessageDlg();
-          msgdlg->m_sMessage = Report::getLog();
+          msgdlg->m_sMessage = Report::getLog().c_str();
           msgdlg->DoModal();
         }
         // Libération de la mémoire
