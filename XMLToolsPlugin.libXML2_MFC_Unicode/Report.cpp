@@ -112,6 +112,23 @@ std::wstring Report::str_format(const wchar_t* s, ...) {
   return std::wstring(buffer);
 }
 
+std::string Report::str_format(const char* s, ...) {
+  if (!s || !strlen(s)) return "";
+
+  va_list msg;
+  const int MAX_BUFFER = 1024;
+  char buffer[MAX_BUFFER] = { '\0' };
+  
+  va_start(msg, s);
+  //vsnprintf(buffer + strlen(buffer), s, msg);
+  vsnprintf(buffer, MAX_BUFFER - 1, s, msg);
+  va_end(msg);
+  
+  if (strlen(buffer) <= 0) return "";
+
+  return std::string(buffer);
+}
+
 CString Report::cstring(const wchar_t* s, ...) {
   if (!s || !wcslen(s)) return "";
 
@@ -221,8 +238,36 @@ std::wstring Report::widen(const char* s) {
   return res;
 }
 
+std::wstring Report::widen(const xmlChar* s) {
+  int len = _mbslen(s);
+  std::wstring res(len, L' '); // Make room for characters
+  std::copy(s, s+len, res.begin());
+  return res;
+}
+
 std::wstring Report::widen(const std::string& s) {
   std::wstring res(s.length(), L' '); // Make room for characters
   std::copy(s.begin(), s.end(), res.begin());
   return res;
+}
+
+// TODO: Optimiser les fonctions suivantes
+std::string Report::trimleft(const std::string& s) {
+  if (s.empty()) return s;
+  int i = 0, l = s.length();
+  while (isspace(s.at(i)) && i < l) ++i;
+  if (i >= l) return "";
+  else return s.substr(i);
+}
+
+std::string Report::trimright(const std::string& s) {
+  if (s.empty()) return s;
+  int i = s.length()-1;
+  while (isspace(s.at(i)) && i > 0) --i;
+  if (i <= 0) return "";
+  else return s.substr(0, i);
+}
+
+std::string Report::trim(const std::string& s) {
+   return Report::trimleft(Report::trimright(s));
 }
