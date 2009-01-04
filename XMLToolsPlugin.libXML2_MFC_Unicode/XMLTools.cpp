@@ -627,7 +627,7 @@ void performXMLCheck(int informIfNoError) {
       if (err->line > 0)
         ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
 
-      Report::_printf_err(L"XML Parsing error at line %d: \r\n:s", err->message);
+      Report::_printf_err(L"XML Parsing error at line %d: \r\n:s", err->line, Report::widen(err->message).c_str());
     } else {
       Report::_printf_err(L"Failed to parse document");
     }
@@ -678,7 +678,7 @@ void XMLValidation(int informIfNoError) {
   tr.chrg.cpMin = 0;
   tr.chrg.cpMax = currentLength;
   tr.lpstrText = data;
-  
+
   ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
   
   xmlDocPtr doc;
@@ -698,10 +698,10 @@ void XMLValidation(int informIfNoError) {
     err = pXmlGetLastError();
     
     if (err != NULL) {
-      if (err->line > 0)
+      if (err->line > 0) {
         ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
-      
-      Report::_printf_err(L"XML Parsing error at line %d: \r\n%s", err->message);
+      }
+      Report::_printf_err(L"XML Parsing error at line %d: \r\n%s", err->line, Report::widen(err->message).c_str());
     } else {
       Report::_printf_err(L"Failed to parse document");
     }
@@ -739,7 +739,7 @@ void XMLValidation(int informIfNoError) {
         doFreeDTDPtr = true;
 
         if (dtdPtr == NULL) {
-          Report::_printf_err(L"Unable to load the DTD\r\n%s",dtd_filename.c_str());
+          Report::_printf_err(L"Unable to load the DTD\r\n%s", Report::widen(dtd_filename).c_str());
           abortValidation = true;
         } else {
           dtdValidation = true;
