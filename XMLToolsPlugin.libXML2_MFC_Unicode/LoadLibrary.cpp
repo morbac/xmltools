@@ -23,6 +23,8 @@ void                   (*pXmlFreeDoc)(xmlDocPtr cur);
 
 xmlDocPtr              (*pXmlParseMemory)(const char * buffer, int size);
 xmlDocPtr              (*pXmlReadMemory)(const char *buffer, int size, const char *URL, const char *encoding, int options);
+int	                   (*pXmlSaveFormatFile)(const char * filename, xmlDocPtr cur, int format);
+void	                 (*pXmlDocDumpFormatMemory)(xmlDocPtr cur, xmlChar ** mem, int * size, int format);
 xmlNodePtr             (*pXmlDocGetRootElement)(xmlDocPtr doc);
 xmlDocPtr              (*pXmlParseFile)(const char * filename);
 void                   (*pXmlInitParser)(void);
@@ -55,6 +57,9 @@ xmlChar *              (*pXmlGetProp)(xmlNodePtr node, const xmlChar *name);
 int                    (*pXmlSubstituteEntitiesDefault)(int val);
 xmlChar *              (*pXmlStrdup)(const xmlChar *cur);
 const xmlChar *        (*pXmlStrchr)(const xmlChar *str, xmlChar val);
+
+xmlGlobalStatePtr      (*pXmlGetGlobalState)(void);
+int                    (*pXmlKeepBlanksDefault)(int val);
 
 //-------------------------------------------------------------------------------------------------
 
@@ -92,6 +97,8 @@ int loadLibXML(wchar_t* nppPath) {
 
   pXmlParseMemory =               (xmlDocPtr (__cdecl *)(const char *, int))GetProcAddress(hInstLibXML, "xmlParseMemory");
   pXmlReadMemory =                (xmlDocPtr (__cdecl *)(const char *, int, const char *, const char *, int))GetProcAddress(hInstLibXML, "xmlReadMemory");
+  pXmlSaveFormatFile =            (int (__cdecl *)(const char *, xmlDocPtr, int))GetProcAddress(hInstLibXML, "xmlSaveFormatFile");
+  pXmlDocDumpFormatMemory =       (void	(__cdecl *)(xmlDocPtr, xmlChar **, int *, int))GetProcAddress(hInstLibXML, "xmlDocDumpFormatMemory");
   pXmlDocGetRootElement =         (xmlNodePtr (__cdecl *)(xmlDocPtr))GetProcAddress(hInstLibXML, "xmlDocGetRootElement");
   pXmlParseFile =                 (xmlDocPtr (__cdecl *)(const char *))GetProcAddress(hInstLibXML, "xmlParseFile");
   pXmlInitParser =                (void (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlInitParser");
@@ -124,6 +131,9 @@ int loadLibXML(wchar_t* nppPath) {
   pXmlSubstituteEntitiesDefault = (int (__cdecl *)(int))GetProcAddress(hInstLibXML, "xmlSubstituteEntitiesDefault");
   pXmlStrdup =                    (xmlChar * (__cdecl *)(const xmlChar *))GetProcAddress(hInstLibXML, "xmlStrdup");
   pXmlStrchr =                    (const xmlChar * (__cdecl *)(const xmlChar *, xmlChar))GetProcAddress(hInstLibXML, "xmlStrchr");
+
+  pXmlGetGlobalState =            (xmlGlobalStatePtr (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlGetGlobalState");
+  pXmlKeepBlanksDefault =         (int (__cdecl *)(int))GetProcAddress(hInstLibXML, "xmlKeepBlanksDefault");
 
   //-----------------------------------------------------------------------------------------------
 

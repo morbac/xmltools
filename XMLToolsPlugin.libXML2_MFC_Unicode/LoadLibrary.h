@@ -28,6 +28,8 @@ extern xmlDocPtr (*pXmlReadMemory)(const char *buffer, int size, const char *URL
 
 extern void (*pXmlFree)(void *mem);
 extern xmlDocPtr (*pXmlParseFile)(const char * filename);
+extern int (*pXmlSaveFormatFile)(const char * filename, xmlDocPtr cur, int format);
+extern void (*pXmlDocDumpFormatMemory)(xmlDocPtr cur, xmlChar ** mem, int * size, int format);
 extern void (*pXmlFreeDoc)(xmlDocPtr cur);
 extern void (*pXmlInitParser)(void);
 extern void (*pXmlCleanupParser)(void);
@@ -57,6 +59,8 @@ extern const xmlChar * (*pXmlStrchr)(const xmlChar *str, xmlChar val);
 extern int (*pXmlXPathRegisterNs)(xmlXPathContextPtr ctxt, const xmlChar *prefix, const xmlChar *ns_uri);
 extern int (*pXmlValidateDtd)(xmlValidCtxtPtr ctxt, xmlDocPtr doc, xmlDtdPtr dtd);
 extern int (*pXmlSchemaValidateDoc)(xmlSchemaValidCtxtPtr ctxt, xmlDocPtr instance);
+extern xmlGlobalStatePtr (*pXmlGetGlobalState)(void);
+extern int (*pXmlKeepBlanksDefault)(int val);
 
 //-------------------------------------------------------------------------------------------------
 

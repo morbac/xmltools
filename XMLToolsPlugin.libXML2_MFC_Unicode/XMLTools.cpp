@@ -31,6 +31,8 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xmlschemas.h>
+#include <libxml/globals.h>
+
 
 //#define __XMLTOOLS_DEBUG__
 
@@ -73,7 +75,7 @@ const wchar_t PLUGIN_NAME[] = L"XML Tools";
 const wchar_t localConfFile[] = L"doLocalConf.xml";
 
 // The number of functionality
-const int TOTAL_FUNCS = 27;
+const int TOTAL_FUNCS = 28;
 int nbFunc = TOTAL_FUNCS;
 
 NppData nppData;
@@ -117,6 +119,7 @@ void insertAutoXMLType();
 void prettyPrintXML();
 void prettyPrintXMLBreaks();
 void prettyPrintText();
+void prettyPrintLibXML();
 void linarizeXML();
 
 void getCurrentXPath();
@@ -320,6 +323,10 @@ CXMLToolsApp::CXMLToolsApp() {
   
     Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (Text indent)");
     funcItem[menuentry]._pFunc = prettyPrintText;
+    ++menuentry;
+  
+    Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (libXML)");
+    funcItem[menuentry]._pFunc = prettyPrintLibXML;
     ++menuentry;
   
     Report::strcpy(funcItem[menuentry]._itemName, L"Linarize XML");
@@ -1361,6 +1368,82 @@ void prettyPrintText() {
     Report::_printf_inf("prettyPrintText()");
   #endif
   prettyPrint(true, false);
+}
+
+void prettyPrintLibXML() {
+#ifdef __XMLTOOLS_DEBUG__
+    Report::_printf_inf("prettyPrint()");
+  #endif
+  int currentEdit, currentLength, isReadOnly, xOffset, yOffset;
+  ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
+  HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
+
+  isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
+  if (isReadOnly) return;
+  
+  xOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETXOFFSET, 0, 0);
+  yOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
+
+  currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+
+  char *data = new char[currentLength+1];
+  if (!data) return;  // allocation error, abort check
+  memset(data, '\0', currentLength+1);
+
+  TextRange tr;
+  tr.chrg.cpMin = 0;
+  tr.chrg.cpMax = currentLength;
+  tr.lpstrText = data;
+
+  ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
+
+  int tabwidth = ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
+  int usetabs = ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
+  if (tabwidth <= 0) tabwidth = 4;
+
+  xmlDocPtr doc;
+
+  doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
+  if (doc == NULL) {
+    Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
+    delete [] data;
+    return;
+  }
+
+
+  xmlChar *mem;
+  int numbytes;
+  xmlGlobalStatePtr gs;
+  gs = pXmlGetGlobalState();
+  pXmlKeepBlanksDefault(0);
+  //gs.xmlIndentTreeOutput = 1;
+
+  /*
+      ops->indent = 1;
+    ops->indent_tab = 0;
+    ops->indent_spaces = 2;
+    ops->omit_decl = 0;
+    ops->recovery = 0;
+    ops->dropdtd = 0;
+    ops->options = 0;
+
+  */
+  pXmlDocDumpFormatMemory(doc,&mem,&numbytes,1);
+
+  // .................................
+
+  // Send formated string to scintilla
+  ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(mem));
+
+  // Restore scrolling
+  ::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
+  ::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
+
+  pXmlFree(mem);
+  pXmlFreeDoc(doc);
+
+  tr.lpstrText = NULL;
+  delete [] data;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
