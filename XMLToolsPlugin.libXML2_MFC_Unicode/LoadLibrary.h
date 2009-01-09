@@ -61,6 +61,8 @@ extern int (*pXmlValidateDtd)(xmlValidCtxtPtr ctxt, xmlDocPtr doc, xmlDtdPtr dtd
 extern int (*pXmlSchemaValidateDoc)(xmlSchemaValidCtxtPtr ctxt, xmlDocPtr instance);
 extern xmlGlobalStatePtr (*pXmlGetGlobalState)(void);
 extern int (*pXmlKeepBlanksDefault)(int val);
+extern int (*pXmlThrDefIndentTreeOutput)(int v);
+extern const char * (*pXmlThrDefTreeIndentString)(const char * v);
 
 //-------------------------------------------------------------------------------------------------
 
@@ -69,6 +71,8 @@ extern int (*pXsltSaveResultToString)(xmlChar ** doc_txt_ptr, int * doc_txt_len,
 extern void (*pXsltFreeStylesheet)(xsltStylesheetPtr sheet);
 extern xmlDocPtr (*pXsltApplyStylesheet)(xsltStylesheetPtr style, xmlDocPtr doc, const char ** params);
 extern void (*pXsltCleanupGlobals)(void);
+extern void (*pXsltSetGenericErrorFunc)(void * ctx, xmlGenericErrorFunc handler);
+extern xsltTransformContextPtr(*pXsltNewTransformContext)(xsltStylesheetPtr style, xmlDocPtr doc);
 
 int loadLibXML(wchar_t* nppPath);
 

@@ -60,6 +60,8 @@ const xmlChar *        (*pXmlStrchr)(const xmlChar *str, xmlChar val);
 
 xmlGlobalStatePtr      (*pXmlGetGlobalState)(void);
 int                    (*pXmlKeepBlanksDefault)(int val);
+int                    (*pXmlThrDefIndentTreeOutput)(int v);
+const char *           (*pXmlThrDefTreeIndentString)(const char * v);
 
 //-------------------------------------------------------------------------------------------------
 
@@ -69,6 +71,8 @@ int                    (*pXsltSaveResultToString)(xmlChar ** doc_txt_ptr, int * 
 void                   (*pXsltFreeStylesheet)(xsltStylesheetPtr sheet);
 xmlDocPtr              (*pXsltApplyStylesheet)(xsltStylesheetPtr style, xmlDocPtr doc, const char ** params);
 void                   (*pXsltCleanupGlobals)(void);
+void                   (*pXsltSetGenericErrorFunc)(void * ctx, xmlGenericErrorFunc handler);
+xsltTransformContextPtr(*pXsltNewTransformContext)(xsltStylesheetPtr style, xmlDocPtr doc);
 
 //-------------------------------------------------------------------------------------------------
 
@@ -134,6 +138,8 @@ int loadLibXML(wchar_t* nppPath) {
 
   pXmlGetGlobalState =            (xmlGlobalStatePtr (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlGetGlobalState");
   pXmlKeepBlanksDefault =         (int (__cdecl *)(int))GetProcAddress(hInstLibXML, "xmlKeepBlanksDefault");
+  pXmlThrDefIndentTreeOutput =    (int (__cdecl *)(int))GetProcAddress(hInstLibXML, "xmlThrDefIndentTreeOutput");
+  pXmlThrDefTreeIndentString =    (const char * (__cdecl *)(const char *))GetProcAddress(hInstLibXML, "xmlThrDefTreeIndentString");
 
   //-----------------------------------------------------------------------------------------------
 
@@ -159,6 +165,8 @@ int loadLibXML(wchar_t* nppPath) {
   pXsltFreeStylesheet =           (void (__cdecl *)(xsltStylesheetPtr))GetProcAddress(hInstLibXSL, "xsltFreeStylesheet");
   pXsltApplyStylesheet =          (xmlDocPtr (__cdecl *)(xsltStylesheetPtr, xmlDocPtr, const char **))GetProcAddress(hInstLibXSL, "xsltApplyStylesheet");
   pXsltCleanupGlobals =           (void (__cdecl *)(void))GetProcAddress(hInstLibXSL, "xsltCleanupGlobals");
+  pXsltSetGenericErrorFunc =      (void (__cdecl *)(void *, xmlGenericErrorFunc))GetProcAddress(hInstLibXSL, "xsltSetGenericErrorFunc");
+  pXsltNewTransformContext =      (xsltTransformContextPtr (__cdecl *)(xsltStylesheetPtr, xmlDocPtr))GetProcAddress(hInstLibXSL, "xsltNewTransformContext");
   
   /* init */
   pXmlInitParser();

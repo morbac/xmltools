@@ -89,8 +89,8 @@ const wchar_t sectionName[] = L"XML Tools";
 
 // Declaration of functionality (FuncItem) Array
 FuncItem funcItem[TOTAL_FUNCS];
-bool doCheckXML = false, doValidation = false, doCloseTag = false, doAutoIndent = false, doAttrAutoComplete = false, doAutoXMLType = false;
-int menuitemCheckXML = -1, menuitemValidation = -1, menuitemCloseTag = -1, menuitemAutoIndent = -1, menuitemAttrAutoComplete = -1, menuitemAutoXMLType = -1;
+bool doCheckXML = false, doValidation = false, /*doPrettyPrint = false,*/ doCloseTag = false, doAutoIndent = false, doAttrAutoComplete = false, doAutoXMLType = false;
+int menuitemCheckXML = -1, menuitemValidation = -1, /*menuitemPrettyPrint = -1,*/ menuitemCloseTag = -1, menuitemAutoIndent = -1, menuitemAttrAutoComplete = -1, menuitemAutoXMLType = -1;
 std::string lastXMLSchema("");
 
 bool enableBufferActivated = false;
@@ -120,6 +120,7 @@ void prettyPrintXML();
 void prettyPrintXMLBreaks();
 void prettyPrintText();
 void prettyPrintLibXML();
+//void insertPrettyPrintTag();
 void linarizeXML();
 
 void getCurrentXPath();
@@ -325,9 +326,16 @@ CXMLToolsApp::CXMLToolsApp() {
     funcItem[menuentry]._pFunc = prettyPrintText;
     ++menuentry;
   
-    Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (libXML)");
+    Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (libXML) [experimental]");
     funcItem[menuentry]._pFunc = prettyPrintLibXML;
     ++menuentry;
+  
+    /*Report::strcpy(funcItem[menuentry]._itemName, L"Enable auto pretty print (libXML) [experimental]");
+    funcItem[menuentry]._pFunc = insertPrettyPrintTag;
+    funcItem[menuentry]._init2Check = doPrettyPrint = (::GetPrivateProfileInt(sectionName, L"doPrettyPrint", 0, iniFilePath) != 0);
+    doPrettyPrint = funcItem[menuentry]._init2Check;
+    menuitemPrettyPrint = menuentry;
+    ++menuentry;*/
   
     Report::strcpy(funcItem[menuentry]._itemName, L"Linarize XML");
     funcItem[menuentry]._pFunc = linarizeXML;
@@ -408,6 +416,7 @@ CXMLToolsApp::~CXMLToolsApp() {
 void savePluginParams() {
   funcItem[menuitemCheckXML]._init2Check = doCheckXML;
   funcItem[menuitemValidation]._init2Check = doValidation;
+  //funcItem[menuitemPrettyPrint]._init2Check = doPrettyPrint;
   funcItem[menuitemCloseTag]._init2Check = doCloseTag;
   //funcItem[menuitemAutoIndent]._init2Check = doAutoIndent;
   //funcItem[menuitemAttrAutoComplete]._init2Check = doAttrAutoComplete;
@@ -415,6 +424,7 @@ void savePluginParams() {
 
   ::WritePrivateProfileString(sectionName, L"doCheckXML", doCheckXML?L"1":L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"doValidation", doValidation?L"1":L"0", iniFilePath);
+  //::WritePrivateProfileString(sectionName, L"doPrettyPrint", doPrettyPrint?L"1":L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"doCloseTag", doCloseTag?L"1":L"0", iniFilePath);
   //::WritePrivateProfileString(sectionName, L"doAutoIndent", doAutoIndent?L"1":L"0", iniFilePath);
   //::WritePrivateProfileString(sectionName, L"doAttrAutoComplete", doAttrAutoComplete?L"1":L"0", iniFilePath);
@@ -465,6 +475,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       if (hMenu) {
         ::CheckMenuItem(hMenu, funcItem[menuitemCheckXML]._cmdID, MF_BYCOMMAND | (doCheckXML?MF_CHECKED:MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemValidation]._cmdID, MF_BYCOMMAND | (doValidation?MF_CHECKED:MF_UNCHECKED));
+        //::CheckMenuItem(hMenu, funcItem[menuitemPrettyPrint]._cmdID, MF_BYCOMMAND | (doPrettyPrint?MF_CHECKED:MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemCloseTag]._cmdID, MF_BYCOMMAND | (doCloseTag?MF_CHECKED:MF_UNCHECKED));
         //::CheckMenuItem(hMenu, funcItem[menuitemAutoIndent]._cmdID, MF_BYCOMMAND | (doAutoIndent?MF_CHECKED:MF_UNCHECKED));
         //::CheckMenuItem(hMenu, funcItem[menuitemAttrAutoComplete]._cmdID, MF_BYCOMMAND | (doAttrAutoComplete?MF_CHECKED:MF_UNCHECKED));
@@ -506,6 +517,13 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
         //Report::_printf_inf("%s", getLangType(docType));
         if (doAutoXMLType && docType == L_TXT) setAutoXMLType();
       }
+
+	  /*if (doPrettyPrint) {
+		LangType docType = L_EXTERNAL;
+        ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
+        //Report::_printf_inf("%s", getLangType(docType));
+        if (docType == L_XML) prettyPrintLibXML();
+	  }*/
       break;
     }
   }
@@ -535,6 +553,15 @@ void insertValidationTag() {
   ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemValidation]._cmdID, MF_BYCOMMAND | (doValidation?MF_CHECKED:MF_UNCHECKED));
   savePluginParams();
 }
+/*
+void insertPrettyPrintTag() {
+  #ifdef __XMLTOOLS_DEBUG__
+    Report::_printf_inf("insertPrettyPrintTag()");
+  #endif
+  doPrettyPrint = !doPrettyPrint;
+  ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemPrettyPrint]._cmdID, MF_BYCOMMAND | (doPrettyPrint?MF_CHECKED:MF_UNCHECKED));
+  savePluginParams();
+}*/
 
 void insertXMLCloseTag() {
   #ifdef __XMLTOOLS_DEBUG__
@@ -634,7 +661,7 @@ void performXMLCheck(int informIfNoError) {
       if (err->line > 0)
         ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
 
-      Report::_printf_err(L"XML Parsing error at line %d: \r\n:s", err->line, Report::widen(err->message).c_str());
+      Report::_printf_err(L"XML Parsing error at line %d: \r\n%s", err->line, Report::widen(err->message).c_str());
     } else {
       Report::_printf_err(L"Failed to parse document");
     }
@@ -1410,27 +1437,33 @@ void prettyPrintLibXML() {
     return;
   }
 
-
   xmlChar *mem;
   int numbytes;
-  xmlGlobalStatePtr gs;
-  gs = pXmlGetGlobalState();
   pXmlKeepBlanksDefault(0);
-  //gs.xmlIndentTreeOutput = 1;
+  pXmlThrDefIndentTreeOutput(1);
+
+  char *indentString;
+  if (usetabs) {
+    indentString = (char*) malloc(2);
+    indentString[0] = '\t';
+    indentString[1] = 0;
+  } else {
+    indentString = (char*) malloc(tabwidth + 1);
+    for (int i=0; i<tabwidth; i++) indentString[i] = ' ';
+    indentString[tabwidth] = 0;
+  }
+  if (indentString) pXmlThrDefTreeIndentString(indentString);
 
   /*
-      ops->indent = 1;
+    ops->indent = 1;
     ops->indent_tab = 0;
     ops->indent_spaces = 2;
     ops->omit_decl = 0;
     ops->recovery = 0;
     ops->dropdtd = 0;
     ops->options = 0;
-
   */
   pXmlDocDumpFormatMemory(doc,&mem,&numbytes,1);
-
-  // .................................
 
   // Send formated string to scintilla
   ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(mem));
@@ -1441,6 +1474,7 @@ void prettyPrintLibXML() {
 
   pXmlFree(mem);
   pXmlFreeDoc(doc);
+  if (indentString) free(indentString);
 
   tr.lpstrText = NULL;
   delete [] data;

@@ -129,6 +129,7 @@ void CXSLTransformDlg::OnBtnTransform() {
   xmlDocPtr doc, res;
   xmlChar * doc_txt_ptr = NULL;
   int doc_txt_len;
+  xsltTransformContextPtr xsltctxt = NULL;
   
   int currentEdit, currentLength;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
@@ -187,6 +188,9 @@ void CXSLTransformDlg::OnBtnTransform() {
   std::string file = Report::narrow(wfile);
   cur = pXsltParseStylesheetFile(reinterpret_cast<const xmlChar*>(file.c_str()));
   doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
+
+  //if (cur && doc) xsltctxt = pXsltNewTransformContext(cur, doc);
+  //if (xsltctxt) pXsltSetGenericErrorFunc(xsltctxt, (xmlGenericErrorFunc) Report::registerError);
   res = pXsltApplyStylesheet(cur, doc, (const char**)params);
   
   if (res != NULL && cur != NULL) {
@@ -200,7 +204,14 @@ void CXSLTransformDlg::OnBtnTransform() {
       ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(doc_txt_ptr));
     }
   } else {
-    Report::_printf_err(L"Unable to apply transformation on current source.");
+    std::wstring msg(L"Unable to apply transformation on current source.");
+    if (doc == NULL) {
+        msg += L"\nError occured in source parsing.";
+    }
+    if (cur == NULL) {
+        msg += L"\nMake sure that XSL is valid.";
+    }
+    Report::_printf_err(msg.c_str());
   }
 
   pXsltFreeStylesheet(cur);
