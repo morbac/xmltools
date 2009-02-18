@@ -3,7 +3,8 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="XMLTools"
-	ProjectGUID="{7B694E9F-8927-4538-AF57-F9CA6E0FD389}"
+	ProjectGUID="{2600EA2F-AFA7-47B9-BCAF-86A1A1C03C1C}"
+	RootNamespace="XMLTools"
 	Keyword="MFCProj"
 	>
 	<Platforms>
@@ -107,7 +108,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
+			OutputDirectory="C:\Program Files\Notepad++\plugins"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
@@ -167,7 +168,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="shlwapi.lib"
-				OutputFile="C:\Program Files (x86)\Notepad++\plugins\XMLTools.dll"
+				OutputFile="C:\Program Files\Notepad++\plugins\XMLTools.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\XMLTools.def"

@@ -265,7 +265,7 @@ std::string Report::trimright(const std::string& s) {
   int i = s.length()-1;
   while (isspace(s.at(i)) && i > 0) --i;
   if (i <= 0) return "";
-  else return s.substr(0, i);
+  else return s.substr(0, i+1);
 }
 
 std::string Report::trim(const std::string& s) {

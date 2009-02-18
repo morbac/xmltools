@@ -804,7 +804,19 @@ void XMLValidation(int informIfNoError) {
 
     // 2.3.a. On procède à la validation par schéma
     if (xml_schema.length() > 0 && !dtdValidation) {
-      if ((pctxt = pXmlSchemaNewParserCtxt(reinterpret_cast<const char*>(xml_schema.c_str()))) == NULL) {
+      // on concatène le chemin du document courant 
+      wchar_t destpath[MAX_PATH] = { '\0' };
+      ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTDIRECTORY, MAX_PATH, (LPARAM)destpath);
+      std::string xml_absolute_schema = Report::narrow(destpath);
+      xml_absolute_schema.append("\\");
+      xml_absolute_schema.append(xml_schema);
+
+      // si le fichier existe, on le garde, sinon on reprend la valeur initiale
+      if (PathFileExists(Report::widen(xml_absolute_schema).c_str()) == FALSE) {
+        xml_absolute_schema = xml_schema;
+      }
+
+      if ((pctxt = pXmlSchemaNewParserCtxt(reinterpret_cast<const char*>(xml_absolute_schema.c_str()))) == NULL) {
         Report::_printf_err(L"Unable to initialize parser.");
       } else {
         // Chargement du contenu du XML Schema
