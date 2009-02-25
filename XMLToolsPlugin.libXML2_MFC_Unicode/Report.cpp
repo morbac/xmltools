@@ -263,8 +263,8 @@ std::string Report::trimleft(const std::string& s) {
 std::string Report::trimright(const std::string& s) {
   if (s.empty()) return s;
   int i = s.length()-1;
-  while (isspace(s.at(i)) && i > 0) --i;
-  if (i <= 0) return "";
+  while (isspace(s.at(i)) && i >= 0) --i;
+  if (i < 0) return "";
   else return s.substr(0, i+1);
 }
 
