@@ -255,7 +255,7 @@ std::wstring Report::widen(const std::string& s) {
 std::string Report::trimleft(const std::string& s) {
   if (s.empty()) return s;
   int i = 0, l = s.length();
-  while (isspace(s.at(i)) && i < l) ++i;
+  while (i < l && isspace(s.at(i))) ++i;
   if (i >= l) return "";
   else return s.substr(i);
 }
@@ -263,7 +263,7 @@ std::string Report::trimleft(const std::string& s) {
 std::string Report::trimright(const std::string& s) {
   if (s.empty()) return s;
   int i = s.length()-1;
-  while (isspace(s.at(i)) && i >= 0) --i;
+  while (i >= 0 && isspace(s.at(i))) --i;
   if (i < 0) return "";
   else return s.substr(0, i+1);
 }

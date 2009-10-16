@@ -274,7 +274,7 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
                 txtnode = txtnode->next;
               }
               if (txtnode->type == XML_TEXT_NODE)
-                  itemvalue += reinterpret_cast<const char*>(txtnode->content);
+                itemvalue += reinterpret_cast<const char*>(txtnode->content);
             }
             // si le noeud a des attributs, on les affiche (pour autant qu'on n'ait pas déjà affiché les attributs)
             itemvalue = Report::trim(itemvalue);

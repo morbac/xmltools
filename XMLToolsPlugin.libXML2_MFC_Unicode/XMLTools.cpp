@@ -21,6 +21,7 @@
 #include <shlwapi.h>
 #include <shlobj.h>
 #include <stdlib.h>
+#include <direct.h>
 #include <sstream>
 #include <assert.h>
 #include <locale>
@@ -32,7 +33,6 @@
 #include <libxml/tree.h>
 #include <libxml/xmlschemas.h>
 #include <libxml/globals.h>
-
 
 //#define __XMLTOOLS_DEBUG__
 
@@ -696,6 +696,11 @@ void XMLValidation(int informIfNoError) {
   #ifdef __XMLTOOLS_DEBUG__
     Report::_printf_inf("XMLValidation()");
   #endif
+  // 0. On change le dossier courant
+  wchar_t currenPath[MAX_PATH] = { '\0' };
+  ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTDIRECTORY, MAX_PATH, (LPARAM)currenPath);
+  chdir(Report::narrow(currenPath).data());
+
   // 1. On valide le XML
   bool abortValidation = false;
   std::string xml_schema("");
