@@ -23,6 +23,7 @@ CXPathEvalDlg::CXPathEvalDlg(CWnd* pParent /*=NULL*/)
 {
   //{{AFX_DATA_INIT(CXPathEvalDlg)
   m_sExpression = _T("");
+  m_sResult = _T("");
   //}}AFX_DATA_INIT
 }
 
@@ -39,6 +40,7 @@ void CXPathEvalDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CXPathEvalDlg, CDialog)
   //{{AFX_MSG_MAP(CXPathEvalDlg)
   ON_BN_CLICKED(IDC_BTN_EVALUATE, OnBtnEvaluate)
+  ON_BN_CLICKED(IDC_BTN_COPY2CLIPBOARD, OnBnClickedBtnCopy2clipboard)
 	ON_WM_SIZE()
 	//}}AFX_MSG_MAP
   ON_EN_CHANGE(IDC_EDIT_EXPRESSION, OnEnChangeEditExpression)
@@ -53,6 +55,7 @@ HWND CXPathEvalDlg::getCurrentHScintilla(int which) {
 
 void CXPathEvalDlg::OnBtnEvaluate() {
   this->UpdateData();
+  this->m_sResult = _T("");
   if (!m_sExpression.GetLength()) {
     Report::_printf_err(L"Empty expression; evaluation aborted.");
   } else {
@@ -206,18 +209,22 @@ int CXPathEvalDlg::register_namespaces(xmlXPathContextPtr xpathCtx, const xmlCha
   return(0);
 }
 
-void AddToList(CListCtrl *list, CString type, CString name, CString value) {
+void CXPathEvalDlg::AddToList(CListCtrl *list, CString type, CString name, CString value) {
   int idx = list->GetItemCount();
   list->InsertItem(idx, type);
   list->SetItemText(idx, 1, name);
   list->SetItemText(idx, 2, value);
+
+  this->m_sResult.AppendFormat(L"%s\t%s\t%s\n", type, name, value);
 }
 
-void AddToList(CListCtrl *list, CString type, CString name, std::string value) {
+void CXPathEvalDlg::AddToList(CListCtrl *list, CString type, CString name, std::string value) {
   int idx = list->GetItemCount();
   list->InsertItem(idx, type);
   list->SetItemText(idx, 1, name);
   list->SetItemText(idx, 2, Report::widen(value).c_str());
+
+  this->m_sResult.AppendFormat(L"%s\t%s\t%s\n", type, name, Report::widen(value).c_str());
 }
 
 /**
@@ -388,6 +395,7 @@ void CXPathEvalDlg::OnSize(UINT nType, int cx, int cy) {
 	CDialog::OnSize(nType, cx, cy);
 	
   CWnd *btn_wnd = GetDlgItem(IDC_BTN_EVALUATE);
+  CWnd *cpy_wnd = GetDlgItem(IDC_BTN_COPY2CLIPBOARD);
   CWnd *in_wnd = GetDlgItem(IDC_EDIT_EXPRESSION);
   CWnd *out_wnd = GetDlgItem(IDC_LIST_XPATHRESULTS);
 
@@ -400,6 +408,10 @@ void CXPathEvalDlg::OnSize(UINT nType, int cx, int cy) {
 
     btn_wnd->MoveWindow(cx-border-btnwidth,
                         border,
+                        btnwidth,
+                        btnheight);
+    cpy_wnd->MoveWindow(cx-border-btnwidth,
+                        border+inheight+wndspace-btnheight-wndspace,
                         btnwidth,
                         btnheight);
 	  in_wnd->MoveWindow(border,
@@ -421,4 +433,18 @@ void CXPathEvalDlg::OnEnChangeEditExpression()
   // with the ENM_CHANGE flag ORed into the mask.
 
   // TODO:  Add your control notification handler code here
+}
+
+void CXPathEvalDlg::OnBnClickedBtnCopy2clipboard() {
+  ::OpenClipboard(NULL);
+  ::EmptyClipboard();
+  HGLOBAL hClipboardData;
+  hClipboardData = GlobalAlloc(GMEM_DDESHARE, this->m_sResult.GetLength()+1);
+  char * pchData = (char*)GlobalLock(hClipboardData);
+  strcpy(pchData, Report::narrow(this->m_sResult.GetBuffer()).c_str());
+  ::GlobalUnlock(hClipboardData);
+  ::SetClipboardData(CF_TEXT, pchData);
+  ::CloseClipboard();
+
+  MessageBox(L"Result has been copied into clipboard.");
 }

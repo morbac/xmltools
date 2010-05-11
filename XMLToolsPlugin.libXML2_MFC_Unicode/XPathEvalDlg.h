@@ -28,7 +28,7 @@ public:
   //{{AFX_DATA(CXPathEvalDlg)
   enum { IDD = IDD_XPATHEVAL };
   CString  m_sExpression;
-  std::string m_sResult;
+  CString m_sResult;
   //}}AFX_DATA
 
 
@@ -44,6 +44,8 @@ protected:
   int execute_xpath_expression(const xmlChar* xpathExpr, const xmlChar* nsList);
   int register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList);
   void print_xpath_nodes(xmlXPathObjectPtr xpathObj);
+  void AddToList(CListCtrl *list, CString type, CString name, CString value);
+  void AddToList(CListCtrl *list, CString type, CString name, std::string value);
 
   HWND getCurrentHScintilla(int which);
 
