@@ -13,6 +13,7 @@
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
+#include <string>
 
 /////////////////////////////////////////////////////////////////////////////
 // CXPathEvalDlg dialog
@@ -27,6 +28,7 @@ public:
   //{{AFX_DATA(CXPathEvalDlg)
   enum { IDD = IDD_XPATHEVAL };
   CString  m_sExpression;
+  std::string m_sResult;
   //}}AFX_DATA
 
 
@@ -54,6 +56,7 @@ protected:
   DECLARE_MESSAGE_MAP()
 public:
   afx_msg void OnEnChangeEditExpression();
+  afx_msg void OnBnClickedBtnCopy2clipboard();
 };
 
 //{{AFX_INSERT_LOCATION}}

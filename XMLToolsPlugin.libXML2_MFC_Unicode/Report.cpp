@@ -271,3 +271,24 @@ std::string Report::trimright(const std::string& s) {
 std::string Report::trim(const std::string& s) {
    return Report::trimleft(Report::trimright(s));
 }
+
+// TODO: Optimiser les fonctions suivantes
+std::wstring Report::wtrimleft(const std::wstring& s) {
+  if (s.empty()) return s;
+  int i = 0, l = s.length();
+  while (i < l && isspace(s.at(i))) ++i;
+  if (i >= l) return L"";
+  else return s.substr(i);
+}
+
+std::wstring Report::wtrimright(const std::wstring& s) {
+  if (s.empty()) return s;
+  int i = s.length()-1;
+  while (i >= 0 && isspace(s.at(i))) --i;
+  if (i < 0) return L"";
+  else return s.substr(0, i+1);
+}
+
+std::wstring Report::wtrim(const std::wstring& s) {
+  return Report::wtrimleft(Report::wtrimright(s));
+}

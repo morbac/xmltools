@@ -14,6 +14,8 @@
 #define IDD_XSLTDLG                     2004
 #define IDC_LIST_XPATHRESULTS           2005
 #define IDD_HOWTOUSE                    2005
+#define IDC_BTN_EVALUATE2               2006
+#define IDC_BTN_COPY2CLIPBOARD          2006
 #define IDC_EDIT_FILENAME               2007
 #define IDC_BTN_EXPLORE_XSDFILE         2008
 #define IDC_EDIT_ROOTELEMSAMPLE         2009

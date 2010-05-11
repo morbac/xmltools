@@ -50,6 +50,10 @@ public:
   std::string static trimleft(const std::string& s);
   std::string static trimright(const std::string& s);
   std::string static trim(const std::string& s);
+
+  std::wstring static wtrimleft(const std::wstring& s);
+  std::wstring static wtrimright(const std::wstring& s);
+  std::wstring static wtrim(const std::wstring& s);
 };
 
 #endif // !defined(AFX_REPORT_H__A50BA8DF_F1C4_4E30_9CA7_59C3951C0981__INCLUDED_)
