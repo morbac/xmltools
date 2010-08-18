@@ -75,7 +75,7 @@ const wchar_t PLUGIN_NAME[] = L"XML Tools";
 const wchar_t localConfFile[] = L"doLocalConf.xml";
 
 // The number of functionality
-const int TOTAL_FUNCS = 28;
+const int TOTAL_FUNCS = 29;
 int nbFunc = TOTAL_FUNCS;
 
 NppData nppData;
@@ -89,11 +89,12 @@ const wchar_t sectionName[] = L"XML Tools";
 
 // Declaration of functionality (FuncItem) Array
 FuncItem funcItem[TOTAL_FUNCS];
-bool doCheckXML = false, doValidation = false, /*doPrettyPrint = false,*/ doCloseTag = false, doAutoIndent = false, doAttrAutoComplete = false, doAutoXMLType = false;
-int menuitemCheckXML = -1, menuitemValidation = -1, /*menuitemPrettyPrint = -1,*/ menuitemCloseTag = -1, menuitemAutoIndent = -1, menuitemAttrAutoComplete = -1, menuitemAutoXMLType = -1;
+bool doCheckXML = false, doValidation = false, /*doPrettyPrint = false,*/ doCloseTag = false, doAutoIndent = false, doAttrAutoComplete = false, doAutoXMLType = false, doPrettyPrintAllOpenFiles = false;
+int menuitemCheckXML = -1, menuitemValidation = -1, /*menuitemPrettyPrint = -1,*/ menuitemCloseTag = -1, menuitemAutoIndent = -1, menuitemAttrAutoComplete = -1, menuitemAutoXMLType = -1, menuitemPrettyPrintAllFiles = -1;
 std::string lastXMLSchema("");
 
 bool enableBufferActivated = false;
+int nbopenfiles1, nbopenfiles2;
 
 // Here're the declaration my functions ///////////////////////////////////////
 void insertXMLCheckTag();
@@ -122,6 +123,9 @@ void prettyPrintText();
 void prettyPrintLibXML();
 //void insertPrettyPrintTag();
 void linarizeXML();
+void togglePrettyPrintAllFiles();
+int initDocIterator();
+bool hasNextDoc(int* iter);
 
 void getCurrentXPath();
 void evaluateXPath();
@@ -340,6 +344,13 @@ CXMLToolsApp::CXMLToolsApp() {
     Report::strcpy(funcItem[menuentry]._itemName, L"Linarize XML");
     funcItem[menuentry]._pFunc = linarizeXML;
     ++menuentry;
+
+	  Report::strcpy(funcItem[menuentry]._itemName, L"Apply to all open files");
+	  funcItem[menuentry]._pFunc = togglePrettyPrintAllFiles;
+	  funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, L"doPrettyPrintAllOpenFiles", 0, iniFilePath) != 0);
+	  doPrettyPrintAllOpenFiles = funcItem[menuentry]._init2Check;
+	  menuitemPrettyPrintAllFiles = menuentry;
+	  ++menuentry;
   
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
   
@@ -421,6 +432,7 @@ void savePluginParams() {
   //funcItem[menuitemAutoIndent]._init2Check = doAutoIndent;
   //funcItem[menuitemAttrAutoComplete]._init2Check = doAttrAutoComplete;
   funcItem[menuitemAutoXMLType]._init2Check = doAutoXMLType;
+  funcItem[menuitemPrettyPrintAllFiles]._init2Check = doPrettyPrintAllOpenFiles;
 
   ::WritePrivateProfileString(sectionName, L"doCheckXML", doCheckXML?L"1":L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"doValidation", doValidation?L"1":L"0", iniFilePath);
@@ -429,6 +441,7 @@ void savePluginParams() {
   //::WritePrivateProfileString(sectionName, L"doAutoIndent", doAutoIndent?L"1":L"0", iniFilePath);
   //::WritePrivateProfileString(sectionName, L"doAttrAutoComplete", doAttrAutoComplete?L"1":L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"doAutoXMLType", doAutoXMLType?L"1":L"0", iniFilePath);
+  ::WritePrivateProfileString(sectionName, L"doPrettyPrintAllOpenFiles", doPrettyPrintAllOpenFiles?L"1":L"0", iniFilePath);
 }
 
 /*
@@ -480,6 +493,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
         //::CheckMenuItem(hMenu, funcItem[menuitemAutoIndent]._cmdID, MF_BYCOMMAND | (doAutoIndent?MF_CHECKED:MF_UNCHECKED));
         //::CheckMenuItem(hMenu, funcItem[menuitemAttrAutoComplete]._cmdID, MF_BYCOMMAND | (doAttrAutoComplete?MF_CHECKED:MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemAutoXMLType]._cmdID, MF_BYCOMMAND | (doAutoXMLType?MF_CHECKED:MF_UNCHECKED));
+		::CheckMenuItem(hMenu, funcItem[menuitemPrettyPrintAllFiles]._cmdID, MF_BYCOMMAND | (doPrettyPrintAllOpenFiles?MF_CHECKED:MF_UNCHECKED));
       }
     }
     case NPPN_FILEBEFORESAVE: {
@@ -1188,209 +1202,213 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
   #ifdef __XMLTOOLS_DEBUG__
     Report::_printf_inf("prettyPrint()");
   #endif
-  int currentEdit, currentLength, isReadOnly, xOffset, yOffset;
-  ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-  HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
 
-  isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
-  if (isReadOnly) return;
-  
-  xOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETXOFFSET, 0, 0);
-  yOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
+  int docIterator = initDocIterator();
+  while (hasNextDoc(&docIterator)) {
+    int currentEdit, currentLength, isReadOnly, xOffset, yOffset;
+    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
+    HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
 
-  currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+    isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
+    if (isReadOnly) return;
+    
+    xOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETXOFFSET, 0, 0);
+    yOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
 
-  char *data = new char[currentLength+1];
-  if (!data) return;  // allocation error, abort check
-  memset(data, '\0', currentLength+1);
+    currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
-  TextRange tr;
-  tr.chrg.cpMin = 0;
-  tr.chrg.cpMax = currentLength;
-  tr.lpstrText = data;
+    char *data = new char[currentLength+1];
+    if (!data) return;  // allocation error, abort check
+    memset(data, '\0', currentLength+1);
 
-  ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
+    TextRange tr;
+    tr.chrg.cpMin = 0;
+    tr.chrg.cpMax = currentLength;
+    tr.lpstrText = data;
 
-  int tabwidth = ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
-  int usetabs = ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
-  if (tabwidth <= 0) tabwidth = 4;
+    ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
 
-  xmlDocPtr doc;
+    int tabwidth = ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
+    int usetabs = ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
+    if (tabwidth <= 0) tabwidth = 4;
 
-  doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
-  if (doc == NULL) {
-    Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
-    delete [] data;
-    return;
-  }
+    xmlDocPtr doc;
 
-  pXmlFreeDoc(doc);
+    doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
+    if (doc == NULL) {
+      Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
+      delete [] data;
+      return;
+    }
 
-  std::string str(data);
+    pXmlFreeDoc(doc);
 
-  // count the < and > signs; > are ignored if tagsignlevel <= 0. This prevent indent errors if text or attributes contain > sign.
-  int tagsignlevel = 0;
-  // some state variables
-  bool in_comment = false, in_header = false, in_attribute = false, in_nodetext = false, in_cdata = false;
-  // some counters
-  long curpos = 0, xmllevel = 0, strlength = 0;
-  // some char value (pc = previous char, cc = current char, nc = next char, nnc = next next char)
-  char pc, cc, nc, nnc;
+    std::string str(data);
 
-  // Proceed to first pass if break adds are enabled
-  if (addlinebreaks) {
-    while (curpos < (long)str.length() && (curpos = str.find_first_of("<>",curpos)) >= 0) {
-      cc = str.at(curpos);
+    // count the < and > signs; > are ignored if tagsignlevel <= 0. This prevent indent errors if text or attributes contain > sign.
+    int tagsignlevel = 0;
+    // some state variables
+    bool in_comment = false, in_header = false, in_attribute = false, in_nodetext = false, in_cdata = false;
+    // some counters
+    long curpos = 0, xmllevel = 0, strlength = 0;
+    // some char value (pc = previous char, cc = current char, nc = next char, nnc = next next char)
+    char pc, cc, nc, nnc;
 
-      if (cc == '<' && curpos < (long)str.length()-3 && !str.compare(curpos,4,"<!--")) {
-        // Let's skip the comment
-        curpos = str.find("-->",curpos+1);
-      } else if (cc == '<' && curpos < (long)str.length()-8 && !str.compare(curpos,9,"<![CDATA[")) {
-        // Let's skip the CDATA block
-        curpos = str.find("]]>",curpos+1);
-      } else if (cc == '>') {
-        // Let's see if '>' is a end tag char (it might also be simple text)
-        // To perform test, we search last of "<>". If it is a '>', current '>' is
-        // simple text, if not, it is a end tag char. '>' text chars are ignored.
-        int prevspecchar = str.find_last_of("<>",curpos-1);
-        if (prevspecchar >= 0 && str.at(prevspecchar) == '<') {
-          // We have found a '>' char, let's see if next non space/tab is a '<'
-          bool isclosingtag = (curpos > 0 && str.at(curpos-1) == '/');
-          int nexwchar_t = str.find_first_not_of(" \t",curpos+1);
-          int deltapos = nexwchar_t-curpos;
-          if (nexwchar_t >= 0 &&
-              str.at(nexwchar_t) == '<' &&
-              curpos < (long)str.length()-(deltapos+1)) {
-            // we compare previous and next tags; if they are same, we don't add line break
-            long startprev = str.rfind("<",curpos);
-            long endnext = str.find(">",nexwchar_t);
+    // Proceed to first pass if break adds are enabled
+    if (addlinebreaks) {
+      while (curpos < (long)str.length() && (curpos = str.find_first_of("<>",curpos)) >= 0) {
+        cc = str.at(curpos);
 
-            if (startprev >= 0 && endnext >= 0 &&
-                curpos > startprev &&
-                endnext > nexwchar_t) {
-              int tagend = str.find_first_of(" />",startprev+1);
-              std::string tag1(str.substr(startprev+1,tagend-startprev-1));
-              tagend = str.find_first_of(" />",nexwchar_t+2);
-              std::string tag2(str.substr(nexwchar_t+2,tagend-nexwchar_t-2));
-              if (strcmp(tag1.c_str(),tag2.c_str()) || isclosingtag) {
-                // Case of "<data><data>..." -> add a line break between tags
-                str.insert(++curpos,"\r\n");
-              } else if (str.at(nexwchar_t+1) == '/' && !isclosingtag) {
-                // Case of "<data id="..."></data>" -> replace by "<data id="..."/>"
-                str.replace(curpos,endnext-curpos,"/");
-                //str.insert(++curpos,"#");
+        if (cc == '<' && curpos < (long)str.length()-3 && !str.compare(curpos,4,"<!--")) {
+          // Let's skip the comment
+          curpos = str.find("-->",curpos+1);
+        } else if (cc == '<' && curpos < (long)str.length()-8 && !str.compare(curpos,9,"<![CDATA[")) {
+          // Let's skip the CDATA block
+          curpos = str.find("]]>",curpos+1);
+        } else if (cc == '>') {
+          // Let's see if '>' is a end tag char (it might also be simple text)
+          // To perform test, we search last of "<>". If it is a '>', current '>' is
+          // simple text, if not, it is a end tag char. '>' text chars are ignored.
+          int prevspecchar = str.find_last_of("<>",curpos-1);
+          if (prevspecchar >= 0 && str.at(prevspecchar) == '<') {
+            // We have found a '>' char, let's see if next non space/tab is a '<'
+            bool isclosingtag = (curpos > 0 && str.at(curpos-1) == '/');
+            int nexwchar_t = str.find_first_not_of(" \t",curpos+1);
+            int deltapos = nexwchar_t-curpos;
+            if (nexwchar_t >= 0 &&
+                str.at(nexwchar_t) == '<' &&
+                curpos < (long)str.length()-(deltapos+1)) {
+              // we compare previous and next tags; if they are same, we don't add line break
+              long startprev = str.rfind("<",curpos);
+              long endnext = str.find(">",nexwchar_t);
+
+              if (startprev >= 0 && endnext >= 0 &&
+                  curpos > startprev &&
+                  endnext > nexwchar_t) {
+                int tagend = str.find_first_of(" />",startprev+1);
+                std::string tag1(str.substr(startprev+1,tagend-startprev-1));
+                tagend = str.find_first_of(" />",nexwchar_t+2);
+                std::string tag2(str.substr(nexwchar_t+2,tagend-nexwchar_t-2));
+                if (strcmp(tag1.c_str(),tag2.c_str()) || isclosingtag) {
+                  // Case of "<data><data>..." -> add a line break between tags
+                  str.insert(++curpos,"\r\n");
+                } else if (str.at(nexwchar_t+1) == '/' && !isclosingtag) {
+                  // Case of "<data id="..."></data>" -> replace by "<data id="..."/>"
+                  str.replace(curpos,endnext-curpos,"/");
+                  //str.insert(++curpos,"#");
+                }
               }
             }
           }
         }
+
+        ++curpos;           // go to next char
+      }
+    /*
+      while (curpos < str.length()-2 && (curpos = str.find("><",curpos)) >= 0)
+      {
+        // we compare previous and next tags; if they are same, we don't add line break
+        long startprev = str.rfind("<",curpos);
+        long endnext = str.find(">",curpos+1);
+      
+        if (startprev >= 0 &&
+            endnext >= 0 &&
+            curpos > startprev &&
+            endnext > curpos+1 &&
+            strcmp(str.substr(startprev+1,curpos-startprev-1).c_str(),
+                   str.substr(curpos+3,endnext-curpos-3).c_str()))
+          str.insert(++curpos,"\n");
+
+        ++curpos;// go to next char
+      }*/
+
+      // reinitialize cursor pos for second pass
+      curpos = 0;
+    }
+
+    // Proceed to reformatting (second pass)
+    int prevspecchar = -1;
+    while (curpos < (long)str.length() && (curpos = str.find_first_of("<>\n\"",curpos)) >= 0) {
+      strlength = str.length();
+      if (str.at(curpos) != '\n') {
+        if (curpos < strlength-3 && !str.compare(curpos,4,"<!--")) in_comment = true;
+        if (curpos < strlength-8 && !str.compare(curpos,9,"<![CDATA[")) in_cdata = true;
+        else if (curpos < strlength-1 && !str.compare(curpos,2,"<?")) in_header = true;
+        else if (curpos < strlength && !str.compare(curpos,1,"\"") &&
+                 prevspecchar >= 0 && str.at(prevspecchar) == '<') in_attribute = !in_attribute;
       }
 
-      ++curpos;           // go to next char
-    }
-  /*
-    while (curpos < str.length()-2 && (curpos = str.find("><",curpos)) >= 0)
-    {
-      // we compare previous and next tags; if they are same, we don't add line break
-      long startprev = str.rfind("<",curpos);
-      long endnext = str.find(">",curpos+1);
-    
-      if (startprev >= 0 &&
-          endnext >= 0 &&
-          curpos > startprev &&
-          endnext > curpos+1 &&
-          strcmp(str.substr(startprev+1,curpos-startprev-1).c_str(),
-                 str.substr(curpos+3,endnext-curpos-3).c_str()))
-        str.insert(++curpos,"\n");
+      if (!in_comment && !in_cdata && !in_header) {
+        if (curpos > 0) pc = str.at(curpos-1);
+        else pc = ' ';
 
-      ++curpos;// go to next char
-    }*/
+        cc = str.at(curpos);
 
-    // reinitialize cursor pos for second pass
-    curpos = 0;
-  }
+        if (curpos < strlength-1) nc = str.at(curpos+1);
+        else nc = ' ';
 
-  // Proceed to reformatting (second pass)
-  int prevspecchar = -1;
-  while (curpos < (long)str.length() && (curpos = str.find_first_of("<>\n\"",curpos)) >= 0) {
-    strlength = str.length();
-    if (str.at(curpos) != '\n') {
-      if (curpos < strlength-3 && !str.compare(curpos,4,"<!--")) in_comment = true;
-      if (curpos < strlength-8 && !str.compare(curpos,9,"<![CDATA[")) in_cdata = true;
-      else if (curpos < strlength-1 && !str.compare(curpos,2,"<?")) in_header = true;
-      else if (curpos < strlength && !str.compare(curpos,1,"\"") &&
-               prevspecchar >= 0 && str.at(prevspecchar) == '<') in_attribute = !in_attribute;
-    }
+        if (curpos < strlength-2) nnc = str.at(curpos+2);
+        else nnc = ' ';
+          
+        if (cc == '<') {
+          prevspecchar = curpos++;
+          ++tagsignlevel;
+          in_nodetext = false;
+          if (nc != '/' && (nc != '!' || nnc == '[')) xmllevel += 2;
+        } else if (cc == '>' && !in_attribute) {
+          // > are ignored inside attributes
+          if (pc != '/' && pc != ']') { --xmllevel; in_nodetext = true; }
+          else xmllevel -= 2;
 
-    if (!in_comment && !in_cdata && !in_header) {
-      if (curpos > 0) pc = str.at(curpos-1);
-      else pc = ' ';
+          if (xmllevel < 0) xmllevel = 0;
+          --tagsignlevel;
+          prevspecchar = curpos++;
+        } else if (cc == '\n') {
+          // \n are ignored inside attributes
+          int nexwchar_t = str.find_first_not_of(" \t",++curpos);
 
-      cc = str.at(curpos);
-
-      if (curpos < strlength-1) nc = str.at(curpos+1);
-      else nc = ' ';
-
-      if (curpos < strlength-2) nnc = str.at(curpos+2);
-      else nnc = ' ';
-        
-      if (cc == '<') {
-        prevspecchar = curpos++;
-        ++tagsignlevel;
-        in_nodetext = false;
-        if (nc != '/' && (nc != '!' || nnc == '[')) xmllevel += 2;
-      } else if (cc == '>' && !in_attribute) {
-        // > are ignored inside attributes
-        if (pc != '/' && pc != ']') { --xmllevel; in_nodetext = true; }
-        else xmllevel -= 2;
-
-        if (xmllevel < 0) xmllevel = 0;
-        --tagsignlevel;
-        prevspecchar = curpos++;
-      } else if (cc == '\n') {
-        // \n are ignored inside attributes
-        int nexwchar_t = str.find_first_not_of(" \t",++curpos);
-
-        bool skipformat = false;
-        if (!autoindenttext && nexwchar_t >= 0) {
-          cc = str.at(nexwchar_t);
-          skipformat = (cc != '<' && cc != '\r' && cc != '\n');
-        }
-        if (nexwchar_t >= curpos && xmllevel >= 0 && !skipformat) {
-          if (nexwchar_t < 0) nexwchar_t = curpos;
-          int delta = 0;
-          str.erase(curpos,nexwchar_t-curpos);
-
-          strlength = str.length();
-          if (curpos < strlength) {
-            cc = str.at(curpos);
-            // we set delta = 1 if we technically can + if we are in a text or inside an attribute
-            if (xmllevel > 0 && curpos < strlength-1 && ( (cc == '<' && str.at(curpos+1) == '/') || in_attribute) ) delta = 1;
-            else if (cc == '\n' || cc == '\r') delta = xmllevel;
+          bool skipformat = false;
+          if (!autoindenttext && nexwchar_t >= 0) {
+            cc = str.at(nexwchar_t);
+            skipformat = (cc != '<' && cc != '\r' && cc != '\n');
           }
+          if (nexwchar_t >= curpos && xmllevel >= 0 && !skipformat) {
+            if (nexwchar_t < 0) nexwchar_t = curpos;
+            int delta = 0;
+            str.erase(curpos,nexwchar_t-curpos);
 
-          if (usetabs) str.insert(curpos,(xmllevel-delta),'\t');
-          else str.insert(curpos,tabwidth*(xmllevel-delta),' ');
+            strlength = str.length();
+            if (curpos < strlength) {
+              cc = str.at(curpos);
+              // we set delta = 1 if we technically can + if we are in a text or inside an attribute
+              if (xmllevel > 0 && curpos < strlength-1 && ( (cc == '<' && str.at(curpos+1) == '/') || in_attribute) ) delta = 1;
+              else if (cc == '\n' || cc == '\r') delta = xmllevel;
+            }
+
+            if (usetabs) str.insert(curpos,(xmllevel-delta),'\t');
+            else str.insert(curpos,tabwidth*(xmllevel-delta),' ');
+          }
+        } else {
+          ++curpos;
         }
       } else {
+        if (in_comment && curpos > 1 && !str.compare(curpos-2,3,"-->")) in_comment = false;
+        else if (in_cdata && curpos > 1 && !str.compare(curpos-2,3,"]]>")) in_cdata = false;
+        else if (in_header && curpos > 0 && !str.compare(curpos-1,2,"?>")) in_header = false;
         ++curpos;
       }
-    } else {
-      if (in_comment && curpos > 1 && !str.compare(curpos-2,3,"-->")) in_comment = false;
-      else if (in_cdata && curpos > 1 && !str.compare(curpos-2,3,"]]>")) in_cdata = false;
-      else if (in_header && curpos > 0 && !str.compare(curpos-1,2,"?>")) in_header = false;
-      ++curpos;
     }
+
+    // Send formated string to scintilla
+    ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
+
+    // Restore scrolling
+    ::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
+    ::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
+
+    tr.lpstrText = NULL;
+    delete [] data;
   }
-
-  // Send formated string to scintilla
-  ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
-
-  // Restore scrolling
-  ::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
-  ::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
-
-  tr.lpstrText = NULL;
-  delete [] data;
 }
 
 void prettyPrintXML() {
@@ -1415,86 +1433,90 @@ void prettyPrintText() {
 }
 
 void prettyPrintLibXML() {
-#ifdef __XMLTOOLS_DEBUG__
+  #ifdef __XMLTOOLS_DEBUG__
     Report::_printf_inf("prettyPrint()");
   #endif
-  int currentEdit, currentLength, isReadOnly, xOffset, yOffset;
-  ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-  HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
 
-  isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
-  if (isReadOnly) return;
-  
-  xOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETXOFFSET, 0, 0);
-  yOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
+  int docIterator = initDocIterator();
+  while (hasNextDoc(&docIterator)) {
+    int currentEdit, currentLength, isReadOnly, xOffset, yOffset;
+    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
+    HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
 
-  currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+    isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
+    if (isReadOnly) return;
+    
+    xOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETXOFFSET, 0, 0);
+    yOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
 
-  char *data = new char[currentLength+1];
-  if (!data) return;  // allocation error, abort check
-  memset(data, '\0', currentLength+1);
+    currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
-  TextRange tr;
-  tr.chrg.cpMin = 0;
-  tr.chrg.cpMax = currentLength;
-  tr.lpstrText = data;
+    char *data = new char[currentLength+1];
+    if (!data) return;  // allocation error, abort check
+    memset(data, '\0', currentLength+1);
 
-  ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
+    TextRange tr;
+    tr.chrg.cpMin = 0;
+    tr.chrg.cpMax = currentLength;
+    tr.lpstrText = data;
 
-  int tabwidth = ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
-  int usetabs = ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
-  if (tabwidth <= 0) tabwidth = 4;
+    ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
 
-  xmlDocPtr doc;
+    int tabwidth = ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
+    int usetabs = ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
+    if (tabwidth <= 0) tabwidth = 4;
 
-  doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
-  if (doc == NULL) {
-    Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
+    xmlDocPtr doc;
+
+    doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
+    if (doc == NULL) {
+      Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
+      delete [] data;
+      return;
+    }
+
+    xmlChar *mem;
+    int numbytes;
+    pXmlKeepBlanksDefault(0);
+    pXmlThrDefIndentTreeOutput(1);
+
+    char *indentString;
+    if (usetabs) {
+      indentString = (char*) malloc(2);
+      indentString[0] = '\t';
+      indentString[1] = 0;
+    } else {
+      indentString = (char*) malloc(tabwidth + 1);
+      for (int i=0; i<tabwidth; i++) indentString[i] = ' ';
+      indentString[tabwidth] = 0;
+    }
+    if (indentString) pXmlThrDefTreeIndentString(indentString);
+
+    /*
+      ops->indent = 1;
+      ops->indent_tab = 0;
+      ops->indent_spaces = 2;
+      ops->omit_decl = 0;
+      ops->recovery = 0;
+      ops->dropdtd = 0;
+      ops->options = 0;
+    */
+    pXmlDocDumpFormatMemory(doc,&mem,&numbytes,1);
+
+    // Send formated string to scintilla
+    ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(mem));
+
+    // Restore scrolling
+    ::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
+    ::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
+
+    pXmlFree(mem);
+    pXmlFreeDoc(doc);
+    if (indentString) free(indentString);
+
+    tr.lpstrText = NULL;
     delete [] data;
-    return;
   }
-
-  xmlChar *mem;
-  int numbytes;
-  pXmlKeepBlanksDefault(0);
-  pXmlThrDefIndentTreeOutput(1);
-
-  char *indentString;
-  if (usetabs) {
-    indentString = (char*) malloc(2);
-    indentString[0] = '\t';
-    indentString[1] = 0;
-  } else {
-    indentString = (char*) malloc(tabwidth + 1);
-    for (int i=0; i<tabwidth; i++) indentString[i] = ' ';
-    indentString[tabwidth] = 0;
-  }
-  if (indentString) pXmlThrDefTreeIndentString(indentString);
-
-  /*
-    ops->indent = 1;
-    ops->indent_tab = 0;
-    ops->indent_spaces = 2;
-    ops->omit_decl = 0;
-    ops->recovery = 0;
-    ops->dropdtd = 0;
-    ops->options = 0;
-  */
-  pXmlDocDumpFormatMemory(doc,&mem,&numbytes,1);
-
-  // Send formated string to scintilla
-  ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(mem));
-
-  // Restore scrolling
-  ::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
-  ::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
-
-  pXmlFree(mem);
-  pXmlFreeDoc(doc);
-  if (indentString) free(indentString);
-
-  tr.lpstrText = NULL;
-  delete [] data;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1503,56 +1525,102 @@ void linarizeXML() {
   #ifdef __XMLTOOLS_DEBUG__
     Report::_printf_inf("linarizeXML()");
   #endif
-  int currentEdit, currentLength;
-  ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-  HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-  currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
-  char *data = new char[currentLength+1];
-  if (!data) return;  // allocation error, abort check
-  memset(data, '\0', currentLength+1);
+  int docIterator = initDocIterator();
+  while (hasNextDoc(&docIterator)) {
+    int currentEdit, currentLength;
+    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
+    HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
+    currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
-  int currentPos = int(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
+    char *data = new char[currentLength+1];
+    if (!data) return;  // allocation error, abort check
+    memset(data, '\0', currentLength+1);
 
-  TextRange tr;
-  tr.chrg.cpMin = 0;
-  tr.chrg.cpMax = currentLength;
-  tr.lpstrText = data;
+    int currentPos = int(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
 
-  ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
+    TextRange tr;
+    tr.chrg.cpMin = 0;
+    tr.chrg.cpMax = currentLength;
+    tr.lpstrText = data;
 
-  std::string str(data);
+    ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
 
-  long curpos = 0;
-  while ((curpos = str.find_first_of("\r\n", curpos)) >= 0) {
-    long nexwchar_t = str.find_first_not_of("\r\n", curpos);
-    str.erase(curpos, nexwchar_t-curpos);
+    std::string str(data);
 
-    // on supprime aussi tous les espaces du début de ligne
-    if (curpos >= 0 && (unsigned)curpos < str.length()) {
-      nexwchar_t = str.find_first_not_of(" \t", curpos);
-      if (nexwchar_t >= curpos) {
-        // et si le 1e caractère de la ligne suivante est différent de '<' et que
-        // le dernier de la précédente est différent de '>', autrement dit si on
-        // est dans du texte, on laisse un espace
+    long curpos = 0;
+    while ((curpos = str.find_first_of("\r\n", curpos)) >= 0) {
+      long nexwchar_t = str.find_first_not_of("\r\n", curpos);
+      str.erase(curpos, nexwchar_t-curpos);
 
-        bool enableInsert = false;
-        if (curpos > 0 && str.at(nexwchar_t) != '<' && str.at(curpos-1) != '>') {
-          enableInsert = true;
-          if (nexwchar_t > curpos) --nexwchar_t;
+      // on supprime aussi tous les espaces du début de ligne
+      if (curpos >= 0 && (unsigned)curpos < str.length()) {
+        nexwchar_t = str.find_first_not_of(" \t", curpos);
+        if (nexwchar_t >= curpos) {
+          // et si le 1e caractère de la ligne suivante est différent de '<' et que
+          // le dernier de la précédente est différent de '>', autrement dit si on
+          // est dans du texte, on laisse un espace
+
+          bool enableInsert = false;
+          if (curpos > 0 && str.at(nexwchar_t) != '<' && str.at(curpos-1) != '>') {
+            enableInsert = true;
+            if (nexwchar_t > curpos) --nexwchar_t;
+          }
+
+          if (nexwchar_t > curpos) str.erase(curpos, nexwchar_t-curpos);
+          else if (enableInsert) str.insert(nexwchar_t, " ");
         }
-
-        if (nexwchar_t > curpos) str.erase(curpos, nexwchar_t-curpos);
-        else if (enableInsert) str.insert(nexwchar_t, " ");
       }
     }
+
+    // Send formated string to scintilla
+    ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
+
+    tr.lpstrText = NULL;
+    delete [] data;
   }
+}
 
-  // Send formated string to scintilla
-  ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
+void togglePrettyPrintAllFiles() {
+  #ifdef __XMLTOOLS_DEBUG__
+	  Report::_printf_inf("togglePrettyPrintAllFiles()");
+  #endif
+	doPrettyPrintAllOpenFiles = !doPrettyPrintAllOpenFiles;
+	::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemPrettyPrintAllFiles]._cmdID, MF_BYCOMMAND | (doPrettyPrintAllOpenFiles?MF_CHECKED:MF_UNCHECKED));
+	savePluginParams();
+}
 
-  tr.lpstrText = NULL;
-  delete [] data;
+int initDocIterator() {
+  int f;
+  nbopenfiles1 = (int) ::SendMessage(nppData._nppHandle, NPPM_GETNBOPENFILES, 0, PRIMARY_VIEW);
+  nbopenfiles2 = (int) ::SendMessage(nppData._nppHandle, NPPM_GETNBOPENFILES, 0, SECOND_VIEW);
+
+  if (::SendMessage(nppData._nppHandle, NPPM_GETCURRENTDOCINDEX, 0, MAIN_VIEW) < 0) nbopenfiles1 = 0;
+  if (::SendMessage(nppData._nppHandle, NPPM_GETCURRENTDOCINDEX, 0, SUB_VIEW) < 0) nbopenfiles2 = 0;
+
+  //Report::_printf_inf(Report::str_format("%d %d",nbopenfiles1,nbopenfiles2));
+
+  return 0;
+}
+
+bool hasNextDoc(int* iter) {
+  if (doPrettyPrintAllOpenFiles) {
+    if (*iter < 0 || *iter >= (nbopenfiles1+nbopenfiles2)) return false;
+
+    if (*iter < nbopenfiles1) {
+      ::SendMessage(nppData._nppHandle, NPPM_ACTIVATEDOC, MAIN_VIEW, (*iter));
+    } else if (*iter >= nbopenfiles1 && *iter < nbopenfiles1+nbopenfiles2) {
+      ::SendMessage(nppData._nppHandle, NPPM_ACTIVATEDOC, SUB_VIEW, (*iter)-nbopenfiles1);
+    } else {
+      return false;
+    }
+
+    ++(*iter);
+    return true;
+  } else {
+    ++(*iter);
+    return ((*iter) == 1);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
