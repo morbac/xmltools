@@ -27,10 +27,10 @@ extern xmlDocPtr (*pXmlParseMemory)(const char * buffer, int size);
 extern xmlDocPtr (*pXmlReadMemory)(const char *buffer, int size, const char *URL, const char *encoding, int options);
 
 extern void (*pXmlFree)(void *mem);
+extern void (*pXmlFreeDoc)(xmlDocPtr cur);
 extern xmlDocPtr (*pXmlParseFile)(const char * filename);
 extern int (*pXmlSaveFormatFile)(const char * filename, xmlDocPtr cur, int format);
 extern void (*pXmlDocDumpFormatMemory)(xmlDocPtr cur, xmlChar ** mem, int * size, int format);
-extern void (*pXmlFreeDoc)(xmlDocPtr cur);
 extern void (*pXmlInitParser)(void);
 extern void (*pXmlCleanupParser)(void);
 extern int (*pXmlSubstituteEntitiesDefault)(int val);

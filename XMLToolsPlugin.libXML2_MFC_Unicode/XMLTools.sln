@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLTools", "XMLTools.vcproj", "{2600EA2F-AFA7-47B9-BCAF-86A1A1C03C1C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLTools", "XMLTools.vcproj", "{A5213792-57D0-425B-82A7-9EF94D10D1F5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,10 +9,10 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2600EA2F-AFA7-47B9-BCAF-86A1A1C03C1C}.Debug|Win32.ActiveCfg = Debug|Win32
-		{2600EA2F-AFA7-47B9-BCAF-86A1A1C03C1C}.Debug|Win32.Build.0 = Debug|Win32
-		{2600EA2F-AFA7-47B9-BCAF-86A1A1C03C1C}.Release|Win32.ActiveCfg = Release|Win32
-		{2600EA2F-AFA7-47B9-BCAF-86A1A1C03C1C}.Release|Win32.Build.0 = Release|Win32
+		{A5213792-57D0-425B-82A7-9EF94D10D1F5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A5213792-57D0-425B-82A7-9EF94D10D1F5}.Debug|Win32.Build.0 = Debug|Win32
+		{A5213792-57D0-425B-82A7-9EF94D10D1F5}.Release|Win32.ActiveCfg = Release|Win32
+		{A5213792-57D0-425B-82A7-9EF94D10D1F5}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

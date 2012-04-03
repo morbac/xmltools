@@ -5,6 +5,14 @@
 ================================================================
 
 
+Release 2.3.2 (r905):
+---------------------
+
+- Fix XML validation issue with inline DTD
+
+- Fix memory deallocation error after XML validation
+
+
 Release 2.3.1 (r639):
 ---------------------
 

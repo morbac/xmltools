@@ -97,7 +97,8 @@ int loadLibXML(wchar_t* nppPath) {
   }
 
   pXmlFree =                      (void (__cdecl *)(void *))*((void (__cdecl **)(void *))GetProcAddress(hInstLibXML, "xmlFree"));
-  pXmlFreeDoc =                   (void (__cdecl *)(struct _xmlDoc *))GetProcAddress(hInstLibXML, "xmlFreeDoc");
+  //pXmlFree =                      (void (__cdecl *)(void *))GetProcAddress(hInstLibXML, "xmlFree");
+  pXmlFreeDoc =                   (void (__cdecl *)(xmlDocPtr))GetProcAddress(hInstLibXML, "xmlFreeDoc");
 
   pXmlParseMemory =               (xmlDocPtr (__cdecl *)(const char *, int))GetProcAddress(hInstLibXML, "xmlParseMemory");
   pXmlReadMemory =                (xmlDocPtr (__cdecl *)(const char *, int, const char *, const char *, int))GetProcAddress(hInstLibXML, "xmlReadMemory");

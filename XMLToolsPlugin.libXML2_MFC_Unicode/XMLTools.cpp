@@ -743,7 +743,7 @@ void XMLValidation(int informIfNoError) {
   bool doFreeDTDPtr = false;
   bool xsdValidation = false;
   bool dtdValidation = false;
-  
+
   doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
   
   if (doc == NULL) {
@@ -788,8 +788,10 @@ void XMLValidation(int informIfNoError) {
           dtd_filename = std::string(reinterpret_cast<const char*>((LPCTSTR)dtdPtr->ExternalID));
         }
         
-        dtdPtr = pXmlParseDTD(dtdPtr->ExternalID, dtdPtr->SystemID);
-        doFreeDTDPtr = true;
+        if (dtdPtr->SystemID || dtdPtr->ExternalID) {
+          dtdPtr = pXmlParseDTD(dtdPtr->ExternalID, dtdPtr->SystemID);
+          doFreeDTDPtr = true;
+        }
 
         if (dtdPtr == NULL) {
           Report::_printf_err(L"Unable to load the DTD\r\n%s", Report::widen(dtd_filename).c_str());
@@ -798,6 +800,7 @@ void XMLValidation(int informIfNoError) {
           dtdValidation = true;
         }
       }
+      propval = NULL;
     }
 
     // Vérification des éléments: si on a à la fois une DTD et un schéma, on prend le schéma
@@ -895,11 +898,14 @@ void XMLValidation(int informIfNoError) {
         // Libération de la mémoire
         pXmlFreeValidCtxt(vctxt);
       }
-      if (doFreeDTDPtr) pXmlFreeDtd(dtdPtr);
+      if (doFreeDTDPtr) {
+        pXmlFreeDtd(dtdPtr);
+      }
     }
   }
 
   // 3. On libère la mémoire
+  rootnode = NULL;
   pXmlFreeDoc(doc);
   tr.lpstrText = NULL;
   delete [] data;
@@ -1057,15 +1063,16 @@ void setAutoXMLType() {
   #ifdef __XMLTOOLS_DEBUG__
     Report::_printf_inf("setAutoXMLType()");
   #endif
+
   int currentEdit;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-  
+
   // on récupère les 6 premiers caractères du fichier
   char head[8] = { '\0' };
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, 7, reinterpret_cast<LPARAM>(&head));
   ::SendMessage(hCurrentEditView, SCI_SETSEL, 0, 0);
-  
+
   if (strlen(head) >= 6 && !strcmp(head, "<?xml ")) {
     LangType newType = L_XML;
     ::SendMessage(nppData._nppHandle, NPPM_SETCURRENTLANGTYPE, 0, (LPARAM) newType);
@@ -1591,7 +1598,6 @@ void togglePrettyPrintAllFiles() {
 }
 
 int initDocIterator() {
-  int f;
   nbopenfiles1 = (int) ::SendMessage(nppData._nppHandle, NPPM_GETNBOPENFILES, 0, PRIMARY_VIEW);
   nbopenfiles2 = (int) ::SendMessage(nppData._nppHandle, NPPM_GETNBOPENFILES, 0, SECOND_VIEW);
 
