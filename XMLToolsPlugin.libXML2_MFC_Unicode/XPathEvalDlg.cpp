@@ -92,12 +92,7 @@ int CXPathEvalDlg::execute_xpath_expression(const xmlChar* xpathExpr, const xmlC
   if (!data) return(-1);  // allocation error, abort check
   memset(data, '\0', currentLength+1);
 
-  TextRange tr;
-  tr.chrg.cpMin = 0;
-  tr.chrg.cpMax = currentLength;
-  tr.lpstrText = data;
-
-  ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
+  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
 
   /* Load XML document */
   doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
@@ -129,7 +124,7 @@ int CXPathEvalDlg::execute_xpath_expression(const xmlChar* xpathExpr, const xmlC
   /* Evaluate xpath expression */
   xpathObj = pXmlXPathEvalExpression(xpathExpr, xpathCtx);
   if(xpathObj == NULL) {
-    Report::_printf_err(L"Error: unable to evaluate xpath expression \"%s\"\n", xpathExpr);
+    Report::_printf_err(L"Error: unable to evaluate xpath expression \"%s\"\n", Report::widen(xpathExpr).c_str());
     pXmlXPathFreeContext(xpathCtx); 
     pXmlFreeDoc(doc);
     delete [] data;
@@ -218,15 +213,6 @@ void CXPathEvalDlg::AddToList(CListCtrl *list, CString type, CString name, CStri
   this->m_sResult.AppendFormat(L"%s\t%s\t%s\n", type, name, value);
 }
 
-void CXPathEvalDlg::AddToList(CListCtrl *list, CString type, CString name, std::string value) {
-  int idx = list->GetItemCount();
-  list->InsertItem(idx, type);
-  list->SetItemText(idx, 1, name);
-  list->SetItemText(idx, 2, Report::widen(value).c_str());
-
-  this->m_sResult.AppendFormat(L"%s\t%s\t%s\n", type, name, Report::widen(value).c_str());
-}
-
 /**
  * print_xpath_nodes:
  * @nodes:    the nodes set.
@@ -235,8 +221,7 @@ void CXPathEvalDlg::AddToList(CListCtrl *list, CString type, CString name, std::
  * Prints the @nodes content to @output.
  */
 void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
-  CString itemtype, itemname;
-  std::string itemvalue;
+  CString itemtype, itemname, itemvalue;
   CListCtrl *listresults = (CListCtrl*) this->GetDlgItem(IDC_LIST_XPATHRESULTS);
   
   listresults->DeleteAllItems();
@@ -264,43 +249,58 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
 
         if (cur->type == XML_ELEMENT_NODE) {
           itemtype = "Node";
+          itemname = "";
+          itemvalue = "";
 
           if (cur->ns) { 
-            itemname = Report::cstring(L"%s:%s", cur->ns->href, cur->name);
-            itemvalue = reinterpret_cast<const char*>(cur->content);
-          } else {
-            itemname = cur->name;
-            // s'il y a du texte, on concatène tout le texte et on l'affiche
-            if (cur->children) {
-              xmlNodePtr txtnode = cur->children;
-              itemvalue = "";
-              while (txtnode != cur->last) {
-			          if (txtnode->type == XML_TEXT_NODE) {
-			            itemvalue += reinterpret_cast<const char*>(txtnode->content);
-			          }
-                txtnode = txtnode->next;
-              }
-              if (txtnode->type == XML_TEXT_NODE)
-                itemvalue += reinterpret_cast<const char*>(txtnode->content);
+            itemname += Report::cstring(L"%s:", Report::widen(cur->ns->prefix).c_str());
+          }
+
+          itemname += Report::cstring(L"%s", Report::widen(cur->name).c_str());
+            
+          // s'il y a du texte, on concatène tout le texte et on l'affiche
+          if (cur->children) {
+            xmlNodePtr txtnode = cur->children;
+            itemvalue = L"";
+            while (txtnode != cur->last) {
+		          if (txtnode->type == XML_TEXT_NODE) {
+                itemvalue += Report::cstring(L"%s", Report::widen(txtnode->content).c_str());
+		          }
+              txtnode = txtnode->next;
             }
-            // si le noeud a des attributs, on les affiche (pour autant qu'on n'ait pas déjà affiché les attributs)
-            itemvalue = Report::trim(itemvalue);
-            if (itemvalue.empty() && cur->properties) {
-              xmlAttrPtr attr = cur->properties;
-              itemvalue = "";
-              while (attr != NULL) {
-                if (attr->type == XML_ATTRIBUTE_NODE) {
-                  itemvalue += Report::str_format("%s=\"%s\" ", attr->name, attr->children->content);
+            if (txtnode->type == XML_TEXT_NODE) {
+              itemvalue += Report::cstring(L"%s", Report::widen(txtnode->content).c_str());
+            }
+          }
+          // si le noeud a des attributs, on les affiche (pour autant qu'on n'ait pas déjà affiché les attributs)
+          itemvalue.Trim();
+          if (itemvalue.IsEmpty() && cur->properties) {
+            xmlAttrPtr attr = cur->properties;
+            itemvalue = "";
+            while (attr != NULL) {
+              if (attr->type == XML_ATTRIBUTE_NODE) {
+                if (attr->ns) {
+                  itemvalue += Report::cstring(L"%s:", Report::widen(attr->ns->prefix).c_str());
                 }
-                attr = attr->next;
+                itemvalue += Report::cstring(L"%s=\"%s\" ", Report::widen(attr->name).c_str(), Report::widen(attr->children->content).c_str());
               }
+              attr = attr->next;
             }
           }
         } else if (cur->type == XML_DOCUMENT_NODE) {
+          itemtype = "Doc";
+          itemname = "";
+          itemvalue = "";
          
         } else if(cur->type == XML_ATTRIBUTE_NODE) {
           itemtype = "Attr";
-          itemname = cur->name;
+          itemname = "";
+          itemvalue = "";
+
+          if (cur->ns) {
+            itemname += Report::cstring(L"%s:", Report::widen(cur->ns->prefix).c_str());
+          }
+          itemname += Report::cstring(L"%s", Report::widen(cur->name).c_str());
 
           if (cur->children) {
             itemvalue = reinterpret_cast<const char*>(cur->children->content);
@@ -308,6 +308,9 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
             itemvalue = "";
           }
         } else {
+          itemtype = "-";
+          itemname = "";
+          itemvalue = "";
           Report::_printf_inf(L"%d",cur->type);
         /*
           XML_ELEMENT_NODE = 1
@@ -331,8 +334,7 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
           XML_XINCLUDE_START = 19
           XML_XINCLUDE_END = 20
           XML_DOCB_DOCUMENT_NODE = 21*/
-      }
-
+        }
 
         AddToList(listresults, itemtype, itemname, itemvalue);
       }
@@ -351,14 +353,14 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
     case XPATH_NUMBER: {
       itemtype = "Num";
       itemname = "";
-      itemvalue = Report::str_format("%f", xpathObj->floatval);
+      itemvalue = Report::cstring(L"%f", xpathObj->floatval);
       AddToList(listresults, itemtype, itemname, itemvalue);
       break;
     }
     case XPATH_STRING: {
       itemtype = "Str";
       itemname = "";
-      itemvalue = reinterpret_cast<const char*>(xpathObj->stringval);
+      itemvalue = Report::cstring(L"%s", xpathObj->stringval);
       AddToList(listresults, itemtype, itemname, itemvalue);
       break;
     }

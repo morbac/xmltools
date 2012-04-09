@@ -656,12 +656,7 @@ void performXMLCheck(int informIfNoError) {
   if (!data) return;  // allocation error, abort check
   memset(data, '\0', currentLength+1);
 
-  TextRange tr;
-  tr.chrg.cpMin = 0;
-  tr.chrg.cpMax = currentLength;
-  tr.lpstrText = data;
-
-  ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
+  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
 
   xmlDocPtr doc;
 
@@ -685,7 +680,6 @@ void performXMLCheck(int informIfNoError) {
 
   pXmlFreeDoc(doc);
 
-  tr.lpstrText = NULL;
   delete [] data;
   data = NULL;
 }
@@ -726,13 +720,8 @@ void XMLValidation(int informIfNoError) {
   char *data = new char[currentLength+1];
   if (!data) return;  // allocation error, abort check
   memset(data, '\0', currentLength+1);
-  
-  TextRange tr;
-  tr.chrg.cpMin = 0;
-  tr.chrg.cpMax = currentLength;
-  tr.lpstrText = data;
 
-  ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
+  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
   
   xmlDocPtr doc;
   xmlNodePtr rootnode;
@@ -769,11 +758,18 @@ void XMLValidation(int informIfNoError) {
     if (rootnode == NULL) {
       Report::_printf_err(L"Empty XML document");
     } else {
-      // 2.1.a. On recherche l'attribut "xsi:noNamespaceSchemaLocation" dans la balise root
+      // 2.1.a. On recherche les attributs "xsi:noNamespaceSchemaLocation" ou "xsi:schemaLocation" dans la balise root
       // Exemple de balise root:
       //  <descript xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Descript_Shema.xsd">
       xmlChar* propval = pXmlGetProp(rootnode, reinterpret_cast<const unsigned char*>("noNamespaceSchemaLocation"));
-      if (propval) {
+      if (propval == NULL) {
+        propval = pXmlGetProp(rootnode, reinterpret_cast<const unsigned char*>("schemaLocation"));
+        if (propval != NULL) {
+          xml_schema = std::string(reinterpret_cast<const char*>(propval));
+          xml_schema = xml_schema.substr(1+xml_schema.find_last_of(' '));
+          xsdValidation = true;
+        }
+      } else {
         xml_schema = std::string(reinterpret_cast<const char*>(propval));
         xsdValidation = true;
       }
@@ -844,12 +840,12 @@ void XMLValidation(int informIfNoError) {
         // Chargement du contenu du XML Schema
         schema = pXmlSchemaParse(pctxt);
         pXmlSchemaFreeParserCtxt(pctxt);
+
         if (schema == NULL) {
           Report::_printf_err(L"Unable to parse schema file.");
         } else {
           // Création du contexte de validation
           if ((vctxt = pXmlSchemaNewValidCtxt(schema)) == NULL) {
-            pXmlSchemaFree(schema);
             Report::_printf_err(L"Unable to create validation context.");
           } else {
             // Traitement des erreurs de validation
@@ -907,7 +903,6 @@ void XMLValidation(int informIfNoError) {
   // 3. On libère la mémoire
   rootnode = NULL;
   pXmlFreeDoc(doc);
-  tr.lpstrText = NULL;
   delete [] data;
   data = NULL;
 
@@ -1095,13 +1090,7 @@ void getCurrentXPath() {
   memset(data, '\0', currentLength+1);
 
   int currentPos = int(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
-
-  TextRange tr;
-  tr.chrg.cpMin = 0;
-  tr.chrg.cpMax = currentLength;
-  tr.lpstrText = data;
-
-  ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
+  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
 
   std::string str(data);
 
@@ -1228,12 +1217,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     if (!data) return;  // allocation error, abort check
     memset(data, '\0', currentLength+1);
 
-    TextRange tr;
-    tr.chrg.cpMin = 0;
-    tr.chrg.cpMax = currentLength;
-    tr.lpstrText = data;
-
-    ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
+    ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
 
     int tabwidth = ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
     int usetabs = ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
@@ -1413,7 +1397,6 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     ::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
     ::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
 
-    tr.lpstrText = NULL;
     delete [] data;
   }
 }
@@ -1462,12 +1445,7 @@ void prettyPrintLibXML() {
     if (!data) return;  // allocation error, abort check
     memset(data, '\0', currentLength+1);
 
-    TextRange tr;
-    tr.chrg.cpMin = 0;
-    tr.chrg.cpMax = currentLength;
-    tr.lpstrText = data;
-
-    ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
+    ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
 
     int tabwidth = ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
     int usetabs = ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
@@ -1521,7 +1499,6 @@ void prettyPrintLibXML() {
     pXmlFreeDoc(doc);
     if (indentString) free(indentString);
 
-    tr.lpstrText = NULL;
     delete [] data;
   }
 }
@@ -1546,12 +1523,7 @@ void linarizeXML() {
 
     int currentPos = int(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
 
-    TextRange tr;
-    tr.chrg.cpMin = 0;
-    tr.chrg.cpMax = currentLength;
-    tr.lpstrText = data;
-
-    ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
+    ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
 
     std::string str(data);
 
@@ -1583,7 +1555,6 @@ void linarizeXML() {
     // Send formated string to scintilla
     ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
 
-    tr.lpstrText = NULL;
     delete [] data;
   }
 }

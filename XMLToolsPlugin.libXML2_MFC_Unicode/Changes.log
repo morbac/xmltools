@@ -4,205 +4,107 @@
                         ChangeLog
 ================================================================
 
-
 Release 2.3.2 (r905):
 ---------------------
 
 - Fix XML validation issue with inline DTD
-
 - Fix memory deallocation error after XML validation
-
+- Fix XPath output encoding issues
+- Fix XPath output errors (some tags displayed value of preceding node)
+- Add better support of attributes in XPath function
+- Add schemaLocation partial support (namespace is ignored)
+- Upgrade libXML version (libXML 2.7.8, libXMLSec 1.2.18, zlib 1.2.5)
 
 Release 2.3.1 (r639):
 ---------------------
 
 - Fix the access violation error at startup of previous release
-
-- Fix indentation errors with multiline attributes with  "Pretty
-  print" functions (XML only + XML only with line breaks)
-
+- Fix indentation errors with multiline attributes with  "Pretty print" functions (XML only + XML only with line breaks)
 - Upgrade to libXML 2.7.1, libXMLSec 1.2.11+ and libXSLT 1.1.24
-
 
 Release 2.3 (r583):
 -------------------
 
-- Load libXML DLL dynamically;  the plugin menu shows a  "How to
-  use..." when DLL is not available.
-
-- Fix errors and improve  "Linarize XML" function:  the function
-  now supports both LF and CRLF line ends
-
-- Fix indentation error in  "Pretty Print"  function when having
-  '>' char in node attribute
-
+- Load libXML DLL dynamically;  the plugin menu shows a "How to use..." when DLL is not available.
+- Fix errors and improve  "Linarize XML" function:  the function now supports both LF and CRLF line ends
+- Fix indentation error in  "Pretty Print"  function when having '>' char in node attribute
 - Fix the menu check marks problem
-
 
 Release 2.2 (r560):
 -------------------
 
 - Add XSL Transformation function
-
 - Add separators in plugin menu
-
 - Add XML header recognition function
-
 - Fix memory leaks in XPath Expression Evaluation function
-
 - Upgrade from libXML 2.6.30 to libXML 2.6.32+
-
 
 Release 2.1.1 (r548):
 ---------------------
 
 - Minor improvement of DTD/XSL validation message report
 
-
 Release 2.1 (r545):
 -------------------
 
 - Make XPath Expression Evaluation input field multiline
-
-- Change XPath Expression Evaluation window to resizable toolbox
-  and make it allow user to access to editor while open
-
-- Change destination path for  libXML DLL's  installed by plugin
-  auto-installer.  DLL's are now  installed in  Windows\System32
-  directory.
-
+- Change XPath Expression Evaluation window to resizable toolbox and make it allow user to access to editor while open
+- Change destination path for  libXML DLL's  installed by plugin auto-installer. DLL's are now installed in Windows\System32 directory.
 - Fix an overflow error in "Comment selection" function
-
 - Add "Linarize XML" function
-
 - Add XML Schema + DTD validation
-
 
 Release 2.0 (r513):
 -------------------
 
-- Replaces eXpat parser with libXML2  parser;  new parser offers
-  tons of new features which will be adapted to plugin in future
-  releases. It also supports more encodings.
-
-- Adaptation of all functions of previous version to new libXML
-  parser.
-
-- Add shortcut CTRL+ALT+SHIFT+B to "Pretty Print w/ line breaks"
-  function.
-
+- Replaces eXpat parser with libXML2 parser; new parser offers tons of new features which will be adapted to plugin in future releases. It also supports more encodings.
+- Adaptation of all functions of previous version to new libXML parser.
+- Add shortcut CTRL+ALT+SHIFT+B to "Pretty Print w/ line breaks" function.
 - Add new function "Evaluate XPath expression"
-
-- Fix the  non-modal  error messages;  error messages are now in
-  modal mode so they always appear in foreground.
-
-- Change "XML syntax auto-check"  trigger to NPPN_FILEBEFORESAVE
-  notification;  this avoid having  auto-check  executed  during
-  edition.
-
-- Add XML Tools  plugin installer;  this tool copies  the plugin
-  into Notepad++ plugins directory and external  libXML DLL's in
-  Notepad++ root directory.  External DLL's are  required by the
-  new plugin version since it is based on libXML.
-
+- Fix the non-modal error messages; error messages are now in modal mode so they always appear in foreground.
+- Change "XML syntax auto-check" trigger to NPPN_FILEBEFORESAVE notification; this avoid having auto-check executed during edition.
+- Add XML Tools plugin installer; this tool copies the plugin into Notepad++ plugins directory and external libXML DLL's in Notepad++ root directory. External DLL's are required by the new plugin version since it is based on libXML.
 
 Release 1.1.3 (r236):
 ---------------------
 
-- Slightly change behaviour of new PrettyPrint function. The new
-  version adds carriage returns  between tags separated  by only
-  spaces and/or tabulations. This means that following code:
-
-    <data>  <test/>  </data>
-
+- Slightly change behaviour of new PrettyPrint function. The new version adds carriage returns between tags separated by only spaces and/or tabulations. This means that following code:
+    <data> <test/> </data>
   will be formated as:
-
     <data>
       <test/>
     </data>
-
-  Moreover, empty tags like  "<data></data>"  or tags which only
-  contains spaces and/or  tabulations will  be auto-closed.  For
-  instance:
-
-    <data>   </data>
-
+  Moreover, empty tags like "<data></data>" or tags which onlycontains spaces and/or tabulations will be auto-closed. For instance:
+    <data> </data>
   will be replaced by:
-
     <data/>
-
-- Modifiy the carriage return sequence:  using "\r\n" instead of
-  "\n"
-
+- Modifiy the carriage return sequence: using "\r\n" instead of "\n"
 - Fixes formating problem inside comments and CDATA blocks
-
-- Fixes formating problem produced by '>' char
-  (ex: "<data>test></data>" where "test>" is simple text)
-
+- Fixes formating problem produced by '>' char (ex: "<data>test></data>" where "test>" is simple text)
 - Fixes indentation errors with character '"' placed in text
-
 - Fixes indentation errors with character '>' placed in CDATA
+- Fixes encoding problems with tags using special chars (for ex. german umlauts) - Thanks to Christoph Wagner for this report
+- Adds conversion of '&' to '&amp;' and reverse in XML <-> text conversion functions 
+- Adds conversion of '"' to '&quot;' and reverse in XML <-> text conversion functions
+- Fixes the missing copy to clipboard when getting XML path from a tag element (getting from text position was already working)
+- Disable "Pretty print", "XML <-> Text" and "Comment/Uncomment" functions when file is read only
+- Fixes the scrolling effet which occured after "Pretty print", "XML <-> Text" and "Comment/Uncomment" functions
+- Fixes the uncollapse effect which occured after "XML <-> Text" and "Comment/Uncomment" functions
+- Improvement of performances + memory usage for "XML <-> Text" and "Comment/Uncomment" functions
 
-- Fixes encoding problems with tags using special chars (for ex.
-  german umlauts) - Thanks to Christoph Wagner for this report
-
-- Adds conversion of '&' to '&amp;' and reverse  in XML <-> text
-  conversion functions 
-
-- Adds conversion of '"' to '&quot;' and reverse in XML <-> text
-  conversion functions
-
-- Fixes the missing copy to clipboard when getting XML path from
-  a tag element (getting from text position was already working)
-
-- Disable "Pretty print", "XML <-> Text" and "Comment/Uncomment"
-  functions when file is read only
-
-- Fixes the scrolling effet  which occured after "Pretty print",
-  "XML <-> Text" and "Comment/Uncomment" functions
-
-- Fixes the uncollapse effect which occured after "XML <-> Text"
-  and "Comment/Uncomment" functions
-
-- Improvement of performances + memory usage for  "XML <-> Text"
-  and "Comment/Uncomment" functions
-
-Note:  Thanks to Thomas Weller  for his bug reports  and help in
-       beta testing.
-
+Note: Thanks to Thomas Weller for his bug reports and help in beta testing.
 
 Release 1.1.2 (r143):
 ---------------------
 
-- Fix the misplacement error for check mark of  "Tag auto-close" 
-  menu entry (the mark appeared on wrong line).
-
-- Add a new  variant of  PrettyPrint  fonction.  The new version
-  automatically adds cariage returns between tags.  The function
-  is available in menu entry "Pretty Print (XML only - with line
-  breaks)"
-
+- Fix the misplacement error for check mark of "Tag auto-close" menu entry (the mark appeared on wrong line).
+- Add a new variant of PrettyPrint fonction. The new version automatically adds cariage returns between tags. The function is available in menu entry "Pretty Print (XML only - with line breaks)"
 
 Release 1.1.1 (r124):
 ---------------------
 
-- Fix the crash bug which  occured when using  comment/uncomment
-  function on XML  code containing CDATA content,  or other tags
-  using <![....]> syntax.
-
-  Warning: The new syntax for internal comments (comments inside
-  comments) uses  "<!{x}**" and "**{x}>"  codes (without quotes)
-  as markers.  Since this  is not  same syntaxe  as in  previous
-  release,  you will not be able to comment/uncomment code using
-  previous syntax.  Please be  careful with  this feature if you
-  used it before. Sorry for inconvenience :(
-  
-- Fix the indentation error for XML code with CDATA content,  or
-  other tags using <![....]> syntax.
-
+- Fix the crash bug which occured when using comment/uncomment function on XML code containing CDATA content, or other tags using <![....]> syntax.
+ Warning: The new syntax for internal comments (comments inside comments) uses "<!{x}**" and "**{x}>" codes (without quotes) as markers. Since this is not same syntaxe as in previous release, you will not be able to comment/uncomment code using previous syntax. Please be careful with this feature if you used it before. Sorry for inconvenience :(
+- Fix the indentation error for XML code with CDATA content, or other tags using <![....]> syntax.
 - Add a new command to perform manual XML syntax check.
-
 - XML syntax checker is now based on expat 2.0 instead of 1.95.8
-
-
-================================================================

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="XMLTools"
-	ProjectGUID="{A5213792-57D0-425B-82A7-9EF94D10D1F5}"
+	ProjectGUID="{22A001CA-3074-440C-BF9B-1D5BAD07CE02}"
 	RootNamespace="XMLTools"
 	Keyword="MFCProj"
 	>
@@ -113,7 +113,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="C:\Progra~1\NOTEPA~1\plugins\XMLTools.dll"
+			OutputDirectory=".\Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -153,6 +153,7 @@
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile=".\Debug/XMLTools.pch"
 				AssemblerListingLocation=".\Debug/"
+				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
 				BrowseInformation="1"
 				WarningLevel="3"

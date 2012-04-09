@@ -45,7 +45,6 @@ protected:
   int register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList);
   void print_xpath_nodes(xmlXPathObjectPtr xpathObj);
   void AddToList(CListCtrl *list, CString type, CString name, CString value);
-  void AddToList(CListCtrl *list, CString type, CString name, std::string value);
 
   HWND getCurrentHScintilla(int which);
 
