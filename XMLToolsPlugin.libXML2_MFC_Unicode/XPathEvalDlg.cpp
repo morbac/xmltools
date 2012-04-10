@@ -61,7 +61,8 @@ void CXPathEvalDlg::OnBtnEvaluate() {
   } else {
     std::wstring wexpr(m_sExpression);
     std::string expr = Report::narrow(wexpr);
-    execute_xpath_expression(reinterpret_cast<const xmlChar*>(expr.c_str()), NULL);
+    
+    execute_xpath_expression(reinterpret_cast<const xmlChar*>(expr.c_str()));
   }
 }
 
@@ -75,10 +76,11 @@ void CXPathEvalDlg::OnBtnEvaluate() {
  *
  * Returns 0 on success and a negative value otherwise.
  */
-int CXPathEvalDlg::execute_xpath_expression(const xmlChar* xpathExpr, const xmlChar* nsList) {
+int CXPathEvalDlg::execute_xpath_expression(const xmlChar* xpathExpr) {
   xmlDocPtr doc;
   xmlXPathContextPtr xpathCtx; 
   xmlXPathObjectPtr xpathObj; 
+  xmlChar* nsList = NULL;
 
   assert(xpathExpr);
 
@@ -105,15 +107,15 @@ int CXPathEvalDlg::execute_xpath_expression(const xmlChar* xpathExpr, const xmlC
 
   /* Create xpath evaluation context */
   xpathCtx = pXmlXPathNewContext(doc);
-  if(xpathCtx == NULL) {
+  if (xpathCtx == NULL) {
     Report::_printf_err(L"Error: unable to create new XPath context\n");
     pXmlFreeDoc(doc); 
     delete [] data;
     return(-1);
   }
   
-  /* Register namespaces from list (if any) */
-  if((nsList != NULL) && (register_namespaces(xpathCtx, nsList) < 0)) {
+  /* Register namespaces */
+  if (register_namespaces_ex(xpathCtx, doc) < 0) {
     Report::_printf_err(L"Error: failed to register namespaces list \"%s\"\n", nsList);
     pXmlXPathFreeContext(xpathCtx); 
     pXmlFreeDoc(doc);
@@ -153,7 +155,7 @@ int CXPathEvalDlg::execute_xpath_expression(const xmlChar* xpathExpr, const xmlC
  * Registers namespaces from @nsList in @xpathCtx.
  *
  * Returns 0 on success and a negative value otherwise.
- */
+ *//*
 int CXPathEvalDlg::register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList) {
   xmlChar* nsListDup;
   xmlChar* prefix;
@@ -171,11 +173,11 @@ int CXPathEvalDlg::register_namespaces(xmlXPathContextPtr xpathCtx, const xmlCha
  
   next = nsListDup; 
   while(next != NULL) {
-    /* skip spaces */
+    // skip spaces
     while((*next) == ' ') next++;
     if((*next) == '\0') break;
 
-    /* find prefix */
+    // find prefix
     prefix = next;
     next = (xmlChar*) pXmlStrchr(next, '=');
     if(next == NULL) {
@@ -185,14 +187,14 @@ int CXPathEvalDlg::register_namespaces(xmlXPathContextPtr xpathCtx, const xmlCha
     }
     *(next++) = '\0';  
   
-    /* find href */
+    // find href
     href = next;
     next = (xmlChar*) pXmlStrchr(next, ' ');
     if(next != NULL) {
       *(next++) = '\0';  
     }
 
-    /* do register namespace */
+    // do register namespace
     if (pXmlXPathRegisterNs(xpathCtx, prefix, href) != 0) {
       Report::_printf_err(L"Error: unable to register NS with prefix=\"%s\" and href=\"%s\"\n", prefix, href);
       pXmlFree(nsListDup);
@@ -201,6 +203,24 @@ int CXPathEvalDlg::register_namespaces(xmlXPathContextPtr xpathCtx, const xmlCha
   }
 
   pXmlFree(nsListDup);
+  return(0);
+}*/
+
+int CXPathEvalDlg::register_namespaces_ex(xmlXPathContextPtr xpathCtx, xmlDocPtr doc) {
+  xmlNodePtr node = doc->children;
+
+  while (node) {
+    xmlNsPtr ns = node->nsDef;
+    while (ns) {
+      if (pXmlXPathRegisterNs(xpathCtx, ns->prefix, ns->href) != 0) {
+        Report::_printf_err(L"Error: unable to register NS with prefix=\"%s\" and href=\"%s\"\n", ns->prefix, ns->href);
+        return(-1);  
+      }
+      ns = ns->next;
+    }
+    node = node->next;
+  }
+
   return(0);
 }
 

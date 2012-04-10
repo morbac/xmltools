@@ -4,13 +4,15 @@
                         ChangeLog
 ================================================================
 
-Release 2.3.2 (r905):
+Release 2.3.2 (r908):
 ---------------------
 
 - Fix XML validation issue with inline DTD
 - Fix memory deallocation error after XML validation
 - Fix XPath output encoding issues
 - Fix XPath output errors (some tags displayed value of preceding node)
+- Improve namespace support in XPath evaluation function
+- Add namespaces in path given by "Current XML Path" function
 - Add better support of attributes in XPath function
 - Add schemaLocation partial support (namespace is ignored)
 - Upgrade libXML version (libXML 2.7.8, libXMLSec 1.2.18, zlib 1.2.5)

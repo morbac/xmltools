@@ -41,8 +41,9 @@ public:
 
 // Implementation
 protected:
-  int execute_xpath_expression(const xmlChar* xpathExpr, const xmlChar* nsList);
-  int register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList);
+  int execute_xpath_expression(const xmlChar* xpathExpr);
+  //int register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList);
+  int register_namespaces_ex(xmlXPathContextPtr xpathCtx, xmlDocPtr doc);
   void print_xpath_nodes(xmlXPathObjectPtr xpathObj);
   void AddToList(CListCtrl *list, CString type, CString name, CString value);
 
