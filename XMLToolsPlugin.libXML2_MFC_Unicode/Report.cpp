@@ -121,7 +121,7 @@ std::string Report::str_format(const char* s, ...) {
   
   va_start(msg, s);
   //vsnprintf(buffer + strlen(buffer), s, msg);
-  vsnprintf(buffer, MAX_BUFFER - 1, s, msg);
+  _vsnprintf(buffer, MAX_BUFFER - 1, s, msg);
   va_end(msg);
   
   if (strlen(buffer) <= 0) return "";

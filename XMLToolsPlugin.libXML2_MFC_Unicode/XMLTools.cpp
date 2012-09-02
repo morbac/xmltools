@@ -839,10 +839,19 @@ void XMLValidation(int informIfNoError) {
       } else {
         // Chargement du contenu du XML Schema
         schema = pXmlSchemaParse(pctxt);
-        pXmlSchemaFreeParserCtxt(pctxt);
 
         if (schema == NULL) {
-          Report::_printf_err(L"Unable to parse schema file.");
+          xmlErrorPtr err;
+          err = pXmlGetLastError();
+
+          if (err != NULL) {
+            if (err->line > 0) {
+              ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
+            }
+            Report::_printf_err(L"Unable to parse schema file. \r\nParsing error at line %d: \r\n%s", err->line, Report::widen(err->message).c_str());
+          } else {
+            Report::_printf_err(L"Unable to parse schema file.");
+          }
         } else {
           // Création du contexte de validation
           if ((vctxt = pXmlSchemaNewValidCtxt(schema)) == NULL) {
@@ -866,7 +875,9 @@ void XMLValidation(int informIfNoError) {
           // 2.4. On libère le parseur
           pXmlSchemaFree(schema);
           pXmlSchemaFreeValidCtxt(vctxt);
-        }
+		}
+
+		pXmlSchemaFreeParserCtxt(pctxt);
       }
     }
 

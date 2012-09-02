@@ -1,20 +1,21 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLTools", "XMLTools.vcproj", "{22A001CA-3074-440C-BF9B-1D5BAD07CE02}"
+Microsoft Visual Studio Solution File, Format Version 7.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLTools", "XMLTools.vcproj", "{1D455034-2315-41F6-A8B9-6CDEFCD21876}"
 EndProject
 Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Win32 = Debug|Win32
-		Release|Win32 = Release|Win32
+	GlobalSection(SolutionConfiguration) = preSolution
+		ConfigName.0 = Debug
+		ConfigName.1 = Release
 	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{22A001CA-3074-440C-BF9B-1D5BAD07CE02}.Debug|Win32.ActiveCfg = Debug|Win32
-		{22A001CA-3074-440C-BF9B-1D5BAD07CE02}.Debug|Win32.Build.0 = Debug|Win32
-		{22A001CA-3074-440C-BF9B-1D5BAD07CE02}.Release|Win32.ActiveCfg = Release|Win32
-		{22A001CA-3074-440C-BF9B-1D5BAD07CE02}.Release|Win32.Build.0 = Release|Win32
+	GlobalSection(ProjectDependencies) = postSolution
 	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
+	GlobalSection(ProjectConfiguration) = postSolution
+		{1D455034-2315-41F6-A8B9-6CDEFCD21876}.Debug.ActiveCfg = Debug|Win32
+		{1D455034-2315-41F6-A8B9-6CDEFCD21876}.Debug.Build.0 = Debug|Win32
+		{1D455034-2315-41F6-A8B9-6CDEFCD21876}.Release.ActiveCfg = Release|Win32
+		{1D455034-2315-41F6-A8B9-6CDEFCD21876}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
 	EndGlobalSection
 EndGlobal
