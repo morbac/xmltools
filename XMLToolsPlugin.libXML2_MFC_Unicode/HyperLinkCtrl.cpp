@@ -118,7 +118,7 @@ BOOL CHyperLink::MailTo(CString url, CString name)
 	char *lpszName = new char[name.GetLength() + 1];
 	if (!lpszUrl) return FALSE;
 
-    strcpy(lpszUrl, reinterpret_cast<const char*>((LPCTSTR)url));
+  strcpy(lpszUrl, reinterpret_cast<const char*>((LPCTSTR)url));
 	strcpy(lpszName, reinterpret_cast<const char*>((LPCTSTR)name));
 
 	// Load the MAPI Library

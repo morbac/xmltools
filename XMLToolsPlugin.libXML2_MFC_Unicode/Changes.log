@@ -4,6 +4,11 @@
                         ChangeLog
 ================================================================
 
+Release 2.3.3 (r909):
+---------------------
+
+- Remove XML syntax check before pretty print (except in libXML mode)
+
 Release 2.3.2 (r908):
 ---------------------
 
@@ -21,7 +26,7 @@ Release 2.3.1 (r639):
 ---------------------
 
 - Fix the access violation error at startup of previous release
-- Fix indentation errors with multiline attributes with  "Pretty print" functions (XML only + XML only with line breaks)
+- Fix indentation errors with multiline attributes with "Pretty print" functions (XML only + XML only with line breaks)
 - Upgrade to libXML 2.7.1, libXMLSec 1.2.11+ and libXSLT 1.1.24
 
 Release 2.3 (r583):

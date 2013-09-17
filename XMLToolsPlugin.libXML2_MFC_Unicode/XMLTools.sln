@@ -9,7 +9,6 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{9BC81B17-3AFF-A2B2-C6DE-294C7912E47C}.Debug|Win32.ActiveCfg = Debug|Win32
-		{9BC81B17-3AFF-A2B2-C6DE-294C7912E47C}.Debug|Win32.Build.0 = Debug|Win32
 		{9BC81B17-3AFF-A2B2-C6DE-294C7912E47C}.Release|Win32.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution

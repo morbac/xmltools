@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Français (France) resources
+// French (France) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
 #ifdef _WIN32
@@ -58,12 +58,12 @@ BEGIN
     END
 END
 
-#endif    // Français (France) resources
+#endif    // French (France) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Français (Suisse) resources
+// French (Switzerland) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRS)
 #ifdef _WIN32
@@ -126,14 +126,18 @@ BEGIN
 END
 
 IDD_XPATHEVAL DIALOGEX 0, 0, 402, 198
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
+    WS_THICKFRAME
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "XPath Expression Evaluation"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    EDITTEXT        IDC_EDIT_EXPRESSION,7,7,298,44,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_EXPRESSION,7,7,298,44,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_AUTOHSCROLL
     DEFPUSHBUTTON   "Evaluate",IDC_BTN_EVALUATE,344,7,50,13
-    CONTROL         "List1",IDC_LIST_XPATHRESULTS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,7,53,387,138
+    CONTROL         "List1",IDC_LIST_XPATHRESULTS,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_NOSORTHEADER | WS_BORDER | 
+                    WS_TABSTOP,7,53,387,138
     PUSHBUTTON      "Copy",IDC_BTN_COPY2CLIPBOARD,344,38,50,13
 END
 
@@ -144,13 +148,17 @@ FONT 8, "MS Sans Serif"
 BEGIN
     EDITTEXT        IDC_EDIT_FILENAME,7,19,267,12,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_BTN_EXPLORE_XSDFILE,279,19,20,12
-    EDITTEXT        IDC_EDIT_ROOTELEMSAMPLE,7,75,292,28,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL
+    EDITTEXT        IDC_EDIT_ROOTELEMSAMPLE,7,75,292,28,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | 
+                    WS_VSCROLL
     DEFPUSHBUTTON   "OK",IDOK,249,119,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,196,119,50,14
     LTEXT           "Please select XML schema (XSD):",IDC_STATIC,7,7,224,8
     LTEXT           "Important:",IDC_STATIC,7,36,84,8
-    LTEXT           "This dialog box is displayed because default validation schema cannot be found in XML root element. To avoid having to specify the XSD for every validation, please define the default XML schema in your root element using following syntax:",IDC_STATIC,7,48,292,26
-    LTEXT           "where XSD_FILE_PATH is the relative or absolute path of the XML schema file.",IDC_STATIC,7,106,292,8
+    LTEXT           "This dialog box is displayed because default validation schema cannot be found in XML root element. To avoid having to specify the XSD for every validation, please define the default XML schema in your root element using following syntax:",
+                    IDC_STATIC,7,48,292,26
+    LTEXT           "where XSD_FILE_PATH is the relative or absolute path of the XML schema file.",
+                    IDC_STATIC,7,106,292,8
 END
 
 IDD_MESSAGEDLG DIALOGEX 0, 0, 356, 146
@@ -160,7 +168,9 @@ CAPTION "Information"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,299,125,50,14
-    EDITTEXT        IDC_EDIT_MULTILINEMSG,7,7,342,115,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL
+    EDITTEXT        IDC_EDIT_MULTILINEMSG,7,7,342,115,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | 
+                    WS_VSCROLL
 END
 
 IDD_XSLTDLG DIALOGEX 0, 0, 292, 94
@@ -169,25 +179,28 @@ EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "XSL Transformation settings"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
-    EDITTEXT        IDC_EDIT_XSLTFILE,7,7,255,12,ES_AUTOHSCROLL,WS_EX_ACCEPTFILES
+    EDITTEXT        IDC_EDIT_XSLTFILE,7,7,255,12,ES_AUTOHSCROLL,
+                    WS_EX_ACCEPTFILES
     PUSHBUTTON      "...",IDC_BTN_BROWSEXSLTFILE,266,7,19,12
     LTEXT           "Options:",IDC_STATIC,7,23,278,8
-    EDITTEXT        IDC_EDIT_XSLTOPTIONS,7,33,278,31,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | WS_VSCROLL
+    EDITTEXT        IDC_EDIT_XSLTOPTIONS,7,33,278,31,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | WS_VSCROLL
     DEFPUSHBUTTON   "Transform",IDC_BTN_TRANSFORM,230,73,55,14
-    LTEXT           "You can enter up to 16 options using following syntax:",IDC_STATIC,7,67,223,8
-    LTEXT           "param1=123 param2='abc' param3=concat('abc','123')",IDC_STATIC,7,77,219,9
+    LTEXT           "You can enter up to 16 options using following syntax:",
+                    IDC_STATIC,7,67,223,8
+    LTEXT           "param1=123 param2='abc' param3=concat('abc','123')",
+                    IDC_STATIC,7,77,219,9
 END
 
-IDD_HOWTOUSE DIALOGEX 0, 0, 181, 140
+IDD_HOWTOUSE DIALOGEX 0, 0, 182, 134
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "XML Tools"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,65,115,50,14
-    GROUPBOX        "",IDC_STATIC,7,7,167,126
-    CTEXT           "Unable to load libXML and/or libXSLT.\nPlease download ext_libs.zip archive,\nextract libraries into NPP root directory\n(same directory than Notepad++.exe)\nand restart NPP.",IDC_STATIC,18,20,144,45
-    CTEXT           "Get required libraries here",IDC_EXTLIBS_URL,18,70,144,8
-    CTEXT           "Librairies also available at\nhttp://www.zlatkovic.com/pub/libxml",IDC_EXTLIBS_URL2,18,87,144,18
+    DEFPUSHBUTTON   "OK",IDOK,65,103,50,14
+    GROUPBOX        "",IDC_STATIC,7,7,168,120
+    CTEXT           "Unable to load libXML and/or libXSLT.\n\nPlease install external DLLs into NPP root directory (same directory than Notepad++.exe) and restart NPP.\n\nThese librairies are available in the subfolder ""ext_libs"" of xmltools zip archive.",
+                    IDC_STATIC,19,19,142,79
 END
 
 
@@ -243,15 +256,15 @@ BEGIN
     IDD_HOWTOUSE, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 174
+        RIGHTMARGIN, 175
         VERTGUIDE, 90
         TOPMARGIN, 7
-        BOTTOMMARGIN, 133
+        BOTTOMMARGIN, 127
     END
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Français (Suisse) resources
+#endif    // French (Switzerland) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

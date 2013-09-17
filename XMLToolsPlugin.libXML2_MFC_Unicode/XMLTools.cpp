@@ -829,7 +829,7 @@ void XMLValidation(int informIfNoError) {
       xml_absolute_schema.append("\\");
       xml_absolute_schema.append(xml_schema);
 
-      // si le fichier existe, on le garde, sinon on reprend la valeur initiale
+      // si le fichier existe, on le garde, sinon on reprend la valeur initiale (permet de gérer le cas où on reçoit une URL)
       if (PathFileExists(Report::widen(xml_absolute_schema).c_str()) == FALSE) {
         xml_absolute_schema = xml_schema;
       }
@@ -875,9 +875,9 @@ void XMLValidation(int informIfNoError) {
           // 2.4. On libère le parseur
           pXmlSchemaFree(schema);
           pXmlSchemaFreeValidCtxt(vctxt);
-		}
+		    }
 
-		pXmlSchemaFreeParserCtxt(pctxt);
+		    pXmlSchemaFreeParserCtxt(pctxt);
       }
     }
 
@@ -1138,9 +1138,9 @@ void getCurrentXPath() {
         nodepath += "/";
         if(cur_node->ns) {
           if (cur_node->ns->prefix != NULL) {
-			nodepath += reinterpret_cast<const char*>(cur_node->ns->prefix);
-			nodepath += ":";
-		  }
+          nodepath += reinterpret_cast<const char*>(cur_node->ns->prefix);
+          nodepath += ":";
+        }
         }
         nodepath += reinterpret_cast<const char*>(cur_node->name);
       }
@@ -1228,18 +1228,37 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     xOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETXOFFSET, 0, 0);
     yOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
 
-    currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+	char *data = NULL;
 
-    char *data = new char[currentLength+1];
-    if (!data) return;  // allocation error, abort check
-    memset(data, '\0', currentLength+1);
-
-    ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
+  // use the selection
+  long selstart = 0, selend = 0;
+  // désactivé : le fait de prettyprinter que la sélection pose problème pour l'indentation
+  // il faudrait calculer l'indentation de la 1re ligne de sélection, mais l'indentation
+  // de cette ligne n'est peut-être pas correcte. On pourrait la déterminer en récupérant
+  // le path de la banche sélectionnée...
+	//selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
+	//selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
+  
+	if (selend > selstart) {
+	  currentLength = selend-selstart;
+	  data = new char[currentLength+1];
+	  if (!data) return;  // allocation error, abort check
+	  memset(data, '\0', currentLength+1);
+	  ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
+	} else {
+	  currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+	  data = new char[currentLength+1];
+	  if (!data) return;  // allocation error, abort check
+	  memset(data, '\0', currentLength+1);
+	  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
+	}
 
     int tabwidth = ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
     int usetabs = ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
     if (tabwidth <= 0) tabwidth = 4;
-
+	
+	/*
+	// On check la syntaxe
     xmlDocPtr doc;
 
     doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
@@ -1250,7 +1269,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     }
 
     pXmlFreeDoc(doc);
-
+	*/
     std::string str(data);
 
     // count the < and > signs; > are ignored if tagsignlevel <= 0. This prevent indent errors if text or attributes contain > sign.
@@ -1408,7 +1427,11 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     }
 
     // Send formated string to scintilla
-    ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
+	  if (selend > selstart) {
+        ::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(str.c_str()));
+	  } else {
+		  ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
+	  }
 
     // Restore scrolling
     ::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);

@@ -115,7 +115,7 @@ int CXPathEvalDlg::execute_xpath_expression(const xmlChar* xpathExpr) {
   }
   
   /* Register namespaces */
-    if (register_namespaces_ex(xpathCtx, doc) < 0) {
+  if (register_namespaces_ex(xpathCtx, doc) < 0) {
     Report::_printf_err(L"Error: failed to register namespaces list \"%s\"\n", nsList);
     pXmlXPathFreeContext(xpathCtx); 
     pXmlFreeDoc(doc);
@@ -223,9 +223,9 @@ int CXPathEvalDlg::register_namespaces_ex(xmlXPathContextPtr xpathCtx, xmlDocPtr
 	  }
 
 	  if (res != 0) {
-		Report::_printf_err(L"Error: unable to register NS with prefix=\"%s\" and href=\"%s\"\n", ns->prefix, ns->href);
-		return(-1);  
-	  }
+        Report::_printf_err(L"Error: unable to register NS with prefix=\"%s\" and href=\"%s\"\n", ns->prefix, ns->href);
+        return(-1);  
+      }
 
       ns = ns->next;
     }

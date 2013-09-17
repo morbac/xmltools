@@ -12,8 +12,8 @@
 /////////////////////////////////////////////////////////////////////////////
 // CHowtoUseDlg dialog
 
-#define EXTLIBS_URL "http://sourceforge.net/project/showfiles.php?group_id=189927&package_id=264094&release_id=607029"
-#define EXTLIBS_URL2 "http://www.zlatkovic.com/pub/libxml/"
+//#define EXTLIBS_URL "http://sourceforge.net/project/showfiles.php?group_id=189927&package_id=264094&release_id=607029"
+//#define EXTLIBS_URL2 "http://www.zlatkovic.com/pub/libxml/"
 
 class CHowtoUseDlg : public CDialog
 {
