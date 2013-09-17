@@ -78,7 +78,7 @@ void CXPathEvalDlg::OnBtnEvaluate() {
  */
 int CXPathEvalDlg::execute_xpath_expression(const xmlChar* xpathExpr) {
   xmlDocPtr doc;
-  xmlXPathContextPtr xpathCtx; 
+  xmlXPathContextPtr xpathCtx;
   xmlXPathObjectPtr xpathObj; 
   xmlChar* nsList = NULL;
 
@@ -115,7 +115,7 @@ int CXPathEvalDlg::execute_xpath_expression(const xmlChar* xpathExpr) {
   }
   
   /* Register namespaces */
-  if (register_namespaces_ex(xpathCtx, doc) < 0) {
+    if (register_namespaces_ex(xpathCtx, doc) < 0) {
     Report::_printf_err(L"Error: failed to register namespaces list \"%s\"\n", nsList);
     pXmlXPathFreeContext(xpathCtx); 
     pXmlFreeDoc(doc);
@@ -208,14 +208,25 @@ int CXPathEvalDlg::register_namespaces(xmlXPathContextPtr xpathCtx, const xmlCha
 
 int CXPathEvalDlg::register_namespaces_ex(xmlXPathContextPtr xpathCtx, xmlDocPtr doc) {
   xmlNodePtr node = doc->children;
+  int i = 0;
 
   while (node) {
     xmlNsPtr ns = node->nsDef;
     while (ns) {
-      if (pXmlXPathRegisterNs(xpathCtx, ns->prefix, ns->href) != 0) {
-        Report::_printf_err(L"Error: unable to register NS with prefix=\"%s\" and href=\"%s\"\n", ns->prefix, ns->href);
-        return(-1);  
-      }
+	  // on crée un prefixe automatique au cas où le préfixe est null
+	  int res = 0;
+      if (ns->prefix != NULL) {
+		  res = pXmlXPathRegisterNs(xpathCtx, ns->prefix, ns->href);
+	  } else {
+		  std::string prefix = Report::str_format("ns%d",++i);
+		  res = pXmlXPathRegisterNs(xpathCtx, reinterpret_cast<const xmlChar*>(prefix.c_str()), ns->href);
+	  }
+
+	  if (res != 0) {
+		Report::_printf_err(L"Error: unable to register NS with prefix=\"%s\" and href=\"%s\"\n", ns->prefix, ns->href);
+		return(-1);  
+	  }
+
       ns = ns->next;
     }
     node = node->next;
@@ -272,7 +283,7 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
           itemname = "";
           itemvalue = "";
 
-          if (cur->ns) { 
+          if (cur->ns && cur->ns->prefix) { 
             itemname += Report::cstring(L"%s:", Report::widen(cur->ns->prefix).c_str());
           }
 
@@ -299,7 +310,7 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
             itemvalue = "";
             while (attr != NULL) {
               if (attr->type == XML_ATTRIBUTE_NODE) {
-                if (attr->ns) {
+                if (attr->ns && attr->ns->prefix) {
                   itemvalue += Report::cstring(L"%s:", Report::widen(attr->ns->prefix).c_str());
                 }
                 itemvalue += Report::cstring(L"%s=\"%s\" ", Report::widen(attr->name).c_str(), Report::widen(attr->children->content).c_str());
@@ -317,7 +328,7 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
           itemname = "";
           itemvalue = "";
 
-          if (cur->ns) {
+          if (cur->ns && cur->ns->prefix) {
             itemname += Report::cstring(L"%s:", Report::widen(cur->ns->prefix).c_str());
           }
           itemname += Report::cstring(L"%s", Report::widen(cur->name).c_str());

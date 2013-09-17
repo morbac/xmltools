@@ -1137,8 +1137,10 @@ void getCurrentXPath() {
       if (cur_node->type == XML_ELEMENT_NODE) {
         nodepath += "/";
         if(cur_node->ns) {
-          nodepath += reinterpret_cast<const char*>(cur_node->ns->prefix);
-          nodepath += ":";
+          if (cur_node->ns->prefix != NULL) {
+			nodepath += reinterpret_cast<const char*>(cur_node->ns->prefix);
+			nodepath += ":";
+		  }
         }
         nodepath += reinterpret_cast<const char*>(cur_node->name);
       }
