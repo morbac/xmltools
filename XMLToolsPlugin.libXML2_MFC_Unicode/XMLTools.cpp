@@ -25,6 +25,7 @@
 #include <sstream>
 #include <assert.h>
 #include <locale>
+#include <algorithm>
 
 // libxml
 #include "LoadLibrary.h"
@@ -1087,17 +1088,16 @@ void setAutoXMLType() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void getCurrentXPath() {
-  #ifdef __XMLTOOLS_DEBUG__
-    Report::_printf_inf("getCurrentXPath()");
-  #endif
+std::string currentXPath() {
   int currentEdit, currentLength;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
   currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
+  std::string nodepath("");
+
   char *data = new char[currentLength+1];
-  if (!data) return;  // allocation error, abort check
+  if (!data) return nodepath;  // allocation error, abort check
   memset(data, '\0', currentLength+1);
 
   int currentPos = int(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
@@ -1110,8 +1110,7 @@ void getCurrentXPath() {
   int endpos = str.find_last_of(">");
 
   // let's reach the end of current tag (if we are inside a tag)
-  std::wstring tmpmsg(L"Current node cannot be resolved.");
-  if (currentPos > begpos && currentPos <= endpos){
+  if (currentPos > begpos && currentPos <= endpos) {
     currentPos = str.find_last_of("<>", currentPos-1)+1;
     bool isinsideclosingtag = (currentPos > 0 && str.at(currentPos-1) == '<' && str.at(currentPos) == '/');
 
@@ -1132,43 +1131,53 @@ void getCurrentXPath() {
     xmlDocPtr doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, XML_PARSE_RECOVER);
     xmlNodePtr cur_node = pXmlDocGetRootElement(doc);
 
-    std::string nodepath("");
     while (cur_node != NULL && cur_node->last != NULL) {
       if (cur_node->type == XML_ELEMENT_NODE) {
         nodepath += "/";
         if(cur_node->ns) {
           if (cur_node->ns->prefix != NULL) {
-          nodepath += reinterpret_cast<const char*>(cur_node->ns->prefix);
-          nodepath += ":";
-        }
+            nodepath += reinterpret_cast<const char*>(cur_node->ns->prefix);
+            nodepath += ":";
+          }
         }
         nodepath += reinterpret_cast<const char*>(cur_node->name);
       }
       cur_node = cur_node->last;
     }
-
     pXmlFreeDoc(doc);
+  }
 
-    if (nodepath.length() > 0) {
-      tmpmsg = Report::widen(nodepath);
-      tmpmsg += L"\n\n(Path has been copied into clipboard)";
+  delete [] data;
+
+  return nodepath;
+}
+
+void getCurrentXPath() {
+  #ifdef __XMLTOOLS_DEBUG__
+    Report::_printf_inf("getCurrentXPath()");
+  #endif
+  
+  std::string nodepath(currentXPath());
+
+  std::wstring tmpmsg(L"Current node cannot be resolved.");
+
+  if (nodepath.length() > 0) {
+    tmpmsg = Report::widen(nodepath);
+    tmpmsg += L"\n\n(Path has been copied into clipboard)";
       
-      ::OpenClipboard(NULL);
-      ::EmptyClipboard();
-      HGLOBAL hClipboardData;
-      hClipboardData = GlobalAlloc(GMEM_DDESHARE, nodepath.length()+1);
-      char * pchData;
-      pchData = (char*)GlobalLock(hClipboardData);
-      strcpy(pchData, nodepath.c_str());
-      ::GlobalUnlock(hClipboardData);
-      ::SetClipboardData(CF_TEXT, pchData);
-      ::CloseClipboard();
-    }
+    ::OpenClipboard(NULL);
+    ::EmptyClipboard();
+    HGLOBAL hClipboardData;
+    hClipboardData = GlobalAlloc(GMEM_DDESHARE, nodepath.length()+1);
+    char * pchData;
+    pchData = (char*)GlobalLock(hClipboardData);
+    strcpy(pchData, nodepath.c_str());
+    ::GlobalUnlock(hClipboardData);
+    ::SetClipboardData(CF_TEXT, pchData);
+    ::CloseClipboard();
   }
   
   Report::_printf_inf(tmpmsg.c_str());
-    
-  delete [] data;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1228,49 +1237,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     xOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETXOFFSET, 0, 0);
     yOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
 
-	char *data = NULL;
-
-  // use the selection
-  long selstart = 0, selend = 0;
-  // désactivé : le fait de prettyprinter que la sélection pose problème pour l'indentation
-  // il faudrait calculer l'indentation de la 1re ligne de sélection, mais l'indentation
-  // de cette ligne n'est peut-être pas correcte. On pourrait la déterminer en récupérant
-  // le path de la banche sélectionnée...
-	//selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-	//selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
-  
-	if (selend > selstart) {
-	  currentLength = selend-selstart;
-	  data = new char[currentLength+1];
-	  if (!data) return;  // allocation error, abort check
-	  memset(data, '\0', currentLength+1);
-	  ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
-	} else {
-	  currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
-	  data = new char[currentLength+1];
-	  if (!data) return;  // allocation error, abort check
-	  memset(data, '\0', currentLength+1);
-	  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
-	}
-
-    int tabwidth = ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
-    int usetabs = ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
-    if (tabwidth <= 0) tabwidth = 4;
-	
-	/*
-	// On check la syntaxe
-    xmlDocPtr doc;
-
-    doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
-    if (doc == NULL) {
-      Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
-      delete [] data;
-      return;
-    }
-
-    pXmlFreeDoc(doc);
-	*/
-    std::string str(data);
+	  char *data = NULL;
 
     // count the < and > signs; > are ignored if tagsignlevel <= 0. This prevent indent errors if text or attributes contain > sign.
     int tagsignlevel = 0;
@@ -1280,6 +1247,48 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     long curpos = 0, xmllevel = 0, strlength = 0;
     // some char value (pc = previous char, cc = current char, nc = next char, nnc = next next char)
     char pc, cc, nc, nnc;
+
+    int tabwidth = ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
+    int usetabs  = ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
+    if (tabwidth <= 0) tabwidth = 4;
+
+    // use the selection
+    long selstart = 0, selend = 0;
+    // désactivé : le fait de prettyprinter que la sélection pose problème pour l'indentation
+    // il faudrait calculer l'indentation de la 1re ligne de sélection, mais l'indentation
+    // de cette ligne n'est peut-être pas correcte. On pourrait la déterminer en récupérant
+    // le path de la banche sélectionnée...
+	  selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
+	  selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
+  
+    std::string str("");
+
+	  if (selend > selstart) {
+	    currentLength = selend-selstart;
+	    data = new char[currentLength+1];
+	    if (!data) return;  // allocation error, abort check
+	    memset(data, '\0', currentLength+1);
+	    ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
+	  } else {
+	    currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+	    data = new char[currentLength+1];
+	    if (!data) return;  // allocation error, abort check
+	    memset(data, '\0', currentLength+1);
+	    ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
+	  }
+	
+    // Check de la syntaxe
+	  /*
+    xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
+    if (doc == NULL) {
+      Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
+      delete [] data;
+      return;
+    }
+
+    pXmlFreeDoc(doc);	*/
+
+    str += data;
 
     // Proceed to first pass if break adds are enabled
     if (addlinebreaks) {
@@ -1428,7 +1437,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 
     // Send formated string to scintilla
 	  if (selend > selstart) {
-        ::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(str.c_str()));
+      ::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(str.c_str()));
 	  } else {
 		  ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
 	  }
