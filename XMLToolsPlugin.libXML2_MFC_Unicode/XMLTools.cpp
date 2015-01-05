@@ -121,6 +121,7 @@ void insertAutoXMLType();
 void prettyPrintXML();
 void prettyPrintXMLBreaks();
 void prettyPrintText();
+void prettyPrintSelection();
 void prettyPrintLibXML();
 //void insertPrettyPrintTag();
 void linarizeXML();
@@ -142,7 +143,7 @@ void uncommentSelection();
 void aboutBox();
 void howtoUse();
 
-void performXMLCheck(int informIfNoError);
+int performXMLCheck(int informIfNoError);
 void savePluginParams();
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -644,17 +645,17 @@ void howtoUse() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void performXMLCheck(int informIfNoError) {
+int performXMLCheck(int informIfNoError) {
   #ifdef __XMLTOOLS_DEBUG__
     Report::_printf_inf("performXMLCheck()");
   #endif
-  int currentEdit, currentLength;
+  int currentEdit, currentLength, res = 0;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
   currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
   char *data = new char[currentLength+1];
-  if (!data) return;  // allocation error, abort check
+  if (!data) return -1;  // allocation error, abort check
   memset(data, '\0', currentLength+1);
 
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
@@ -672,17 +673,24 @@ void performXMLCheck(int informIfNoError) {
         ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
 
       Report::_printf_err(L"XML Parsing error at line %d: \r\n%s", err->line, Report::widen(err->message).c_str());
+      res = 1;
     } else {
       Report::_printf_err(L"Failed to parse document");
+      res = 2;
     }
-  } else if (informIfNoError) {
-    Report::_printf_inf(L"No error detected.");
+  } else {
+    if (informIfNoError) {
+      Report::_printf_inf(L"No error detected.");
+    }
+    res = 0;
   }
 
   pXmlFreeDoc(doc);
 
   delete [] data;
   data = NULL;
+
+  return res;
 }
 
 void autoXMLCheck() {
@@ -708,7 +716,7 @@ void XMLValidation(int informIfNoError) {
   // 0. On change le dossier courant
   wchar_t currenPath[MAX_PATH] = { '\0' };
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTDIRECTORY, MAX_PATH, (LPARAM)currenPath);
-  chdir(Report::narrow(currenPath).data());
+  _chdir(Report::narrow(currenPath).data());
 
   // 1. On valide le XML
   bool abortValidation = false;
@@ -860,7 +868,7 @@ void XMLValidation(int informIfNoError) {
           } else {
             // Traitement des erreurs de validation
             Report::clearLog();
-            Report::registerMessage(NULL, "Validation of current file using XML schema:\r\n\r\n");
+            Report::registerMessage("Validation of current file using XML schema:\r\n\r\n");
             pXmlSchemaSetValidErrors(vctxt, (xmlSchemaValidityErrorFunc) Report::registerError, (xmlSchemaValidityWarningFunc) Report::registerWarn, stderr);
 
             // Validation
@@ -890,7 +898,7 @@ void XMLValidation(int informIfNoError) {
       if ((vctxt = pXmlNewValidCtxt())) {
         // Affichage des erreurs de validation
         Report::clearLog();
-        Report::registerMessage(NULL, "Validation of current file using DTD:\r\n\r\n");
+        Report::registerMessage("Validation of current file using DTD:\r\n\r\n");
         vctxt->userData = (void *) stderr;
         vctxt->error = (xmlValidityErrorFunc) Report::registerError;
         vctxt->warning = (xmlValidityWarningFunc) Report::registerWarn;
@@ -1169,8 +1177,7 @@ void getCurrentXPath() {
     ::EmptyClipboard();
     HGLOBAL hClipboardData;
     hClipboardData = GlobalAlloc(GMEM_DDESHARE, nodepath.length()+1);
-    char * pchData;
-    pchData = (char*)GlobalLock(hClipboardData);
+    char * pchData = (char*)GlobalLock(hClipboardData);
     strcpy(pchData, nodepath.c_str());
     ::GlobalUnlock(hClipboardData);
     ::SetClipboardData(CF_TEXT, pchData);
@@ -1264,29 +1271,39 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     std::string str("");
 
 	  if (selend > selstart) {
-	    currentLength = selend-selstart;
-	    data = new char[currentLength+1];
-	    if (!data) return;  // allocation error, abort check
-	    memset(data, '\0', currentLength+1);
-	    ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
+		  currentLength = selend-selstart;
+		  data = new char[currentLength+1];
+		  if (!data) return;  // allocation error, abort check
+		  memset(data, '\0', currentLength+1);
+		  ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
 	  } else {
-	    currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
-	    data = new char[currentLength+1];
-	    if (!data) return;  // allocation error, abort check
-	    memset(data, '\0', currentLength+1);
-	    ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
+		  currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+		  data = new char[currentLength+1];
+		  if (!data) return;  // allocation error, abort check
+		  memset(data, '\0', currentLength+1);
+		  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
 	  }
 	
     // Check de la syntaxe
-	  /*
     xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
     if (doc == NULL) {
-      Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
+      xmlErrorPtr err;
+      err = pXmlGetLastError();
+
+      if (err != NULL) {
+        if (err->line > 0) {
+          ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
+        }
+        Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.\nLine %d: \r\n%s", err->line, Report::widen(err->message).c_str());
+      } else {
+        Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
+      }
+
       delete [] data;
       return;
     }
 
-    pXmlFreeDoc(doc);	*/
+    pXmlFreeDoc(doc);
 
     str += data;
 
@@ -1893,7 +1910,7 @@ void commentSelection() {
   int errflag = validateSelectionForComment(str, sellength);
   if (errflag) {
     wchar_t msg[512];
-    swprintf(msg, L"The current selection covers part only one portion of another comment.\nUncomment process may be not applicable.\n\nDo you want to continue ?", errflag);
+    swprintf(msg, 512, L"The current selection covers part only one portion of another comment.\nUncomment process may be not applicable.\n\nDo you want to continue ?", errflag);
     if (::MessageBox(nppData._nppHandle, msg, L"XML Tools plugin", MB_YESNO | MB_ICONASTERISK) == IDNO) {
       delete [] data;
       return;
@@ -1996,7 +2013,7 @@ void uncommentSelection() {
   int errflag = validateSelectionForComment(str, sellength);
   if (errflag) {
     wchar_t msg[512];
-    swprintf(msg, L"Unable to uncomment the current selection.\nError code is %d.", errflag);
+    swprintf(msg, 512, L"Unable to uncomment the current selection.\nError code is %d.", errflag);
     Report::_printf_err(msg);
     delete [] data;
     return;

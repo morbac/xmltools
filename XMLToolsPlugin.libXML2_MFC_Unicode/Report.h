@@ -28,6 +28,11 @@ public:
 
   void static clearLog();
   std::wstring static getLog();
+
+  void static registerError(const char* s);
+  void static registerWarn(const char* s);
+  void static registerMessage(const char* s);
+
   void static registerError(void * ctx, const char* s, ...);
   void static registerWarn(void * ctx, const char* s, ...);
   void static registerMessage(void * ctx, const char* s, ...);

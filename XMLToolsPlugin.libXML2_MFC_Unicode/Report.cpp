@@ -16,6 +16,7 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
+const int MAX_BUFFER = 4096;
 std::wstring currentLog;
 
 Report::Report() {
@@ -28,7 +29,6 @@ void Report::_printf_err(const wchar_t* s, ...) {
   if (!s || !wcslen(s)) return;
 
   va_list msg;
-  const int MAX_BUFFER = 1024;
   wchar_t buffer[MAX_BUFFER] = { '\0' };
 
   va_start(msg, s);
@@ -44,7 +44,6 @@ void Report::_fprintf_err(void * ctx, const wchar_t* s, ...) {
   if (!s || !wcslen(s)) return;
   
   va_list msg;
-  const int MAX_BUFFER = 1024;
   wchar_t buffer[MAX_BUFFER] = { '\0' };
   
   va_start(msg, s);
@@ -60,7 +59,6 @@ void Report::_printf_inf(const wchar_t* s, ...) {
   if (!s || !wcslen(s)) return;
 
   va_list msg;
-  const int MAX_BUFFER = 1024;
   wchar_t buffer[MAX_BUFFER] = { '\0' };
 
   va_start(msg, s);
@@ -84,7 +82,6 @@ void Report::_fprintf_inf(void * ctx, const wchar_t* s, ...) {
   if (!s || !wcslen(s)) return;
   
   va_list msg;
-  const int MAX_BUFFER = 1024;
   wchar_t buffer[MAX_BUFFER] = { '\0' };
   
   va_start(msg, s);
@@ -100,7 +97,6 @@ std::wstring Report::str_format(const wchar_t* s, ...) {
   if (!s || !wcslen(s)) return L"";
 
   va_list msg;
-  const int MAX_BUFFER = 1024;
   wchar_t buffer[MAX_BUFFER] = { '\0' };
 
   va_start(msg, s);
@@ -114,16 +110,17 @@ std::wstring Report::str_format(const wchar_t* s, ...) {
 
 std::string Report::str_format(const char* s, ...) {
   if (!s || !strlen(s)) return "";
+  
+  int buffersize = 2*strlen(s);
+  char * buffer = (char*) malloc(buffersize*sizeof(char));
+  memset(buffer, '\0', buffersize);
 
   va_list msg;
-  const int MAX_BUFFER = 1024;
-  char buffer[MAX_BUFFER] = { '\0' };
-  
   va_start(msg, s);
   //vsnprintf(buffer + strlen(buffer), s, msg);
   _vsnprintf(buffer, MAX_BUFFER - 1, s, msg);
   va_end(msg);
-  
+
   if (strlen(buffer) <= 0) return "";
 
   return std::string(buffer);
@@ -133,7 +130,6 @@ CString Report::cstring(const wchar_t* s, ...) {
   if (!s || !wcslen(s)) return "";
 
   va_list msg;
-  const int MAX_BUFFER = 1024;
   wchar_t buffer[MAX_BUFFER] = { '\0' };
 
   va_start(msg, s);
@@ -153,21 +149,29 @@ std::wstring Report::getLog() {
   return currentLog;
 }
 
+void Report::registerError(const char* s) {
+  currentLog += L"ERROR: ";
+  currentLog += Report::widen(s).c_str();
+  currentLog = currentLog.substr(0, currentLog.length()-1);
+  currentLog += L"\r\n";
+}
+
 void Report::registerError(void * ctx, const char* s, ...) {
   if (!s || !strlen(s)) return;
   
-  va_list msg;
-  const int MAX_BUFFER = 1024;
-  char buffer[MAX_BUFFER] = { '\0' };
-  
-  va_start(msg, s);
-  vsprintf(buffer + strlen(buffer), s, msg);
-  va_end(msg);
+  va_list args;
+  va_start(args, s);
+  char *buffer = va_arg(args,char*);
+  va_end(args);
   
   if (strlen(buffer) <= 0) return;
   
-  currentLog += L"ERROR: ";
-  currentLog += Report::widen(buffer).c_str();
+  Report::registerError(buffer);
+}
+
+void Report::registerWarn(const char* s) {
+  currentLog += L"WARN: ";
+  currentLog += Report::widen(s).c_str();
   currentLog = currentLog.substr(0, currentLog.length()-1);
   currentLog += L"\r\n";
 }
@@ -175,38 +179,30 @@ void Report::registerError(void * ctx, const char* s, ...) {
 void Report::registerWarn(void * ctx, const char* s, ...) {
   if (!s || !strlen(s)) return;
   
-  va_list msg;
-  const int MAX_BUFFER = 1024;
-  char buffer[MAX_BUFFER] = { '\0' };
-  
-  va_start(msg, s);
-  vsprintf(buffer + strlen(buffer), s, msg);
-  va_end(msg);
+  va_list args;
+  va_start(args, s);
+  char *buffer = va_arg(args,char*);
+  va_end(args);
   
   if (strlen(buffer) <= 0) return;
   
-  currentLog += L"WARN: ";
-  currentLog += Report::widen(buffer).c_str();
+  Report::registerWarn(buffer);
+}
+
+void Report::registerMessage(const char* s) {
+  currentLog += Report::widen(s).c_str();
   currentLog = currentLog.substr(0, currentLog.length()-1);
   currentLog += L"\r\n";
 }
-
 void Report::registerMessage(void * ctx, const char* s, ...) {
   if (!s || !strlen(s)) return;
   
-  va_list msg;
-  const int MAX_BUFFER = 1024;
-  char buffer[MAX_BUFFER] = { '\0' };
+  va_list args;
+  va_start(args, s);
+  char *buffer = va_arg(args,char*);
+  va_end(args);
   
-  va_start(msg, s);
-  vsprintf(buffer + strlen(buffer), s, msg);
-  va_end(msg);
-  
-  if (strlen(buffer) <= 0) return;
-  
-  currentLog += Report::widen(buffer).c_str();
-  currentLog = currentLog.substr(0, currentLog.length()-1);
-  currentLog += L"\r\n";
+  Report::registerMessage(buffer);
 }
 
 void Report::strcpy(char* dest, const wchar_t* src) {
