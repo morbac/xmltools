@@ -1381,13 +1381,13 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 
     // Proceed to reformatting (second pass)
     int prevspecchar = -1;
-    while (curpos < (long)str.length() && (curpos = str.find_first_of("<>\n\"",curpos)) >= 0) {
+    while (curpos < (long)str.length() && (curpos = str.find_first_of("<>\n\"'",curpos)) >= 0) {
       strlength = str.length();
       if (str.at(curpos) != '\n') {
         if (curpos < strlength-3 && !str.compare(curpos,4,"<!--")) in_comment = true;
         if (curpos < strlength-8 && !str.compare(curpos,9,"<![CDATA[")) in_cdata = true;
         else if (curpos < strlength-1 && !str.compare(curpos,2,"<?")) in_header = true;
-        else if (curpos < strlength && !str.compare(curpos,1,"\"") &&
+        else if (curpos < strlength && !str.compare(curpos,1,"\"") && !str.compare(curpos,1,"'") &&
                  prevspecchar >= 0 && str.at(prevspecchar) == '<') in_attribute = !in_attribute;
       }
 
