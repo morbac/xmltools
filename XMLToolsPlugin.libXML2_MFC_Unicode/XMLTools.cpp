@@ -1106,7 +1106,8 @@ std::string currentXPath() {
 
   char *data = new char[currentLength+1];
   if (!data) return nodepath;  // allocation error, abort check
-  memset(data, '\0', currentLength+1);
+  size_t size = (currentLength+1)*sizeof(char);
+  memset(data, '\0', size);
 
   int currentPos = int(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
@@ -1167,20 +1168,20 @@ void getCurrentXPath() {
   
   std::string nodepath(currentXPath());
 
-  std::wstring tmpmsg(L"Current node cannot be resolved.");
+  std::string tmpmsg("Current node cannot be resolved.");
 
   if (nodepath.length() > 0) {
-    tmpmsg = Report::widen(nodepath);
-    tmpmsg += L"\n\n(Path has been copied into clipboard)";
+    tmpmsg = nodepath;
+    tmpmsg += "\n\n(Path has been copied into clipboard)";
       
     ::OpenClipboard(NULL);
     ::EmptyClipboard();
-    HGLOBAL hClipboardData;
-    hClipboardData = GlobalAlloc(GMEM_DDESHARE, nodepath.length()+1);
+    size_t size = (nodepath.length()+1) * sizeof(char);
+    HGLOBAL hClipboardData = GlobalAlloc(NULL, size);
     char * pchData = (char*)GlobalLock(hClipboardData);
-    strcpy(pchData, nodepath.c_str());
+    memcpy(pchData, (char*) nodepath.c_str(), size);
     ::GlobalUnlock(hClipboardData);
-    ::SetClipboardData(CF_TEXT, pchData);
+    ::SetClipboardData(CF_TEXT, hClipboardData);
     ::CloseClipboard();
   }
   
@@ -1284,26 +1285,28 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 		  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
 	  }
 	
-    // Check de la syntaxe
-    xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
-    if (doc == NULL) {
-      xmlErrorPtr err;
-      err = pXmlGetLastError();
+    // Check de la syntaxe (disabled)
+    if (FALSE) {
+      xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
+      if (doc == NULL) {
+        xmlErrorPtr err;
+        err = pXmlGetLastError();
 
-      if (err != NULL) {
-        if (err->line > 0) {
-          ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
+        if (err != NULL) {
+          if (err->line > 0) {
+            ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
+          }
+          Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.\nLine %d: \r\n%s", err->line, Report::widen(err->message).c_str());
+        } else {
+          Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
         }
-        Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.\nLine %d: \r\n%s", err->line, Report::widen(err->message).c_str());
-      } else {
-        Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
+
+        delete [] data;
+        return;
       }
 
-      delete [] data;
-      return;
+      pXmlFreeDoc(doc);
     }
-
-    pXmlFreeDoc(doc);
 
     str += data;
 
@@ -1737,7 +1740,7 @@ void convertText2XML() {
 
   // Defines selection without scrolling
   ::SendMessage(hCurrentEditView, SCI_SETCURRENTPOS, selstart, 0);
-  ::SendMessage(hCurrentEditView, SCI_SETANCHOR, selstart+sellength+1, 0);
+  ::SendMessage(hCurrentEditView, SCI_SETANCHOR, selstart+sellength, 0);
 
   // Restore scrolling
   //::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
@@ -1817,7 +1820,7 @@ void convertXML2Text() {
 
   // Defines selection without scrolling
   ::SendMessage(hCurrentEditView, SCI_SETCURRENTPOS, selstart, 0);
-  ::SendMessage(hCurrentEditView, SCI_SETANCHOR, selstart+sellength+1, 0);
+  ::SendMessage(hCurrentEditView, SCI_SETANCHOR, selstart+sellength, 0);
 
   // Restore scrolling
   //::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);

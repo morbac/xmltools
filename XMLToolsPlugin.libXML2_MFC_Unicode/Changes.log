@@ -4,6 +4,12 @@
                         ChangeLog
 ================================================================
 
+Release 2.3.4
+-------------
+- Fix pretty print error while playing with attributes containing quotes and double-quotes
+- Fix wrong selection length after conversions "&lt;&gt;" to "<>" and reverse
+
+
 Release 2.3.3 (r909):
 ---------------------
 

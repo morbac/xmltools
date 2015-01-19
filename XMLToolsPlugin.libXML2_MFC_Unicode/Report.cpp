@@ -216,14 +216,13 @@ void Report::strcpy(char* dest, std::wstring src) {
 }
 
 void Report::strcpy(wchar_t* dest, std::wstring src) {
-    //strcpy(params[nbparams], key.c_str());
+  //strcpy(params[nbparams], key.c_str());
   wcscpy(dest, src.c_str());
 }
 
 std::string Report::narrow(const std::wstring& ws) {
   std::string res(ws.length(), ' '); // Make room for characters
   std::copy(ws.begin(), ws.end(), res.begin());
-
   return res;
 }
 
