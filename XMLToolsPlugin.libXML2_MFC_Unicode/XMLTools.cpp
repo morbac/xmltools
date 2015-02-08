@@ -1202,7 +1202,7 @@ void getCurrentXPath() {
       
     ::OpenClipboard(NULL);
     ::EmptyClipboard();
-    size_t size = (nodepath.length()+1) * sizeof(wchar);
+    size_t size = (nodepath.length()+1) * sizeof(char);
     HGLOBAL hClipboardData = GlobalAlloc(NULL, size);
     char * pchData = (char*)GlobalLock(hClipboardData);
     memcpy(pchData, (char*) nodepath.c_str(), size);
