@@ -1207,12 +1207,60 @@ void getCurrentXPath() {
     char * pchData = (char*)GlobalLock(hClipboardData);
     memcpy(pchData, (char*) nodepath.c_str(), size);
     ::GlobalUnlock(hClipboardData);
-    ::SetClipboardData(CF_UNICODETEXT, hClipboardData);
+    ::SetClipboardData(CF_TEXT, hClipboardData);
     ::CloseClipboard();
   }
   
   Report::_printf_inf(tmpmsg.c_str());
 }
+
+/*
+size_t getText(wchar_t** wdata) {
+  int currentEdit, currentLength;
+  ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
+  HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
+  currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+
+  char *data = new char[currentLength+1];
+  if (!data) return NULL;
+  size_t size = (currentLength+1)*sizeof(char);
+  memset(data, '\0', size);
+
+  int currentPos = int(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0)),
+      length = (int) ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, (LPARAM)data);
+  
+  size_t wsize = 3*(currentLength+1);
+  wchar_t* wbuffer = new wchar_t[wsize];
+  Report::UCS2FromUTF8(data, currentLength+1, wbuffer, wsize);
+
+  *wdata = wbuffer;
+
+  return (currentLength+1)*sizeof(wchar_t);
+}
+void getCurrentXPath() {
+  wchar_t* wdata = NULL;
+  size_t wsize = getText(&wdata);
+  std::string tmpmsg("Current node cannot be resolved.");
+
+  if (wdata) {
+    tmpmsg = "OK";
+      
+    ::OpenClipboard(NULL);
+    ::EmptyClipboard();
+    HGLOBAL hClipboardData = GlobalAlloc(NULL, wsize);
+    char * pchData = (char*)GlobalLock(hClipboardData);
+
+    memcpy(pchData, wdata, wsize);
+    ::GlobalUnlock(hClipboardData);
+    ::SetClipboardData(CF_UNICODETEXT, hClipboardData);
+    ::CloseClipboard();
+  }
+  
+  delete[] wdata;
+  
+  Report::_printf_inf(tmpmsg.c_str());
+}
+*/
 
 ///////////////////////////////////////////////////////////////////////////////
 

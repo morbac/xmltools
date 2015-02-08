@@ -12,6 +12,7 @@
 #include <sstream>
 #include <libxml/xmlstring.h>
 
+// edit : look at https://msdn.microsoft.com/en-us/library/ms235631(VS.80).aspx
 class Report  
 {
 public:
@@ -59,6 +60,13 @@ public:
   std::wstring static wtrimleft(const std::wstring& s);
   std::wstring static wtrimright(const std::wstring& s);
   std::wstring static wtrim(const std::wstring& s);
+
+  unsigned int static UTF8Length(const wchar_t * uptr, unsigned int tlen);
+  void static UTF8FromUCS2(const wchar_t * uptr, unsigned int tlen, char * putf, unsigned int len);
+  unsigned int static UCS2Length(const char * s, unsigned int len);
+  unsigned int static UCS2FromUTF8(const char * s, unsigned int len, wchar_t * tbuf, unsigned int tlen);
+  unsigned int static ascii_to_utf8(const char * pszASCII, unsigned int lenASCII, char * pszUTF8);
+  int static utf8_to_ascii(const char * pszUTF8, unsigned int lenUTF8, char * pszASCII);
 };
 
 #endif // !defined(AFX_REPORT_H__A50BA8DF_F1C4_4E30_9CA7_59C3951C0981__INCLUDED_)
