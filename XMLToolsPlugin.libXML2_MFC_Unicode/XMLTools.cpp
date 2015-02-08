@@ -76,10 +76,13 @@ const wchar_t PLUGIN_NAME[] = L"XML Tools";
 const wchar_t localConfFile[] = L"doLocalConf.xml";
 
 // The number of functionality
-const int TOTAL_FUNCS = 29;
+const int TOTAL_FUNCS = 30;
 int nbFunc = TOTAL_FUNCS;
 
 NppData nppData;
+
+unsigned long defFlags = 0;
+unsigned long defFlagsNoXXE = ~(XML_PARSE_NOENT | XML_PARSE_DTDLOAD);
 
 // XML Loading status
 int libloadstatus = -1;
@@ -90,8 +93,8 @@ const wchar_t sectionName[] = L"XML Tools";
 
 // Declaration of functionality (FuncItem) Array
 FuncItem funcItem[TOTAL_FUNCS];
-bool doCheckXML = false, doValidation = false, /*doPrettyPrint = false,*/ doCloseTag = false, doAutoIndent = false, doAttrAutoComplete = false, doAutoXMLType = false, doPrettyPrintAllOpenFiles = false;
-int menuitemCheckXML = -1, menuitemValidation = -1, /*menuitemPrettyPrint = -1,*/ menuitemCloseTag = -1, menuitemAutoIndent = -1, menuitemAttrAutoComplete = -1, menuitemAutoXMLType = -1, menuitemPrettyPrintAllFiles = -1;
+bool doCheckXML = false, doValidation = false, /*doPrettyPrint = false,*/ doCloseTag = false, doAutoIndent = false, doAttrAutoComplete = false, doAutoXMLType = false, doPreventXXE = true, doPrettyPrintAllOpenFiles = false;
+int menuitemCheckXML = -1, menuitemValidation = -1, /*menuitemPrettyPrint = -1,*/ menuitemCloseTag = -1, menuitemAutoIndent = -1, menuitemAttrAutoComplete = -1, menuitemAutoXMLType = -1, menuitemPreventXXE = -1, menuitemPrettyPrintAllFiles = -1;
 std::string lastXMLSchema("");
 
 bool enableBufferActivated = false;
@@ -117,6 +120,8 @@ void attributeAutoComplete();
 
 void setAutoXMLType();
 void insertAutoXMLType();
+
+void togglePreventXXE();
 
 void prettyPrintXML();
 void prettyPrintXMLBreaks();
@@ -317,6 +322,13 @@ CXMLToolsApp::CXMLToolsApp() {
     menuitemAutoXMLType = menuentry;
     ++menuentry;
   
+    Report::strcpy(funcItem[menuentry]._itemName, L"Prevent XXE");
+    funcItem[menuentry]._pFunc = togglePreventXXE;
+    funcItem[menuentry]._init2Check = doPreventXXE = (::GetPrivateProfileInt(sectionName, L"doPreventXXE", 0, iniFilePath) != 0);
+    doPreventXXE = funcItem[menuentry]._init2Check;
+    menuitemPreventXXE = menuentry;
+    ++menuentry;
+  
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
   
     Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (XML only)");
@@ -408,12 +420,13 @@ CXMLToolsApp::CXMLToolsApp() {
 
   //Report::_printf_inf("menu entries: %d", menuentry);
 
-  /*Report::_printf_inf("%s\ndoCheckXML: %d %d\ndoValidation: %d %d\ndoCloseTag: %d %d\ndoAutoXMLType: %d %d\nisLocal: %d",
+  /*Report::_printf_inf("%s\ndoCheckXML: %d %d\ndoValidation: %d %d\ndoCloseTag: %d %d\ndoAutoXMLType: %d %d\ndoPreventXXE: %d %d\nisLocal: %d",
     iniFilePath,
     doCheckXML, funcItem[menuitemCheckXML]._init2Check,
     doValidation, funcItem[menuitemValidation]._init2Check,
     doCloseTag, funcItem[menuitemCloseTag]._init2Check,
     doAutoXMLType, funcItem[menuitemAutoXMLType]._init2Check,
+    doPreventXXE, funcItem[menuitemPreventXXE]._init2Check,
     isLocal);*/
 }
 
@@ -434,6 +447,7 @@ void savePluginParams() {
   //funcItem[menuitemAutoIndent]._init2Check = doAutoIndent;
   //funcItem[menuitemAttrAutoComplete]._init2Check = doAttrAutoComplete;
   funcItem[menuitemAutoXMLType]._init2Check = doAutoXMLType;
+  funcItem[menuitemPreventXXE]._init2Check = doPreventXXE;
   funcItem[menuitemPrettyPrintAllFiles]._init2Check = doPrettyPrintAllOpenFiles;
 
   ::WritePrivateProfileString(sectionName, L"doCheckXML", doCheckXML?L"1":L"0", iniFilePath);
@@ -443,6 +457,7 @@ void savePluginParams() {
   //::WritePrivateProfileString(sectionName, L"doAutoIndent", doAutoIndent?L"1":L"0", iniFilePath);
   //::WritePrivateProfileString(sectionName, L"doAttrAutoComplete", doAttrAutoComplete?L"1":L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"doAutoXMLType", doAutoXMLType?L"1":L"0", iniFilePath);
+  ::WritePrivateProfileString(sectionName, L"doPreventXXE", doPreventXXE?L"1":L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"doPrettyPrintAllOpenFiles", doPrettyPrintAllOpenFiles?L"1":L"0", iniFilePath);
 }
 
@@ -495,6 +510,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
         //::CheckMenuItem(hMenu, funcItem[menuitemAutoIndent]._cmdID, MF_BYCOMMAND | (doAutoIndent?MF_CHECKED:MF_UNCHECKED));
         //::CheckMenuItem(hMenu, funcItem[menuitemAttrAutoComplete]._cmdID, MF_BYCOMMAND | (doAttrAutoComplete?MF_CHECKED:MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemAutoXMLType]._cmdID, MF_BYCOMMAND | (doAutoXMLType?MF_CHECKED:MF_UNCHECKED));
+        ::CheckMenuItem(hMenu, funcItem[menuitemPreventXXE]._cmdID, MF_BYCOMMAND | (doPreventXXE?MF_CHECKED:MF_UNCHECKED));
 		::CheckMenuItem(hMenu, funcItem[menuitemPrettyPrintAllFiles]._cmdID, MF_BYCOMMAND | (doPrettyPrintAllOpenFiles?MF_CHECKED:MF_UNCHECKED));
       }
     }
@@ -627,12 +643,22 @@ void insertAutoXMLType() {
   savePluginParams();
 }
 
+void togglePreventXXE() {
+  #ifdef __XMLTOOLS_DEBUG__
+    Report::_printf_inf("togglePreventXXE()");
+  #endif
+  doPreventXXE = !doPreventXXE;
+  ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemPreventXXE]._cmdID, MF_BYCOMMAND | (doPreventXXE?MF_CHECKED:MF_UNCHECKED));
+  savePluginParams();
+}
+
 void aboutBox() {
   #ifdef __XMLTOOLS_DEBUG__
     Report::_printf_inf("aboutBox()");
   #endif
-  //Report::_printf_inf("%s \r\n \r\n- libXML %s \r\n- libXSTL %s", XMLTOOLS_ABOUTINFO, LIBXML_DOTTED_VERSION, LIBXSLT_DOTTED_VERSION);
-  Report::_printf_inf(TEXT(XMLTOOLS_ABOUTINFO));
+  Report::_printf_inf(L"%s \r\n \r\n- libXML %s \r\n- libXSTL %s",
+      TEXT(XMLTOOLS_ABOUTINFO), TEXT(LIBXML_DOTTED_VERSION), TEXT(LIBXSLT_DOTTED_VERSION));
+  //Report::_printf_inf();
 }
 
 void howtoUse() {
@@ -662,7 +688,7 @@ int performXMLCheck(int informIfNoError) {
 
   xmlDocPtr doc;
 
-  doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
+  doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
 
   if (doc == NULL) {
     xmlErrorPtr err;
@@ -742,7 +768,7 @@ void XMLValidation(int informIfNoError) {
   bool xsdValidation = false;
   bool dtdValidation = false;
 
-  doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
+  doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
   
   if (doc == NULL) {
     xmlErrorPtr err;
@@ -1137,7 +1163,7 @@ std::string currentXPath() {
     str.erase(currentPos);
     str += "><X>";
 
-    xmlDocPtr doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, XML_PARSE_RECOVER);
+    xmlDocPtr doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, XML_PARSE_RECOVER | (doPreventXXE ? defFlagsNoXXE : defFlags));
     xmlNodePtr cur_node = pXmlDocGetRootElement(doc);
 
     while (cur_node != NULL && cur_node->last != NULL) {
@@ -1176,12 +1202,12 @@ void getCurrentXPath() {
       
     ::OpenClipboard(NULL);
     ::EmptyClipboard();
-    size_t size = (nodepath.length()+1) * sizeof(char);
+    size_t size = (nodepath.length()+1) * sizeof(wchar);
     HGLOBAL hClipboardData = GlobalAlloc(NULL, size);
     char * pchData = (char*)GlobalLock(hClipboardData);
     memcpy(pchData, (char*) nodepath.c_str(), size);
     ::GlobalUnlock(hClipboardData);
-    ::SetClipboardData(CF_TEXT, hClipboardData);
+    ::SetClipboardData(CF_UNICODETEXT, hClipboardData);
     ::CloseClipboard();
   }
   
@@ -1200,7 +1226,7 @@ void evaluateXPath() {
   #ifdef __XMLTOOLS_DEBUG__
     Report::_printf_inf("evaluateXPath()");
   #endif
-  CXPathEvalDlg *pDlg = new CXPathEvalDlg();
+  CXPathEvalDlg *pDlg = new CXPathEvalDlg(NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
   pDlg->Create(CXPathEvalDlg::IDD,NULL);
   pDlg->ShowWindow(SW_SHOW);
 }
@@ -1287,7 +1313,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 	
     // Check de la syntaxe (disabled)
     if (FALSE) {
-      xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
+      xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
       if (doc == NULL) {
         xmlErrorPtr err;
         err = pXmlGetLastError();
@@ -1522,7 +1548,7 @@ void prettyPrintLibXML() {
 
     xmlDocPtr doc;
 
-    doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
+    doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
     if (doc == NULL) {
       Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
       delete [] data;

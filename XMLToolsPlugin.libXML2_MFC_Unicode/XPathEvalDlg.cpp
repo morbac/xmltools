@@ -18,13 +18,15 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CXPathEvalDlg dialog
 
-CXPathEvalDlg::CXPathEvalDlg(CWnd* pParent /*=NULL*/)
+CXPathEvalDlg::CXPathEvalDlg(CWnd* pParent /*=NULL*/, unsigned long flags /*= 0*/)
   : CDialog(CXPathEvalDlg::IDD, pParent)
 {
   //{{AFX_DATA_INIT(CXPathEvalDlg)
   m_sExpression = _T("");
   m_sResult = _T("");
   //}}AFX_DATA_INIT
+
+  this->m_iFlags = flags;
 }
 
 
@@ -97,7 +99,7 @@ int CXPathEvalDlg::execute_xpath_expression(const xmlChar* xpathExpr) {
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
 
   /* Load XML document */
-  doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
+  doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, this->m_iFlags);
 
   if (doc == NULL) {
     Report::_printf_err(L"Error: unable to parse XML.");
@@ -212,17 +214,17 @@ int CXPathEvalDlg::register_namespaces_ex(xmlXPathContextPtr xpathCtx, xmlDocPtr
 
   while (node) {
     xmlNsPtr ns = node->nsDef;
-    while (ns) {
-	  // on crée un prefixe automatique au cas où le préfixe est null
-	  int res = 0;
+    while (node->type == XML_ELEMENT_NODE && ns) {
+	    // on crée un prefixe automatique au cas où le préfixe est null
+	    int res = 0;
       if (ns->prefix != NULL) {
-		  res = pXmlXPathRegisterNs(xpathCtx, ns->prefix, ns->href);
-	  } else {
-		  std::string prefix = Report::str_format("ns%d",++i);
-		  res = pXmlXPathRegisterNs(xpathCtx, reinterpret_cast<const xmlChar*>(prefix.c_str()), ns->href);
-	  }
+		    res = pXmlXPathRegisterNs(xpathCtx, ns->prefix, ns->href);
+	    } else {
+		    std::string prefix = Report::str_format("ns%d",++i);
+		    res = pXmlXPathRegisterNs(xpathCtx, reinterpret_cast<const xmlChar*>(prefix.c_str()), ns->href);
+	    }
 
-	  if (res != 0) {
+	    if (res != 0) {
         Report::_printf_err(L"Error: unable to register NS with prefix=\"%s\" and href=\"%s\"\n", ns->prefix, ns->href);
         return(-1);  
       }

@@ -22,12 +22,12 @@ class CXPathEvalDlg : public CDialog
 {
 // Construction
 public:
-  CXPathEvalDlg(CWnd* pParent = NULL);   // standard constructor
+  CXPathEvalDlg(CWnd* pParent = NULL, unsigned long flags = 0);   // standard constructor
 
 // Dialog Data
   //{{AFX_DATA(CXPathEvalDlg)
   enum { IDD = IDD_XPATHEVAL };
-  CString  m_sExpression;
+  CString m_sExpression;
   CString m_sResult;
   //}}AFX_DATA
 
@@ -41,6 +41,8 @@ public:
 
 // Implementation
 protected:
+  unsigned long m_iFlags;
+
   int execute_xpath_expression(const xmlChar* xpathExpr);
   //int register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList);
   int register_namespaces_ex(xmlXPathContextPtr xpathCtx, xmlDocPtr doc);
