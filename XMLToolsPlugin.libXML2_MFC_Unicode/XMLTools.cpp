@@ -164,7 +164,7 @@ void registerShortcut(FuncItem *item, bool enableALT, bool enableCTRL, bool enab
 
 // get given lang as string (for debug purposes only)
 char* getLangType(LangType lg) {
-  if (lg == L_TXT) return "L_TXT";
+  if (lg == L_TEXT) return "L_TEXT";
   if (lg == L_PHP) return "L_PHP";
   if (lg == L_C) return "L_C";
   if (lg == L_CPP) return "L_CPP";
@@ -178,7 +178,7 @@ char* getLangType(LangType lg) {
   if (lg == L_PASCAL) return "L_PASCAL";
   if (lg == L_BATCH) return "L_BATCH";
   if (lg == L_INI) return "L_INI";
-  if (lg == L_NFO) return "L_NFO";
+  if (lg == L_ASCII) return "L_ASCII";
   if (lg == L_USER) return "L_USER";
   if (lg == L_ASP) return "L_ASP";
   if (lg == L_SQL) return "L_SQL";
@@ -461,6 +461,29 @@ void savePluginParams() {
   ::WritePrivateProfileString(sectionName, L"doPrettyPrintAllOpenFiles", doPrettyPrintAllOpenFiles?L"1":L"0", iniFilePath);
 }
 
+UniMode getEncoding() {
+  int bufferid = int(::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0));
+  return UniMode(::SendMessage(nppData._nppHandle, NPPM_GETBUFFERENCODING, bufferid, 0));
+}
+
+wchar_t* castChar(const char* orig, UniMode encoding) {
+  if (encoding == uni8Bit) {
+    return Report::char2wchar(orig);
+  } else {
+    size_t osize = strlen(orig),
+           wsize = 3*(osize+1);
+    wchar_t* wbuffer = new wchar_t[wsize];
+    Report::UCS2FromUTF8(orig, osize+1, wbuffer, wsize);
+    return wbuffer;
+  }
+}
+
+void appendToWStdString(std::wstring* dest, const xmlChar* source, UniMode encoding) {
+  wchar_t* buffer = castChar(reinterpret_cast<const char*>(source), encoding);
+  *dest += buffer;
+  delete[] buffer;
+}
+
 /*
  *--------------------------------------------------
  * The 4 extern functions are mandatory 
@@ -547,7 +570,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
         LangType docType = L_EXTERNAL;
         ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
         //Report::_printf_inf("%s", getLangType(docType));
-        if (doAutoXMLType && docType == L_TXT) setAutoXMLType();
+        if (doAutoXMLType && docType == L_TEXT) setAutoXMLType();
       }
 
 	  /*if (doPrettyPrint) {
@@ -1122,13 +1145,15 @@ void setAutoXMLType() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-std::string currentXPath() {
+std::wstring currentXPath() {
   int currentEdit, currentLength;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
   currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
-  std::string nodepath("");
+  UniMode encoding = getEncoding();
+
+  std::wstring nodepath(L"");
 
   char *data = new char[currentLength+1];
   if (!data) return nodepath;  // allocation error, abort check
@@ -1168,14 +1193,14 @@ std::string currentXPath() {
 
     while (cur_node != NULL && cur_node->last != NULL) {
       if (cur_node->type == XML_ELEMENT_NODE) {
-        nodepath += "/";
+        nodepath += L"/";
         if(cur_node->ns) {
           if (cur_node->ns->prefix != NULL) {
-            nodepath += reinterpret_cast<const char*>(cur_node->ns->prefix);
-            nodepath += ":";
+            appendToWStdString(&nodepath, cur_node->ns->prefix, encoding);
+            nodepath += L":";
           }
         }
-        nodepath += reinterpret_cast<const char*>(cur_node->name);
+        appendToWStdString(&nodepath, cur_node->name, encoding);
       }
       cur_node = cur_node->last;
     }
@@ -1192,22 +1217,22 @@ void getCurrentXPath() {
     Report::_printf_inf("getCurrentXPath()");
   #endif
   
-  std::string nodepath(currentXPath());
+  std::wstring nodepath(currentXPath());
 
-  std::string tmpmsg("Current node cannot be resolved.");
+  std::wstring tmpmsg(L"Current node cannot be resolved.");
 
   if (nodepath.length() > 0) {
     tmpmsg = nodepath;
-    tmpmsg += "\n\n(Path has been copied into clipboard)";
+    tmpmsg += L"\n\n(Path has been copied into clipboard)";
       
     ::OpenClipboard(NULL);
     ::EmptyClipboard();
-    size_t size = (nodepath.length()+1) * sizeof(char);
+    size_t size = (nodepath.length()+1) * sizeof(wchar_t);
     HGLOBAL hClipboardData = GlobalAlloc(NULL, size);
-    char * pchData = (char*)GlobalLock(hClipboardData);
-    memcpy(pchData, (char*) nodepath.c_str(), size);
+    wchar_t * pchData = (wchar_t*)GlobalLock(hClipboardData);
+    memcpy(pchData, (wchar_t*) nodepath.c_str(), size);
     ::GlobalUnlock(hClipboardData);
-    ::SetClipboardData(CF_TEXT, hClipboardData);
+    ::SetClipboardData(CF_UNICODETEXT, hClipboardData);
     ::CloseClipboard();
   }
   
