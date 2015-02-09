@@ -288,6 +288,19 @@ std::wstring Report::wtrim(const std::wstring& s) {
   return Report::wtrimleft(Report::wtrimright(s));
 }
 
+wchar_t* Report::char2wchar(const char* s) {
+  size_t origsize = strlen(s) + 1;
+  wchar_t* ws = new wchar_t[origsize];
+  mbstowcs(ws, s, _TRUNCATE);
+  return ws;
+}
+
+char* Report::wchar2char(const wchar_t* ws) {
+  size_t origsize = wcslen(ws) + 1;
+  char* s = new char[origsize];
+  wcstombs(s, ws, _TRUNCATE);
+  return s;
+}
 
 unsigned int Report::UTF8Length(const wchar_t *uptr, unsigned int tlen) {
 	unsigned int len = 0;
