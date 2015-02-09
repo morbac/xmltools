@@ -14,6 +14,7 @@
 #include "MessageDlg.h"
 #include "XSLTransformDlg.h"
 #include "HowtoUseDlg.h"
+#include "AboutBoxDlg.h"
 #include "Report.h"
 
 // other
@@ -679,9 +680,12 @@ void aboutBox() {
   #ifdef __XMLTOOLS_DEBUG__
     Report::_printf_inf("aboutBox()");
   #endif
-  Report::_printf_inf(L"%s \r\n \r\n- libXML %s \r\n- libXSTL %s",
-      TEXT(XMLTOOLS_ABOUTINFO), TEXT(LIBXML_DOTTED_VERSION), TEXT(LIBXSLT_DOTTED_VERSION));
-  //Report::_printf_inf();
+  
+  /*Report::_printf_inf(L"%s \r\n \r\n- libXML %s \r\n- libXSTL %s",
+      TEXT(XMLTOOLS_ABOUTINFO), TEXT(LIBXML_DOTTED_VERSION), TEXT(LIBXSLT_DOTTED_VERSION));*/
+
+  CAboutBoxDlg* dlg = new CAboutBoxDlg();
+  dlg->DoModal();
 }
 
 void howtoUse() {

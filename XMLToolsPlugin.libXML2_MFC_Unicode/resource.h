@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by XMLTools.rc
+// Fichier Include généré de Microsoft Visual C++.
+// Utilisé par XMLTools.rc
 //
 #define IDD_INPUTDLG                    2000
 #define IDC_STATIC_CAPTION              2000
@@ -16,6 +16,7 @@
 #define IDD_HOWTOUSE                    2005
 #define IDC_BTN_EVALUATE2               2006
 #define IDC_BTN_COPY2CLIPBOARD          2006
+#define IDD_ABOUTBOX                    2006
 #define IDC_EDIT_FILENAME               2007
 #define IDC_BTN_EXPLORE_XSDFILE         2008
 #define IDC_EDIT_ROOTELEMSAMPLE         2009
@@ -28,14 +29,16 @@
 #define IDC_EXTLIBS_URL                 2018
 #define IDC_EXTLIBS_URL4                2019
 #define IDC_EXTLIBS_URL2                2019
+#define IDC_ABOUTTEXT                   2019
+#define IDC_ABOUTURL                    2020
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        2006
+#define _APS_NEXT_RESOURCE_VALUE        2007
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2019
+#define _APS_NEXT_CONTROL_VALUE         2021
 #define _APS_NEXT_SYMED_VALUE           2000
 #endif
 #endif
