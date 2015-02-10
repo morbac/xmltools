@@ -38,6 +38,8 @@ extern int (*pXmlSubstituteEntitiesDefault)(int val);
 extern xmlNodePtr (*pXmlDocGetRootElement)(xmlDocPtr doc);
 
 extern xmlErrorPtr (*pXmlGetLastError)(void);
+extern void (*pXmlResetLastError)(void);
+extern void (*pXmlResetError)(xmlErrorPtr);
 extern xmlChar * (*pXmlGetProp)(xmlNodePtr node, const xmlChar *name);
 extern xmlDtdPtr (*pXmlParseDTD)(const xmlChar *ExternalID, const xmlChar *SystemID);
 extern xmlSchemaPtr (*pXmlSchemaParse)(xmlSchemaParserCtxtPtr ctxt);

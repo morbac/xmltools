@@ -53,6 +53,8 @@ void                   (*pXmlXPathFreeObject)(xmlXPathObjectPtr obj);
 int                    (*pXmlXPathRegisterNs)(xmlXPathContextPtr ctxt, const xmlChar *prefix, const xmlChar *ns_uri);
 
 xmlErrorPtr            (*pXmlGetLastError)(void);
+void                   (*pXmlResetLastError)(void);
+void                   (*pXmlResetError)(xmlErrorPtr);
 xmlChar *              (*pXmlGetProp)(xmlNodePtr node, const xmlChar *name);
 int                    (*pXmlSubstituteEntitiesDefault)(int val);
 xmlChar *              (*pXmlStrdup)(const xmlChar *cur);
@@ -132,6 +134,8 @@ int loadLibXML(wchar_t* nppPath) {
   pXmlXPathRegisterNs =           (int (__cdecl *)(xmlXPathContextPtr, const xmlChar *, const xmlChar *))GetProcAddress(hInstLibXML, "xmlXPathRegisterNs");
 
   pXmlGetLastError =              (xmlErrorPtr (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlGetLastError");
+  pXmlResetLastError =            (void (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlResetLastError");
+  pXmlResetError =                (void (__cdecl *)(xmlErrorPtr))GetProcAddress(hInstLibXML, "xmlResetError");
   pXmlGetProp =                   (xmlChar * (__cdecl *)(xmlNodePtr, const xmlChar *))GetProcAddress(hInstLibXML, "xmlGetProp");
   pXmlSubstituteEntitiesDefault = (int (__cdecl *)(int))GetProcAddress(hInstLibXML, "xmlSubstituteEntitiesDefault");
   pXmlStrdup =                    (xmlChar * (__cdecl *)(const xmlChar *))GetProcAddress(hInstLibXML, "xmlStrdup");

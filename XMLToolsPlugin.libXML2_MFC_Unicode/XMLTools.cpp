@@ -467,8 +467,12 @@ UniMode getEncoding() {
   return UniMode(::SendMessage(nppData._nppHandle, NPPM_GETBUFFERENCODING, bufferid, 0));
 }
 
-wchar_t* castChar(const char* orig, UniMode encoding) {
-  if (encoding == uni8Bit) {
+wchar_t* castChar(const char* orig, UniMode encoding = uniEnd) {
+  UniMode enc = encoding;
+  if (encoding == uniEnd) {
+    enc = getEncoding();
+  }
+  if (enc == uni8Bit) {
     return Report::char2wchar(orig);
   } else {
     size_t osize = strlen(orig),
@@ -713,29 +717,34 @@ int performXMLCheck(int informIfNoError) {
 
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
 
-  xmlDocPtr doc;
+  std::string str(data);
+  
+  pXmlResetLastError();
+  xmlDocPtr doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
+  xmlErrorPtr err = pXmlGetLastError();
 
-  doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
+  std::wstring nfomsg(L"No error detected.");
+  std::wstring errmsg(L"");
 
-  if (doc == NULL) {
-    xmlErrorPtr err;
-    err = pXmlGetLastError();
-
+  if (doc == NULL || err != NULL) {
     if (err != NULL) {
-      if (err->line > 0)
+      if (err->line > 0) {
         ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
-
-      Report::_printf_err(L"XML Parsing error at line %d: \r\n%s", err->line, Report::widen(err->message).c_str());
+      }
+      wchar_t* tmpmsg = castChar(err->message);
+      errmsg += Report::str_format(L"XML Parsing error at line %d, column %d: \r\n%s", err->line, err->int2, tmpmsg);
+      delete[] tmpmsg;
       res = 1;
-    } else {
-      Report::_printf_err(L"Failed to parse document");
+    } else if (doc == NULL) {
+      errmsg += L"Failed to parse document";
       res = 2;
     }
-  } else {
-    if (informIfNoError) {
-      Report::_printf_inf(L"No error detected.");
-    }
-    res = 0;
+  }
+  
+  if (errmsg.length() > 0) {
+    Report::_printf_err(errmsg.c_str());
+  } else if (nfomsg.length() > 0 && informIfNoError) {
+    Report::_printf_inf(nfomsg.c_str());
   }
 
   pXmlFreeDoc(doc);
@@ -795,11 +804,11 @@ void XMLValidation(int informIfNoError) {
   bool xsdValidation = false;
   bool dtdValidation = false;
 
+  pXmlResetLastError();
   doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
   
   if (doc == NULL) {
-    xmlErrorPtr err;
-    err = pXmlGetLastError();
+    xmlErrorPtr err = pXmlGetLastError();
     
     if (err != NULL) {
       if (err->line > 0) {
