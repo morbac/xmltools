@@ -99,6 +99,7 @@ int CXPathEvalDlg::execute_xpath_expression(const xmlChar* xpathExpr) {
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
 
   /* Load XML document */
+  pXmlResetLastError();
   doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, this->m_iFlags);
 
   if (doc == NULL) {

@@ -187,6 +187,7 @@ void CXSLTransformDlg::OnBtnTransform() {
   std::wstring wfile(m_sXSLTFile);
   std::string file = Report::narrow(wfile);
   cur = pXsltParseStylesheetFile(reinterpret_cast<const xmlChar*>(file.c_str()));
+  pXmlResetLastError();
   doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
 
   //if (cur && doc) xsltctxt = pXsltNewTransformContext(cur, doc);
