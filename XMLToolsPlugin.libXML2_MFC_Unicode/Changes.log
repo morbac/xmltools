@@ -10,6 +10,7 @@ Release 2.4
 - Fix encoding support for following functions:
   - Check XML syntax now
   - Current XML Path
+  - Evaluate XPath Expression
 - Add "Prevent XXE" mode
 - Fix wrong selection length after conversions "&lt;&gt;" to "<>" and reverse
 - Upgrade libXML version (libXML 2.9.2, libXSLT 1.1.28, xmlsec 1.2.20, zlib 1.2.6, iconv 1.14, openssl 1.0.1j)

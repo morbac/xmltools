@@ -62,9 +62,8 @@ void CXPathEvalDlg::OnBtnEvaluate() {
     Report::_printf_err(L"Empty expression; evaluation aborted.");
   } else {
     std::wstring wexpr(m_sExpression);
-    std::string expr = Report::narrow(wexpr);
     
-    execute_xpath_expression(reinterpret_cast<const xmlChar*>(expr.c_str()));
+    execute_xpath_expression(wexpr);
   }
 }
 
@@ -78,13 +77,13 @@ void CXPathEvalDlg::OnBtnEvaluate() {
  *
  * Returns 0 on success and a negative value otherwise.
  */
-int CXPathEvalDlg::execute_xpath_expression(const xmlChar* xpathExpr) {
+int CXPathEvalDlg::execute_xpath_expression(std::wstring xpathExpr) {
   xmlDocPtr doc;
   xmlXPathContextPtr xpathCtx;
   xmlXPathObjectPtr xpathObj; 
   xmlChar* nsList = NULL;
 
-  assert(xpathExpr);
+  assert(xpathExpr.c_str());
 
   int currentEdit, currentLength;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
@@ -127,9 +126,9 @@ int CXPathEvalDlg::execute_xpath_expression(const xmlChar* xpathExpr) {
   }
 
   /* Evaluate xpath expression */
-  xpathObj = pXmlXPathEvalExpression(xpathExpr, xpathCtx);
-  if(xpathObj == NULL) {
-    Report::_printf_err(L"Error: unable to evaluate xpath expression \"%s\"\n", Report::widen(xpathExpr).c_str());
+  xpathObj = pXmlXPathEvalExpression(reinterpret_cast<const xmlChar*>(Report::castWChar(xpathExpr.c_str())), xpathCtx);
+  if (xpathObj == NULL) {
+    Report::_printf_err(L"Error: unable to evaluate xpath expression \"%s\"\n", xpathExpr.c_str());
     pXmlXPathFreeContext(xpathCtx); 
     pXmlFreeDoc(doc);
     delete [] data;
@@ -260,6 +259,8 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
   
   listresults->DeleteAllItems();
 
+  UniMode encoding = Report::getEncoding();
+
   switch (xpathObj->type) {
     case XPATH_UNDEFINED: {
       Report::_printf_inf(L"Undefined expression.");
@@ -286,11 +287,12 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
           itemname = "";
           itemvalue = "";
 
-          if (cur->ns && cur->ns->prefix) { 
-            itemname += Report::cstring(L"%s:", Report::widen(cur->ns->prefix).c_str());
+          if (cur->ns && cur->ns->prefix) {
+            Report::appendToCString(&itemname, cur->ns->prefix, encoding);
+            itemname += L":";
           }
-
-          itemname += Report::cstring(L"%s", Report::widen(cur->name).c_str());
+          
+          Report::appendToCString(&itemname, cur->name, encoding);
             
           // s'il y a du texte, on concatène tout le texte et on l'affiche
           if (cur->children) {
@@ -298,12 +300,12 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
             itemvalue = L"";
             while (txtnode != cur->last) {
 		          if (txtnode->type == XML_TEXT_NODE) {
-                itemvalue += Report::cstring(L"%s", Report::widen(txtnode->content).c_str());
+                Report::appendToCString(&itemvalue, txtnode->content, encoding);
 		          }
               txtnode = txtnode->next;
             }
             if (txtnode->type == XML_TEXT_NODE) {
-              itemvalue += Report::cstring(L"%s", Report::widen(txtnode->content).c_str());
+              Report::appendToCString(&itemvalue, txtnode->content, encoding);
             }
           }
           // si le noeud a des attributs, on les affiche (pour autant qu'on n'ait pas déjà affiché les attributs)
@@ -314,9 +316,13 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
             while (attr != NULL) {
               if (attr->type == XML_ATTRIBUTE_NODE) {
                 if (attr->ns && attr->ns->prefix) {
-                  itemvalue += Report::cstring(L"%s:", Report::widen(attr->ns->prefix).c_str());
+                  Report::appendToCString(&itemvalue, attr->ns->prefix, encoding);
+                  itemvalue += ":";
                 }
-                itemvalue += Report::cstring(L"%s=\"%s\" ", Report::widen(attr->name).c_str(), Report::widen(attr->children->content).c_str());
+                Report::appendToCString(&itemvalue, attr->name, encoding);
+                itemvalue += "=\"";
+                Report::appendToCString(&itemvalue, attr->children->content, encoding);
+                itemvalue += "\" ";
               }
               attr = attr->next;
             }
@@ -332,9 +338,10 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
           itemvalue = "";
 
           if (cur->ns && cur->ns->prefix) {
-            itemname += Report::cstring(L"%s:", Report::widen(cur->ns->prefix).c_str());
+            Report::appendToCString(&itemname, cur->ns->prefix, encoding);
+            itemname += ":";
           }
-          itemname += Report::cstring(L"%s", Report::widen(cur->name).c_str());
+          Report::appendToCString(&itemname, cur->name, encoding);
 
           if (cur->children) {
             itemvalue = reinterpret_cast<const char*>(cur->children->content);
@@ -475,11 +482,11 @@ void CXPathEvalDlg::OnBnClickedBtnCopy2clipboard() {
   ::OpenClipboard(NULL);
   ::EmptyClipboard();
   HGLOBAL hClipboardData;
-  hClipboardData = GlobalAlloc(GMEM_DDESHARE, this->m_sResult.GetLength()+1);
-  char * pchData = (char*)GlobalLock(hClipboardData);
-  strcpy(pchData, Report::narrow(this->m_sResult.GetBuffer()).c_str());
+  hClipboardData = GlobalAlloc(GMEM_DDESHARE, (this->m_sResult.GetLength()+1) * sizeof(wchar_t));
+  wchar_t * pchData = (wchar_t*)GlobalLock(hClipboardData);
+  wcscpy(pchData, this->m_sResult.GetBuffer());
   ::GlobalUnlock(hClipboardData);
-  ::SetClipboardData(CF_TEXT, pchData);
+  ::SetClipboardData(CF_UNICODETEXT, pchData);
   ::CloseClipboard();
 
   MessageBox(L"Result has been copied into clipboard.");

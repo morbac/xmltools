@@ -302,6 +302,57 @@ char* Report::wchar2char(const wchar_t* ws) {
   return s;
 }
 
+UniMode Report::getEncoding() {
+  int bufferid = int(::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0));
+  return UniMode(::SendMessage(nppData._nppHandle, NPPM_GETBUFFERENCODING, bufferid, 0));
+}
+
+wchar_t* Report::castChar(const char* orig, UniMode encoding /*= uniEnd*/) {
+  UniMode enc = encoding;
+  if (encoding == uniEnd) {
+    enc = Report::getEncoding();
+  }
+  if (enc == uni8Bit) {
+    return Report::char2wchar(orig);
+  } else {
+    size_t osize = strlen(orig),
+           wsize = 3*(osize+1);
+    wchar_t* wbuffer = new wchar_t[wsize];
+    memset(wbuffer, '\0', wsize);
+    Report::UCS2FromUTF8(orig, osize+1, wbuffer, wsize);
+    return wbuffer;
+  }
+}
+
+char* Report::castWChar(const wchar_t* orig, UniMode encoding /*= uniEnd*/) {
+  UniMode enc = encoding;
+  if (encoding == uniEnd) {
+    enc = Report::getEncoding();
+  }
+  if (enc == uni8Bit) {
+    return Report::wchar2char(orig);
+  } else {
+    size_t osize = wcslen(orig),
+           size = 3*(osize+1);
+    char* buffer = new char[size];
+    memset(buffer, '\0', size);
+    Report::UTF8FromUCS2(orig, osize+1, buffer, size);
+    return buffer;
+  }
+}
+
+void Report::appendToWStdString(std::wstring* dest, const xmlChar* source, UniMode encoding) {
+  wchar_t* buffer = Report::castChar(reinterpret_cast<const char*>(source), encoding);
+  *dest += buffer;
+  delete[] buffer;
+}
+
+void Report::appendToCString(CString* dest, const xmlChar* source, UniMode encoding) {
+  wchar_t* buffer = Report::castChar(reinterpret_cast<const char*>(source), encoding);
+  *dest += buffer;
+  delete[] buffer;
+}
+
 unsigned int Report::UTF8Length(const wchar_t *uptr, unsigned int tlen) {
 	unsigned int len = 0;
 	for (unsigned int i = 0; i < tlen && uptr[i]; ++i) {

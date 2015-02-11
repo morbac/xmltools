@@ -67,6 +67,12 @@ public:
   static wchar_t* char2wchar(const char* s);
   static char* wchar2char(const wchar_t* ws);
 
+  static UniMode getEncoding();
+  static wchar_t* castChar(const char* orig, UniMode encoding = uniEnd);
+  static char* castWChar(const wchar_t* orig, UniMode encoding = uniEnd);
+  static void appendToWStdString(std::wstring* dest, const xmlChar* source, UniMode encoding);
+  static void appendToCString(CString* dest, const xmlChar* source, UniMode encoding);
+
   static unsigned int UTF8Length(const wchar_t * uptr, unsigned int tlen);
   static void UTF8FromUCS2(const wchar_t * uptr, unsigned int tlen, char * putf, unsigned int len);
   static unsigned int UCS2Length(const char * s, unsigned int len);

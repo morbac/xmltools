@@ -462,33 +462,6 @@ void savePluginParams() {
   ::WritePrivateProfileString(sectionName, L"doPrettyPrintAllOpenFiles", doPrettyPrintAllOpenFiles?L"1":L"0", iniFilePath);
 }
 
-UniMode getEncoding() {
-  int bufferid = int(::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0));
-  return UniMode(::SendMessage(nppData._nppHandle, NPPM_GETBUFFERENCODING, bufferid, 0));
-}
-
-wchar_t* castChar(const char* orig, UniMode encoding = uniEnd) {
-  UniMode enc = encoding;
-  if (encoding == uniEnd) {
-    enc = getEncoding();
-  }
-  if (enc == uni8Bit) {
-    return Report::char2wchar(orig);
-  } else {
-    size_t osize = strlen(orig),
-           wsize = 3*(osize+1);
-    wchar_t* wbuffer = new wchar_t[wsize];
-    Report::UCS2FromUTF8(orig, osize+1, wbuffer, wsize);
-    return wbuffer;
-  }
-}
-
-void appendToWStdString(std::wstring* dest, const xmlChar* source, UniMode encoding) {
-  wchar_t* buffer = castChar(reinterpret_cast<const char*>(source), encoding);
-  *dest += buffer;
-  delete[] buffer;
-}
-
 /*
  *--------------------------------------------------
  * The 4 extern functions are mandatory 
@@ -731,7 +704,7 @@ int performXMLCheck(int informIfNoError) {
       if (err->line > 0) {
         ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
       }
-      wchar_t* tmpmsg = castChar(err->message);
+      wchar_t* tmpmsg = Report::castChar(err->message);
       errmsg += Report::str_format(L"XML Parsing error at line %d, column %d: \r\n%s", err->line, err->int2, tmpmsg);
       delete[] tmpmsg;
       res = 1;
@@ -1164,7 +1137,7 @@ std::wstring currentXPath() {
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
   currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
-  UniMode encoding = getEncoding();
+  UniMode encoding = Report::getEncoding();
 
   std::wstring nodepath(L"");
 
@@ -1209,11 +1182,11 @@ std::wstring currentXPath() {
         nodepath += L"/";
         if(cur_node->ns) {
           if (cur_node->ns->prefix != NULL) {
-            appendToWStdString(&nodepath, cur_node->ns->prefix, encoding);
+            Report::appendToWStdString(&nodepath, cur_node->ns->prefix, encoding);
             nodepath += L":";
           }
         }
-        appendToWStdString(&nodepath, cur_node->name, encoding);
+        Report::appendToWStdString(&nodepath, cur_node->name, encoding);
       }
       cur_node = cur_node->last;
     }
