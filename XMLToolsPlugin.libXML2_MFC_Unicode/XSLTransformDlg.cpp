@@ -18,13 +18,15 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CXSLTransformDlg dialog
 
-CXSLTransformDlg::CXSLTransformDlg(CWnd* pParent /*=NULL*/)
+CXSLTransformDlg::CXSLTransformDlg(CWnd* pParent /*=NULL*/, unsigned long flags /*= 0*/)
 	: CDialog(CXSLTransformDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CXSLTransformDlg)
 	m_sXSLTFile = _T("");
 	m_sXSLTOptions = _T("");
 	//}}AFX_DATA_INIT
+  
+  this->m_iFlags = flags;
 }
 
 
@@ -188,7 +190,7 @@ void CXSLTransformDlg::OnBtnTransform() {
   std::string file = Report::narrow(wfile);
   cur = pXsltParseStylesheetFile(reinterpret_cast<const xmlChar*>(file.c_str()));
   pXmlResetLastError();
-  doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
+  doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, this->m_iFlags);
 
   //if (cur && doc) xsltctxt = pXsltNewTransformContext(cur, doc);
   //if (xsltctxt) pXsltSetGenericErrorFunc(xsltctxt, (xmlGenericErrorFunc) Report::registerError);

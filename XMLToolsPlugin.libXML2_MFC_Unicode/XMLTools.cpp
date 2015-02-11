@@ -1333,7 +1333,7 @@ void performXSLTransform() {
   #ifdef __XMLTOOLS_DEBUG__
     Report::_printf_inf("performXSLTransform()");
   #endif
-  CXSLTransformDlg *pDlg = new CXSLTransformDlg();
+  CXSLTransformDlg *pDlg = new CXSLTransformDlg(NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
   pDlg->Create(CXSLTransformDlg::IDD,NULL);
   pDlg->ShowWindow(SW_SHOW);
 }

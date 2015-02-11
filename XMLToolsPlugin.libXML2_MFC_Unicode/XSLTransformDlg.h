@@ -30,7 +30,7 @@ class CXSLTransformDlg : public CDialog
 {
 // Construction
 public:
-	CXSLTransformDlg(CWnd* pParent = NULL);   // standard constructor
+	CXSLTransformDlg(CWnd* pParent = NULL, unsigned long flags = 0);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CXSLTransformDlg)
@@ -50,6 +50,7 @@ public:
 
 // Implementation
 protected:
+  unsigned long m_iFlags;
 
   HWND getCurrentHScintilla(int which);
 
