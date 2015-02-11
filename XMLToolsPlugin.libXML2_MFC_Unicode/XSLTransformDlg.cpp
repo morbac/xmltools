@@ -181,7 +181,7 @@ void CXSLTransformDlg::OnBtnTransform() {
   }
   params[nbparams] = NULL;  // la liste de paramètres doit être 'NULL-terminated'
 
-  pXmlSubstituteEntitiesDefault(1);
+  //pXmlSubstituteEntitiesDefault(1);
   //xmlLoadExtDtdDefaultValue = 1;
 
   std::wstring wfile(m_sXSLTFile);
@@ -218,6 +218,7 @@ void CXSLTransformDlg::OnBtnTransform() {
   pXsltFreeStylesheet(cur);
   pXmlFreeDoc(res);
   pXmlFreeDoc(doc);
+  //pXmlSubstituteEntitiesDefault(0);
 
   delete [] data;
   cleanParams(params, nbparams);

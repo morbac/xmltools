@@ -82,8 +82,8 @@ int nbFunc = TOTAL_FUNCS;
 
 NppData nppData;
 
-unsigned long defFlags = 0;
-unsigned long defFlagsNoXXE = ~(XML_PARSE_NOENT | XML_PARSE_DTDLOAD);
+unsigned long defFlags = XML_PARSE_NOENT | XML_PARSE_DTDLOAD;
+unsigned long defFlagsNoXXE = 0;
 
 // XML Loading status
 int libloadstatus = -1;

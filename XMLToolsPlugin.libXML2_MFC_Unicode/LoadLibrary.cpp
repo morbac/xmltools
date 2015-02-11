@@ -84,11 +84,11 @@ int loadLibXML(wchar_t* nppPath) {
   DWORD   size = MAX_PATH;
   wchar_t   pszPath[MAX_PATH] = { '\0' };
 
-  hInstLibXML = LoadLibrary(L"libxml2.dll");
+  hInstLibXML = LoadLibrary(L"libxml2-2.dll");
   if (hInstLibXML == NULL) {
     Report::strcpy(pszPath, nppPath);
     PathAppend(pszPath, L"\\XMLTools");
-    PathAppend(pszPath, L"\\libxml2.dll");
+    PathAppend(pszPath, L"\\libxml2-2.dll");
     //Report::_printf_inf(pszPath);
   
 	  hInstLibXML = LoadLibrary(pszPath);
@@ -148,11 +148,11 @@ int loadLibXML(wchar_t* nppPath) {
 
   //-----------------------------------------------------------------------------------------------
 
-  hInstLibXSL = LoadLibrary(L"libxslt.dll");
+  hInstLibXSL = LoadLibrary(L"libxslt-1.dll");
   if (hInstLibXSL == NULL) {
     Report::strcpy(pszPath, nppPath);
     PathAppend(pszPath, L"\\XMLTools");
-    PathAppend(pszPath, L"\\libxslt.dll");
+    PathAppend(pszPath, L"\\libxslt-1.dll");
     //Report::_printf_inf(pszPath);
     
     hInstLibXSL = LoadLibrary(pszPath);
@@ -175,7 +175,6 @@ int loadLibXML(wchar_t* nppPath) {
   
   /* init */
   pXmlInitParser();
-  pXmlSubstituteEntitiesDefault(1);
   
   return 0;
 }
