@@ -67,7 +67,9 @@ public:
   static wchar_t* char2wchar(const char* s);
   static char* wchar2char(const wchar_t* ws);
 
-  static UniMode getEncoding();
+  static UniMode getEncoding(HWND npp = NULL);
+  static void setEncoding(UniMode encoding, HWND npp = NULL);
+
   static wchar_t* castChar(const char* orig, UniMode encoding = uniEnd);
   static char* castWChar(const wchar_t* orig, UniMode encoding = uniEnd);
   static void appendToWStdString(std::wstring* dest, const xmlChar* source, UniMode encoding);

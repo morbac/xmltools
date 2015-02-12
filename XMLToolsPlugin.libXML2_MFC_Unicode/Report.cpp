@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "PluginInterface.h"
 #include "Report.h"
+#include "menuCmdID.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -302,9 +303,26 @@ char* Report::wchar2char(const wchar_t* ws) {
   return s;
 }
 
-UniMode Report::getEncoding() {
-  int bufferid = int(::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0));
-  return UniMode(::SendMessage(nppData._nppHandle, NPPM_GETBUFFERENCODING, bufferid, 0));
+UniMode Report::getEncoding(HWND npp /* = NULL */) {
+  HWND nppwnd = (npp == NULL ? nppData._nppHandle : npp);
+  int bufferid = int(::SendMessage(nppwnd, NPPM_GETCURRENTBUFFERID, 0, 0));
+  return UniMode(::SendMessage(nppwnd, NPPM_GETBUFFERENCODING, bufferid, 0));
+}
+
+void Report::setEncoding(UniMode encoding, HWND npp /* = NULL */) {
+  HWND nppwnd = (npp == NULL ? nppData._nppHandle : npp);
+  int bufferid = int(::SendMessage(nppwnd, NPPM_GETCURRENTBUFFERID, 0, 0));
+  UniMode(::SendMessage(nppwnd, NPPM_SETBUFFERENCODING, bufferid, encoding));
+  
+  // uni8Bit=0, uniUTF8=1, uni16BE=2, uni16LE=3, uniCookie=4, uni7Bit=5, uni16BE_NoBOM=6, uni16LE_NoBOM=7
+  switch (encoding) {
+	case uni8Bit: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_ANSI); break;
+	case uniUTF8: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_UTF_8); break;
+	case uni16BE: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_UCS_2BE); break;
+	case uni16LE: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_UCS_2LE); break;
+	case uniCookie: 
+	default: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_AS_UTF_8); break;
+  }
 }
 
 wchar_t* Report::castChar(const char* orig, UniMode encoding /*= uniEnd*/) {

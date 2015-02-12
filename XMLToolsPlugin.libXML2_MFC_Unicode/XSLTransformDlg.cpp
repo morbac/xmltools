@@ -136,6 +136,7 @@ void CXSLTransformDlg::OnBtnTransform() {
   int currentEdit, currentLength;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
+  UniMode encoding = Report::getEncoding(nppData._nppHandle);
   
   currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
   
@@ -147,7 +148,7 @@ void CXSLTransformDlg::OnBtnTransform() {
   tr.chrg.cpMin = 0;
   tr.chrg.cpMax = currentLength;
   tr.lpstrText = data;
-  
+
   ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr)); 
   
   if (this->m_sXSLTFile.GetLength() <= 0) {
@@ -183,9 +184,6 @@ void CXSLTransformDlg::OnBtnTransform() {
   }
   params[nbparams] = NULL;  // la liste de paramètres doit être 'NULL-terminated'
 
-  //pXmlSubstituteEntitiesDefault(1);
-  //xmlLoadExtDtdDefaultValue = 1;
-
   std::wstring wfile(m_sXSLTFile);
   std::string file = Report::narrow(wfile);
   cur = pXsltParseStylesheetFile(reinterpret_cast<const xmlChar*>(file.c_str()));
@@ -202,8 +200,8 @@ void CXSLTransformDlg::OnBtnTransform() {
     if (doc_txt_ptr == NULL || doc_txt_ptr[0] == '\0') {
       Report::_printf_err(L"The transformation has generated empty document.");
     } else {
-      ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FILE_NEW); 
-      currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+      ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FILE_NEW);
+	  Report::setEncoding(encoding, hCurrentEditView);
       ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(doc_txt_ptr));
     }
   } else {
@@ -220,7 +218,6 @@ void CXSLTransformDlg::OnBtnTransform() {
   pXsltFreeStylesheet(cur);
   pXmlFreeDoc(res);
   pXmlFreeDoc(doc);
-  //pXmlSubstituteEntitiesDefault(0);
 
   delete [] data;
   cleanParams(params, nbparams);
