@@ -766,6 +766,8 @@ void XMLValidation(int informIfNoError) {
   memset(data, '\0', currentLength+1);
 
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
+
+  UniMode encoding = Report::getEncoding();
   
   xmlDocPtr doc;
   xmlNodePtr rootnode;
@@ -787,7 +789,10 @@ void XMLValidation(int informIfNoError) {
       if (err->line > 0) {
         ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
       }
-      Report::_printf_err(L"XML Parsing error at line %d: \r\n%s", err->line, Report::widen(err->message).c_str());
+
+	  wchar_t* tmpmsg = Report::castChar(err->message);
+      Report::_printf_err(L"XML Parsing error at line %d: \r\n%s", err->line, tmpmsg);
+	  delete[] tmpmsg;
     } else {
       Report::_printf_err(L"Failed to parse document");
     }
@@ -834,7 +839,9 @@ void XMLValidation(int informIfNoError) {
         }
 
         if (dtdPtr == NULL) {
-          Report::_printf_err(L"Unable to load the DTD\r\n%s", Report::widen(dtd_filename).c_str());
+		  wchar_t* tmpmsg = Report::castChar(dtd_filename.c_str());  
+          Report::_printf_err(L"Unable to load the DTD\r\n%s", tmpmsg);
+		  delete[] tmpmsg;
           abortValidation = true;
         } else {
           dtdValidation = true;
@@ -854,7 +861,7 @@ void XMLValidation(int informIfNoError) {
       dlg->m_sSelectedFilename = Report::widen(lastXMLSchema).c_str();
 
       CString rootSample = "<";
-      rootSample += reinterpret_cast<const char*>(rootnode->name);
+	  Report::appendToCString(&rootSample, rootnode->name, encoding);
       rootSample += "\r\n\txmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
       rootSample += "\r\n\txsi:noNamespaceSchemaLocation=\"XSD_FILE_PATH\">";
 
@@ -892,7 +899,9 @@ void XMLValidation(int informIfNoError) {
             if (err->line > 0) {
               ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
             }
-            Report::_printf_err(L"Unable to parse schema file. \r\nParsing error at line %d: \r\n%s", err->line, Report::widen(err->message).c_str());
+			wchar_t* tmpmsg = Report::castChar(err->message);  
+            Report::_printf_err(L"Unable to parse schema file. \r\nParsing error at line %d: \r\n%s", err->line, tmpmsg);
+			delete[] tmpmsg;
           } else {
             Report::_printf_err(L"Unable to parse schema file.");
           }
@@ -1381,7 +1390,9 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           if (err->line > 0) {
             ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
           }
-          Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.\nLine %d: \r\n%s", err->line, Report::widen(err->message).c_str());
+		  wchar_t* tmpmsg = Report::castChar(err->message);  
+          Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.\nLine %d: \r\n%s", err->line, tmpmsg);
+	      delete[] tmpmsg;
         } else {
           Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
         }

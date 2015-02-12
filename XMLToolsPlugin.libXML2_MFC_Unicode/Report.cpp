@@ -19,6 +19,7 @@ static char THIS_FILE[]=__FILE__;
 
 const int MAX_BUFFER = 4096;
 std::wstring currentLog;
+UniMode currentEncoding = uniEnd;
 
 Report::Report() {
 }
@@ -144,6 +145,7 @@ CString Report::cstring(const wchar_t* s, ...) {
 
 void Report::clearLog() {
   currentLog.clear();
+  currentEncoding = Report::getEncoding();
 }
 
 std::wstring Report::getLog() {
@@ -152,7 +154,7 @@ std::wstring Report::getLog() {
 
 void Report::registerError(const char* s) {
   currentLog += L"ERROR: ";
-  currentLog += Report::widen(s).c_str();
+  Report::appendToStdString(&currentLog, s, currentEncoding);
   currentLog = currentLog.substr(0, currentLog.length()-1);
   currentLog += L"\r\n";
 }
@@ -172,7 +174,7 @@ void Report::registerError(void * ctx, const char* s, ...) {
 
 void Report::registerWarn(const char* s) {
   currentLog += L"WARN: ";
-  currentLog += Report::widen(s).c_str();
+  Report::appendToStdString(&currentLog, s, currentEncoding);
   currentLog = currentLog.substr(0, currentLog.length()-1);
   currentLog += L"\r\n";
 }
@@ -191,7 +193,7 @@ void Report::registerWarn(void * ctx, const char* s, ...) {
 }
 
 void Report::registerMessage(const char* s) {
-  currentLog += Report::widen(s).c_str();
+  Report::appendToStdString(&currentLog, s, currentEncoding);
   currentLog = currentLog.substr(0, currentLog.length()-1);
   currentLog += L"\r\n";
 }
@@ -357,6 +359,12 @@ char* Report::castWChar(const wchar_t* orig, UniMode encoding /*= uniEnd*/) {
     Report::UTF8FromUCS2(orig, osize+1, buffer, size);
     return buffer;
   }
+}
+
+void Report::appendToStdString(std::wstring* dest, const char* source, UniMode encoding) {
+  wchar_t* buffer = Report::castChar(source, encoding);
+  *dest += buffer;
+  delete[] buffer;
 }
 
 void Report::appendToWStdString(std::wstring* dest, const xmlChar* source, UniMode encoding) {

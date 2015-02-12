@@ -14,7 +14,7 @@
 
 #include "resource.h"    // main symbols
 
-#define XMLTOOLS_ABOUTINFO "XML Tools Plugin\r\nversion 2.4 unicode r1041"
+#define XMLTOOLS_ABOUTINFO "XML Tools Plugin\r\nversion 2.4 unicode r1047"
 #define XMLTOOLS_DLLNAME   L"XMLTools.dll"
 
 /////////////////////////////////////////////////////////////////////////////
