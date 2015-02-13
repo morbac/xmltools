@@ -4,12 +4,13 @@
                         ChangeLog
 ================================================================
 
-Release 2.4
------------
+Release 2.4 (r1048)
+-------------------
 - Fix pretty print error while playing with attributes containing quotes and double-quotes
 - Fix encoding support for following functions:
   * Check XML syntax now
   * Validate now
+  * Tag auto-close
   * Current XML Path
   * Evaluate XPath Expression
   * XSL Transformation

@@ -1014,12 +1014,15 @@ void closeXMLTag() {
       const char* pCur = &buf[size - 2];
       int insertStringSize = 2;
 
-      for (; pCur > pBegin && *pCur != '<' && *pCur != '>' ;) --pCur;
+      for (; pCur > pBegin && *pCur != '<' && *pCur != '>' ;) {
+		  --pCur;
+	  }
 
       if (*pCur == '<') {
         ++pCur;
 
-        while (StrChr(L":_-.", *pCur) || IsCharAlphaNumeric(*pCur)) {
+		while (*pCur != '>' && *pCur != ' ' && *pCur != '\n' && *pCur != '\r') {
+        //while (IsCharAlphaNumeric(*pCur) || strchr(":_-.", *pCur) != NULL) {
           insertString[insertStringSize++] = *pCur;
           ++pCur;
         }
