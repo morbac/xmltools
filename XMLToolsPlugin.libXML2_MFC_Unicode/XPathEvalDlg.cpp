@@ -46,6 +46,8 @@ BEGIN_MESSAGE_MAP(CXPathEvalDlg, CDialog)
 	ON_WM_SIZE()
 	//}}AFX_MSG_MAP
   ON_EN_CHANGE(IDC_EDIT_EXPRESSION, OnEnChangeEditExpression)
+//  ON_WM_DESTROY()
+ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -431,6 +433,13 @@ BOOL CXPathEvalDlg::OnInitDialog() {
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CXPathEvalDlg::OnClose() {
+  CListCtrl *listresults = (CListCtrl*) this->GetDlgItem(IDC_LIST_XPATHRESULTS);
+  listresults->DeleteAllItems();
+
+  CDialog::OnClose();
 }
 
 void CXPathEvalDlg::OnSize(UINT nType, int cx, int cy) {

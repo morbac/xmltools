@@ -61,6 +61,8 @@ protected:
 public:
   afx_msg void OnEnChangeEditExpression();
   afx_msg void OnBnClickedBtnCopy2clipboard();
+//  afx_msg void OnDestroy();
+  afx_msg void OnClose();
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -7,7 +7,7 @@
 Release 2.4.1
 -------------
 - Allow external DLLs to be loaded from %appdata%\Notepad++ folder
-
+- Fix some memory leaks
 
 Release 2.4 (r1048)
 -------------------
