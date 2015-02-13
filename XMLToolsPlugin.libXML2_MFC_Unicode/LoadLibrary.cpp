@@ -78,24 +78,47 @@ xsltTransformContextPtr(*pXsltNewTransformContext)(xsltStylesheetPtr style, xmlD
 
 //-------------------------------------------------------------------------------------------------
 
-int loadLibXML(wchar_t* nppPath) {
+HINSTANCE loadExtLib(const wchar_t* libFilename, const wchar_t* nppMainPath, const wchar_t* appDataPath) {
+  wchar_t   pszPath[MAX_PATH] = { '\0' };
+  HINSTANCE res = LoadLibrary(libFilename);
+  if (res == NULL) {
+    // try loading from main npp path
+    Report::strcpy(pszPath, nppMainPath);
+    PathAppend(pszPath, L"\\XMLTools\\");
+    PathAppend(pszPath, libFilename);
+	  res = LoadLibrary(pszPath);
+
+    // try loading from %appdata% path
+    if (res == NULL) {
+      Report::strcpy(pszPath, appDataPath);
+      PathAppend(pszPath, L"\\Notepad++\\");
+      PathAppend(pszPath, libFilename);
+      res = LoadLibrary(pszPath);
+    }
+  }
+  return res;  
+}
+
+  int loadLibXML(wchar_t* nppMainPath, wchar_t* appDataPath) {
   BOOL    bRet = FALSE;
   HKEY    hKey = NULL;
   DWORD   size = MAX_PATH;
-  wchar_t   pszPath[MAX_PATH] = { '\0' };
 
-  hInstLibXML = LoadLibrary(L"libxml2-2.dll");
-  if (hInstLibXML == NULL) {
-    Report::strcpy(pszPath, nppPath);
-    PathAppend(pszPath, L"\\XMLTools");
-    PathAppend(pszPath, L"\\libxml2-2.dll");
-    //Report::_printf_inf(pszPath);
+  // loading dependances
+  loadExtLib(L"libiconv-2.dll", nppMainPath, appDataPath);
+  loadExtLib(L"zlib1.dll", nppMainPath, appDataPath);
+  loadExtLib(L"libwinpthread-1.dll", nppMainPath, appDataPath);
   
-	  hInstLibXML = LoadLibrary(pszPath);
+  // loading libxml
+  hInstLibXML = loadExtLib(L"libxml2-2.dll", nppMainPath, appDataPath);
+  if (hInstLibXML == NULL) {
+	  return -1;
+  }
 
-	  if (hInstLibXML == NULL) {
-		  return -1;
-    }
+  // loading libxslt
+  hInstLibXSL = loadExtLib(L"libxslt-1.dll", nppMainPath, appDataPath);
+  if (hInstLibXSL == NULL) {
+    return -1;
   }
 
   pXmlFree =                      (void (__cdecl *)(void *))*((void (__cdecl **)(void *))GetProcAddress(hInstLibXML, "xmlFree"));
@@ -147,20 +170,6 @@ int loadLibXML(wchar_t* nppPath) {
   pXmlThrDefTreeIndentString =    (const char * (__cdecl *)(const char *))GetProcAddress(hInstLibXML, "xmlThrDefTreeIndentString");
 
   //-----------------------------------------------------------------------------------------------
-
-  hInstLibXSL = LoadLibrary(L"libxslt-1.dll");
-  if (hInstLibXSL == NULL) {
-    Report::strcpy(pszPath, nppPath);
-    PathAppend(pszPath, L"\\XMLTools");
-    PathAppend(pszPath, L"\\libxslt-1.dll");
-    //Report::_printf_inf(pszPath);
-    
-    hInstLibXSL = LoadLibrary(pszPath);
-    
-    if (hInstLibXSL == NULL) {
-      return -1;
-    }
-  }
   
   /* xmlFree !!! pthreads? */
   

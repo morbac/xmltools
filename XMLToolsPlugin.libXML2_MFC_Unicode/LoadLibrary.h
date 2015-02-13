@@ -74,6 +74,6 @@ extern void (*pXsltCleanupGlobals)(void);
 extern void (*pXsltSetGenericErrorFunc)(void * ctx, xmlGenericErrorFunc handler);
 extern xsltTransformContextPtr(*pXsltNewTransformContext)(xsltStylesheetPtr style, xmlDocPtr doc);
 
-int loadLibXML(wchar_t* nppPath);
+int loadLibXML(wchar_t* nppMainPath, wchar_t* appDataPath);
 
 #endif __LOAD_XML_LIBRARY__

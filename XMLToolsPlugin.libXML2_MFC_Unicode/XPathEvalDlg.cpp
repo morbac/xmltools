@@ -142,7 +142,6 @@ int CXPathEvalDlg::execute_xpath_expression(std::wstring xpathExpr) {
   pXmlXPathFreeObject(xpathObj);
   pXmlXPathFreeContext(xpathCtx); 
   pXmlFreeDoc(doc);
-  
   delete [] data;
 
   return(0);

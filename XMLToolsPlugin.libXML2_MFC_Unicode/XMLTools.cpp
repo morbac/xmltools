@@ -227,22 +227,18 @@ END_MESSAGE_MAP()
 // CXMLToolsApp construction
 
 CXMLToolsApp::CXMLToolsApp() {
-  wchar_t nppPath[MAX_PATH];
-  GetModuleFileName(::GetModuleHandle(XMLTOOLS_DLLNAME), nppPath, sizeof(nppPath));
+  wchar_t nppMainPath[MAX_PATH], appDataPath[MAX_PATH];
+  GetModuleFileName(::GetModuleHandle(XMLTOOLS_DLLNAME), nppMainPath, sizeof(nppMainPath));
   
   // remove the module name : get plugins directory path
-  PathRemoveFileSpec(nppPath);
+  PathRemoveFileSpec(nppMainPath);
   
   // cd .. : get npp executable path
-  PathRemoveFileSpec(nppPath);
-
-  // chargement de la librairie
-  libloadstatus = loadLibXML(nppPath);
-  if (libloadstatus < 0) nbFunc = 1;
+  PathRemoveFileSpec(nppMainPath);
   
   // Make localConf.xml path
   wchar_t localConfPath[MAX_PATH];
-  Report::strcpy(localConfPath, nppPath);
+  Report::strcpy(localConfPath, nppMainPath);
   PathAppend(localConfPath, localConfFile);
   //Report::_printf_err("%s", localConfPath);
   
@@ -250,15 +246,19 @@ CXMLToolsApp::CXMLToolsApp() {
   bool isLocal = (PathFileExists(localConfPath) == TRUE);
   
   if (isLocal) {
-	  Report::strcpy(iniFilePath, nppPath);
+	  Report::strcpy(iniFilePath, nppMainPath);
     PathAppend(iniFilePath, L"XMLToolsExt.ini");
   } else {
     ITEMIDLIST *pidl;
     SHGetSpecialFolderLocation(NULL, CSIDL_APPDATA, &pidl);
-    SHGetPathFromIDList(pidl, iniFilePath);
-    
+    SHGetPathFromIDList(pidl, appDataPath);
+    Report::strcpy(iniFilePath, appDataPath);
     PathAppend(iniFilePath, L"Notepad++\\XMLToolsExt.ini");
   }
+
+  // chargement de la librairie
+  libloadstatus = loadLibXML(nppMainPath, appDataPath);
+  if (libloadstatus < 0) nbFunc = 1;
   
   int menuentry = 0;
   for (int i = 0; i < nbFunc; ++i) {
