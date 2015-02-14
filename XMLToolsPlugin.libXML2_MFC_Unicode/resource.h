@@ -19,6 +19,8 @@
 #define IDD_ABOUTBOX                    2006
 #define IDC_EDIT_FILENAME               2007
 #define IDC_BTN_EXPLORE_XSDFILE         2008
+#define IDC_BTN_COPY2CLIPBOARD2         2008
+#define IDC_BTN_CLEARLIST               2008
 #define IDC_EDIT_ROOTELEMSAMPLE         2009
 #define IDC_EDIT_MULTILINEMSG           2010
 #define IDC_EDIT_XSLTFILE               2011

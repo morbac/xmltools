@@ -495,8 +495,7 @@ HWND getCurrentHScintilla(int which) {
   return (which == 0)?nppData._scintillaMainHandle:nppData._scintillaSecondHandle;
 };
 
-// If you don't need get the notification from Notepad++,
-// just let it be empty.
+// If you don't need get the notification from Notepad++, just let it be empty.
 extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
   if (libloadstatus != 0) return;
 
@@ -691,6 +690,8 @@ int performXMLCheck(int informIfNoError) {
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
 
   std::string str(data);
+  delete [] data;
+  data = NULL;
   
   pXmlResetLastError();
   xmlDocPtr doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
@@ -721,9 +722,7 @@ int performXMLCheck(int informIfNoError) {
   }
 
   pXmlFreeDoc(doc);
-
-  delete [] data;
-  data = NULL;
+  str.clear();
 
   return res;
 }
@@ -744,6 +743,7 @@ void manualXMLCheck() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+CSelectFileDlg* pSelectFileDlg = NULL;
 void XMLValidation(int informIfNoError) {
   #ifdef __XMLTOOLS_DEBUG__
     Report::_printf_inf("XMLValidation()");
@@ -781,6 +781,9 @@ void XMLValidation(int informIfNoError) {
 
   pXmlResetLastError();
   doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
+
+  delete [] data;
+  data = NULL;
   
   if (doc == NULL) {
     xmlErrorPtr err = pXmlGetLastError();
@@ -789,10 +792,9 @@ void XMLValidation(int informIfNoError) {
       if (err->line > 0) {
         ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
       }
-
-	  wchar_t* tmpmsg = Report::castChar(err->message);
+	    wchar_t* tmpmsg = Report::castChar(err->message);
       Report::_printf_err(L"XML Parsing error at line %d: \r\n%s", err->line, tmpmsg);
-	  delete[] tmpmsg;
+	    delete[] tmpmsg;
     } else {
       Report::_printf_err(L"Failed to parse document");
     }
@@ -839,9 +841,9 @@ void XMLValidation(int informIfNoError) {
         }
 
         if (dtdPtr == NULL) {
-		  wchar_t* tmpmsg = Report::castChar(dtd_filename.c_str());  
+		      wchar_t* tmpmsg = Report::castChar(dtd_filename.c_str());  
           Report::_printf_err(L"Unable to load the DTD\r\n%s", tmpmsg);
-		  delete[] tmpmsg;
+		      delete[] tmpmsg;
           abortValidation = true;
         } else {
           dtdValidation = true;
@@ -857,17 +859,19 @@ void XMLValidation(int informIfNoError) {
   if (!abortValidation) {
     // 2.2. Si l'attribut est absent, on demande à l'utilisateur de fournir le chemin du fichier XSD
     if (xml_schema.length() == 0 && !dtdValidation) {
-      CSelectFileDlg* dlg = new CSelectFileDlg();
-      dlg->m_sSelectedFilename = Report::widen(lastXMLSchema).c_str();
+      if (pSelectFileDlg == NULL) {
+          pSelectFileDlg = new CSelectFileDlg();
+      }
+      pSelectFileDlg->m_sSelectedFilename = Report::widen(lastXMLSchema).c_str();
 
       CString rootSample = "<";
-	  Report::appendToCString(&rootSample, rootnode->name, encoding);
+	    Report::appendToCString(&rootSample, rootnode->name, encoding);
       rootSample += "\r\n\txmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
       rootSample += "\r\n\txsi:noNamespaceSchemaLocation=\"XSD_FILE_PATH\">";
 
-      dlg->m_sRootElementSample = rootSample;
-      if (dlg->DoModal() == IDOK) {
-        xml_schema = Report::narrow(std::wstring(dlg->m_sSelectedFilename).c_str());
+      pSelectFileDlg->m_sRootElementSample = rootSample;
+      if (pSelectFileDlg->DoModal() == IDOK) {
+        xml_schema = Report::narrow(std::wstring(pSelectFileDlg->m_sSelectedFilename).c_str());
       }
     }
 
@@ -899,9 +903,9 @@ void XMLValidation(int informIfNoError) {
             if (err->line > 0) {
               ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
             }
-			wchar_t* tmpmsg = Report::castChar(err->message);  
+			      wchar_t* tmpmsg = Report::castChar(err->message);  
             Report::_printf_err(L"Unable to parse schema file. \r\nParsing error at line %d: \r\n%s", err->line, tmpmsg);
-			delete[] tmpmsg;
+			      delete[] tmpmsg;
           } else {
             Report::_printf_err(L"Unable to parse schema file.");
           }
@@ -967,8 +971,6 @@ void XMLValidation(int informIfNoError) {
   // 3. On libère la mémoire
   rootnode = NULL;
   pXmlFreeDoc(doc);
-  delete [] data;
-  data = NULL;
 
   // 4. On enregistre le nom du schéma utilisé pour le proposer la prochaine fois
   lastXMLSchema = xml_schema;
@@ -1162,6 +1164,8 @@ std::wstring currentXPath() {
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
 
   std::string str(data);
+  delete [] data;
+  data = NULL;
 
   // end tag pos
   int begpos = str.find_first_of("<");
@@ -1205,7 +1209,7 @@ std::wstring currentXPath() {
     pXmlFreeDoc(doc);
   }
 
-  delete [] data;
+  str.clear();
 
   return nodepath;
 }
@@ -1237,54 +1241,6 @@ void getCurrentXPath() {
   Report::_printf_inf(tmpmsg.c_str());
 }
 
-/*
-size_t getText(wchar_t** wdata) {
-  int currentEdit, currentLength;
-  ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-  HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-  currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
-
-  char *data = new char[currentLength+1];
-  if (!data) return NULL;
-  size_t size = (currentLength+1)*sizeof(char);
-  memset(data, '\0', size);
-
-  int currentPos = int(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0)),
-      length = (int) ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, (LPARAM)data);
-  
-  size_t wsize = 3*(currentLength+1);
-  wchar_t* wbuffer = new wchar_t[wsize];
-  Report::UCS2FromUTF8(data, currentLength+1, wbuffer, wsize);
-
-  *wdata = wbuffer;
-
-  return (currentLength+1)*sizeof(wchar_t);
-}
-void getCurrentXPath() {
-  wchar_t* wdata = NULL;
-  size_t wsize = getText(&wdata);
-  std::string tmpmsg("Current node cannot be resolved.");
-
-  if (wdata) {
-    tmpmsg = "OK";
-      
-    ::OpenClipboard(NULL);
-    ::EmptyClipboard();
-    HGLOBAL hClipboardData = GlobalAlloc(NULL, wsize);
-    char * pchData = (char*)GlobalLock(hClipboardData);
-
-    memcpy(pchData, wdata, wsize);
-    ::GlobalUnlock(hClipboardData);
-    ::SetClipboardData(CF_UNICODETEXT, hClipboardData);
-    ::CloseClipboard();
-  }
-  
-  delete[] wdata;
-  
-  Report::_printf_inf(tmpmsg.c_str());
-}
-*/
-
 ///////////////////////////////////////////////////////////////////////////////
 
 #if defined(LIBXML_XPATH_ENABLED) && defined(LIBXML_SAX1_ENABLED)
@@ -1292,14 +1248,17 @@ void getCurrentXPath() {
 int  execute_xpath_expression(const xmlChar* xpathExpr, const xmlChar* nsList);
 int  register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList);
 void print_xpath_nodes(xmlNodeSetPtr nodes);
+CXPathEvalDlg *pXPathEvalDlg = NULL;
 
 void evaluateXPath() {
   #ifdef __XMLTOOLS_DEBUG__
     Report::_printf_inf("evaluateXPath()");
   #endif
-  CXPathEvalDlg *pDlg = new CXPathEvalDlg(NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
-  pDlg->Create(CXPathEvalDlg::IDD,NULL);
-  pDlg->ShowWindow(SW_SHOW);
+  if (pXPathEvalDlg == NULL) {
+    pXPathEvalDlg = new CXPathEvalDlg(NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
+    pXPathEvalDlg->Create(CXPathEvalDlg::IDD,NULL);
+  }
+  pXPathEvalDlg->ShowWindow(SW_SHOW);
 }
 
 #else
@@ -1314,13 +1273,16 @@ void evaluateXPath() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+CXSLTransformDlg *pXSLTransformDlg = NULL;
 void performXSLTransform() {
   #ifdef __XMLTOOLS_DEBUG__
     Report::_printf_inf("performXSLTransform()");
   #endif
-  CXSLTransformDlg *pDlg = new CXSLTransformDlg(NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
-  pDlg->Create(CXSLTransformDlg::IDD,NULL);
-  pDlg->ShowWindow(SW_SHOW);
+  if (pXSLTransformDlg == NULL) {
+    pXSLTransformDlg = new CXSLTransformDlg(NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
+    pXSLTransformDlg->Create(CXSLTransformDlg::IDD,NULL);
+  }
+  pXSLTransformDlg->ShowWindow(SW_SHOW);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1393,9 +1355,9 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           if (err->line > 0) {
             ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
           }
-		  wchar_t* tmpmsg = Report::castChar(err->message);  
+		      wchar_t* tmpmsg = Report::castChar(err->message);  
           Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.\nLine %d: \r\n%s", err->line, tmpmsg);
-	      delete[] tmpmsg;
+	        delete[] tmpmsg;
         } else {
           Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
         }
@@ -1408,6 +1370,8 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     }
 
     str += data;
+    delete[] data;
+    data = NULL;
 
     // Proceed to first pass if break adds are enabled
     if (addlinebreaks) {
@@ -1561,11 +1525,11 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 		  ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
 	  }
 
+    str.clear();
+
     // Restore scrolling
     ::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
     ::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
-
-    delete [] data;
   }
 }
 
@@ -1694,20 +1658,21 @@ void linarizeXML() {
     ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
 
     std::string str(data);
+    delete [] data;
+    data = NULL;
 
     long curpos = 0;
     while ((curpos = str.find_first_of("\r\n", curpos)) >= 0) {
       long nexwchar_t = str.find_first_not_of("\r\n", curpos);
       str.erase(curpos, nexwchar_t-curpos);
 
-      // on supprime aussi tous les espaces du début de ligne
+      // Let erase leading space chars on line
       if (curpos >= 0 && (unsigned)curpos < str.length()) {
         nexwchar_t = str.find_first_not_of(" \t", curpos);
         if (nexwchar_t >= curpos) {
-          // et si le 1e caractère de la ligne suivante est différent de '<' et que
-          // le dernier de la précédente est différent de '>', autrement dit si on
-          // est dans du texte, on laisse un espace
-
+          // And if the 1st char of next line is not '<' and last char of preceding
+          // line is not '>', then we consider we are in text content, then let put
+          // a space char
           bool enableInsert = false;
           if (curpos > 0 && str.at(nexwchar_t) != '<' && str.at(curpos-1) != '>') {
             enableInsert = true;
@@ -1723,7 +1688,7 @@ void linarizeXML() {
     // Send formated string to scintilla
     ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
 
-    delete [] data;
+    str.clear();
   }
 }
 
@@ -1800,6 +1765,8 @@ void convertText2XML() {
   ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
 
   std::string str(data);
+  delete [] data;
+  data = NULL;
   long curpos = sellength;
 
   while (curpos >= 0 && (curpos = str.rfind("&quot;", curpos)) >= 0) {
@@ -1845,7 +1812,7 @@ void convertText2XML() {
   //::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
   //::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
 
-  delete [] data;
+  str.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1880,6 +1847,8 @@ void convertXML2Text() {
   ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
 
   std::string str(data);
+  delete [] data;
+  data = NULL;
   long curpos = sellength;
 
   while (curpos >= 0 && (curpos = str.rfind("&", curpos)) >= 0) {
@@ -1925,7 +1894,7 @@ void convertXML2Text() {
   //::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
   //::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
 
-  delete [] data;
+  str.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2008,13 +1977,15 @@ void commentSelection() {
   }
 
   std::string str(data);
+  delete [] data;
+  data = NULL;
 
   int errflag = validateSelectionForComment(str, sellength);
   if (errflag) {
     wchar_t msg[512];
     swprintf(msg, 512, L"The current selection covers part only one portion of another comment.\nUncomment process may be not applicable.\n\nDo you want to continue ?", errflag);
     if (::MessageBox(nppData._nppHandle, msg, L"XML Tools plugin", MB_YESNO | MB_ICONASTERISK) == IDNO) {
-      delete [] data;
+      str.clear();
       return;
     }
   }
@@ -2075,7 +2046,7 @@ void commentSelection() {
   //::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
   //::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
 
-  delete [] data;
+  str.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2111,13 +2082,15 @@ void uncommentSelection() {
   ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
 
   std::string str(data);
+  delete [] data;
+  data = NULL;
 
   int errflag = validateSelectionForComment(str, sellength);
   if (errflag) {
     wchar_t msg[512];
     swprintf(msg, 512, L"Unable to uncomment the current selection.\nError code is %d.", errflag);
     Report::_printf_err(msg);
-    delete [] data;
+    str.clear();
     return;
   }
 
@@ -2185,7 +2158,7 @@ void uncommentSelection() {
   //::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
   //::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
 
-  delete [] data;
+  str.clear();
 }
 
 /////////////////////////////////////////////////////////////////////////////

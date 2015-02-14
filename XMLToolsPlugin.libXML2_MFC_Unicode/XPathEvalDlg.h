@@ -62,7 +62,8 @@ public:
   afx_msg void OnEnChangeEditExpression();
   afx_msg void OnBnClickedBtnCopy2clipboard();
 //  afx_msg void OnDestroy();
-  afx_msg void OnClose();
+//  afx_msg void OnClose();
+  afx_msg void OnBnClickedBtnClearlist();
 };
 
 //{{AFX_INSERT_LOCATION}}

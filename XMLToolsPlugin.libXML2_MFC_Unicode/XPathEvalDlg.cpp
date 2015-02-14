@@ -47,7 +47,8 @@ BEGIN_MESSAGE_MAP(CXPathEvalDlg, CDialog)
 	//}}AFX_MSG_MAP
   ON_EN_CHANGE(IDC_EDIT_EXPRESSION, OnEnChangeEditExpression)
 //  ON_WM_DESTROY()
-ON_WM_CLOSE()
+//ON_WM_CLOSE()
+ON_BN_CLICKED(IDC_BTN_CLEARLIST, &CXPathEvalDlg::OnBnClickedBtnClearlist)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -102,10 +103,11 @@ int CXPathEvalDlg::execute_xpath_expression(std::wstring xpathExpr) {
   /* Load XML document */
   pXmlResetLastError();
   doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, this->m_iFlags);
+  delete [] data;
+  data = NULL;
 
   if (doc == NULL) {
     Report::_printf_err(L"Error: unable to parse XML.");
-    delete [] data;
     return(-1);
   }
 
@@ -113,8 +115,7 @@ int CXPathEvalDlg::execute_xpath_expression(std::wstring xpathExpr) {
   xpathCtx = pXmlXPathNewContext(doc);
   if (xpathCtx == NULL) {
     Report::_printf_err(L"Error: unable to create new XPath context\n");
-    pXmlFreeDoc(doc); 
-    delete [] data;
+    pXmlFreeDoc(doc);
     return(-1);
   }
   
@@ -123,7 +124,6 @@ int CXPathEvalDlg::execute_xpath_expression(std::wstring xpathExpr) {
     Report::_printf_err(L"Error: failed to register namespaces list \"%s\"\n", nsList);
     pXmlXPathFreeContext(xpathCtx); 
     pXmlFreeDoc(doc);
-    delete [] data;
     return(-1);
   }
 
@@ -133,7 +133,6 @@ int CXPathEvalDlg::execute_xpath_expression(std::wstring xpathExpr) {
     Report::_printf_err(L"Error: unable to evaluate xpath expression \"%s\"\n", xpathExpr.c_str());
     pXmlXPathFreeContext(xpathCtx); 
     pXmlFreeDoc(doc);
-    delete [] data;
     return(-1);
   }
 
@@ -144,7 +143,6 @@ int CXPathEvalDlg::execute_xpath_expression(std::wstring xpathExpr) {
   pXmlXPathFreeObject(xpathObj);
   pXmlXPathFreeContext(xpathCtx); 
   pXmlFreeDoc(doc);
-  delete [] data;
 
   return(0);
 }
@@ -435,18 +433,19 @@ BOOL CXPathEvalDlg::OnInitDialog() {
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CXPathEvalDlg::OnClose() {
-  CListCtrl *listresults = (CListCtrl*) this->GetDlgItem(IDC_LIST_XPATHRESULTS);
-  listresults->DeleteAllItems();
-
-  CDialog::OnClose();
-}
+//void CXPathEvalDlg::OnClose() {
+//  CListCtrl *listresults = (CListCtrl*) this->GetDlgItem(IDC_LIST_XPATHRESULTS);
+//  //listresults->DestroyWindow();// ->DeleteAllItems();
+//
+//  CDialog::OnClose();
+//}
 
 void CXPathEvalDlg::OnSize(UINT nType, int cx, int cy) {
 	CDialog::OnSize(nType, cx, cy);
 	
   CWnd *btn_wnd = GetDlgItem(IDC_BTN_EVALUATE);
   CWnd *cpy_wnd = GetDlgItem(IDC_BTN_COPY2CLIPBOARD);
+  CWnd *clr_wnd = GetDlgItem(IDC_BTN_CLEARLIST);
   CWnd *in_wnd = GetDlgItem(IDC_EDIT_EXPRESSION);
   CWnd *out_wnd = GetDlgItem(IDC_LIST_XPATHRESULTS);
 
@@ -455,14 +454,18 @@ void CXPathEvalDlg::OnSize(UINT nType, int cx, int cy) {
     const int wndspace = 6;
     const int btnwidth = 80;
     const int btnheight = 28;
-    const int inheight = 100;
+    const int inheight = 96;
 
     btn_wnd->MoveWindow(cx-border-btnwidth,
                         border,
                         btnwidth,
                         btnheight);
+    clr_wnd->MoveWindow(cx-border-btnwidth,
+                        border+inheight-btnheight,
+                        btnwidth,
+                        btnheight);
     cpy_wnd->MoveWindow(cx-border-btnwidth,
-                        border+inheight+wndspace-btnheight-wndspace,
+                        border+inheight-btnheight-wndspace-btnheight,
                         btnwidth,
                         btnheight);
 	  in_wnd->MoveWindow(border,
@@ -487,15 +490,26 @@ void CXPathEvalDlg::OnEnChangeEditExpression()
 }
 
 void CXPathEvalDlg::OnBnClickedBtnCopy2clipboard() {
-  ::OpenClipboard(NULL);
-  ::EmptyClipboard();
-  HGLOBAL hClipboardData;
-  hClipboardData = GlobalAlloc(GMEM_DDESHARE, (this->m_sResult.GetLength()+1) * sizeof(wchar_t));
-  wchar_t * pchData = (wchar_t*)GlobalLock(hClipboardData);
-  wcscpy(pchData, this->m_sResult.GetBuffer());
-  ::GlobalUnlock(hClipboardData);
-  ::SetClipboardData(CF_UNICODETEXT, pchData);
-  ::CloseClipboard();
+  if (this->m_sResult.IsEmpty()) {
+    MessageBox(L"Result is empty.");
+  } else {
+    ::OpenClipboard(NULL);
+    ::EmptyClipboard();
+    HGLOBAL hClipboardData;
+    hClipboardData = GlobalAlloc(GMEM_DDESHARE, (this->m_sResult.GetLength()+1) * sizeof(wchar_t));
+    wchar_t * pchData = (wchar_t*)GlobalLock(hClipboardData);
+    wcscpy(pchData, this->m_sResult.GetBuffer());
+    ::GlobalUnlock(hClipboardData);
+    ::SetClipboardData(CF_UNICODETEXT, pchData);
+    ::CloseClipboard();
 
-  MessageBox(L"Result has been copied into clipboard.");
+    MessageBox(L"Result has been copied into clipboard.");
+  }
+}
+
+
+void CXPathEvalDlg::OnBnClickedBtnClearlist() {
+  CListCtrl *listresults = (CListCtrl*) this->GetDlgItem(IDC_LIST_XPATHRESULTS);
+  listresults->DeleteAllItems();
+  this->m_sResult.Empty();
 }
