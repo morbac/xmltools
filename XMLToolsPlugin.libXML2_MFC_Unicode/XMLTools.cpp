@@ -412,7 +412,7 @@ CXMLToolsApp::CXMLToolsApp() {
     funcItem[menuentry]._pFunc = aboutBox;
     ++menuentry;
   } else {
-    Report::strcpy(funcItem[menuentry]._itemName, L"How to use...");
+    Report::strcpy(funcItem[menuentry]._itemName, L"How to install...");
     funcItem[menuentry]._pFunc = howtoUse;
     ++menuentry;
   }

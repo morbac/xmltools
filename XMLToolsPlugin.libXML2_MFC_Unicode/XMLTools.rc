@@ -175,14 +175,15 @@ BEGIN
     LTEXT           "param1=123 param2='abc' param3=concat('abc','123')",IDC_STATIC,7,77,219,9
 END
 
-IDD_HOWTOUSE DIALOGEX 0, 0, 182, 134
+IDD_HOWTOUSE DIALOGEX 0, 0, 181, 112
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "XML Tools"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,65,103,50,14
-    GROUPBOX        "",IDC_STATIC,7,7,168,120
-    CTEXT           "Unable to load libXML and/or libXSLT.\n\nPlease install external DLLs into NPP root directory (same directory than Notepad++.exe) and restart NPP.\n\nThese librairies are available in the subfolder ""ext_libs"" of xmltools zip archive.",IDC_STATIC,19,19,142,79
+    DEFPUSHBUTTON   "OK",IDOK,65,91,50,14
+    CTEXT           "Unable to load libXML and/or libXSLT.",IDC_STATIC,7,7,167,10
+    CTEXT           "Please install external DLLs into NPP root directory (same directory than Notepad++.exe) or in ""%appdata%\\Notepad++"" folder and restart NPP.",IDC_STATIC,7,25,167,42
+    CTEXT           "These libraries are available in the subfolder ""ext_libs"" of xmltools zip archive.",IDC_STATIC,7,62,167,29
 END
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 175, 94
@@ -248,10 +249,10 @@ BEGIN
     IDD_HOWTOUSE, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 175
+        RIGHTMARGIN, 174
         VERTGUIDE, 90
         TOPMARGIN, 7
-        BOTTOMMARGIN, 127
+        BOTTOMMARGIN, 105
     END
 
     IDD_ABOUTBOX, DIALOG

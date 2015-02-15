@@ -46,7 +46,6 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 public:
-  afx_msg void OnStnClickedExtlibsUrl2();
 };
 
 //{{AFX_INSERT_LOCATION}}

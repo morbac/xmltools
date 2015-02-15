@@ -19,7 +19,6 @@
 #define IDD_ABOUTBOX                    2006
 #define IDC_EDIT_FILENAME               2007
 #define IDC_BTN_EXPLORE_XSDFILE         2008
-#define IDC_BTN_COPY2CLIPBOARD2         2008
 #define IDC_BTN_CLEARLIST               2008
 #define IDC_EDIT_ROOTELEMSAMPLE         2009
 #define IDC_EDIT_MULTILINEMSG           2010
@@ -33,6 +32,7 @@
 #define IDC_EXTLIBS_URL2                2019
 #define IDC_ABOUTTEXT                   2019
 #define IDC_ABOUTURL                    2020
+#define IDC_STATIC1                     2021
 
 // Next default values for new objects
 // 
@@ -40,7 +40,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        2007
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2021
+#define _APS_NEXT_CONTROL_VALUE         2022
 #define _APS_NEXT_SYMED_VALUE           2000
 #endif
 #endif

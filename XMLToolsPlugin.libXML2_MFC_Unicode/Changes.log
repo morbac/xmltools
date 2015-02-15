@@ -4,8 +4,8 @@
                         ChangeLog
 ================================================================
 
-Release 2.4.1
--------------
+Release 2.4.1 (r1054)
+---------------------
 - Allow external DLLs to be loaded from %appdata%\Notepad++ folder
 - Change dialogs behaviour: dialogs are not destroyed on close and are restored on re-opening
 - Fix some memory leaks
