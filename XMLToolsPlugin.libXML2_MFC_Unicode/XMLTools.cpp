@@ -1439,8 +1439,9 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           // simple text, if not, it is a end tag char. '>' text chars are ignored.
           int prevspecchar = str.find_last_of("<>",curpos-1);
           if (prevspecchar >= 0 && str.at(prevspecchar) == '<') {
-            // We have found a '>' char, let's see if next non space/tab is a '<'
+            // We have found a '>' char and we are in a tag, let's see if it's an opening or closing one
             bool isclosingtag = (curpos > 0 && str.at(curpos-1) == '/');
+
             int nexwchar_t = str.find_first_not_of(" \t",curpos+1);
             int deltapos = nexwchar_t-curpos;
             if (nexwchar_t >= 0 &&
@@ -1460,7 +1461,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
                 if (strcmp(tag1.c_str(),tag2.c_str()) || isclosingtag) {
                   // Case of "<data><data>..." -> add a line break between tags
                   str.insert(++curpos,eolchar);
-                } else if (str.at(nexwchar_t+1) == '/' && !isclosingtag) {
+                } else if (str.at(nexwchar_t+1) == '/' && !isclosingtag && nexwchar_t == curpos+1) {
                   // Case of "<data id="..."></data>" -> replace by "<data id="..."/>"
                   str.replace(curpos,endnext-curpos,"/");
                   //str.insert(++curpos,"#");
@@ -1501,40 +1502,65 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     while (curpos < (long)str.length() && (curpos = str.find_first_of(sep,curpos)) >= 0) {
       strlength = str.length();
       if (!isEOL(str, curpos, eolmode)) {
-        if (curpos < strlength-3 && !str.compare(curpos,4,"<!--")) in_comment = true;
-        if (curpos < strlength-8 && !str.compare(curpos,9,"<![CDATA[")) in_cdata = true;
-        else if (curpos < strlength-1 && !str.compare(curpos,2,"<?")) in_header = true;
-        else if (curpos < strlength && !str.compare(curpos,1,"\"") && !str.compare(curpos,1,"'") &&
-                 prevspecchar >= 0 && str.at(prevspecchar) == '<') in_attribute = !in_attribute;
+        if (curpos < strlength-3 && !str.compare(curpos,4,"<!--")) {
+          in_comment = true;
+        }
+        if (curpos < strlength-8 && !str.compare(curpos,9,"<![CDATA[")) {
+          in_cdata = true;
+        } else if (curpos < strlength-1 && !str.compare(curpos,2,"<?")) {
+          in_header = true;
+        } else if (curpos < strlength && !str.compare(curpos,1,"\"") && !str.compare(curpos,1,"'") &&
+                   prevspecchar >= 0 && str.at(prevspecchar) == '<') {
+          in_attribute = !in_attribute;
+        }
       }
 
       if (!in_comment && !in_cdata && !in_header) {
-        if (curpos > 0) pc = str.at(curpos-1);
-        else pc = ' ';
+        if (curpos > 0) {
+          pc = str.at(curpos-1);
+        } else {
+          pc = ' ';
+        }
 
         cc = str.at(curpos);
 
-        if (curpos < strlength-1) nc = str.at(curpos+1);
-        else nc = ' ';
+        if (curpos < strlength-1) {
+          nc = str.at(curpos+1);
+        } else {
+          nc = ' ';
+        }
 
-        if (curpos < strlength-2) nnc = str.at(curpos+2);
-        else nnc = ' ';
+        if (curpos < strlength-2) {
+          nnc = str.at(curpos+2);
+        } else {
+          nnc = ' ';
+        }
           
         if (cc == '<') {
           prevspecchar = curpos++;
           ++tagsignlevel;
           in_nodetext = false;
-          if (nc != '/' && (nc != '!' || nnc == '[')) xmllevel += 2;
+          if (nc != '/' && (nc != '!' || nnc == '[')) {
+            xmllevel += 2;
+          }
         } else if (cc == '>' && !in_attribute) {
           // > are ignored inside attributes
-          if (pc != '/' && pc != ']') { --xmllevel; in_nodetext = true; }
-          else xmllevel -= 2;
+          if (pc != '/' && pc != ']') {
+            --xmllevel;
+            in_nodetext = true;
+          } else {
+            xmllevel -= 2;
+          }
 
-          if (xmllevel < 0) xmllevel = 0;
+          if (xmllevel < 0) {
+            xmllevel = 0;
+          }
           --tagsignlevel;
           prevspecchar = curpos++;
         } else if (isEOL(cc, nc, eolmode)) {
-          if (eolmode == SC_EOL_CRLF) ++curpos; // skipping \n of \r\n
+          if (eolmode == SC_EOL_CRLF) {
+            ++curpos; // skipping \n of \r\n
+          }
 
           // \n are ignored inside attributes
           int nexwchar_t = str.find_first_not_of(" \t",++curpos);
@@ -1545,7 +1571,9 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
             skipformat = (cc != '<' && cc != '\r' && cc != '\n');
           }
           if (nexwchar_t >= curpos && xmllevel >= 0 && !skipformat) {
-            if (nexwchar_t < 0) nexwchar_t = curpos;
+            if (nexwchar_t < 0) {
+              nexwchar_t = curpos;
+            }
             int delta = 0;
             str.erase(curpos,nexwchar_t-curpos);
 
@@ -1553,20 +1581,30 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
             if (curpos < strlength) {
               cc = str.at(curpos);
               // we set delta = 1 if we technically can + if we are in a text or inside an attribute
-              if (xmllevel > 0 && curpos < strlength-1 && ( (cc == '<' && str.at(curpos+1) == '/') || in_attribute) ) delta = 1;
-              else if (cc == '\n' || cc == '\r') delta = xmllevel;
+              if (xmllevel > 0 && curpos < strlength-1 && ( (cc == '<' && str.at(curpos+1) == '/') || in_attribute) ) {
+                delta = 1;
+              } else if (cc == '\n' || cc == '\r') {
+                delta = xmllevel;
+              }
             }
 
-            if (usetabs) str.insert(curpos,(xmllevel-delta),'\t');
-            else str.insert(curpos,tabwidth*(xmllevel-delta),' ');
+            if (usetabs) {
+              str.insert(curpos,(xmllevel-delta),'\t');
+            } else {
+              str.insert(curpos,tabwidth*(xmllevel-delta),' ');
+            }
           }
         } else {
           ++curpos;
         }
       } else {
-        if (in_comment && curpos > 1 && !str.compare(curpos-2,3,"-->")) in_comment = false;
-        else if (in_cdata && curpos > 1 && !str.compare(curpos-2,3,"]]>")) in_cdata = false;
-        else if (in_header && curpos > 0 && !str.compare(curpos-1,2,"?>")) in_header = false;
+        if (in_comment && curpos > 1 && !str.compare(curpos-2,3,"-->")) {
+          in_comment = false;
+        } else if (in_cdata && curpos > 1 && !str.compare(curpos-2,3,"]]>")) {
+          in_cdata = false;
+        } else if (in_header && curpos > 0 && !str.compare(curpos-1,2,"?>")) {
+          in_header = false;
+        }
         ++curpos;
       }
     }

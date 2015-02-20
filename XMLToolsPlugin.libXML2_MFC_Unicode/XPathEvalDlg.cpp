@@ -280,7 +280,7 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
         assert(nodes->nodeTab[i]);
 
         xmlNodePtr cur = nodes->nodeTab[i];
-		bool doIgnore = false;
+		    bool doIgnore = false;
 
         if (cur->type == XML_ELEMENT_NODE) {
           itemtype = "Node";
@@ -348,68 +348,71 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
           } else {
             itemvalue = "";
           }
-		} else if(cur->type == XML_TEXT_NODE) {
-		  itemtype = "Text";
-		  itemname = "";
-		  itemvalue = "";
-		  Report::appendToCString(&itemvalue, cur->content, encoding);
+		    } else if(cur->type == XML_TEXT_NODE) {
+		      itemtype = "Text";
+		      itemname = "";
+		      itemvalue = "";
+		      Report::appendToCString(&itemvalue, cur->content, encoding);
 
-		  itemvalue.Trim();
-		  if (itemvalue.IsEmpty()) doIgnore = true;
+		      itemvalue.Trim();
+		      if (itemvalue.IsEmpty()) {
+            doIgnore = true;
+          }
         } else {
-		  switch (cur->type) {
-		    case XML_ELEMENT_NODE: itemtype = "XML_ELEMENT_NODE";
-		    case XML_ATTRIBUTE_NODE: itemtype = "XML_ATTRIBUTE_NODE";
-		    case XML_TEXT_NODE: itemtype = "XML_TEXT_NODE";
-		    case XML_CDATA_SECTION_NODE: itemtype = "XML_CDATA_SECTION_NODE";
-		    case XML_ENTITY_REF_NODE: itemtype = "XML_ENTITY_REF_NODE";
-		    case XML_ENTITY_NODE: itemtype = "XML_ENTITY_NODE";
-		    case XML_PI_NODE: itemtype = "XML_PI_NODE";
-		    case XML_COMMENT_NODE: itemtype = "XML_COMMENT_NODE";
-		    case XML_DOCUMENT_NODE: itemtype = "XML_DOCUMENT_NODE";
-		    case XML_DOCUMENT_TYPE_NODE: itemtype = "XML_DOCUMENT_TYPE_NODE";
-		    case XML_DOCUMENT_FRAG_NODE: itemtype = "XML_DOCUMENT_FRAG_NODE";
-		    case XML_NOTATION_NODE: itemtype = "XML_NOTATION_NODE";
-		    case XML_HTML_DOCUMENT_NODE: itemtype = "XML_HTML_DOCUMENT_NODE";
-		    case XML_DTD_NODE: itemtype = "XML_DTD_NODE";
-		    case XML_ELEMENT_DECL: itemtype = "XML_ELEMENT_DECL";
-		    case XML_ATTRIBUTE_DECL: itemtype = "XML_ATTRIBUTE_DECL";
-		    case XML_ENTITY_DECL: itemtype = "XML_ENTITY_DECL";
-		    case XML_NAMESPACE_DECL: itemtype = "XML_NAMESPACE_DECL";
-		    case XML_XINCLUDE_START: itemtype = "XML_XINCLUDE_START";
-		    case XML_XINCLUDE_END: itemtype = "XML_XINCLUDE_END";
-		    case XML_DOCB_DOCUMENT_NODE: itemtype = "XML_DOCB_DOCUMENT_NODE";
-		  }
+		      switch (cur->type) {
+		        case XML_ELEMENT_NODE: itemtype = "XML_ELEMENT_NODE";
+		        case XML_ATTRIBUTE_NODE: itemtype = "XML_ATTRIBUTE_NODE";
+		        case XML_TEXT_NODE: itemtype = "XML_TEXT_NODE";
+		        case XML_CDATA_SECTION_NODE: itemtype = "XML_CDATA_SECTION_NODE";
+		        case XML_ENTITY_REF_NODE: itemtype = "XML_ENTITY_REF_NODE";
+		        case XML_ENTITY_NODE: itemtype = "XML_ENTITY_NODE";
+		        case XML_PI_NODE: itemtype = "XML_PI_NODE";
+		        case XML_COMMENT_NODE: itemtype = "XML_COMMENT_NODE";
+		        case XML_DOCUMENT_NODE: itemtype = "XML_DOCUMENT_NODE";
+		        case XML_DOCUMENT_TYPE_NODE: itemtype = "XML_DOCUMENT_TYPE_NODE";
+		        case XML_DOCUMENT_FRAG_NODE: itemtype = "XML_DOCUMENT_FRAG_NODE";
+		        case XML_NOTATION_NODE: itemtype = "XML_NOTATION_NODE";
+		        case XML_HTML_DOCUMENT_NODE: itemtype = "XML_HTML_DOCUMENT_NODE";
+		        case XML_DTD_NODE: itemtype = "XML_DTD_NODE";
+		        case XML_ELEMENT_DECL: itemtype = "XML_ELEMENT_DECL";
+		        case XML_ATTRIBUTE_DECL: itemtype = "XML_ATTRIBUTE_DECL";
+		        case XML_ENTITY_DECL: itemtype = "XML_ENTITY_DECL";
+		        case XML_NAMESPACE_DECL: itemtype = "XML_NAMESPACE_DECL";
+		        case XML_XINCLUDE_START: itemtype = "XML_XINCLUDE_START";
+		        case XML_XINCLUDE_END: itemtype = "XML_XINCLUDE_END";
+		        case XML_DOCB_DOCUMENT_NODE: itemtype = "XML_DOCB_DOCUMENT_NODE";
+		      }
+
           itemname = "";
           itemvalue = "(element type not supported)";
 
-        /*
-          XML_ELEMENT_NODE = 1
-          XML_ATTRIBUTE_NODE = 2
-          XML_TEXT_NODE = 3
-          XML_CDATA_SECTION_NODE = 4
-          XML_ENTITY_REF_NODE = 5
-          XML_ENTITY_NODE = 6
-          XML_PI_NODE = 7
-          XML_COMMENT_NODE = 8
-          XML_DOCUMENT_NODE = 9
-          XML_DOCUMENT_TYPE_NODE = 10
-          XML_DOCUMENT_FRAG_NODE = 11
-          XML_NOTATION_NODE = 12
-          XML_HTML_DOCUMENT_NODE = 13
-          XML_DTD_NODE = 14
-          XML_ELEMENT_DECL = 15
-          XML_ATTRIBUTE_DECL = 16
-          XML_ENTITY_DECL = 17
-          XML_NAMESPACE_DECL = 18
-          XML_XINCLUDE_START = 19
-          XML_XINCLUDE_END = 20
-          XML_DOCB_DOCUMENT_NODE = 21*/
+          /*
+            XML_ELEMENT_NODE = 1
+            XML_ATTRIBUTE_NODE = 2
+            XML_TEXT_NODE = 3
+            XML_CDATA_SECTION_NODE = 4
+            XML_ENTITY_REF_NODE = 5
+            XML_ENTITY_NODE = 6
+            XML_PI_NODE = 7
+            XML_COMMENT_NODE = 8
+            XML_DOCUMENT_NODE = 9
+            XML_DOCUMENT_TYPE_NODE = 10
+            XML_DOCUMENT_FRAG_NODE = 11
+            XML_NOTATION_NODE = 12
+            XML_HTML_DOCUMENT_NODE = 13
+            XML_DTD_NODE = 14
+            XML_ELEMENT_DECL = 15
+            XML_ATTRIBUTE_DECL = 16
+            XML_ENTITY_DECL = 17
+            XML_NAMESPACE_DECL = 18
+            XML_XINCLUDE_START = 19
+            XML_XINCLUDE_END = 20
+            XML_DOCB_DOCUMENT_NODE = 21*/
         }
 
         if (!doIgnore) {
-		  AddToList(listresults, itemtype, itemname, itemvalue);
-		}
+		      AddToList(listresults, itemtype, itemname, itemvalue);
+		    }
       }
       break;
     }
@@ -433,7 +436,8 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
     case XPATH_STRING: {
       itemtype = "Str";
       itemname = "";
-      itemvalue = Report::cstring(L"%s", xpathObj->stringval);
+      itemvalue = "";
+      Report::appendToCString(&itemvalue, xpathObj->stringval, encoding);
       AddToList(listresults, itemtype, itemname, itemvalue);
       break;
     }
