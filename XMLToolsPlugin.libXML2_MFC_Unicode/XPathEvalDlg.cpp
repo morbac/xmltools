@@ -280,6 +280,7 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
         assert(nodes->nodeTab[i]);
 
         xmlNodePtr cur = nodes->nodeTab[i];
+		bool doIgnore = false;
 
         if (cur->type == XML_ELEMENT_NODE) {
           itemtype = "Node";
@@ -347,11 +348,41 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
           } else {
             itemvalue = "";
           }
+		} else if(cur->type == XML_TEXT_NODE) {
+		  itemtype = "Text";
+		  itemname = "";
+		  itemvalue = "";
+		  Report::appendToCString(&itemvalue, cur->content, encoding);
+
+		  itemvalue.Trim();
+		  if (itemvalue.IsEmpty()) doIgnore = true;
         } else {
-          itemtype = "-";
+		  switch (cur->type) {
+		    case XML_ELEMENT_NODE: itemtype = "XML_ELEMENT_NODE";
+		    case XML_ATTRIBUTE_NODE: itemtype = "XML_ATTRIBUTE_NODE";
+		    case XML_TEXT_NODE: itemtype = "XML_TEXT_NODE";
+		    case XML_CDATA_SECTION_NODE: itemtype = "XML_CDATA_SECTION_NODE";
+		    case XML_ENTITY_REF_NODE: itemtype = "XML_ENTITY_REF_NODE";
+		    case XML_ENTITY_NODE: itemtype = "XML_ENTITY_NODE";
+		    case XML_PI_NODE: itemtype = "XML_PI_NODE";
+		    case XML_COMMENT_NODE: itemtype = "XML_COMMENT_NODE";
+		    case XML_DOCUMENT_NODE: itemtype = "XML_DOCUMENT_NODE";
+		    case XML_DOCUMENT_TYPE_NODE: itemtype = "XML_DOCUMENT_TYPE_NODE";
+		    case XML_DOCUMENT_FRAG_NODE: itemtype = "XML_DOCUMENT_FRAG_NODE";
+		    case XML_NOTATION_NODE: itemtype = "XML_NOTATION_NODE";
+		    case XML_HTML_DOCUMENT_NODE: itemtype = "XML_HTML_DOCUMENT_NODE";
+		    case XML_DTD_NODE: itemtype = "XML_DTD_NODE";
+		    case XML_ELEMENT_DECL: itemtype = "XML_ELEMENT_DECL";
+		    case XML_ATTRIBUTE_DECL: itemtype = "XML_ATTRIBUTE_DECL";
+		    case XML_ENTITY_DECL: itemtype = "XML_ENTITY_DECL";
+		    case XML_NAMESPACE_DECL: itemtype = "XML_NAMESPACE_DECL";
+		    case XML_XINCLUDE_START: itemtype = "XML_XINCLUDE_START";
+		    case XML_XINCLUDE_END: itemtype = "XML_XINCLUDE_END";
+		    case XML_DOCB_DOCUMENT_NODE: itemtype = "XML_DOCB_DOCUMENT_NODE";
+		  }
           itemname = "";
-          itemvalue = "";
-          Report::_printf_inf(L"%d",cur->type);
+          itemvalue = "(element type not supported)";
+
         /*
           XML_ELEMENT_NODE = 1
           XML_ATTRIBUTE_NODE = 2
@@ -376,7 +407,9 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
           XML_DOCB_DOCUMENT_NODE = 21*/
         }
 
-        AddToList(listresults, itemtype, itemname, itemvalue);
+        if (!doIgnore) {
+		  AddToList(listresults, itemtype, itemname, itemvalue);
+		}
       }
       break;
     }

@@ -4,6 +4,12 @@
                         ChangeLog
 ================================================================
 
+Release 2.4.2 (r1055)
+---------------------
+- Fix XPath evaluation for text() [bug #232]
+- Fix PrettyPrint EOL char support [bug #219]
+- Fix a wrong reference to %appdata%\Notepad++
+
 Release 2.4.1 (r1054)
 ---------------------
 - Allow external DLLs to be loaded from %appdata%\Notepad++ folder

@@ -245,13 +245,14 @@ CXMLToolsApp::CXMLToolsApp() {
   // Test if localConf.xml exist
   bool isLocal = (PathFileExists(localConfPath) == TRUE);
   
+  ITEMIDLIST *pidl;
+  SHGetSpecialFolderLocation(NULL, CSIDL_APPDATA, &pidl);
+  SHGetPathFromIDList(pidl, appDataPath);
+
   if (isLocal) {
-	  Report::strcpy(iniFilePath, nppMainPath);
+	Report::strcpy(iniFilePath, nppMainPath);
     PathAppend(iniFilePath, L"XMLToolsExt.ini");
   } else {
-    ITEMIDLIST *pidl;
-    SHGetSpecialFolderLocation(NULL, CSIDL_APPDATA, &pidl);
-    SHGetPathFromIDList(pidl, appDataPath);
     Report::strcpy(iniFilePath, appDataPath);
     PathAppend(iniFilePath, L"Notepad++\\XMLToolsExt.ini");
   }
@@ -494,6 +495,51 @@ extern "C" __declspec(dllexport) LRESULT messageProc(UINT Message, WPARAM wParam
 HWND getCurrentHScintilla(int which) {
   return (which == 0)?nppData._scintillaMainHandle:nppData._scintillaSecondHandle;
 };
+
+void getEOLChar(HWND hwnd, int* eolmode, std::string* eolchar) {
+  *eolmode = ::SendMessage(hwnd, SCI_GETEOLMODE , 0, 0);
+  switch (*eolmode) {
+    case SC_EOL_CR:
+      *eolchar = "\r";
+      break;
+    case SC_EOL_LF:
+      *eolchar = "\n";
+      break;
+    case SC_EOL_CRLF:
+    default: 
+      *eolchar = "\r\n";
+  }
+}
+
+bool isEOL(const std::string txt, unsigned int pos, int mode) {
+  switch (mode) {
+    case SC_EOL_CR:
+      return (txt.at(pos) == '\r');
+      break;
+    case SC_EOL_LF:
+      return (txt.at(pos) == '\n');
+      break;
+    case SC_EOL_CRLF:
+    default:
+      return (txt.length() > pos && txt.at(pos) == '\r' && txt.at(pos+1) == '\n');
+      break;
+  }
+}
+
+bool isEOL(const char cc, const char nc, int mode) {
+  switch (mode) {
+    case SC_EOL_CR:
+      return (cc == '\r');
+      break;
+    case SC_EOL_LF:
+      return (cc == '\n');
+      break;
+    case SC_EOL_CRLF:
+    default:
+      return (cc == '\r' && nc == '\n');
+      break;
+  }
+}
 
 // If you don't need get the notification from Notepad++, just let it be empty.
 extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
@@ -1327,8 +1373,11 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     // le path de la banche sélectionnée...
 	  selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
 	  selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
-  
+
     std::string str("");
+    std::string eolchar;
+    int eolmode;
+    getEOLChar(hCurrentEditView, &eolmode, &eolchar);
 
 	  if (selend > selstart) {
 		  currentLength = selend-selstart;
@@ -1345,7 +1394,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 	  }
 	
     // Check de la syntaxe (disabled)
-    if (FALSE) {
+    /*if (FALSE) {
       xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
       if (doc == NULL) {
         xmlErrorPtr err;
@@ -1367,7 +1416,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
       }
 
       pXmlFreeDoc(doc);
-    }
+    }*/
 
     str += data;
     delete[] data;
@@ -1410,7 +1459,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
                 std::string tag2(str.substr(nexwchar_t+2,tagend-nexwchar_t-2));
                 if (strcmp(tag1.c_str(),tag2.c_str()) || isclosingtag) {
                   // Case of "<data><data>..." -> add a line break between tags
-                  str.insert(++curpos,"\r\n");
+                  str.insert(++curpos,eolchar);
                 } else if (str.at(nexwchar_t+1) == '/' && !isclosingtag) {
                   // Case of "<data id="..."></data>" -> replace by "<data id="..."/>"
                   str.replace(curpos,endnext-curpos,"/");
@@ -1447,9 +1496,11 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 
     // Proceed to reformatting (second pass)
     int prevspecchar = -1;
-    while (curpos < (long)str.length() && (curpos = str.find_first_of("<>\n\"'",curpos)) >= 0) {
+    std::string sep("<>\"'");
+    sep += eolchar;
+    while (curpos < (long)str.length() && (curpos = str.find_first_of(sep,curpos)) >= 0) {
       strlength = str.length();
-      if (str.at(curpos) != '\n') {
+      if (!isEOL(str, curpos, eolmode)) {
         if (curpos < strlength-3 && !str.compare(curpos,4,"<!--")) in_comment = true;
         if (curpos < strlength-8 && !str.compare(curpos,9,"<![CDATA[")) in_cdata = true;
         else if (curpos < strlength-1 && !str.compare(curpos,2,"<?")) in_header = true;
@@ -1482,7 +1533,9 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           if (xmllevel < 0) xmllevel = 0;
           --tagsignlevel;
           prevspecchar = curpos++;
-        } else if (cc == '\n') {
+        } else if (isEOL(cc, nc, eolmode)) {
+          if (eolmode == SC_EOL_CRLF) ++curpos; // skipping \n of \r\n
+
           // \n are ignored inside attributes
           int nexwchar_t = str.find_first_not_of(" \t",++curpos);
 
@@ -1657,13 +1710,17 @@ void linarizeXML() {
 
     ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
 
+    std::string eolchar;
+    int eolmode;
+    getEOLChar(hCurrentEditView, &eolmode, &eolchar);
+
     std::string str(data);
     delete [] data;
     data = NULL;
 
     long curpos = 0;
-    while ((curpos = str.find_first_of("\r\n", curpos)) >= 0) {
-      long nexwchar_t = str.find_first_not_of("\r\n", curpos);
+    while ((curpos = str.find_first_of(eolchar, curpos)) >= 0) {
+      long nexwchar_t = str.find_first_not_of(eolchar, curpos);
       str.erase(curpos, nexwchar_t-curpos);
 
       // Let erase leading space chars on line
