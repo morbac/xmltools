@@ -1,0 +1,2 @@
+#166 https://sourceforge.net/p/npp-plugins/bugs/166/
+#218 https://sourceforge.net/p/npp-plugins/bugs/218/

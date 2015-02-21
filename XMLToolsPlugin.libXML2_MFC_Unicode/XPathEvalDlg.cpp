@@ -211,6 +211,9 @@ int CXPathEvalDlg::register_namespaces_ex(xmlXPathContextPtr xpathCtx, xmlDocPtr
   xmlNodePtr node = doc->children;
   int i = 0;
 
+  UniMode encoding = Report::getEncoding();
+  std::wstring nsinfos(L"Unprefixed namespaces(s) detected.\nFollowing prefix have been generated automatically, please use them in your XPath expression:\n");
+
   while (node) {
     xmlNsPtr ns = node->nsDef;
     while (node->type == XML_ELEMENT_NODE && ns) {
@@ -221,16 +224,31 @@ int CXPathEvalDlg::register_namespaces_ex(xmlXPathContextPtr xpathCtx, xmlDocPtr
 	    } else {
 		    std::string prefix = Report::str_format("ns%d",++i);
 		    res = pXmlXPathRegisterNs(xpathCtx, reinterpret_cast<const xmlChar*>(prefix.c_str()), ns->href);
+
+        nsinfos += L"  ";
+        Report::appendToStdString(&nsinfos, prefix.c_str(), encoding);
+        nsinfos += L"=\"";
+        Report::appendToWStdString(&nsinfos, ns->href, encoding);
+        nsinfos += L"\"\n";
 	    }
 
 	    if (res != 0) {
-        Report::_printf_err(L"Error: unable to register NS with prefix=\"%s\" and href=\"%s\"\n", ns->prefix, ns->href);
+        std::wstring msg(L"Error: unable to register NS with prefix=\"");
+        Report::appendToWStdString(&msg, ns->prefix, encoding);
+        msg += L"\" and href=\"";
+        Report::appendToWStdString(&msg, ns->href, encoding);
+        msg += L"\"\n";
+        Report::_printf_err(msg.c_str());
         return(-1);  
       }
 
       ns = ns->next;
     }
     node = node->next;
+  }
+
+  if (i > 0) {
+    Report::_printf_inf(nsinfos.c_str());
   }
 
   return(0);

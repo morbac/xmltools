@@ -362,21 +362,43 @@ char* Report::castWChar(const wchar_t* orig, UniMode encoding /*= uniEnd*/) {
 }
 
 void Report::appendToStdString(std::wstring* dest, const char* source, UniMode encoding) {
-  wchar_t* buffer = Report::castChar(source, encoding);
-  *dest += buffer;
-  delete[] buffer;
+  if (source == NULL) {
+    Report::appendToStdString(dest, "(null)", encoding);
+  } else {
+    wchar_t* buffer = Report::castChar(source, encoding);
+    *dest += buffer;
+    delete[] buffer;
+  }
 }
 
 void Report::appendToWStdString(std::wstring* dest, const xmlChar* source, UniMode encoding) {
-  wchar_t* buffer = Report::castChar(reinterpret_cast<const char*>(source), encoding);
-  *dest += buffer;
-  delete[] buffer;
+  if (source == NULL) {
+    Report::appendToStdString(dest, "(null)", encoding);
+  } else {
+    wchar_t* buffer = Report::castChar(reinterpret_cast<const char*>(source), encoding);
+    *dest += buffer;
+    delete[] buffer;
+  }
+}
+
+void Report::appendToCString(CString* dest, const char* source, UniMode encoding) {
+  if (source == NULL) {
+    Report::appendToCString(dest, "(null)", encoding);
+  } else {
+    wchar_t* buffer = Report::castChar(source, encoding);
+    *dest += buffer;
+    delete[] buffer;
+  }
 }
 
 void Report::appendToCString(CString* dest, const xmlChar* source, UniMode encoding) {
-  wchar_t* buffer = Report::castChar(reinterpret_cast<const char*>(source), encoding);
-  *dest += buffer;
-  delete[] buffer;
+  if (source == NULL) {
+    Report::appendToCString(dest, "(null)", encoding);
+  } else {
+    wchar_t* buffer = Report::castChar(reinterpret_cast<const char*>(source), encoding);
+    *dest += buffer;
+    delete[] buffer;
+  }
 }
 
 unsigned int Report::UTF8Length(const wchar_t *uptr, unsigned int tlen) {

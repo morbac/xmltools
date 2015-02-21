@@ -189,6 +189,9 @@
     <ClInclude Include="XSLTransformDlg.h" />
     <ClInclude Include="XpathEvalDlg.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Changes.log" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

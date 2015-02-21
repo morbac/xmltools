@@ -4,29 +4,14 @@
                         ChangeLog
 ================================================================
 
-Release 2.4.2 (r1055)
+Release 2.4.2 (r1057)
 ---------------------
 - Fix XPath evaluation for text() [bug #232]
 - Modification of PrettyPrint behaviour to avoid changing "<foo> <foo>" to "<foo/>" [bug #220]
 - Fix PrettyPrint EOL char support [bug #219]
-- Fix XPath evaluation issue on string result [bug #209]
+- Fix XPath evaluation issue with string result [bug #209]
+- Add information on unprefixed namespace handling during XPath evaluation [bug #195]
 - Fix a wrong reference to %appdata%\Notepad++
-
-#218 https://sourceforge.net/p/npp-plugins/bugs/218/
-#216 https://sourceforge.net/p/npp-plugins/bugs/216/
-#204 https://sourceforge.net/p/npp-plugins/bugs/204/
-#200 https://sourceforge.net/p/npp-plugins/bugs/200/
-#195 https://sourceforge.net/p/npp-plugins/bugs/195/
-#194 https://sourceforge.net/p/npp-plugins/bugs/194/
-#184 https://sourceforge.net/p/npp-plugins/bugs/184/
-#181 https://sourceforge.net/p/npp-plugins/bugs/181/
-#178 https://sourceforge.net/p/npp-plugins/bugs/178/
-#170 https://sourceforge.net/p/npp-plugins/bugs/170/
-#166 https://sourceforge.net/p/npp-plugins/bugs/166/
-#145 https://sourceforge.net/p/npp-plugins/bugs/145/
-#135 https://sourceforge.net/p/npp-plugins/bugs/135/
-
-
 
 Release 2.4.1 (r1054)
 ---------------------

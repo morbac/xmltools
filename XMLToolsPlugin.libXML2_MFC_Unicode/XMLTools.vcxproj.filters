@@ -119,4 +119,7 @@
       <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Changes.log" />
+  </ItemGroup>
 </Project>

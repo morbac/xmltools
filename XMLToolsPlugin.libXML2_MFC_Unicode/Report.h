@@ -74,6 +74,7 @@ public:
   static char* castWChar(const wchar_t* orig, UniMode encoding = uniEnd);
   static void appendToStdString(std::wstring* dest, const char* source, UniMode encoding);
   static void appendToWStdString(std::wstring* dest, const xmlChar* source, UniMode encoding);
+  static void appendToCString(CString* dest, const char* source, UniMode encoding);
   static void appendToCString(CString* dest, const xmlChar* source, UniMode encoding);
 
   static unsigned int UTF8Length(const wchar_t * uptr, unsigned int tlen);
