@@ -4,6 +4,11 @@
                         ChangeLog
 ================================================================
 
+Release 2.4.3 (r1058)
+---------------------
+- Fix auto-close with end markers ("</a>" and "-->")
+- Fix PrettyPrint on handling of '>' char present in text content
+
 Release 2.4.2 (r1057)
 ---------------------
 - Fix XPath evaluation for text() [bug #232]

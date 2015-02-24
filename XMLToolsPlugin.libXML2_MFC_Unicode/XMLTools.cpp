@@ -1057,19 +1057,23 @@ void closeXMLTag() {
     struct TextRange tr = {{startPos, currentPos}, buf};
     ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 
-    if (buf[size-2] != '/') {
+    if (buf[size-2] != '/' && buf[size-2] != '-') {
       const char* pBegin = &buf[0];
       const char* pCur = &buf[size - 2];
       int insertStringSize = 2;
 
+      // search the beginning of tag
+      // TODO: optimize by not looping on every char !
       for (; pCur > pBegin && *pCur != '<' && *pCur != '>' ;) {
-		  --pCur;
-	  }
+		    --pCur;
+	    }
 
       if (*pCur == '<') {
         ++pCur;
+        if (*pCur == '/') return;
 
-		while (*pCur != '>' && *pCur != ' ' && *pCur != '\n' && *pCur != '\r') {
+        // search attributes of 
+		    while (*pCur != '>' && *pCur != ' ' && *pCur != '\n' && *pCur != '\r') {
         //while (IsCharAlphaNumeric(*pCur) || strchr(":_-.", *pCur) != NULL) {
           insertString[insertStringSize++] = *pCur;
           ++pCur;
@@ -1355,7 +1359,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     // count the < and > signs; > are ignored if tagsignlevel <= 0. This prevent indent errors if text or attributes contain > sign.
     int tagsignlevel = 0;
     // some state variables
-    bool in_comment = false, in_header = false, in_attribute = false, in_nodetext = false, in_cdata = false;
+    bool in_comment = false, in_header = false, in_attribute = false, in_nodetext = false, in_cdata = false, in_text = false;
     // some counters
     long curpos = 0, xmllevel = 0, strlength = 0;
     // some char value (pc = previous char, cc = current char, nc = next char, nnc = next next char)
@@ -1535,7 +1539,14 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
         } else {
           nnc = ' ';
         }
-          
+
+        // managing of case where '>' char is present in text content
+        in_text = false;
+        if (cc == '>') {
+          long tmppos = str.find_last_of("<>", curpos-1);
+          in_text = (tmppos >= 0 && str.at(tmppos) == '>');
+        }
+
         if (cc == '<') {
           prevspecchar = curpos++;
           ++tagsignlevel;
@@ -1543,7 +1554,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           if (nc != '/' && (nc != '!' || nnc == '[')) {
             xmllevel += 2;
           }
-        } else if (cc == '>' && !in_attribute) {
+        } else if (cc == '>' && !in_attribute && !in_text) {
           // > are ignored inside attributes
           if (pc != '/' && pc != ']') {
             --xmllevel;
