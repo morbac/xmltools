@@ -43,7 +43,7 @@ public:
 protected:
   unsigned long m_iFlags;
 
-  int execute_xpath_expression(std::wstring xpathExpr);
+  int execute_xpath_expression(std::wstring& xpathExpr);
   //int register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList);
   int register_namespaces_ex(xmlXPathContextPtr xpathCtx, xmlDocPtr doc);
   void print_xpath_nodes(xmlXPathObjectPtr xpathObj);

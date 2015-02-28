@@ -80,7 +80,7 @@ void CXPathEvalDlg::OnBtnEvaluate() {
  *
  * Returns 0 on success and a negative value otherwise.
  */
-int CXPathEvalDlg::execute_xpath_expression(std::wstring xpathExpr) {
+int CXPathEvalDlg::execute_xpath_expression(std::wstring& xpathExpr) {
   xmlDocPtr doc;
   xmlXPathContextPtr xpathCtx;
   xmlXPathObjectPtr xpathObj; 

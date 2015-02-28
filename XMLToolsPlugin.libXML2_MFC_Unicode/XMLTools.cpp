@@ -582,10 +582,8 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       }
       break;
     }
-    case NPPN_FILEOPENED: {
+    case NPPN_FILEOPENED:
       enableBufferActivated = true;
-      break;
-    }
     case NPPN_BUFFERACTIVATED: {
       if (enableBufferActivated) {
         enableBufferActivated = false;
@@ -1049,7 +1047,9 @@ void closeXMLTag() {
   int startPos = (beginPos > 0)?beginPos:0;
   int size = currentPos - startPos;
   int insertStringSize = 2;
-  char insertString[516] = "</";
+
+  #define MAX_TAGNAME_LENGTH 516
+  char insertString[MAX_TAGNAME_LENGTH] = "</";
 
   if (size >= 3) {
     struct TextRange tr = {{startPos, currentPos}, buf};
@@ -1073,11 +1073,13 @@ void closeXMLTag() {
         // search attributes of 
 		    while (*pCur != '>' && *pCur != ' ' && *pCur != '\n' && *pCur != '\r') {
         //while (IsCharAlphaNumeric(*pCur) || strchr(":_-.", *pCur) != NULL) {
+          if (insertStringSize == MAX_TAGNAME_LENGTH-1) return;
           insertString[insertStringSize++] = *pCur;
           ++pCur;
         }
       }
 
+      if (insertStringSize == MAX_TAGNAME_LENGTH-1) return;
       insertString[insertStringSize++] = '>';
       insertString[insertStringSize] = '\0';
 
@@ -1089,6 +1091,8 @@ void closeXMLTag() {
       }
     }
   }
+
+  #undef MAX_TAGNAME_LENGTH
 }
 
 ///////////////////////////////////////////////////////////////////////////////
