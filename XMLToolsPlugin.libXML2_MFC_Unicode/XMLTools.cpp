@@ -511,7 +511,7 @@ void getEOLChar(HWND hwnd, int* eolmode, std::string* eolchar) {
   }
 }
 
-bool isEOL(const std::string txt, unsigned int pos, int mode) {
+bool isEOL(const std::string& txt, const std::string::size_type txtlength, unsigned int pos, int mode) {
   switch (mode) {
     case SC_EOL_CR:
       return (txt.at(pos) == '\r');
@@ -521,7 +521,7 @@ bool isEOL(const std::string txt, unsigned int pos, int mode) {
       break;
     case SC_EOL_CRLF:
     default:
-      return (txt.length() > pos && txt.at(pos) == '\r' && txt.at(pos+1) == '\n');
+      return (txtlength > pos && txt.at(pos) == '\r' && txt.at(pos+1) == '\n');
       break;
   }
 }
@@ -557,7 +557,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
         //::CheckMenuItem(hMenu, funcItem[menuitemAttrAutoComplete]._cmdID, MF_BYCOMMAND | (doAttrAutoComplete?MF_CHECKED:MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemAutoXMLType]._cmdID, MF_BYCOMMAND | (doAutoXMLType?MF_CHECKED:MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemPreventXXE]._cmdID, MF_BYCOMMAND | (doPreventXXE?MF_CHECKED:MF_UNCHECKED));
-		::CheckMenuItem(hMenu, funcItem[menuitemPrettyPrintAllFiles]._cmdID, MF_BYCOMMAND | (doPrettyPrintAllOpenFiles?MF_CHECKED:MF_UNCHECKED));
+		    ::CheckMenuItem(hMenu, funcItem[menuitemPrettyPrintAllFiles]._cmdID, MF_BYCOMMAND | (doPrettyPrintAllOpenFiles?MF_CHECKED:MF_UNCHECKED));
       }
     }
     case NPPN_FILEBEFORESAVE: {
@@ -612,7 +612,6 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		return TRUE;
 	}
 #endif //UNICODE
-
 
 void insertXMLCheckTag() {
   #ifdef __XMLTOOLS_DEBUG__
@@ -734,13 +733,13 @@ int performXMLCheck(int informIfNoError) {
   memset(data, '\0', currentLength+1);
 
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
-
-  std::string str(data);
+  
+  pXmlResetLastError();
+  xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
+  
   delete [] data;
   data = NULL;
   
-  pXmlResetLastError();
-  xmlDocPtr doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
   xmlErrorPtr err = pXmlGetLastError();
 
   std::wstring nfomsg(L"No error detected.");
@@ -752,7 +751,7 @@ int performXMLCheck(int informIfNoError) {
         ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
       }
       wchar_t* tmpmsg = Report::castChar(err->message);
-      errmsg += Report::str_format(L"XML Parsing error at line %d, column %d: \r\n%s", err->line, err->int2, tmpmsg);
+      errmsg += Report::str_format(L"XML Parsing error at line %d: \r\n%s", err->line, tmpmsg);
       delete[] tmpmsg;
       res = 1;
     } else if (doc == NULL) {
@@ -761,14 +760,13 @@ int performXMLCheck(int informIfNoError) {
     }
   }
   
+  pXmlFreeDoc(doc);
+
   if (errmsg.length() > 0) {
     Report::_printf_err(errmsg.c_str());
   } else if (nfomsg.length() > 0 && informIfNoError) {
     Report::_printf_inf(nfomsg.c_str());
   }
-
-  pXmlFreeDoc(doc);
-  str.clear();
 
   return res;
 }
@@ -1210,7 +1208,7 @@ std::wstring currentXPath() {
   size_t size = (currentLength+1)*sizeof(char);
   memset(data, '\0', size);
 
-  int currentPos = int(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
+  std::string::size_type currentPos = long(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
 
   std::string str(data);
@@ -1218,8 +1216,8 @@ std::wstring currentXPath() {
   data = NULL;
 
   // end tag pos
-  int begpos = str.find_first_of("<");
-  int endpos = str.find_last_of(">");
+  std::string::size_type begpos = str.find_first_of("<");
+  std::string::size_type endpos = str.find_last_of(">");
 
   // let's reach the end of current tag (if we are inside a tag)
   if (currentPos > begpos && currentPos <= endpos) {
@@ -1243,10 +1241,12 @@ std::wstring currentXPath() {
     xmlDocPtr doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, XML_PARSE_RECOVER | (doPreventXXE ? defFlagsNoXXE : defFlags));
     xmlNodePtr cur_node = pXmlDocGetRootElement(doc);
 
+    str.clear();
+
     while (cur_node != NULL && cur_node->last != NULL) {
       if (cur_node->type == XML_ELEMENT_NODE) {
         nodepath += L"/";
-        if(cur_node->ns) {
+        if (cur_node->ns) {
           if (cur_node->ns->prefix != NULL) {
             Report::appendToWStdString(&nodepath, cur_node->ns->prefix, encoding);
             nodepath += L":";
@@ -1259,8 +1259,6 @@ std::wstring currentXPath() {
     pXmlFreeDoc(doc);
   }
 
-  str.clear();
-
   return nodepath;
 }
 
@@ -1270,7 +1268,6 @@ void getCurrentXPath() {
   #endif
   
   std::wstring nodepath(currentXPath());
-
   std::wstring tmpmsg(L"Current node cannot be resolved.");
 
   if (nodepath.length() > 0) {
@@ -1360,14 +1357,18 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     int tagsignlevel = 0;
     // some state variables
     bool in_comment = false, in_header = false, in_attribute = false, in_nodetext = false, in_cdata = false, in_text = false;
+    
     // some counters
-    long curpos = 0, xmllevel = 0, strlength = 0;
+    std::string::size_type curpos = 0, strlength = 0, prevspecchar, nexwchar_t, deltapos, tagend, startprev, endnext;
+    long xmllevel = 0;
     // some char value (pc = previous char, cc = current char, nc = next char, nnc = next next char)
     char pc, cc, nc, nnc;
 
     int tabwidth = ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
     int usetabs  = ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
     if (tabwidth <= 0) tabwidth = 4;
+
+    bool isclosingtag;
 
     // use the selection
     long selstart = 0, selend = 0;
@@ -1428,37 +1429,35 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 
     // Proceed to first pass if break adds are enabled
     if (addlinebreaks) {
-      while (curpos < (long)str.length() && (curpos = str.find_first_of("<>",curpos)) >= 0) {
+      while (curpos < str.length() && (curpos = str.find_first_of("<>",curpos)) != std::string::npos) {
         cc = str.at(curpos);
 
-        if (cc == '<' && curpos < (long)str.length()-3 && !str.compare(curpos,4,"<!--")) {
+        if (cc == '<' && curpos < str.length()-3 && !str.compare(curpos,4,"<!--")) {
           // Let's skip the comment
           curpos = str.find("-->",curpos+1);
-        } else if (cc == '<' && curpos < (long)str.length()-8 && !str.compare(curpos,9,"<![CDATA[")) {
+        } else if (cc == '<' && curpos < str.length()-8 && !str.compare(curpos,9,"<![CDATA[")) {
           // Let's skip the CDATA block
           curpos = str.find("]]>",curpos+1);
         } else if (cc == '>') {
           // Let's see if '>' is a end tag char (it might also be simple text)
           // To perform test, we search last of "<>". If it is a '>', current '>' is
           // simple text, if not, it is a end tag char. '>' text chars are ignored.
-          int prevspecchar = str.find_last_of("<>",curpos-1);
-          if (prevspecchar >= 0 && str.at(prevspecchar) == '<') {
+          prevspecchar = str.find_last_of("<>",curpos-1);
+          if (prevspecchar != std::string::npos && str.at(prevspecchar) == '<') {
             // We have found a '>' char and we are in a tag, let's see if it's an opening or closing one
-            bool isclosingtag = (curpos > 0 && str.at(curpos-1) == '/');
+            isclosingtag = (curpos > 0 && str.at(curpos-1) == '/');
 
-            int nexwchar_t = str.find_first_not_of(" \t",curpos+1);
-            int deltapos = nexwchar_t-curpos;
-            if (nexwchar_t >= 0 &&
+            nexwchar_t = str.find_first_not_of(" \t",curpos+1);
+            deltapos = nexwchar_t-curpos;
+            if (nexwchar_t != std::string::npos &&
                 str.at(nexwchar_t) == '<' &&
-                curpos < (long)str.length()-(deltapos+1)) {
+                curpos < str.length()-(deltapos+1)) {
               // we compare previous and next tags; if they are same, we don't add line break
-              long startprev = str.rfind("<",curpos);
-              long endnext = str.find(">",nexwchar_t);
+              startprev = str.rfind("<",curpos);
+              endnext = str.find(">",nexwchar_t);
 
-              if (startprev >= 0 && endnext >= 0 &&
-                  curpos > startprev &&
-                  endnext > nexwchar_t) {
-                int tagend = str.find_first_of(" />",startprev+1);
+              if (startprev != std::string::npos && endnext != std::string::npos && curpos > startprev && endnext > nexwchar_t) {
+                tagend = str.find_first_of(" />",startprev+1);
                 std::string tag1(str.substr(startprev+1,tagend-startprev-1));
                 tagend = str.find_first_of(" />",nexwchar_t+2);
                 std::string tag2(str.substr(nexwchar_t+2,tagend-nexwchar_t-2));
@@ -1478,14 +1477,13 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
         ++curpos;           // go to next char
       }
     /*
-      while (curpos < str.length()-2 && (curpos = str.find("><",curpos)) >= 0)
-      {
+      while (curpos < str.length()-2 && (curpos = str.find("><",curpos)) != std::string::npos) {
         // we compare previous and next tags; if they are same, we don't add line break
-        long startprev = str.rfind("<",curpos);
-        long endnext = str.find(">",curpos+1);
+        startprev = str.rfind("<",curpos);
+        endnext = str.find(">",curpos+1);
       
-        if (startprev >= 0 &&
-            endnext >= 0 &&
+        if (startprev != std::string::npos &&
+            endnext != std::string::npos &&
             curpos > startprev &&
             endnext > curpos+1 &&
             strcmp(str.substr(startprev+1,curpos-startprev-1).c_str(),
@@ -1500,12 +1498,12 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     }
 
     // Proceed to reformatting (second pass)
-    int prevspecchar = -1;
+    prevspecchar = std::string::npos;
     std::string sep("<>\"'");
     sep += eolchar;
-    while (curpos < (long)str.length() && (curpos = str.find_first_of(sep,curpos)) >= 0) {
-      strlength = str.length();
-      if (!isEOL(str, curpos, eolmode)) {
+    strlength = str.length();
+    while (curpos < strlength && (curpos = str.find_first_of(sep,curpos)) != std::string::npos) {
+      if (!isEOL(str, strlength, curpos, eolmode)) {
         if (curpos < strlength-3 && !str.compare(curpos,4,"<!--")) {
           in_comment = true;
         }
@@ -1514,7 +1512,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
         } else if (curpos < strlength-1 && !str.compare(curpos,2,"<?")) {
           in_header = true;
         } else if (curpos < strlength && !str.compare(curpos,1,"\"") && !str.compare(curpos,1,"'") &&
-                   prevspecchar >= 0 && str.at(prevspecchar) == '<') {
+                   prevspecchar != std::string::npos && str.at(prevspecchar) == '<') {
           in_attribute = !in_attribute;
         }
       }
@@ -1543,8 +1541,8 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
         // managing of case where '>' char is present in text content
         in_text = false;
         if (cc == '>') {
-          long tmppos = str.find_last_of("<>", curpos-1);
-          in_text = (tmppos >= 0 && str.at(tmppos) == '>');
+          std::string::size_type tmppos = str.find_last_of("<>", curpos-1);
+          in_text = (tmppos != std::string::npos && str.at(tmppos) == '>');
         }
 
         if (cc == '<') {
@@ -1574,10 +1572,10 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           }
 
           // \n are ignored inside attributes
-          int nexwchar_t = str.find_first_not_of(" \t",++curpos);
+          nexwchar_t = str.find_first_not_of(" \t",++curpos);
 
           bool skipformat = false;
-          if (!autoindenttext && nexwchar_t >= 0) {
+          if (!autoindenttext && nexwchar_t != std::string::npos) {
             cc = str.at(nexwchar_t);
             skipformat = (cc != '<' && cc != '\r' && cc != '\n');
           }
@@ -1587,8 +1585,8 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
             }
             int delta = 0;
             str.erase(curpos,nexwchar_t-curpos);
-
             strlength = str.length();
+            
             if (curpos < strlength) {
               cc = str.at(curpos);
               // we set delta = 1 if we technically can + if we are in a text or inside an attribute
@@ -1604,6 +1602,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
             } else {
               str.insert(curpos,tabwidth*(xmllevel-delta),' ');
             }
+            strlength = str.length();
           }
         } else {
           ++curpos;
@@ -1767,19 +1766,21 @@ void linarizeXML() {
     delete [] data;
     data = NULL;
 
-    long curpos = 0;
-    while ((curpos = str.find_first_of(eolchar, curpos)) >= 0) {
-      long nexwchar_t = str.find_first_not_of(eolchar, curpos);
+    std::string::size_type curpos = 0, nexwchar_t;
+    bool enableInsert = false;
+
+    while ((curpos = str.find_first_of(eolchar, curpos)) != std::string::npos) {
+      nexwchar_t = str.find_first_not_of(eolchar, curpos);
       str.erase(curpos, nexwchar_t-curpos);
 
       // Let erase leading space chars on line
-      if (curpos >= 0 && (unsigned)curpos < str.length()) {
+      if (curpos != std::string::npos && curpos < str.length()) {
         nexwchar_t = str.find_first_not_of(" \t", curpos);
         if (nexwchar_t >= curpos) {
           // And if the 1st char of next line is not '<' and last char of preceding
           // line is not '>', then we consider we are in text content, then let put
           // a space char
-          bool enableInsert = false;
+          enableInsert = false;
           if (curpos > 0 && str.at(nexwchar_t) != '<' && str.at(curpos-1) != '>') {
             enableInsert = true;
             if (nexwchar_t > curpos) --nexwchar_t;
@@ -1855,9 +1856,9 @@ void convertText2XML() {
   xOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETXOFFSET, 0, 0);
   yOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
 
-  int selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-  int selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
-  int sellength = selend-selstart;
+  long selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
+  long selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
+  long sellength = selend-selstart;
 
   if (selend <= selstart) {
     Report::_printf_err(L"Please select text to transform before you call the function.");
@@ -1873,34 +1874,34 @@ void convertText2XML() {
   std::string str(data);
   delete [] data;
   data = NULL;
-  long curpos = sellength;
+  std::string::size_type curpos = sellength;
 
-  while (curpos >= 0 && (curpos = str.rfind("&quot;", curpos)) >= 0) {
-    if (curpos >= 0) {
+  while (curpos != std::string::npos && (curpos = str.rfind("&quot;", curpos)) != std::string::npos) {
+    if (curpos != std::string::npos) {
       str.replace(curpos, strlen("&quot;"), "\"");
       sellength = sellength - strlen("&quot;") + strlen("\"");
     }
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("&lt;", curpos)) >= 0) {
-    if (curpos >= 0) {
+  while (curpos != std::string::npos && (curpos = str.rfind("&lt;", curpos)) != std::string::npos) {
+    if (curpos != std::string::npos) {
       str.replace(curpos, strlen("&lt;"), "<");
       sellength = sellength - strlen("&lt;") + strlen("<");
     }
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("&gt;", curpos)) >= 0) {
-    if (curpos >= 0) {
+  while (curpos != std::string::npos && (curpos = str.rfind("&gt;", curpos)) != std::string::npos) {
+    if (curpos != std::string::npos) {
       str.replace(curpos, strlen("&gt;"), ">");
       sellength = sellength - strlen("&gt;") + strlen(">");
     }
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("&amp;", curpos)) >= 0) {
-    if (curpos >= 0) {
+  while (curpos != std::string::npos && (curpos = str.rfind("&amp;", curpos)) != std::string::npos) {
+    if (curpos != std::string::npos) {
       str.replace(curpos, strlen("&amp;"), "&");
       sellength = sellength - strlen("&amp;") + strlen("&");
     }
@@ -1937,9 +1938,9 @@ void convertXML2Text() {
   xOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETXOFFSET, 0, 0);
   yOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
 
-  int selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-  int selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
-  int sellength = selend-selstart;
+  long selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
+  long selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
+  long sellength = selend-selstart;
 
   if (selend <= selstart) {
     Report::_printf_err(L"Please select text to transform before you call the function.");
@@ -1955,34 +1956,34 @@ void convertXML2Text() {
   std::string str(data);
   delete [] data;
   data = NULL;
-  long curpos = sellength;
+  std::string::size_type curpos = sellength;
 
-  while (curpos >= 0 && (curpos = str.rfind("&", curpos)) >= 0) {
-    if (curpos >= 0) {
+  while (curpos != std::string::npos && (curpos = str.rfind("&", curpos)) != std::string::npos) {
+    if (curpos != std::string::npos) {
       str.replace(curpos, strlen("&"), "&amp;");
       sellength = sellength + strlen("&amp;") - strlen("&");
     }
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("<", curpos)) >= 0) {
-    if (curpos >= 0) {
+  while (curpos != std::string::npos && (curpos = str.rfind("<", curpos)) != std::string::npos) {
+    if (curpos != std::string::npos) {
       str.replace(curpos, strlen("<"), "&lt;");
       sellength = sellength + strlen("&lt;") - strlen("<");
     }
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind(">", curpos)) >= 0) {
-    if (curpos >= 0) {
+  while (curpos != std::string::npos && (curpos = str.rfind(">", curpos)) != std::string::npos) {
+    if (curpos != std::string::npos) {
       str.replace(curpos, strlen(">"), "&gt;");
       sellength = sellength + strlen("&gt;") - strlen(">");
     }
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("\"", curpos)) >= 0) {
-    if (curpos >= 0) {
+  while (curpos != std::string::npos && (curpos = str.rfind("\"", curpos)) != std::string::npos) {
+    if (curpos != std::string::npos) {
       str.replace(curpos, strlen("\""), "&quot;");
       sellength = sellength + strlen("&quot;") - strlen("\"");
     }
@@ -2005,15 +2006,15 @@ void convertXML2Text() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int validateSelectionForComment(std::string str, long sellength) {
+int validateSelectionForComment(std::string str, std::string::size_type sellength) {
   #ifdef __XMLTOOLS_DEBUG__
     Report::_printf_inf("validateSelectionForComment()");
   #endif
   // Validate the selection
   std::stack<int> checkstack;
-  long curpos = 0;
+  std::string::size_type curpos = 0;
   int errflag = 0;
-  while (curpos <= sellength && !errflag && (curpos = str.find_first_of("<-*", curpos)) >= 0) {
+  while (curpos <= sellength && !errflag && (curpos = str.find_first_of("<-*", curpos)) != std::string::npos) {
     if (curpos > sellength) break;
 
     if (!str.compare(curpos, 4, "<!--")) {
@@ -2029,13 +2030,13 @@ int validateSelectionForComment(std::string str, long sellength) {
       }
     }
     if (!str.compare(curpos, 3, "<![")) {
-      int endvalpos = str.find("]**", curpos);
-      if (endvalpos >= 0) checkstack.push(atoi(str.substr(curpos+3,endvalpos).c_str()));
+      std::string::size_type endvalpos = str.find("]**", curpos);
+      if (endvalpos != std::string::npos) checkstack.push(atoi(str.substr(curpos+3,endvalpos).c_str()));
     }
     if (!str.compare(curpos, 3, "**[")) {
       if (!checkstack.empty()) {
-        int endvalpos = str.find("]>", curpos);
-        if (endvalpos >= 0 && atoi(str.substr(curpos+3,endvalpos).c_str()) != checkstack.top()) errflag = -2;
+        std::string::size_type endvalpos = str.find("]>", curpos);
+        if (endvalpos != std::string::npos && atoi(str.substr(curpos+3,endvalpos).c_str()) != checkstack.top()) errflag = -2;
         else checkstack.pop();
       } else {
         errflag = -4;
@@ -2096,9 +2097,9 @@ void commentSelection() {
     }
   }
 
-  long curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("<!{", curpos)) >= 0) {
-    if (curpos >= 0) {
+  std::string::size_type curpos = sellength;
+  while (curpos != std::string::npos && (curpos = str.rfind("<!{", curpos)) != std::string::npos) {
+    if (curpos != std::string::npos) {
       int endvalpos = str.find("}**", curpos);
       int endval = atoi(str.substr(curpos+3,endvalpos).c_str());
       char tmpstr[64];
@@ -2109,8 +2110,8 @@ void commentSelection() {
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("**{", curpos)) >= 0) {
-    if (curpos >= 0) {
+  while (curpos != std::string::npos && (curpos = str.rfind("**{", curpos)) != std::string::npos) {
+    if (curpos != std::string::npos) {
       int endvalpos = str.find("}>", curpos);
       int endval = atoi(str.substr(curpos+3,endvalpos).c_str());
       char tmpstr[64];
@@ -2122,16 +2123,16 @@ void commentSelection() {
   }
 
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("<!--", curpos)) >= 0) {
-    if (curpos >= 0) {
+  while (curpos != std::string::npos && (curpos = str.rfind("<!--", curpos)) != std::string::npos) {
+    if (curpos != std::string::npos) {
       str.replace(curpos,4,"<!{1}**");
       sellength += 3;
     }
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("-->", curpos)) >= 0) {
-    if (curpos >= 0) {
+  while (curpos != std::string::npos && (curpos = str.rfind("-->", curpos)) != std::string::npos) {
+    if (curpos != std::string::npos) {
       str.replace(curpos,3,"**{1}>");
       sellength += 3;
     }
@@ -2201,17 +2202,17 @@ void uncommentSelection() {
   }
 
   // Proceed to uncomment
-  long curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("-->", curpos)) >= 0) {
-    if (curpos >= 0) {
+  std::string::size_type curpos = sellength;
+  while (curpos != std::string::npos && (curpos = str.rfind("-->", curpos)) != std::string::npos) {
+    if (curpos != std::string::npos) {
       str.erase(curpos,3);
       sellength -= 3;
     }
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("<!--", curpos)) >= 0) {
-    if (curpos >= 0) {
+  while (curpos != std::string::npos && (curpos = str.rfind("<!--", curpos)) != std::string::npos) {
+    if (curpos != std::string::npos) {
       str.erase(curpos,4);
       sellength -= 4;
     }
@@ -2219,8 +2220,8 @@ void uncommentSelection() {
   }
 
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("<!{", curpos)) >= 0) {
-    if (curpos >= 0) {
+  while (curpos != std::string::npos && (curpos = str.rfind("<!{", curpos)) != std::string::npos) {
+    if (curpos != std::string::npos) {
       int endvalpos = str.find("}**", curpos);
       int endval = atoi(str.substr(curpos+3,endvalpos).c_str());
       if (endval > 1) {
@@ -2236,8 +2237,8 @@ void uncommentSelection() {
     --curpos;
   }
   curpos = sellength;
-  while (curpos >= 0 && (curpos = str.rfind("**{", curpos)) >= 0) {
-    if (curpos >= 0) {
+  while (curpos != std::string::npos && (curpos = str.rfind("**{", curpos)) != std::string::npos) {
+    if (curpos != std::string::npos) {
       int endvalpos = str.find("}>", curpos);
       int endval = atoi(str.substr(curpos+3,endvalpos).c_str());
       if (endval > 1) {

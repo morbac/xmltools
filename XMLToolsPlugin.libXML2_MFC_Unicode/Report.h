@@ -48,8 +48,9 @@ public:
   static CString cstring(const wchar_t* s, ...);
 
   static void strcpy(char* dest, const wchar_t* src);
-  static void strcpy(char* dest, std::wstring src);
-  static void strcpy(wchar_t* dest, std::wstring src);
+  static void strcpy(char* dest, std::wstring& src);
+  static void strcpy(wchar_t* dest, const wchar_t* src);
+  static void strcpy(wchar_t* dest, std::wstring& src);
 
   static std::string narrow(const std::wstring& ws);
   static std::wstring widen(const char* s);

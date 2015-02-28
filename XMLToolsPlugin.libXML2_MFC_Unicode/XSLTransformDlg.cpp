@@ -19,8 +19,7 @@ static char THIS_FILE[] = __FILE__;
 // CXSLTransformDlg dialog
 
 CXSLTransformDlg::CXSLTransformDlg(CWnd* pParent /*=NULL*/, unsigned long flags /*= 0*/)
-	: CDialog(CXSLTransformDlg::IDD, pParent)
-{
+	: CDialog(CXSLTransformDlg::IDD, pParent) {
 	//{{AFX_DATA_INIT(CXSLTransformDlg)
 	m_sXSLTFile = _T("");
 	m_sXSLTOptions = _T("");
@@ -30,8 +29,7 @@ CXSLTransformDlg::CXSLTransformDlg(CWnd* pParent /*=NULL*/, unsigned long flags 
 }
 
 
-void CXSLTransformDlg::DoDataExchange(CDataExchange* pDX)
-{
+void CXSLTransformDlg::DoDataExchange(CDataExchange* pDX) {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CXSLTransformDlg)
 	DDX_Text(pDX, IDC_EDIT_XSLTFILE, m_sXSLTFile);
@@ -50,13 +48,11 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CXSLTransformDlg message handlers
 
-HWND CXSLTransformDlg::getCurrentHScintilla(int which)
-{
+HWND CXSLTransformDlg::getCurrentHScintilla(int which) {
   return (which == 0)?nppData._scintillaMainHandle:nppData._scintillaSecondHandle;
 }
 
-BOOL CXSLTransformDlg::OnInitDialog() 
-{
+BOOL CXSLTransformDlg::OnInitDialog() {
 	CDialog::OnInitDialog();
 	
   CRect myRect;
@@ -75,19 +71,19 @@ BOOL CXSLTransformDlg::OnInitDialog()
   De plus, elle remplit les variable key et value avec respectivement la
   clé et la valeur lues.
 */
-int getNextParam(std::wstring str, int startpos, std::wstring *key, std::wstring *val) {
-  int len = str.length();
-  if (startpos < 0 || startpos >= len || !key || !val) return -1;
+std::string::size_type getNextParam(std::wstring& str, std::string::size_type startpos, std::wstring *key, std::wstring *val) {
+  std::string::size_type len = str.length();
+  if (startpos < 0 || startpos >= len || !key || !val) return std::string::npos;
   
   // on saute les espaces, les tabs et les retours à la ligne
-  int keypos = str.find_first_not_of(L" \t\r\n", startpos);
-  if (keypos < 0 || keypos >= len) return -1;
+  std::string::size_type keypos = str.find_first_not_of(L" \t\r\n", startpos);
+  if (keypos == std::string::npos || keypos >= len) return std::string::npos;
   
   // le caractère suivant ne doit pas être un '='
-  if (str.at(keypos) == '=') return -1;
+  if (str.at(keypos) == '=') return std::string::npos;
   
   // keypos désigne le début de notre key, il faut trouver le '=' (ou le ' ')
-  int valpos = str.find_first_of(L"=", keypos+1);
+  std::string::size_type valpos = str.find_first_of(L"=", keypos+1);
   valpos = str.find_last_not_of(L" =", valpos);  // on recherche la dernière lettre de la clé
   *key = str.substr(keypos, valpos-keypos+1);
 
@@ -95,11 +91,11 @@ int getNextParam(std::wstring str, int startpos, std::wstring *key, std::wstring
   valpos = 1+str.find_first_of(L"=", valpos+1);
 
   if (str.at(valpos) == ' ') valpos = str.find_first_not_of(L" ", valpos);  // on saute les éventuels espaces
-  if (valpos < 0 || valpos >= len) return -1;
+  if (valpos < 0 || valpos >= len) return std::string::npos;
   
   // ici, il faut parser la string; si elle commence par un ', on recherche un autre ',
   // sinon on ne prend que le 1e mot que l'on trouve
-  int valendpos = valpos;
+  std::string::size_type valendpos = valpos;
   if (str.at(valendpos) == '\'') {
     valendpos = str.find_first_of(L"\'", valendpos+1);
     *val = str.substr(valpos, valendpos-valpos+1);
@@ -124,7 +120,7 @@ void CXSLTransformDlg::OnBtnTransform() {
   this->UpdateData();
 
   // proceed to transformation
-  int i;
+  std::string::size_type i;
   char *params[MAX_PARAMS + 1];
   int nbparams = 0;
   xsltStylesheetPtr cur = NULL;
@@ -160,9 +156,9 @@ void CXSLTransformDlg::OnBtnTransform() {
   // on commence par décortiquer la liste d'options
   // la liste doit avoir la forme suivante:
   //   variable1=value1;variable2=value2;variable3="value 3"
-  i = -1;
+  i = std::string::npos;
   std::wstring options = this->m_sXSLTOptions, key, val;
-  while ((i = getNextParam(options, i+1, &key, &val)) >= 0) {
+  while ((i = getNextParam(options, i+1, &key, &val)) != std::string::npos) {
     //Report::_printf_inf("%s = %s", key.c_str(), val.c_str());
 
     // param1=123 param2='abc' param3='xyz'
@@ -189,6 +185,8 @@ void CXSLTransformDlg::OnBtnTransform() {
   cur = pXsltParseStylesheetFile(reinterpret_cast<const xmlChar*>(file.c_str()));
   pXmlResetLastError();
   doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, this->m_iFlags);
+  delete [] data;
+  data = NULL;
 
   //if (cur && doc) xsltctxt = pXsltNewTransformContext(cur, doc);
   //if (xsltctxt) pXsltSetGenericErrorFunc(xsltctxt, (xmlGenericErrorFunc) Report::registerError);
@@ -219,20 +217,17 @@ void CXSLTransformDlg::OnBtnTransform() {
   pXmlFreeDoc(res);
   pXmlFreeDoc(doc);
 
-  delete [] data;
   cleanParams(params, nbparams);
 
   cur = NULL;
   res = NULL;
   doc = NULL;
-  data = NULL;
 
   pXsltCleanupGlobals();
   pXmlCleanupParser();
 }
 
-CString CXSLTransformDlg::ShowOpenFileDlg(CString filetypes)
-{
+CString CXSLTransformDlg::ShowOpenFileDlg(CString filetypes) {
   CFileDialog dlg(TRUE, NULL, NULL, NULL, filetypes);
   int ret = dlg.DoModal();
   if (ret == IDOK) {
@@ -241,8 +236,7 @@ CString CXSLTransformDlg::ShowOpenFileDlg(CString filetypes)
   return "";
 }
 
-void CXSLTransformDlg::OnBtnBrowseXSLTFile() 
-{
+void CXSLTransformDlg::OnBtnBrowseXSLTFile() {
   CString ret = ShowOpenFileDlg("XSL Files (*.xsl)|*.xsl|XML Files (*.xml)|*.xml|All files (*.*)|*.*|");
   if (ret.GetLength()) GetDlgItem(IDC_EDIT_XSLTFILE)->SetWindowText(ret);
 }

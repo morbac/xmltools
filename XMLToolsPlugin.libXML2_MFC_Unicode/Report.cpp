@@ -213,12 +213,17 @@ void Report::strcpy(char* dest, const wchar_t* src) {
   std::copy(s.c_str(), s.c_str()+s.length()+1, dest);
 }
 
-void Report::strcpy(char* dest, std::wstring src) {
+void Report::strcpy(char* dest, std::wstring& src) {
   //strcpy(params[nbparams], key.c_str());
 	std::copy(src.c_str(), src.c_str()+src.length()+1, dest);
 }
 
-void Report::strcpy(wchar_t* dest, std::wstring src) {
+void Report::strcpy(wchar_t* dest, const wchar_t* src) {
+  std::wstring s = std::wstring(src);
+  std::copy(s.c_str(), s.c_str()+s.length()+1, dest);
+}
+
+void Report::strcpy(wchar_t* dest, std::wstring& src) {
   //strcpy(params[nbparams], key.c_str());
   wcscpy(dest, src.c_str());
 }
