@@ -2,13 +2,14 @@ You can get required libraries on http://www.zlatkovic.com/pub/libxml.
 
 Current version is compiled with following versions:
 
-* iconv-1.9.2.win32.zip
-* libxml2-2.7.6.win32.zip
-* libxmlsec-1.2.13.win32.zip
-* libxslt-1.1.26.win32.zip
-* openssl-0.9.8a.win32.zip
-* xsldbg-3.1.7.win32.zip
-* zlib-1.2.3.win32.zip
+* iconv-1.14-win32-x86.7z
+* libtool-2.4.3-win32-x86.7z
+* libxml2-2.9.2-win32-x86.7z
+* libxslt-1.1.28-win32-x86.7z
+* mingwrt-4.8.1-win32-x86.7z
+* openssl-1.0.1j-win32-x86.7z
+* xmlsec1-1.2.20-win32-x86.7z
+* zlib-1.2.8-win32-x86.7z
 
 URL:
 http://xmlsoft.org/index.html
