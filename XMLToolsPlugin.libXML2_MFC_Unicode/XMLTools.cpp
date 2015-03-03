@@ -98,7 +98,6 @@ bool doCheckXML = false, doValidation = false, /*doPrettyPrint = false,*/ doClos
 int menuitemCheckXML = -1, menuitemValidation = -1, /*menuitemPrettyPrint = -1,*/ menuitemCloseTag = -1, menuitemAutoIndent = -1, menuitemAttrAutoComplete = -1, menuitemAutoXMLType = -1, menuitemPreventXXE = -1, menuitemPrettyPrintAllFiles = -1;
 std::string lastXMLSchema("");
 
-bool enableBufferActivated = false;
 int nbopenfiles1, nbopenfiles2;
 
 // Here're the declaration my functions ///////////////////////////////////////
@@ -582,24 +581,23 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       }
       break;
     }
-    case NPPN_FILEOPENED:
-      enableBufferActivated = true;
     case NPPN_BUFFERACTIVATED: {
-      if (enableBufferActivated) {
-        enableBufferActivated = false;
+      if (doAutoXMLType) {
         // si le fichier n'a pas de type défini et qu'il commence par "<?xml ", on lui attribue le type L_XML
         LangType docType = L_EXTERNAL;
         ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
         //Report::_printf_inf("%s", getLangType(docType));
-        if (doAutoXMLType && docType == L_TEXT) setAutoXMLType();
+        if (docType != L_XML) {
+          setAutoXMLType();
+        }
       }
 
-	  /*if (doPrettyPrint) {
-		LangType docType = L_EXTERNAL;
+	    /*if (doPrettyPrint) {
+		  LangType docType = L_EXTERNAL;
         ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
         //Report::_printf_inf("%s", getLangType(docType));
         if (docType == L_XML) prettyPrintLibXML();
-	  }*/
+	    }*/
       break;
     }
   }
