@@ -527,3 +527,47 @@ int Report::utf8_to_ascii(const char * pszUTF8, unsigned int lenUTF8, char * psz
   return nbByte;
 }
 
+void Report::getEOLChar(HWND hwnd, int* eolmode, std::string* eolchar) {
+  *eolmode = ::SendMessage(hwnd, SCI_GETEOLMODE , 0, 0);
+  switch (*eolmode) {
+    case SC_EOL_CR:
+      *eolchar = "\r";
+      break;
+    case SC_EOL_LF:
+      *eolchar = "\n";
+      break;
+    case SC_EOL_CRLF:
+    default: 
+      *eolchar = "\r\n";
+  }
+}
+
+bool Report::isEOL(const std::string& txt, const std::string::size_type txtlength, unsigned int pos, int mode) {
+  switch (mode) {
+    case SC_EOL_CR:
+      return (txt.at(pos) == '\r');
+      break;
+    case SC_EOL_LF:
+      return (txt.at(pos) == '\n');
+      break;
+    case SC_EOL_CRLF:
+    default:
+      return (txtlength > pos && txt.at(pos) == '\r' && txt.at(pos+1) == '\n');
+      break;
+  }
+}
+
+bool Report::isEOL(const char cc, const char nc, int mode) {
+  switch (mode) {
+    case SC_EOL_CR:
+      return (cc == '\r');
+      break;
+    case SC_EOL_LF:
+      return (cc == '\n');
+      break;
+    case SC_EOL_CRLF:
+    default:
+      return (cc == '\r' && nc == '\n');
+      break;
+  }
+}

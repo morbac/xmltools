@@ -24,6 +24,8 @@ extern xsltStylesheetPtr (*pXsltParseStylesheetDoc)(xmlDocPtr doc);
 extern xmlDocPtr (*pXmlParseMemory)(const char * buffer, int size);
 extern xmlDocPtr (*pXmlReadMemory)(const char *buffer, int size, const char *URL, const char *encoding, int options);
 
+extern void (*pXmlFreeNs)(xmlNsPtr cur);
+
 extern void (*pXmlFree)(void *mem);
 extern void (*pXmlFreeDoc)(xmlDocPtr cur);
 extern xmlDocPtr (*pXmlParseFile)(const char * filename);
@@ -34,6 +36,8 @@ extern void (*pXmlCleanupParser)(void);
 extern int (*pXmlSubstituteEntitiesDefault)(int val);
 
 extern xmlNodePtr (*pXmlDocGetRootElement)(xmlDocPtr doc);
+extern void (*pXmlUnlinkNode)(xmlNodePtr node);
+extern void (*pXmlFreeNode)(xmlNodePtr node);
 
 extern xmlErrorPtr (*pXmlGetLastError)(void);
 extern void (*pXmlResetLastError)(void);
@@ -63,6 +67,8 @@ extern xmlGlobalStatePtr (*pXmlGetGlobalState)(void);
 extern int (*pXmlKeepBlanksDefault)(int val);
 extern int (*pXmlThrDefIndentTreeOutput)(int v);
 extern const char * (*pXmlThrDefTreeIndentString)(const char * v);
+
+xmlNodePtr pXmlRemoveNs(xmlNodePtr tree, xmlNsPtr ns);
 
 //-------------------------------------------------------------------------------------------------
 

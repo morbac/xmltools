@@ -20,12 +20,17 @@ HINSTANCE hInstLibXSL = NULL;
 
 void                   (*pXmlFree)(void *mem);
 void                   (*pXmlFreeDoc)(xmlDocPtr cur);
+void                   (*pXmlFreeNs)(xmlNsPtr cur);
 
 xmlDocPtr              (*pXmlParseMemory)(const char * buffer, int size);
 xmlDocPtr              (*pXmlReadMemory)(const char *buffer, int size, const char *URL, const char *encoding, int options);
 int	                   (*pXmlSaveFormatFile)(const char * filename, xmlDocPtr cur, int format);
 void	                 (*pXmlDocDumpFormatMemory)(xmlDocPtr cur, xmlChar ** mem, int * size, int format);
 xmlNodePtr             (*pXmlDocGetRootElement)(xmlDocPtr doc);
+
+void                   (*pXmlUnlinkNode)(xmlNodePtr node);
+void                   (*pXmlFreeNode)(xmlNodePtr node);
+
 xmlDocPtr              (*pXmlParseFile)(const char * filename);
 void                   (*pXmlInitParser)(void);
 void                   (*pXmlCleanupParser)(void);
@@ -99,7 +104,7 @@ HINSTANCE loadExtLib(const wchar_t* libFilename, const wchar_t* nppMainPath, con
   return res;  
 }
 
-  int loadLibXML(wchar_t* nppMainPath, wchar_t* appDataPath) {
+int loadLibXML(wchar_t* nppMainPath, wchar_t* appDataPath) {
   BOOL    bRet = FALSE;
   HKEY    hKey = NULL;
   DWORD   size = MAX_PATH;
@@ -122,14 +127,17 @@ HINSTANCE loadExtLib(const wchar_t* libFilename, const wchar_t* nppMainPath, con
   }
 
   pXmlFree =                      (void (__cdecl *)(void *))*((void (__cdecl **)(void *))GetProcAddress(hInstLibXML, "xmlFree"));
-  //pXmlFree =                      (void (__cdecl *)(void *))GetProcAddress(hInstLibXML, "xmlFree");
   pXmlFreeDoc =                   (void (__cdecl *)(xmlDocPtr))GetProcAddress(hInstLibXML, "xmlFreeDoc");
+  pXmlFreeNs =                    (void (__cdecl *)(xmlNsPtr))GetProcAddress(hInstLibXML, "xmlFreeNs");
 
   pXmlParseMemory =               (xmlDocPtr (__cdecl *)(const char *, int))GetProcAddress(hInstLibXML, "xmlParseMemory");
   pXmlReadMemory =                (xmlDocPtr (__cdecl *)(const char *, int, const char *, const char *, int))GetProcAddress(hInstLibXML, "xmlReadMemory");
   pXmlSaveFormatFile =            (int (__cdecl *)(const char *, xmlDocPtr, int))GetProcAddress(hInstLibXML, "xmlSaveFormatFile");
   pXmlDocDumpFormatMemory =       (void	(__cdecl *)(xmlDocPtr, xmlChar **, int *, int))GetProcAddress(hInstLibXML, "xmlDocDumpFormatMemory");
   pXmlDocGetRootElement =         (xmlNodePtr (__cdecl *)(xmlDocPtr))GetProcAddress(hInstLibXML, "xmlDocGetRootElement");
+  pXmlUnlinkNode =                (void (__cdecl *)(xmlNodePtr))GetProcAddress(hInstLibXML, "xmlUnlinkNode");
+  pXmlFreeNode =                  (void (__cdecl *)(xmlNodePtr))GetProcAddress(hInstLibXML, "xmlFreeNode");
+
   pXmlParseFile =                 (xmlDocPtr (__cdecl *)(const char *))GetProcAddress(hInstLibXML, "xmlParseFile");
   pXmlInitParser =                (void (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlInitParser");
   pXmlCleanupParser =             (void (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlCleanupParser");
@@ -186,4 +194,92 @@ HINSTANCE loadExtLib(const wchar_t* libFilename, const wchar_t* nppMainPath, con
   pXmlInitParser();
   
   return 0;
+}
+
+
+xmlNodePtr pXmlRemoveNs(xmlNodePtr tree,xmlNsPtr ns) {
+  xmlNsPtr nsDef,prev;
+  xmlNodePtr node = tree;
+  xmlNodePtr declNode = NULL;
+  xmlAttrPtr attr;
+
+  if (ns == NULL) {
+    //pXmlGenericErrorFunc(xmlGenericErrorContext, "xmlRemoveNs : NULL namespace\n");
+    return(NULL);
+  }
+  while (node != NULL) {
+    //Check if the namespace is in use by the node
+    if (node->ns == ns) {
+      //pXmlGenericErrorFunc(xmlGenericErrorContext, "xmlRemoveNs : namespace in use\n");
+      return(NULL);
+    }
+
+    // now check for namespace hold by attributes on the node.
+    attr = node->properties;
+    while (attr != NULL) {
+      if (attr->ns == ns) {
+        //pXmlGenericErrorFunc(xmlGenericErrorContext, "xmlRemoveNs : namespace in use\n");
+        return(NULL);
+      }
+      attr = attr->next;
+    }
+
+    // Check if the namespace is declared in the node
+    nsDef=node->nsDef;
+    while(nsDef != NULL) {
+      if (nsDef == ns) {
+        declNode = node;
+        break;
+      }
+      nsDef=nsDef->next;
+    }
+
+    // Browse the full subtree, deep first
+    if (node->children != NULL) {
+      // deep first
+      node = node->children;
+    } else if ((node != tree) && (node->next != NULL)) {
+      // then siblings
+      node = node->next;
+    } else if (node != tree) {
+      // go up to parents->next if needed
+      while (node != tree) {
+        if (node->parent != NULL)
+          node = node->parent;
+        if ((node != tree) && (node->next != NULL)) {
+          node = node->next;
+          break;
+        }
+        if (node->parent == NULL) {
+          node = NULL;
+          break;
+        }
+      }
+      // exit condition
+      if (node == tree)
+        node = NULL;
+    } else
+      break;
+  }
+
+  // there is no such namespace declared here
+  if (declNode == NULL) {
+    //pXmlGenericErrorFunc(xmlGenericErrorContext, "xmlRemoveNs : no such namespace declared\n");
+    return(NULL);
+  }
+
+  prev=NULL;
+  nsDef=declNode->nsDef;
+  while(nsDef != NULL) {
+    if (nsDef == ns) {
+      if (prev == NULL) declNode->nsDef=nsDef->next;
+      else prev->next=nsDef->next;
+      pXmlFreeNs(ns);
+      break;
+    }
+    prev=nsDef;
+    nsDef=nsDef->next;
+  }
+
+  return(declNode);
 }

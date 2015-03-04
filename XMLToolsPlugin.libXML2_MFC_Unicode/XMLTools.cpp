@@ -495,51 +495,6 @@ HWND getCurrentHScintilla(int which) {
   return (which == 0)?nppData._scintillaMainHandle:nppData._scintillaSecondHandle;
 };
 
-void getEOLChar(HWND hwnd, int* eolmode, std::string* eolchar) {
-  *eolmode = ::SendMessage(hwnd, SCI_GETEOLMODE , 0, 0);
-  switch (*eolmode) {
-    case SC_EOL_CR:
-      *eolchar = "\r";
-      break;
-    case SC_EOL_LF:
-      *eolchar = "\n";
-      break;
-    case SC_EOL_CRLF:
-    default: 
-      *eolchar = "\r\n";
-  }
-}
-
-bool isEOL(const std::string& txt, const std::string::size_type txtlength, unsigned int pos, int mode) {
-  switch (mode) {
-    case SC_EOL_CR:
-      return (txt.at(pos) == '\r');
-      break;
-    case SC_EOL_LF:
-      return (txt.at(pos) == '\n');
-      break;
-    case SC_EOL_CRLF:
-    default:
-      return (txtlength > pos && txt.at(pos) == '\r' && txt.at(pos+1) == '\n');
-      break;
-  }
-}
-
-bool isEOL(const char cc, const char nc, int mode) {
-  switch (mode) {
-    case SC_EOL_CR:
-      return (cc == '\r');
-      break;
-    case SC_EOL_LF:
-      return (cc == '\n');
-      break;
-    case SC_EOL_CRLF:
-    default:
-      return (cc == '\r' && nc == '\n');
-      break;
-  }
-}
-
 // If you don't need get the notification from Notepad++, just let it be empty.
 extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
   if (libloadstatus != 0) return;
@@ -1384,7 +1339,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     std::string str("");
     std::string eolchar;
     int eolmode;
-    getEOLChar(hCurrentEditView, &eolmode, &eolchar);
+    Report::getEOLChar(hCurrentEditView, &eolmode, &eolchar);
 
 	  if (selend > selstart) {
 		  currentLength = selend-selstart;
@@ -1505,7 +1460,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     sep += eolchar;
     strlength = str.length();
     while (curpos < strlength && (curpos = str.find_first_of(sep,curpos)) != std::string::npos) {
-      if (!isEOL(str, strlength, curpos, eolmode)) {
+      if (!Report::isEOL(str, strlength, curpos, eolmode)) {
         if (curpos < strlength-3 && !str.compare(curpos,4,"<!--")) {
           in_comment = true;
         }
@@ -1513,7 +1468,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           in_cdata = true;
         } else if (curpos < strlength-1 && !str.compare(curpos,2,"<?")) {
           in_header = true;
-        } else if (curpos < strlength && !str.compare(curpos,1,"\"") && !str.compare(curpos,1,"'") &&
+        } else if (curpos < strlength && (!str.compare(curpos,1,"\"") || !str.compare(curpos,1,"'")) &&
                    prevspecchar != std::string::npos && str.at(prevspecchar) == '<') {
           in_attribute = !in_attribute;
         }
@@ -1568,7 +1523,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           }
           --tagsignlevel;
           prevspecchar = curpos++;
-        } else if (isEOL(cc, nc, eolmode)) {
+        } else if (Report::isEOL(cc, nc, eolmode)) {
           if (eolmode == SC_EOL_CRLF) {
             ++curpos; // skipping \n of \r\n
           }
@@ -1762,7 +1717,7 @@ void linarizeXML() {
 
     std::string eolchar;
     int eolmode;
-    getEOLChar(hCurrentEditView, &eolmode, &eolchar);
+    Report::getEOLChar(hCurrentEditView, &eolmode, &eolchar);
 
     std::string str(data);
     delete [] data;

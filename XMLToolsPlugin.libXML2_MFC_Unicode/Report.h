@@ -84,6 +84,11 @@ public:
   static unsigned int UCS2FromUTF8(const char * s, unsigned int len, wchar_t * tbuf, unsigned int tlen);
   static unsigned int ascii_to_utf8(const char * pszASCII, unsigned int lenASCII, char * pszUTF8);
   static int utf8_to_ascii(const char * pszUTF8, unsigned int lenUTF8, char * pszASCII);
+
+  
+  static void getEOLChar(HWND hwnd, int* eolmode, std::string* eolchar);
+  static bool isEOL(const std::string& txt, const std::string::size_type txtlength, unsigned int pos, int mode);
+  static bool isEOL(const char cc, const char nc, int mode);
 };
 
 #endif // !defined(AFX_REPORT_H__A50BA8DF_F1C4_4E30_9CA7_59C3951C0981__INCLUDED_)

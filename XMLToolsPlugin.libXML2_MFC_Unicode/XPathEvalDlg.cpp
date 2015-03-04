@@ -100,17 +100,70 @@ int CXPathEvalDlg::execute_xpath_expression(std::wstring& xpathExpr) {
 
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
 
-  /* Load XML document */
-  pXmlResetLastError();
-  doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, this->m_iFlags);
+  std::string str(data);
+  
   delete [] data;
   data = NULL;
+
+  /* First step, let's remove all default namespace declarations */
+  std::string::size_type curpos = 0;
+  std::string::size_type strlength = str.length();
+  bool in_attribute = false;
+  while (curpos < strlength && (curpos = str.find("xmlns=",curpos)) != std::string::npos) {
+    std::string::size_type quotepos = str.find_first_of("\"'",curpos+6);
+    in_attribute = false;
+    if (str.at(curpos-1) != ':') {
+      // check if we are in node
+      std::string::size_type nodepos = str.find_last_of("<>", curpos);
+      if (nodepos != std::string::npos && str.at(nodepos) == '<') {
+        // check if value is inside of attribute value; to perform this, we have to parse the current node
+        while (nodepos < strlength && nodepos < quotepos && (nodepos = str.find_first_of("\"'",nodepos)) != std::string::npos) {
+          if (nodepos < quotepos) {
+            in_attribute = true;
+            char quotechar = str.at(nodepos);
+            std::string::size_type nextquotepos = str.find(quotechar, nodepos+1);
+            if (nextquotepos < quotepos) {
+              nodepos = nextquotepos+1;
+              in_attribute = false;
+            } else {
+              break;
+            }
+          } else {
+            break;
+          }
+        }
+
+        if (!in_attribute) {
+          // get the attribute quote
+          if (quotepos != std::string::npos) {
+            char quotechar = str.at(quotepos);
+            std::string::size_type endpos = str.find(quotechar,curpos+7);
+            str.erase(curpos, endpos-curpos+1);
+            strlength = str.length();
+          } else {
+            ++curpos;
+          }
+        } else {
+          ++curpos;
+        }
+      } else {
+        ++curpos;
+      }
+    } else {
+      ++curpos;
+    }
+  }
+
+  /* Load XML document */
+  pXmlResetLastError();
+  doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, XML_PARSE_NSCLEAN | this->m_iFlags);
+  str.clear();
 
   if (doc == NULL) {
     Report::_printf_err(L"Error: unable to parse XML.");
     return(-1);
   }
-
+  
   /* Create xpath evaluation context */
   xpathCtx = pXmlXPathNewContext(doc);
   if (xpathCtx == NULL) {
@@ -147,108 +200,18 @@ int CXPathEvalDlg::execute_xpath_expression(std::wstring& xpathExpr) {
   return(0);
 }
 
-/**
- * register_namespaces:
- * @xpathCtx:    the pointer to an XPath context.
- * @nsList:    the list of known namespaces in 
- *      "<prefix1>=<href1> <prefix2>=href2> ..." format.
- *
- * Registers namespaces from @nsList in @xpathCtx.
- *
- * Returns 0 on success and a negative value otherwise.
- *//*
-int CXPathEvalDlg::register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList) {
-  xmlChar* nsListDup;
-  xmlChar* prefix;
-  xmlChar* href;
-  xmlChar* next;
-  
-  assert(xpathCtx);
-  assert(nsList);
-
-  nsListDup = pXmlStrdup(nsList);
-  if(nsListDup == NULL) {
-    Report::_printf_err(L"Error: unable to strdup namespaces list\n");
-    return(-1);
-  }
- 
-  next = nsListDup; 
-  while(next != NULL) {
-    // skip spaces
-    while((*next) == ' ') next++;
-    if((*next) == '\0') break;
-
-    // find prefix
-    prefix = next;
-    next = (xmlChar*) pXmlStrchr(next, '=');
-    if(next == NULL) {
-      Report::_printf_err(L"Error: invalid namespaces list format\n");
-      pXmlFree(nsListDup);
-      return(-1);  
-    }
-    *(next++) = '\0';  
-  
-    // find href
-    href = next;
-    next = (xmlChar*) pXmlStrchr(next, ' ');
-    if(next != NULL) {
-      *(next++) = '\0';  
-    }
-
-    // do register namespace
-    if (pXmlXPathRegisterNs(xpathCtx, prefix, href) != 0) {
-      Report::_printf_err(L"Error: unable to register NS with prefix=\"%s\" and href=\"%s\"\n", prefix, href);
-      pXmlFree(nsListDup);
-      return(-1);  
-    }
-  }
-
-  pXmlFree(nsListDup);
-  return(0);
-}*/
-
 int CXPathEvalDlg::register_namespaces_ex(xmlXPathContextPtr xpathCtx, xmlDocPtr doc) {
   xmlNodePtr node = doc->children;
-  int i = 0;
-
-  UniMode encoding = Report::getEncoding();
-  std::wstring nsinfos(L"Unprefixed namespaces(s) detected.\nFollowing prefix have been generated automatically, please use them in your XPath expression:\n");
 
   while (node) {
     xmlNsPtr ns = node->nsDef;
     while (node->type == XML_ELEMENT_NODE && ns) {
-	    // on crée un prefixe automatique au cas où le préfixe est null
-	    int res = 0;
       if (ns->prefix != NULL) {
-		    res = pXmlXPathRegisterNs(xpathCtx, ns->prefix, ns->href);
-	    } else {
-		    std::string prefix = Report::str_format("ns%d",++i);
-		    res = pXmlXPathRegisterNs(xpathCtx, reinterpret_cast<const xmlChar*>(prefix.c_str()), ns->href);
-
-        nsinfos += L"  ";
-        Report::appendToStdString(&nsinfos, prefix.c_str(), encoding);
-        nsinfos += L"=\"";
-        Report::appendToWStdString(&nsinfos, ns->href, encoding);
-        nsinfos += L"\"\n";
+		    pXmlXPathRegisterNs(xpathCtx, ns->prefix, ns->href);
 	    }
-
-	    if (res != 0) {
-        std::wstring msg(L"Error: unable to register NS with prefix=\"");
-        Report::appendToWStdString(&msg, ns->prefix, encoding);
-        msg += L"\" and href=\"";
-        Report::appendToWStdString(&msg, ns->href, encoding);
-        msg += L"\"\n";
-        Report::_printf_err(msg.c_str());
-        return(-1);  
-      }
-
       ns = ns->next;
     }
     node = node->next;
-  }
-
-  if (i > 0) {
-    Report::_printf_inf(nsinfos.c_str());
   }
 
   return(0);
@@ -300,133 +263,119 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
         xmlNodePtr cur = nodes->nodeTab[i];
 		    bool doIgnore = false;
 
-        if (cur->type == XML_ELEMENT_NODE) {
-          itemtype = "Node";
-          itemname = "";
-          itemvalue = "";
+        switch (cur->type) {
+          case XML_ELEMENT_NODE: {
+            itemtype = "Node";
+            itemname = "";
+            itemvalue = "";
 
-          if (cur->ns && cur->ns->prefix) {
-            Report::appendToCString(&itemname, cur->ns->prefix, encoding);
-            itemname += L":";
-          }
+            if (cur->ns && cur->ns->prefix) {
+              Report::appendToCString(&itemname, cur->ns->prefix, encoding);
+              itemname += L":";
+            }
           
-          Report::appendToCString(&itemname, cur->name, encoding);
+            Report::appendToCString(&itemname, cur->name, encoding);
             
-          // s'il y a du texte, on concatène tout le texte et on l'affiche
-          if (cur->children) {
-            xmlNodePtr txtnode = cur->children;
-            itemvalue = L"";
-            while (txtnode != cur->last) {
-		          if (txtnode->type == XML_TEXT_NODE) {
-                Report::appendToCString(&itemvalue, txtnode->content, encoding);
-		          }
-              txtnode = txtnode->next;
-            }
-            if (txtnode->type == XML_TEXT_NODE) {
-              Report::appendToCString(&itemvalue, txtnode->content, encoding);
-            }
-          }
-          // si le noeud a des attributs, on les affiche (pour autant qu'on n'ait pas déjà affiché les attributs)
-          itemvalue.Trim();
-          if (itemvalue.IsEmpty() && cur->properties) {
-            xmlAttrPtr attr = cur->properties;
-            itemvalue = "";
-            while (attr != NULL) {
-              if (attr->type == XML_ATTRIBUTE_NODE) {
-                if (attr->ns && attr->ns->prefix) {
-                  Report::appendToCString(&itemvalue, attr->ns->prefix, encoding);
-                  itemvalue += ":";
-                }
-                Report::appendToCString(&itemvalue, attr->name, encoding);
-                itemvalue += "=\"";
-                Report::appendToCString(&itemvalue, attr->children->content, encoding);
-                itemvalue += "\" ";
+            // s'il y a du texte, on concatène tout le texte et on l'affiche
+            if (cur->children) {
+              xmlNodePtr txtnode = cur->children;
+              itemvalue = L"";
+              while (txtnode != cur->last) {
+		            if (txtnode->type == XML_TEXT_NODE) {
+                  Report::appendToCString(&itemvalue, txtnode->content, encoding);
+		            }
+                txtnode = txtnode->next;
               }
-              attr = attr->next;
+              if (txtnode->type == XML_TEXT_NODE) {
+                Report::appendToCString(&itemvalue, txtnode->content, encoding);
+              }
             }
+            // si le noeud a des attributs, on les affiche (pour autant qu'on n'ait pas déjà affiché les attributs)
+            itemvalue.Trim();
+            if (itemvalue.IsEmpty() && cur->properties) {
+              xmlAttrPtr attr = cur->properties;
+              itemvalue = "";
+              while (attr != NULL) {
+                if (attr->type == XML_ATTRIBUTE_NODE) {
+                  if (attr->ns && attr->ns->prefix) {
+                    Report::appendToCString(&itemvalue, attr->ns->prefix, encoding);
+                    itemvalue += ":";
+                  }
+                  Report::appendToCString(&itemvalue, attr->name, encoding);
+                  itemvalue += "=\"";
+                  Report::appendToCString(&itemvalue, attr->children->content, encoding);
+                  itemvalue += "\" ";
+                }
+                attr = attr->next;
+              }
+            }
+            break;
           }
-        } else if (cur->type == XML_DOCUMENT_NODE) {
-          itemtype = "Doc";
-          itemname = "";
-          itemvalue = "";
-         
-        } else if(cur->type == XML_ATTRIBUTE_NODE) {
-          itemtype = "Attr";
-          itemname = "";
-          itemvalue = "";
-
-          if (cur->ns && cur->ns->prefix) {
-            Report::appendToCString(&itemname, cur->ns->prefix, encoding);
-            itemname += ":";
-          }
-          Report::appendToCString(&itemname, cur->name, encoding);
-
-          if (cur->children) {
-            itemvalue = reinterpret_cast<const char*>(cur->children->content);
-          } else {
+          case XML_DOCUMENT_NODE: {
+            itemtype = "Doc";
+            itemname = "";
             itemvalue = "";
+            break;
           }
-		    } else if(cur->type == XML_TEXT_NODE) {
-		      itemtype = "Text";
-		      itemname = "";
-		      itemvalue = "";
-		      Report::appendToCString(&itemvalue, cur->content, encoding);
+          case XML_ATTRIBUTE_NODE: {
+            itemtype = "Attr";
+            itemname = "";
+            itemvalue = "";
 
-		      itemvalue.Trim();
-		      if (itemvalue.IsEmpty()) {
-            doIgnore = true;
-          }
-        } else {
-		      switch (cur->type) {
-		        case XML_ELEMENT_NODE: itemtype = "XML_ELEMENT_NODE";
-		        case XML_ATTRIBUTE_NODE: itemtype = "XML_ATTRIBUTE_NODE";
-		        case XML_TEXT_NODE: itemtype = "XML_TEXT_NODE";
-		        case XML_CDATA_SECTION_NODE: itemtype = "XML_CDATA_SECTION_NODE";
-		        case XML_ENTITY_REF_NODE: itemtype = "XML_ENTITY_REF_NODE";
-		        case XML_ENTITY_NODE: itemtype = "XML_ENTITY_NODE";
-		        case XML_PI_NODE: itemtype = "XML_PI_NODE";
-		        case XML_COMMENT_NODE: itemtype = "XML_COMMENT_NODE";
-		        case XML_DOCUMENT_NODE: itemtype = "XML_DOCUMENT_NODE";
-		        case XML_DOCUMENT_TYPE_NODE: itemtype = "XML_DOCUMENT_TYPE_NODE";
-		        case XML_DOCUMENT_FRAG_NODE: itemtype = "XML_DOCUMENT_FRAG_NODE";
-		        case XML_NOTATION_NODE: itemtype = "XML_NOTATION_NODE";
-		        case XML_HTML_DOCUMENT_NODE: itemtype = "XML_HTML_DOCUMENT_NODE";
-		        case XML_DTD_NODE: itemtype = "XML_DTD_NODE";
-		        case XML_ELEMENT_DECL: itemtype = "XML_ELEMENT_DECL";
-		        case XML_ATTRIBUTE_DECL: itemtype = "XML_ATTRIBUTE_DECL";
-		        case XML_ENTITY_DECL: itemtype = "XML_ENTITY_DECL";
-		        case XML_NAMESPACE_DECL: itemtype = "XML_NAMESPACE_DECL";
-		        case XML_XINCLUDE_START: itemtype = "XML_XINCLUDE_START";
-		        case XML_XINCLUDE_END: itemtype = "XML_XINCLUDE_END";
-		        case XML_DOCB_DOCUMENT_NODE: itemtype = "XML_DOCB_DOCUMENT_NODE";
+            if (cur->ns && cur->ns->prefix) {
+              Report::appendToCString(&itemname, cur->ns->prefix, encoding);
+              itemname += ":";
+            }
+            Report::appendToCString(&itemname, cur->name, encoding);
+
+            if (cur->children) {
+              itemvalue = reinterpret_cast<const char*>(cur->children->content);
+            } else {
+              itemvalue = "";
+            }
+            break;
 		      }
+          case XML_TEXT_NODE: {
+		        itemtype = "Text";
+		        itemname = "";
+		        itemvalue = "";
+		        Report::appendToCString(&itemvalue, cur->content, encoding);
 
-          itemname = "";
-          itemvalue = "(element type not supported)";
+		        itemvalue.Trim();
+		        if (itemvalue.IsEmpty()) {
+              doIgnore = true;
+            }
+            break;
+          } 
+          case XML_NAMESPACE_DECL: {
+		        itemtype = "NS";
+		        itemname = "";
+		        itemvalue = "";
+		        Report::appendToCString(&itemvalue, cur->name, encoding);
 
-          /*
-            XML_ELEMENT_NODE = 1
-            XML_ATTRIBUTE_NODE = 2
-            XML_TEXT_NODE = 3
-            XML_CDATA_SECTION_NODE = 4
-            XML_ENTITY_REF_NODE = 5
-            XML_ENTITY_NODE = 6
-            XML_PI_NODE = 7
-            XML_COMMENT_NODE = 8
-            XML_DOCUMENT_NODE = 9
-            XML_DOCUMENT_TYPE_NODE = 10
-            XML_DOCUMENT_FRAG_NODE = 11
-            XML_NOTATION_NODE = 12
-            XML_HTML_DOCUMENT_NODE = 13
-            XML_DTD_NODE = 14
-            XML_ELEMENT_DECL = 15
-            XML_ATTRIBUTE_DECL = 16
-            XML_ENTITY_DECL = 17
-            XML_NAMESPACE_DECL = 18
-            XML_XINCLUDE_START = 19
-            XML_XINCLUDE_END = 20
-            XML_DOCB_DOCUMENT_NODE = 21*/
-        }
+		        itemvalue.Trim();
+		        if (itemvalue.IsEmpty()) {
+              doIgnore = true;
+            }
+            break;
+          }
+		      case XML_CDATA_SECTION_NODE: itemtype = "XML_CDATA_SECTION_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+		      case XML_ENTITY_REF_NODE: itemtype = "XML_ENTITY_REF_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+		      case XML_ENTITY_NODE: itemtype = "XML_ENTITY_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+		      case XML_PI_NODE: itemtype = "XML_PI_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+		      case XML_COMMENT_NODE: itemtype = "XML_COMMENT_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+		      case XML_DOCUMENT_TYPE_NODE: itemtype = "XML_DOCUMENT_TYPE_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+		      case XML_DOCUMENT_FRAG_NODE: itemtype = "XML_DOCUMENT_FRAG_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+		      case XML_NOTATION_NODE: itemtype = "XML_NOTATION_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+		      case XML_HTML_DOCUMENT_NODE: itemtype = "XML_HTML_DOCUMENT_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+		      case XML_DTD_NODE: itemtype = "XML_DTD_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+		      case XML_ELEMENT_DECL: itemtype = "XML_ELEMENT_DECL"; itemname = ""; itemvalue = "(element type not supported)"; break;
+		      case XML_ATTRIBUTE_DECL: itemtype = "XML_ATTRIBUTE_DECL"; itemname = ""; itemvalue = "(element type not supported)"; break;
+		      case XML_ENTITY_DECL: itemtype = "XML_ENTITY_DECL"; itemname = ""; itemvalue = "(element type not supported)"; break;
+		      case XML_XINCLUDE_START: itemtype = "XML_XINCLUDE_START"; itemname = ""; itemvalue = "(element type not supported)"; break;
+		      case XML_XINCLUDE_END: itemtype = "XML_XINCLUDE_END"; itemname = ""; itemvalue = "(element type not supported)"; break;
+		      case XML_DOCB_DOCUMENT_NODE: itemtype = "XML_DOCB_DOCUMENT_NODE"; itemname = ""; itemvalue = "(element type not supported)" ;break;
+        }          
 
         if (!doIgnore) {
 		      AddToList(listresults, itemtype, itemname, itemvalue);
