@@ -4,9 +4,13 @@
                         ChangeLog
 ================================================================
 
+Release 2.4.5
+-------------
+- Modification of XPath evaluation to better manage XML with default namespace
+
 Release 2.4.4
 -------------
-- Optimization of pretty print function
+- Speed+Memory optimization of pretty print function
 - Fix XML file detection issue when opening several files at once
 
 Release 2.4.3
