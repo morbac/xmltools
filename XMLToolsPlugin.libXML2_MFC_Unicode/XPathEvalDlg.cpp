@@ -156,7 +156,7 @@ int CXPathEvalDlg::execute_xpath_expression(std::wstring& xpathExpr) {
 
   /* Load XML document */
   pXmlResetLastError();
-  doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, XML_PARSE_NSCLEAN | this->m_iFlags);
+  doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, this->m_iFlags);
   str.clear();
 
   if (doc == NULL) {
