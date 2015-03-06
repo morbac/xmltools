@@ -1155,9 +1155,7 @@ std::wstring currentXPath() {
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
   currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
-
-  UniMode encoding = Report::getEncoding();
-
+  
   std::wstring nodepath(L"");
 
   char *data = new char[currentLength+1];
@@ -1196,9 +1194,12 @@ std::wstring currentXPath() {
     str += "><X>";
 
     xmlDocPtr doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, XML_PARSE_RECOVER | (doPreventXXE ? defFlagsNoXXE : defFlags));
-    xmlNodePtr cur_node = pXmlDocGetRootElement(doc);
-
     str.clear();
+    
+    if (doc == NULL) return nodepath;
+
+    UniMode encoding = Report::getEncoding(doc->encoding, NULL);
+    xmlNodePtr cur_node = pXmlDocGetRootElement(doc);
 
     while (cur_node != NULL && cur_node->last != NULL) {
       if (cur_node->type == XML_ELEMENT_NODE) {

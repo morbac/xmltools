@@ -24,6 +24,12 @@ extern xsltStylesheetPtr (*pXsltParseStylesheetDoc)(xmlDocPtr doc);
 extern xmlDocPtr (*pXmlParseMemory)(const char * buffer, int size);
 extern xmlDocPtr (*pXmlReadMemory)(const char *buffer, int size, const char *URL, const char *encoding, int options);
 
+extern const char * (*pXmlGetCharEncodingName)(xmlCharEncoding enc);
+extern const char * (*pXmlGetEncodingAlias)(const char * alias);
+extern xmlCharEncoding (*pXmlParseCharEncoding)(const char * name);
+extern int (*pUTF8Toisolat1)(unsigned char * out, int * outlen, const unsigned char * in, int * inlen);
+extern int (*pisolat1ToUTF8)(unsigned char * out, int * outlen, const unsigned char * in, int * inlen);
+
 extern void (*pXmlFreeNs)(xmlNsPtr cur);
 
 extern void (*pXmlFree)(void *mem);

@@ -163,7 +163,10 @@ int CXPathEvalDlg::execute_xpath_expression(std::wstring& xpathExpr) {
     Report::_printf_err(L"Error: unable to parse XML.");
     return(-1);
   }
-  
+
+  /* Get document encoding */  
+  this->encoding = pXmlParseCharEncoding(reinterpret_cast<const char*>(doc->encoding));
+
   /* Create xpath evaluation context */
   xpathCtx = pXmlXPathNewContext(doc);
   if (xpathCtx == NULL) {
@@ -239,7 +242,7 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
   
   listresults->DeleteAllItems();
 
-  UniMode encoding = Report::getEncoding();
+  UniMode encoding = Report::getEncoding(this->encoding, NULL);
 
   switch (xpathObj->type) {
     case XPATH_UNDEFINED: {

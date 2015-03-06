@@ -42,6 +42,7 @@ public:
 // Implementation
 protected:
   unsigned long m_iFlags;
+  xmlCharEncoding encoding;
 
   int execute_xpath_expression(std::wstring& xpathExpr);
   //int register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList);

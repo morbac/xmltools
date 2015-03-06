@@ -7,6 +7,7 @@
 #include <shellapi.h>
 #include <shlwapi.h>
 #include <shlobj.h>
+#include <assert.h>
 #include "XMLTools.h"
 #include "Report.h"
 
@@ -24,6 +25,12 @@ void                   (*pXmlFreeNs)(xmlNsPtr cur);
 
 xmlDocPtr              (*pXmlParseMemory)(const char * buffer, int size);
 xmlDocPtr              (*pXmlReadMemory)(const char *buffer, int size, const char *URL, const char *encoding, int options);
+const char *           (*pXmlGetCharEncodingName)(xmlCharEncoding enc);
+const char *           (*pXmlGetEncodingAlias)(const char * alias);
+xmlCharEncoding        (*pXmlParseCharEncoding)(const char * name);
+int                    (*pUTF8Toisolat1)(unsigned char * out, int * outlen, const unsigned char * in, int * inlen);
+int                    (*pisolat1ToUTF8)(unsigned char * out, int * outlen, const unsigned char * in, int * inlen);
+
 int	                   (*pXmlSaveFormatFile)(const char * filename, xmlDocPtr cur, int format);
 void	                 (*pXmlDocDumpFormatMemory)(xmlDocPtr cur, xmlChar ** mem, int * size, int format);
 xmlNodePtr             (*pXmlDocGetRootElement)(xmlDocPtr doc);
@@ -110,9 +117,9 @@ int loadLibXML(wchar_t* nppMainPath, wchar_t* appDataPath) {
   DWORD   size = MAX_PATH;
 
   // loading dependances
-  loadExtLib(L"libiconv-2.dll", nppMainPath, appDataPath);
-  loadExtLib(L"zlib1.dll", nppMainPath, appDataPath);
-  loadExtLib(L"libwinpthread-1.dll", nppMainPath, appDataPath);
+  if (loadExtLib(L"libiconv-2.dll", nppMainPath, appDataPath) == NULL) return -1;
+  if (loadExtLib(L"zlib1.dll", nppMainPath, appDataPath) == NULL) return -1;
+  if (loadExtLib(L"libwinpthread-1.dll", nppMainPath, appDataPath) == NULL) return -1;
   
   // loading libxml
   hInstLibXML = loadExtLib(L"libxml2-2.dll", nppMainPath, appDataPath);
@@ -126,69 +133,77 @@ int loadLibXML(wchar_t* nppMainPath, wchar_t* appDataPath) {
     return -1;
   }
 
-  pXmlFree =                      (void (__cdecl *)(void *))*((void (__cdecl **)(void *))GetProcAddress(hInstLibXML, "xmlFree"));
-  pXmlFreeDoc =                   (void (__cdecl *)(xmlDocPtr))GetProcAddress(hInstLibXML, "xmlFreeDoc");
-  pXmlFreeNs =                    (void (__cdecl *)(xmlNsPtr))GetProcAddress(hInstLibXML, "xmlFreeNs");
+  assert( (pXmlFree =                      (void (__cdecl *)(void *))*((void (__cdecl **)(void *))GetProcAddress(hInstLibXML, "xmlFree"))) );
+  assert( (pXmlFreeDoc =                   (void (__cdecl *)(xmlDocPtr))GetProcAddress(hInstLibXML, "xmlFreeDoc")) );
+  assert( (pXmlFreeNs =                    (void (__cdecl *)(xmlNsPtr))GetProcAddress(hInstLibXML, "xmlFreeNs")) );
 
-  pXmlParseMemory =               (xmlDocPtr (__cdecl *)(const char *, int))GetProcAddress(hInstLibXML, "xmlParseMemory");
-  pXmlReadMemory =                (xmlDocPtr (__cdecl *)(const char *, int, const char *, const char *, int))GetProcAddress(hInstLibXML, "xmlReadMemory");
-  pXmlSaveFormatFile =            (int (__cdecl *)(const char *, xmlDocPtr, int))GetProcAddress(hInstLibXML, "xmlSaveFormatFile");
-  pXmlDocDumpFormatMemory =       (void	(__cdecl *)(xmlDocPtr, xmlChar **, int *, int))GetProcAddress(hInstLibXML, "xmlDocDumpFormatMemory");
-  pXmlDocGetRootElement =         (xmlNodePtr (__cdecl *)(xmlDocPtr))GetProcAddress(hInstLibXML, "xmlDocGetRootElement");
-  pXmlUnlinkNode =                (void (__cdecl *)(xmlNodePtr))GetProcAddress(hInstLibXML, "xmlUnlinkNode");
-  pXmlFreeNode =                  (void (__cdecl *)(xmlNodePtr))GetProcAddress(hInstLibXML, "xmlFreeNode");
+  assert( (pXmlParseMemory =               (xmlDocPtr (__cdecl *)(const char *, int))GetProcAddress(hInstLibXML, "xmlParseMemory")) );
+  assert( (pXmlReadMemory =                (xmlDocPtr (__cdecl *)(const char *, int, const char *, const char *, int))GetProcAddress(hInstLibXML, "xmlReadMemory")) );
+  
+  assert( (pXmlGetCharEncodingName =       (const char * (__cdecl *)(xmlCharEncoding))GetProcAddress(hInstLibXML, "xmlGetCharEncodingName")) );
+  assert( (pXmlGetEncodingAlias =          (const char * (__cdecl *)(const char *))GetProcAddress(hInstLibXML, "xmlGetEncodingAlias")) );
+  assert( (pXmlParseCharEncoding =         (xmlCharEncoding (__cdecl *)(const char *))GetProcAddress(hInstLibXML, "xmlParseCharEncoding")) );
 
-  pXmlParseFile =                 (xmlDocPtr (__cdecl *)(const char *))GetProcAddress(hInstLibXML, "xmlParseFile");
-  pXmlInitParser =                (void (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlInitParser");
-  pXmlCleanupParser =             (void (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlCleanupParser");
+  assert( (pUTF8Toisolat1 =                (int (__cdecl *)(unsigned char *, int *, const unsigned char *, int *))GetProcAddress(hInstLibXML, "UTF8Toisolat1")) );
+  assert( (pisolat1ToUTF8 =                (int (__cdecl *)(unsigned char *, int *, const unsigned char *, int *))GetProcAddress(hInstLibXML, "isolat1ToUTF8")) );
 
-  pXmlSchemaParse =               (xmlSchemaPtr (__cdecl *)(xmlSchemaParserCtxtPtr))GetProcAddress(hInstLibXML, "xmlSchemaParse");
-  pXmlSchemaNewParserCtxt =       (xmlSchemaParserCtxtPtr (__cdecl *)(const char *))GetProcAddress(hInstLibXML, "xmlSchemaNewParserCtxt");
-  pXmlSchemaFreeParserCtxt =      (void (__cdecl *)(xmlSchemaParserCtxtPtr))GetProcAddress(hInstLibXML, "xmlSchemaFreeParserCtxt");
-  pXmlSchemaNewValidCtxt =        (xmlSchemaValidCtxtPtr (__cdecl *)(xmlSchemaPtr))GetProcAddress(hInstLibXML, "xmlSchemaNewValidCtxt");
-  pXmlSchemaFree =                (void (__cdecl *)(xmlSchemaPtr))GetProcAddress(hInstLibXML, "xmlSchemaFree");
-  pXmlSchemaSetValidErrors =      (void (__cdecl *)(xmlSchemaValidCtxtPtr, xmlSchemaValidityErrorFunc, xmlSchemaValidityWarningFunc, void *))GetProcAddress(hInstLibXML, "xmlSchemaSetValidErrors");
-  pXmlSchemaFreeValidCtxt =       (void (__cdecl *)(xmlSchemaValidCtxtPtr))GetProcAddress(hInstLibXML, "xmlSchemaFreeValidCtxt");
-  pXmlSchemaValidateDoc =         (int (__cdecl *)(xmlSchemaValidCtxtPtr, xmlDocPtr))GetProcAddress(hInstLibXML, "xmlSchemaValidateDoc");
+  assert( (pXmlSaveFormatFile =            (int (__cdecl *)(const char *, xmlDocPtr, int))GetProcAddress(hInstLibXML, "xmlSaveFormatFile")) );
+  assert( (pXmlDocDumpFormatMemory =       (void	(__cdecl *)(xmlDocPtr, xmlChar **, int *, int))GetProcAddress(hInstLibXML, "xmlDocDumpFormatMemory")) );
+  assert( (pXmlDocGetRootElement =         (xmlNodePtr (__cdecl *)(xmlDocPtr))GetProcAddress(hInstLibXML, "xmlDocGetRootElement")) );
+  assert( (pXmlUnlinkNode =                (void (__cdecl *)(xmlNodePtr))GetProcAddress(hInstLibXML, "xmlUnlinkNode")) );
+  assert( (pXmlFreeNode =                  (void (__cdecl *)(xmlNodePtr))GetProcAddress(hInstLibXML, "xmlFreeNode")) );
 
-  pXmlNewValidCtxt =              (xmlValidCtxtPtr (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlNewValidCtxt");
-  pXmlFreeValidCtxt =             (void (__cdecl *)(xmlValidCtxtPtr))GetProcAddress(hInstLibXML, "xmlFreeValidCtxt");
+  assert( (pXmlParseFile =                 (xmlDocPtr (__cdecl *)(const char *))GetProcAddress(hInstLibXML, "xmlParseFile")) );
+  assert( (pXmlInitParser =                (void (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlInitParser")) );
+  assert( (pXmlCleanupParser =             (void (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlCleanupParser")) );
 
-  pXmlParseDTD =                  (xmlDtdPtr (__cdecl *)(const xmlChar *, const xmlChar *))GetProcAddress(hInstLibXML, "xmlParseDTD");
-  pXmlFreeDtd =                   (void (__cdecl *)(xmlDtdPtr))GetProcAddress(hInstLibXML, "xmlFreeDtd");
-  pXmlValidateDtd =               (int (__cdecl *)(xmlValidCtxtPtr, xmlDocPtr, xmlDtdPtr))GetProcAddress(hInstLibXML, "xmlValidateDtd");
+  assert( (pXmlSchemaParse =               (xmlSchemaPtr (__cdecl *)(xmlSchemaParserCtxtPtr))GetProcAddress(hInstLibXML, "xmlSchemaParse")) );
+  assert( (pXmlSchemaNewParserCtxt =       (xmlSchemaParserCtxtPtr (__cdecl *)(const char *))GetProcAddress(hInstLibXML, "xmlSchemaNewParserCtxt")) );
+  assert( (pXmlSchemaFreeParserCtxt =      (void (__cdecl *)(xmlSchemaParserCtxtPtr))GetProcAddress(hInstLibXML, "xmlSchemaFreeParserCtxt")) );
+  assert( (pXmlSchemaNewValidCtxt =        (xmlSchemaValidCtxtPtr (__cdecl *)(xmlSchemaPtr))GetProcAddress(hInstLibXML, "xmlSchemaNewValidCtxt")) );
+  assert( (pXmlSchemaFree =                (void (__cdecl *)(xmlSchemaPtr))GetProcAddress(hInstLibXML, "xmlSchemaFree")) );
+  assert( (pXmlSchemaSetValidErrors =      (void (__cdecl *)(xmlSchemaValidCtxtPtr, xmlSchemaValidityErrorFunc, xmlSchemaValidityWarningFunc, void *))GetProcAddress(hInstLibXML, "xmlSchemaSetValidErrors")) );
+  assert( (pXmlSchemaFreeValidCtxt =       (void (__cdecl *)(xmlSchemaValidCtxtPtr))GetProcAddress(hInstLibXML, "xmlSchemaFreeValidCtxt")) );
+  assert( (pXmlSchemaValidateDoc =         (int (__cdecl *)(xmlSchemaValidCtxtPtr, xmlDocPtr))GetProcAddress(hInstLibXML, "xmlSchemaValidateDoc")) );
 
-  pXmlXPathNewContext =           (xmlXPathContextPtr (__cdecl *)(xmlDocPtr))GetProcAddress(hInstLibXML, "xmlXPathNewContext");
-  pXmlXPathFreeContext =          (void (__cdecl *)(xmlXPathContextPtr))GetProcAddress(hInstLibXML, "xmlXPathFreeContext");
-  pXmlXPathEvalExpression =       (xmlXPathObjectPtr (__cdecl *)(const xmlChar *, xmlXPathContextPtr))GetProcAddress(hInstLibXML, "xmlXPathEvalExpression");
-  pXmlXPathFreeObject =           (void (__cdecl *)(xmlXPathObjectPtr))GetProcAddress(hInstLibXML, "xmlXPathFreeObject");
-  pXmlXPathRegisterNs =           (int (__cdecl *)(xmlXPathContextPtr, const xmlChar *, const xmlChar *))GetProcAddress(hInstLibXML, "xmlXPathRegisterNs");
+  assert( (pXmlNewValidCtxt =              (xmlValidCtxtPtr (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlNewValidCtxt")) );
+  assert( (pXmlFreeValidCtxt =             (void (__cdecl *)(xmlValidCtxtPtr))GetProcAddress(hInstLibXML, "xmlFreeValidCtxt")) );
 
-  pXmlGetLastError =              (xmlErrorPtr (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlGetLastError");
-  pXmlResetLastError =            (void (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlResetLastError");
-  pXmlResetError =                (void (__cdecl *)(xmlErrorPtr))GetProcAddress(hInstLibXML, "xmlResetError");
-  pXmlGetProp =                   (xmlChar * (__cdecl *)(xmlNodePtr, const xmlChar *))GetProcAddress(hInstLibXML, "xmlGetProp");
-  pXmlSubstituteEntitiesDefault = (int (__cdecl *)(int))GetProcAddress(hInstLibXML, "xmlSubstituteEntitiesDefault");
-  pXmlStrdup =                    (xmlChar * (__cdecl *)(const xmlChar *))GetProcAddress(hInstLibXML, "xmlStrdup");
-  pXmlStrchr =                    (const xmlChar * (__cdecl *)(const xmlChar *, xmlChar))GetProcAddress(hInstLibXML, "xmlStrchr");
+  assert( (pXmlParseDTD =                  (xmlDtdPtr (__cdecl *)(const xmlChar *, const xmlChar *))GetProcAddress(hInstLibXML, "xmlParseDTD")) );
+  assert( (pXmlFreeDtd =                   (void (__cdecl *)(xmlDtdPtr))GetProcAddress(hInstLibXML, "xmlFreeDtd")) );
+  assert( (pXmlValidateDtd =               (int (__cdecl *)(xmlValidCtxtPtr, xmlDocPtr, xmlDtdPtr))GetProcAddress(hInstLibXML, "xmlValidateDtd")) );
 
-  pXmlGetGlobalState =            (xmlGlobalStatePtr (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlGetGlobalState");
-  pXmlKeepBlanksDefault =         (int (__cdecl *)(int))GetProcAddress(hInstLibXML, "xmlKeepBlanksDefault");
-  pXmlThrDefIndentTreeOutput =    (int (__cdecl *)(int))GetProcAddress(hInstLibXML, "xmlThrDefIndentTreeOutput");
-  pXmlThrDefTreeIndentString =    (const char * (__cdecl *)(const char *))GetProcAddress(hInstLibXML, "xmlThrDefTreeIndentString");
+  assert( (pXmlXPathNewContext =           (xmlXPathContextPtr (__cdecl *)(xmlDocPtr))GetProcAddress(hInstLibXML, "xmlXPathNewContext")) );
+  assert( (pXmlXPathFreeContext =          (void (__cdecl *)(xmlXPathContextPtr))GetProcAddress(hInstLibXML, "xmlXPathFreeContext")) );
+  assert( (pXmlXPathEvalExpression =       (xmlXPathObjectPtr (__cdecl *)(const xmlChar *, xmlXPathContextPtr))GetProcAddress(hInstLibXML, "xmlXPathEvalExpression")) );
+  assert( (pXmlXPathFreeObject =           (void (__cdecl *)(xmlXPathObjectPtr))GetProcAddress(hInstLibXML, "xmlXPathFreeObject")) );
+  assert( (pXmlXPathRegisterNs =           (int (__cdecl *)(xmlXPathContextPtr, const xmlChar *, const xmlChar *))GetProcAddress(hInstLibXML, "xmlXPathRegisterNs")) );
+
+  assert( (pXmlGetLastError =              (xmlErrorPtr (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlGetLastError")) );
+  assert( (pXmlResetLastError =            (void (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlResetLastError")) );
+  assert( (pXmlResetError =                (void (__cdecl *)(xmlErrorPtr))GetProcAddress(hInstLibXML, "xmlResetError")) );
+  assert( (pXmlGetProp =                   (xmlChar * (__cdecl *)(xmlNodePtr, const xmlChar *))GetProcAddress(hInstLibXML, "xmlGetProp")) );
+  assert( (pXmlSubstituteEntitiesDefault = (int (__cdecl *)(int))GetProcAddress(hInstLibXML, "xmlSubstituteEntitiesDefault")) );
+  assert( (pXmlStrdup =                    (xmlChar * (__cdecl *)(const xmlChar *))GetProcAddress(hInstLibXML, "xmlStrdup")) );
+  assert( (pXmlStrchr =                    (const xmlChar * (__cdecl *)(const xmlChar *, xmlChar))GetProcAddress(hInstLibXML, "xmlStrchr")) );
+
+  assert( (pXmlGetGlobalState =            (xmlGlobalStatePtr (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlGetGlobalState")) );
+  assert( (pXmlKeepBlanksDefault =         (int (__cdecl *)(int))GetProcAddress(hInstLibXML, "xmlKeepBlanksDefault")) );
+  assert( (pXmlThrDefIndentTreeOutput =    (int (__cdecl *)(int))GetProcAddress(hInstLibXML, "xmlThrDefIndentTreeOutput")) );
+  assert( (pXmlThrDefTreeIndentString =    (const char * (__cdecl *)(const char *))GetProcAddress(hInstLibXML, "xmlThrDefTreeIndentString")) );
 
   //-----------------------------------------------------------------------------------------------
   
   /* xmlFree !!! pthreads? */
   
-  pXsltParseStylesheetDoc =       (xsltStylesheetPtr (__cdecl *)(xmlDocPtr))GetProcAddress(hInstLibXSL, "xsltParseStylesheetDoc");
-  pXsltParseStylesheetFile =      (xsltStylesheetPtr (__cdecl *)(const xmlChar *))GetProcAddress(hInstLibXSL, "xsltParseStylesheetFile");
-  pXsltSaveResultToString =       (int (__cdecl *)(xmlChar **, int *, xmlDocPtr, xsltStylesheetPtr))GetProcAddress(hInstLibXSL, "xsltSaveResultToString");
-  pXsltFreeStylesheet =           (void (__cdecl *)(xsltStylesheetPtr))GetProcAddress(hInstLibXSL, "xsltFreeStylesheet");
-  pXsltApplyStylesheet =          (xmlDocPtr (__cdecl *)(xsltStylesheetPtr, xmlDocPtr, const char **))GetProcAddress(hInstLibXSL, "xsltApplyStylesheet");
-  pXsltCleanupGlobals =           (void (__cdecl *)(void))GetProcAddress(hInstLibXSL, "xsltCleanupGlobals");
-  pXsltSetGenericErrorFunc =      (void (__cdecl *)(void *, xmlGenericErrorFunc))GetProcAddress(hInstLibXSL, "xsltSetGenericErrorFunc");
-  pXsltNewTransformContext =      (xsltTransformContextPtr (__cdecl *)(xsltStylesheetPtr, xmlDocPtr))GetProcAddress(hInstLibXSL, "xsltNewTransformContext");
+  assert( (pXsltParseStylesheetDoc =       (xsltStylesheetPtr (__cdecl *)(xmlDocPtr))GetProcAddress(hInstLibXSL, "xsltParseStylesheetDoc")) );
+  assert( (pXsltParseStylesheetFile =      (xsltStylesheetPtr (__cdecl *)(const xmlChar *))GetProcAddress(hInstLibXSL, "xsltParseStylesheetFile")) );
+  assert( (pXsltSaveResultToString =       (int (__cdecl *)(xmlChar **, int *, xmlDocPtr, xsltStylesheetPtr))GetProcAddress(hInstLibXSL, "xsltSaveResultToString")) );
+  assert( (pXsltFreeStylesheet =           (void (__cdecl *)(xsltStylesheetPtr))GetProcAddress(hInstLibXSL, "xsltFreeStylesheet")) );
+  assert( (pXsltApplyStylesheet =          (xmlDocPtr (__cdecl *)(xsltStylesheetPtr, xmlDocPtr, const char **))GetProcAddress(hInstLibXSL, "xsltApplyStylesheet")) );
+  assert( (pXsltCleanupGlobals =           (void (__cdecl *)(void))GetProcAddress(hInstLibXSL, "xsltCleanupGlobals")) );
+  assert( (pXsltSetGenericErrorFunc =      (void (__cdecl *)(void *, xmlGenericErrorFunc))GetProcAddress(hInstLibXSL, "xsltSetGenericErrorFunc")) );
+  assert( (pXsltNewTransformContext =      (xsltTransformContextPtr (__cdecl *)(xsltStylesheetPtr, xmlDocPtr))GetProcAddress(hInstLibXSL, "xsltNewTransformContext")) );
   
   /* init */
   pXmlInitParser();

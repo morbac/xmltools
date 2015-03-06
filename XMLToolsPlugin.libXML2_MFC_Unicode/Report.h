@@ -11,6 +11,7 @@
 
 #include <sstream>
 #include <libxml/xmlstring.h>
+#include <libxml/encoding.h>
 
 // from NPP source "Parameters.h"
 enum UniMode {uni8Bit=0, uniUTF8=1, uni16BE=2, uni16LE=3, uniCookie=4, uni7Bit=5, uni16BE_NoBOM=6, uni16LE_NoBOM=7, uniEnd};
@@ -69,6 +70,8 @@ public:
   static char* wchar2char(const wchar_t* ws);
 
   static UniMode getEncoding(HWND npp = NULL);
+  static UniMode getEncoding(xmlCharEncoding xmlencoding, HWND npp);
+  static UniMode getEncoding(const xmlChar* xmlencoding, HWND npp );
   static void setEncoding(UniMode encoding, HWND npp = NULL);
 
   static wchar_t* castChar(const char* orig, UniMode encoding = uniEnd);

@@ -6,6 +6,7 @@
 #include "PluginInterface.h"
 #include "Report.h"
 #include "menuCmdID.h"
+#include "LoadLibrary.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -311,9 +312,85 @@ char* Report::wchar2char(const wchar_t* ws) {
 }
 
 UniMode Report::getEncoding(HWND npp /* = NULL */) {
-  HWND nppwnd = (npp == NULL ? nppData._nppHandle : npp);
-  int bufferid = int(::SendMessage(nppwnd, NPPM_GETCURRENTBUFFERID, 0, 0));
-  return UniMode(::SendMessage(nppwnd, NPPM_GETBUFFERENCODING, bufferid, 0));
+  return Report::getEncoding(XML_CHAR_ENCODING_NONE, npp);
+}
+
+UniMode Report::getEncoding(const xmlChar* xmlencoding, HWND npp) {
+  if (xmlencoding != NULL) {
+    xmlCharEncoding enc = pXmlParseCharEncoding(reinterpret_cast<const char*>(xmlencoding));
+    return Report::getEncoding(enc, npp);
+  } else {
+    return Report::getEncoding(XML_CHAR_ENCODING_NONE, npp);
+  }
+}
+
+UniMode Report::getEncoding(xmlCharEncoding xmlencoding, HWND npp) {
+  if (xmlencoding == XML_CHAR_ENCODING_NONE) {
+    HWND nppwnd = (npp == NULL ? nppData._nppHandle : npp);
+    int bufferid = int(::SendMessage(nppwnd, NPPM_GETCURRENTBUFFERID, 0, 0));
+    return UniMode(::SendMessage(nppwnd, NPPM_GETBUFFERENCODING, bufferid, 0));
+  } else {
+    // uni8Bit=0, uniUTF8=1, uni16BE=2, uni16LE=3, uniCookie=4, uni7Bit=5, uni16BE_NoBOM=6, uni16LE_NoBOM=7
+
+    switch (xmlencoding) {
+      case XML_CHAR_ENCODING_UTF8: // UTF-8
+        return uniUTF8;
+        break;
+      case XML_CHAR_ENCODING_UTF16LE: // UTF-16 little endian
+        return uni16LE;
+        break;
+      case XML_CHAR_ENCODING_UTF16BE: // UTF-16 big endian
+        return uni16BE;
+        break;
+      case XML_CHAR_ENCODING_UCS4LE: // UCS-4 little endian
+      case XML_CHAR_ENCODING_UCS4_3412: // UCS-4 unusual ordering
+        return uni16LE_NoBOM;
+        break;
+      case XML_CHAR_ENCODING_UCS4BE: // UCS-4 big endian
+      case XML_CHAR_ENCODING_UCS4_2143: // UCS-4 unusual ordering
+        return uni16BE_NoBOM;
+        break;
+      case XML_CHAR_ENCODING_ASCII:  // pure ASCII
+        return uni8Bit;
+        break;
+      /*case XML_CHAR_ENCODING_EBCDIC: // EBCDIC uh!
+        break;
+      
+      case XML_CHAR_ENCODING_UCS2: // UCS-2
+        break;
+      case XML_CHAR_ENCODING_8859_1: // ISO-8859-1 ISO Latin 1
+        break;
+      case XML_CHAR_ENCODING_8859_2: // ISO-8859-2 ISO Latin 2
+        break;
+      case XML_CHAR_ENCODING_8859_3: // ISO-8859-3
+        break;
+      case XML_CHAR_ENCODING_8859_4: // ISO-8859-4
+        break;
+      case XML_CHAR_ENCODING_8859_5: // ISO-8859-5
+        break;
+      case XML_CHAR_ENCODING_8859_6: // ISO-8859-6
+        break;
+      case XML_CHAR_ENCODING_8859_7: // ISO-8859-7
+        break;
+      case XML_CHAR_ENCODING_8859_8: // ISO-8859-8
+        break;
+      case XML_CHAR_ENCODING_8859_9: // ISO-8859-9
+        break;
+      case XML_CHAR_ENCODING_2022_JP: // ISO-2022-JP
+        break;
+      case XML_CHAR_ENCODING_SHIFT_JIS: // Shift_JIS
+        break;
+      case XML_CHAR_ENCODING_EUC_JP: // EUC-JP
+        break;
+      
+      case XML_CHAR_ENCODING_ERROR: // No char encoding detected
+      case XML_CHAR_ENCODING_NONE: // No char encoding detected
+      */
+      default:
+        return uniUTF8;
+
+    }
+  }
 }
 
 void Report::setEncoding(UniMode encoding, HWND npp /* = NULL */) {
@@ -341,7 +418,7 @@ wchar_t* Report::castChar(const char* orig, UniMode encoding /*= uniEnd*/) {
     return Report::char2wchar(orig);
   } else {
     size_t osize = strlen(orig),
-           wsize = 3*(osize+1);
+           wsize = 4*(osize+1);
     wchar_t* wbuffer = new wchar_t[wsize];
     memset(wbuffer, '\0', wsize);
     Report::UCS2FromUTF8(orig, osize+1, wbuffer, wsize);
@@ -358,7 +435,7 @@ char* Report::castWChar(const wchar_t* orig, UniMode encoding /*= uniEnd*/) {
     return Report::wchar2char(orig);
   } else {
     size_t osize = wcslen(orig),
-           size = 3*(osize+1);
+           size = 4*(osize+1);
     char* buffer = new char[size];
     memset(buffer, '\0', size);
     Report::UTF8FromUCS2(orig, osize+1, buffer, size);
