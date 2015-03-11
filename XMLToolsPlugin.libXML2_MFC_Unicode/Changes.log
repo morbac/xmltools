@@ -7,6 +7,7 @@
 Release 2.4.5
 -------------
 - Modification of XPath evaluation to better manage XML with default namespace
+- Rollback of XML file detection behaviour modification of preceding release (was not working well)
 
 Release 2.4.4
 -------------
