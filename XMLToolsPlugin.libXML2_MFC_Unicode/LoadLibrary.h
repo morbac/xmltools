@@ -74,7 +74,7 @@ extern int (*pXmlKeepBlanksDefault)(int val);
 extern int (*pXmlThrDefIndentTreeOutput)(int v);
 extern const char * (*pXmlThrDefTreeIndentString)(const char * v);
 
-xmlNodePtr pXmlRemoveNs(xmlNodePtr tree, xmlNsPtr ns);
+//xmlNodePtr pXmlRemoveNs(xmlNodePtr tree, xmlNsPtr ns);
 
 //-------------------------------------------------------------------------------------------------
 
