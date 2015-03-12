@@ -541,6 +541,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       enableBufferActivated = true;
     case NPPN_BUFFERACTIVATED: {
       if (enableBufferActivated) {
+        enableBufferActivated = false;
         if (doAutoXMLType) {
           // si le fichier n'a pas de type défini et qu'il commence par "<?xml ", on lui attribue le type L_XML
           LangType docType = L_EXTERNAL;
