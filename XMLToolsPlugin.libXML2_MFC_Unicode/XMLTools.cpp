@@ -98,7 +98,7 @@ bool doCheckXML = false, doValidation = false, /*doPrettyPrint = false,*/ doClos
 int menuitemCheckXML = -1, menuitemValidation = -1, /*menuitemPrettyPrint = -1,*/ menuitemCloseTag = -1, menuitemAutoIndent = -1, menuitemAttrAutoComplete = -1, menuitemAutoXMLType = -1, menuitemPreventXXE = -1, menuitemPrettyPrintAllFiles = -1;
 std::string lastXMLSchema("");
 
-bool enableBufferActivated = false;
+int enableBufferActivated = 0;
 int nbopenfiles1, nbopenfiles2;
 
 // Here're the declaration my functions ///////////////////////////////////////
@@ -538,10 +538,11 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       break;
     }
     case NPPN_FILEOPENED:
-      enableBufferActivated = true;
+      enableBufferActivated++;
+      break;
     case NPPN_BUFFERACTIVATED: {
-      if (enableBufferActivated) {
-        enableBufferActivated = false;
+      if (enableBufferActivated > 0) {
+        --enableBufferActivated;
         if (doAutoXMLType) {
           // si le fichier n'a pas de type défini et qu'il commence par "<?xml ", on lui attribue le type L_XML
           LangType docType = L_EXTERNAL;
