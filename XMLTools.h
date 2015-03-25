@@ -14,11 +14,18 @@
 
 #include "resource.h"    // main symbols
 
+//---------------------------------------------------------------------------
+
+#define XMLTOOLS_VERSION_NUMBER "2.4.5"
 #ifdef _DEBUG
   #define XMLTOOLS_ABOUTINFO "XML Tools Plugin\r\nversion 2.4.5 unicode (debug)"
 #else
   #define XMLTOOLS_ABOUTINFO "XML Tools Plugin\r\nversion 2.4.5 unicode"
 #endif
+
+//---------------------------------------------------------------------------
+
+#define NDAYS_BETWEEN_UPDATE_CHECK 15
 #define XMLTOOLS_DLLNAME   L"XMLTools.dll"
 
 /////////////////////////////////////////////////////////////////////////////

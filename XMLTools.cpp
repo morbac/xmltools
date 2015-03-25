@@ -77,7 +77,7 @@ const wchar_t PLUGIN_NAME[] = L"XML Tools";
 const wchar_t localConfFile[] = L"doLocalConf.xml";
 
 // The number of functionality
-const int TOTAL_FUNCS = 30;
+const int TOTAL_FUNCS = 31;
 int nbFunc = TOTAL_FUNCS;
 
 NppData nppData;
@@ -94,8 +94,30 @@ const wchar_t sectionName[] = L"XML Tools";
 
 // Declaration of functionality (FuncItem) Array
 FuncItem funcItem[TOTAL_FUNCS];
-bool doCheckXML = false, doValidation = false, /*doPrettyPrint = false,*/ doCloseTag = false, doAutoIndent = false, doAttrAutoComplete = false, doAutoXMLType = false, doPreventXXE = true, doPrettyPrintAllOpenFiles = false;
-int menuitemCheckXML = -1, menuitemValidation = -1, /*menuitemPrettyPrint = -1,*/ menuitemCloseTag = -1, menuitemAutoIndent = -1, menuitemAttrAutoComplete = -1, menuitemAutoXMLType = -1, menuitemPreventXXE = -1, menuitemPrettyPrintAllFiles = -1;
+bool doCheckXML = false,
+     doValidation = false,
+     /*doPrettyPrint = false,*/
+     doCloseTag = false,
+     doAutoIndent = false,
+     doAttrAutoComplete = false,
+     doAutoXMLType = false,
+     doPreventXXE = true,
+     doPrettyPrintAllOpenFiles = false,
+     doCheckUpdates = true;
+
+std::wstring dateOfNextCheckUpdates(L"19800101");
+
+int menuitemCheckXML = -1,
+    menuitemValidation = -1,
+    /*menuitemPrettyPrint = -1,*/
+    menuitemCloseTag = -1,
+    menuitemAutoIndent = -1,
+    menuitemAttrAutoComplete = -1,
+    menuitemAutoXMLType = -1,
+    menuitemPreventXXE = -1,
+    menuitemPrettyPrintAllFiles = -1,
+    menuitemCheckUpdates = -1;
+
 std::string lastXMLSchema("");
 
 int enableBufferActivated = 0;
@@ -145,6 +167,9 @@ void convertText2XML();
 
 void commentSelection();
 void uncommentSelection();
+
+void checkUpdates();
+void toggleCheckUpdates();
 
 void aboutBox();
 void howtoUse();
@@ -269,7 +294,7 @@ CXMLToolsApp::CXMLToolsApp() {
   if (!libloadstatus) {
     Report::strcpy(funcItem[menuentry]._itemName, L"Enable XML syntax auto-check");
     funcItem[menuentry]._pFunc = insertXMLCheckTag;
-    funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, L"doCheckXML", 0, iniFilePath) != 0);
+    funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, L"doCheckXML", 1, iniFilePath) != 0);
     doCheckXML = funcItem[menuentry]._init2Check;
     menuitemCheckXML = menuentry;
     ++menuentry;
@@ -296,7 +321,7 @@ CXMLToolsApp::CXMLToolsApp() {
   
     Report::strcpy(funcItem[menuentry]._itemName, L"Tag auto-close");
     funcItem[menuentry]._pFunc = insertXMLCloseTag;
-    funcItem[menuentry]._init2Check = doCloseTag = (::GetPrivateProfileInt(sectionName, L"doCloseTag", 0, iniFilePath) != 0);
+    funcItem[menuentry]._init2Check = doCloseTag = (::GetPrivateProfileInt(sectionName, L"doCloseTag", 1, iniFilePath) != 0);
     doCloseTag = funcItem[menuentry]._init2Check;
     menuitemCloseTag = menuentry;
     ++menuentry;
@@ -319,14 +344,14 @@ CXMLToolsApp::CXMLToolsApp() {
   
     Report::strcpy(funcItem[menuentry]._itemName, L"Set XML type automatically");
     funcItem[menuentry]._pFunc = insertAutoXMLType;
-    funcItem[menuentry]._init2Check = doAutoXMLType = (::GetPrivateProfileInt(sectionName, L"doAutoXMLType", 0, iniFilePath) != 0);
+    funcItem[menuentry]._init2Check = doAutoXMLType = (::GetPrivateProfileInt(sectionName, L"doAutoXMLType", 1, iniFilePath) != 0);
     doAutoXMLType = funcItem[menuentry]._init2Check;
     menuitemAutoXMLType = menuentry;
     ++menuentry;
   
     Report::strcpy(funcItem[menuentry]._itemName, L"Prevent XXE");
     funcItem[menuentry]._pFunc = togglePreventXXE;
-    funcItem[menuentry]._init2Check = doPreventXXE = (::GetPrivateProfileInt(sectionName, L"doPreventXXE", 0, iniFilePath) != 0);
+    funcItem[menuentry]._init2Check = doPreventXXE = (::GetPrivateProfileInt(sectionName, L"doPreventXXE", 1, iniFilePath) != 0);
     doPreventXXE = funcItem[menuentry]._init2Check;
     menuitemPreventXXE = menuentry;
     ++menuentry;
@@ -408,6 +433,13 @@ CXMLToolsApp::CXMLToolsApp() {
     ++menuentry;
   
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
+
+    Report::strcpy(funcItem[menuentry]._itemName, L"Check for updates on startup");
+    funcItem[menuentry]._pFunc = toggleCheckUpdates;
+	  funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, L"doCheckUpdates", 1, iniFilePath) != 0);
+	  doCheckUpdates = funcItem[menuentry]._init2Check;
+	  menuitemCheckUpdates = menuentry;
+	  ++menuentry;
   
     Report::strcpy(funcItem[menuentry]._itemName, L"About XML Tools");
     funcItem[menuentry]._pFunc = aboutBox;
@@ -451,6 +483,7 @@ void savePluginParams() {
   funcItem[menuitemAutoXMLType]._init2Check = doAutoXMLType;
   funcItem[menuitemPreventXXE]._init2Check = doPreventXXE;
   funcItem[menuitemPrettyPrintAllFiles]._init2Check = doPrettyPrintAllOpenFiles;
+  funcItem[menuitemCheckUpdates]._init2Check = doCheckUpdates;
 
   ::WritePrivateProfileString(sectionName, L"doCheckXML", doCheckXML?L"1":L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"doValidation", doValidation?L"1":L"0", iniFilePath);
@@ -461,6 +494,9 @@ void savePluginParams() {
   ::WritePrivateProfileString(sectionName, L"doAutoXMLType", doAutoXMLType?L"1":L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"doPreventXXE", doPreventXXE?L"1":L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"doPrettyPrintAllOpenFiles", doPrettyPrintAllOpenFiles?L"1":L"0", iniFilePath);
+  ::WritePrivateProfileString(sectionName, L"doCheckUpdates", doCheckUpdates?L"1":L"0", iniFilePath);
+
+  ::WritePrivateProfileString(sectionName, L"dateOfNextCheck", dateOfNextCheckUpdates.c_str(), iniFilePath);
 }
 
 /*
@@ -513,6 +549,9 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
         ::CheckMenuItem(hMenu, funcItem[menuitemAutoXMLType]._cmdID, MF_BYCOMMAND | (doAutoXMLType?MF_CHECKED:MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemPreventXXE]._cmdID, MF_BYCOMMAND | (doPreventXXE?MF_CHECKED:MF_UNCHECKED));
 		    ::CheckMenuItem(hMenu, funcItem[menuitemPrettyPrintAllFiles]._cmdID, MF_BYCOMMAND | (doPrettyPrintAllOpenFiles?MF_CHECKED:MF_UNCHECKED));
+		    ::CheckMenuItem(hMenu, funcItem[menuitemCheckUpdates]._cmdID, MF_BYCOMMAND | (doCheckUpdates?MF_CHECKED:MF_UNCHECKED));
+
+        checkUpdates();
       }
     }
     case NPPN_FILEBEFORESAVE: {
@@ -652,6 +691,46 @@ void togglePreventXXE() {
   #endif
   doPreventXXE = !doPreventXXE;
   ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemPreventXXE]._cmdID, MF_BYCOMMAND | (doPreventXXE?MF_CHECKED:MF_UNCHECKED));
+  savePluginParams();
+}
+
+void checkUpdates() {
+  #ifdef __XMLTOOLS_DEBUG__
+    Report::_printf_inf("checkUpdates()");
+  #endif
+
+  // Let check if an online check is required
+  wchar_t next[80];
+  ::GetPrivateProfileString(sectionName, L"dateOfNextCheck", L"19800101", next, 80, iniFilePath);
+  dateOfNextCheckUpdates = next;
+
+  if (doCheckUpdates) {
+    time_t now = time(0);
+    struct tm*  tstruct = localtime(&now);
+
+    wchar_t buf[80];
+    wcsftime(buf, sizeof(buf), L"%Y%m%d", tstruct);
+
+    if (wcscmp(next, buf) < 0) {
+      Report::_printf_inf("Checking updates...\n\nThis feature is not active yet. Please disable it.");
+
+      // Compute next check date
+      tstruct->tm_mday += NDAYS_BETWEEN_UPDATE_CHECK;
+      mktime(tstruct);
+      wcsftime(buf, sizeof(buf), L"%Y%m%d", tstruct);
+      dateOfNextCheckUpdates = buf;
+
+      savePluginParams();
+    }
+  }
+}
+
+void toggleCheckUpdates() {
+  #ifdef __XMLTOOLS_DEBUG__
+    Report::_printf_inf("toggleCheckUpdates()");
+  #endif
+  doCheckUpdates = !doCheckUpdates;
+  ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemCheckUpdates]._cmdID, MF_BYCOMMAND | (doCheckUpdates?MF_CHECKED:MF_UNCHECKED));
   savePluginParams();
 }
 
