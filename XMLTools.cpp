@@ -30,11 +30,13 @@
 
 // libxml
 #include "LoadLibrary.h"
-
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xmlschemas.h>
 #include <libxml/globals.h>
+
+// curl
+#include <curl/curl.h>
 
 //#define __XMLTOOLS_DEBUG__
 
@@ -283,7 +285,7 @@ CXMLToolsApp::CXMLToolsApp() {
   }
 
   // chargement de la librairie
-  libloadstatus = loadLibXML(nppMainPath, appDataPath);
+  libloadstatus = loadLibraries(nppMainPath, appDataPath);
   if (libloadstatus < 0) nbFunc = 1;
   
   int menuentry = 0;
@@ -434,7 +436,7 @@ CXMLToolsApp::CXMLToolsApp() {
   
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Check for updates on startup");
+    Report::strcpy(funcItem[menuentry]._itemName, L"Check for plugin updates on startup");
     funcItem[menuentry]._pFunc = toggleCheckUpdates;
 	  funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, L"doCheckUpdates", 1, iniFilePath) != 0);
 	  doCheckUpdates = funcItem[menuentry]._init2Check;
@@ -694,6 +696,64 @@ void togglePreventXXE() {
   savePluginParams();
 }
 
+size_t curlWriteData(void *ptr, size_t size, size_t nmemb, void *stream) {
+  size_t pos = 0;
+	size_t total = size * nmemb;
+	char* tptr = (char*)ptr;
+
+  // Don't allow result strings over 1k
+	if (reinterpret_cast<std::wstring*>(stream)->size() > 1024)
+		return 0;
+
+	while (pos < total)	{
+		reinterpret_cast<std::wstring*>(stream)->push_back(*tptr);
+		tptr++;
+		++pos;
+	}
+
+	return total;
+}
+
+std::wstring getLatestVersion(const char* url) {
+  CURL *curl;
+
+  curl = curl_easy_init();
+  if (curl) {
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "XMLTools");
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+  
+    std::wstring result;
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteData);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+
+    CURLcode rescode = curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
+
+    return result;
+  }
+
+  return L"";
+}
+
+struct version{
+  version(std::wstring versionStr) {
+    std::size_t p = versionStr.find_first_of(L"\r\n");
+    if (p != std::string::npos) {
+      swscanf(versionStr.substr(0, p).c_str(), L"%d.%d.%d", &major, &minor, &revision);
+    } else {
+      swscanf(versionStr.c_str(), L"%d.%d.%d", &major, &minor, &revision);
+    }
+  }
+  bool operator < (const version &other) {
+    if (major < other.major) return true;
+    if (minor < other.minor) return true;
+    if (revision < other.revision) return true;
+    return false;
+  }
+  int major,minor,revision;
+};
+
 void checkUpdates() {
   #ifdef __XMLTOOLS_DEBUG__
     Report::_printf_inf("checkUpdates()");
@@ -712,7 +772,20 @@ void checkUpdates() {
     wcsftime(buf, sizeof(buf), L"%Y%m%d", tstruct);
 
     if (wcscmp(next, buf) < 0) {
-      Report::_printf_inf("Checking updates...\n\nThis feature is not active yet. Please disable it.");
+      // let's download the latest stable version number
+      std::wstring latestavailable = getLatestVersion(LATEST_STABLE_URL);
+      if (!latestavailable.empty()) {
+        // compare current number and latest stable version
+        if (version(XMLTOOLS_VERSION_NUMBER) < version(latestavailable.c_str())) {
+          CMessageDlg* dlg = new CMessageDlg();
+          std::wstring msg(L"A new release of XMLTools plugin is available on NPP Plugins project.\r\nCurrent installed version: ");
+          msg += XMLTOOLS_VERSION_NUMBER;
+          msg += L"\r\nVersions available online on https://sourceforge.net/projects/npp-plugins/files/XML%20Tools/ :\r\n\r\n";
+          msg += latestavailable;
+          dlg->m_sMessage = msg.c_str();
+          dlg->DoModal();
+        }
+      }
 
       // Compute next check date
       tstruct->tm_mday += NDAYS_BETWEEN_UPDATE_CHECK;

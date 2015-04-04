@@ -43,8 +43,13 @@ BOOL CAboutBoxDlg::OnInitDialog()
 {
   CDialog::OnInitDialog();
 
-  SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"%s \r\n \r\nlibXML %s \r\nlibXSTL %s",
-      TEXT(XMLTOOLS_ABOUTINFO), TEXT(LIBXML_DOTTED_VERSION), TEXT(LIBXSLT_DOTTED_VERSION)).c_str());
+  #ifdef _DEBUG
+    SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s unicode (debug)\r\n \r\nlibXML %s \r\nlibXSTL %s",
+          XMLTOOLS_VERSION_NUMBER, TEXT(LIBXML_DOTTED_VERSION), TEXT(LIBXSLT_DOTTED_VERSION)).c_str());
+  #else
+    SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s unicode\r\n \r\nlibXML %s \r\nlibXSTL %s",
+        XMLTOOLS_VERSION_NUMBER, TEXT(LIBXML_DOTTED_VERSION), TEXT(LIBXSLT_DOTTED_VERSION)).c_str());
+  #endif
 
   m_wndExtURL.SetURL(PAYPAL_URL);
 

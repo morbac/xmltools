@@ -13,9 +13,9 @@
 
 #include "LoadLibrary.h"
 
-extern HANDLE		g_hModule;
-HINSTANCE hInstLibXML = NULL;
-HINSTANCE hInstLibXSL = NULL;
+extern HANDLE	g_hModule;
+HINSTANCE hInstLibXML  = NULL;
+HINSTANCE hInstLibXSL  = NULL;
 
 //-------------------------------------------------------------------------------------------------
 
@@ -111,7 +111,7 @@ HINSTANCE loadExtLib(const wchar_t* libFilename, const wchar_t* nppMainPath, con
   return res;  
 }
 
-int loadLibXML(wchar_t* nppMainPath, wchar_t* appDataPath) {
+int loadLibraries(wchar_t* nppMainPath, wchar_t* appDataPath) {
   BOOL    bRet = FALSE;
   HKEY    hKey = NULL;
   DWORD   size = MAX_PATH;

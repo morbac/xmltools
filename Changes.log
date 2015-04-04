@@ -8,6 +8,7 @@ Release 2.4.5
 -------------
 - Modification of XPath evaluation to better manage XML with default namespace
 - Rollback of XML file detection behaviour modification of preceding release (was not working well)
+- Add a basic online check for plugin updates (checks on startup every 14 days)
 
 Release 2.4.4
 -------------
