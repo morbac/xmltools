@@ -1617,6 +1617,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     // Proceed to reformatting (second pass)
     prevspecchar = std::string::npos;
     std::string sep("<>\"'");
+    char attributeQuote = '\0';
     sep += eolchar;
     strlength = str.length();
     while (curpos < strlength && (curpos = str.find_first_of(sep,curpos)) != std::string::npos) {
@@ -1628,9 +1629,13 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           in_cdata = true;
         } else if (curpos < strlength-1 && !str.compare(curpos,2,"<?")) {
           in_header = true;
-        } else if (curpos < strlength && (!str.compare(curpos,1,"\"") || !str.compare(curpos,1,"'")) &&
-                   prevspecchar != std::string::npos && str.at(prevspecchar) == '<') {
+        } else if (curpos < strlength &&
+                   (!str.compare(curpos,1,"\"") || !str.compare(curpos,1,"'")) &&
+                   str.at(curpos) == attributeQuote &&
+                   prevspecchar != std::string::npos &&
+                   str.at(prevspecchar) == '<') {
           in_attribute = !in_attribute;
+          attributeQuote = str.at(curpos);  // store the attribute quote char to detect the end of attribute
         }
       }
 
