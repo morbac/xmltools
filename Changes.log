@@ -4,6 +4,11 @@
                         ChangeLog
 ================================================================
 
+Release 2.4.6
+-------------
+- Fix PrettyPrint on handling of quote delimiters used in xml attribute value
+- Re-compilation of libcurl.dll for Windows XP compatibility
+
 Release 2.4.5
 -------------
 - Modification of XPath evaluation to better manage XML with default namespace
