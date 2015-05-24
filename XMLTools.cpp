@@ -14,6 +14,7 @@
 #include "MessageDlg.h"
 #include "XSLTransformDlg.h"
 #include "HowtoUseDlg.h"
+#include "OptionsDlg.h"
 #include "AboutBoxDlg.h"
 #include "Report.h"
 
@@ -79,7 +80,7 @@ const wchar_t PLUGIN_NAME[] = L"XML Tools";
 const wchar_t localConfFile[] = L"doLocalConf.xml";
 
 // The number of functionality
-const int TOTAL_FUNCS = 31;
+const int TOTAL_FUNCS = 32;
 int nbFunc = TOTAL_FUNCS;
 
 NppData nppData;
@@ -108,6 +109,7 @@ bool doCheckXML = false,
      doCheckUpdates = true;
 
 std::wstring dateOfNextCheckUpdates(L"19800101");
+struct struct_proxyoptions proxyoptions;
 
 int menuitemCheckXML = -1,
     menuitemValidation = -1,
@@ -174,6 +176,7 @@ void checkUpdates();
 void toggleCheckUpdates();
 
 void aboutBox();
+void optionsDlg();
 void howtoUse();
 
 int performXMLCheck(int informIfNoError);
@@ -287,7 +290,7 @@ CXMLToolsApp::CXMLToolsApp() {
   // chargement de la librairie
   libloadstatus = loadLibraries(nppMainPath, appDataPath);
   if (libloadstatus < 0) nbFunc = 1;
-  
+
   int menuentry = 0;
   for (int i = 0; i < nbFunc; ++i) {
     funcItem[i]._init2Check = false;
@@ -443,9 +446,18 @@ CXMLToolsApp::CXMLToolsApp() {
 	  menuitemCheckUpdates = menuentry;
 	  ++menuentry;
   
+    Report::strcpy(funcItem[menuentry]._itemName, L"Options...");
+    funcItem[menuentry]._pFunc = optionsDlg;
+    ++menuentry;
+  
     Report::strcpy(funcItem[menuentry]._itemName, L"About XML Tools");
     funcItem[menuentry]._pFunc = aboutBox;
     ++menuentry;
+
+    // Load proxy settings in ini file
+    proxyoptions.status = (::GetPrivateProfileInt(sectionName, L"proxyEnabled", 0, iniFilePath) == 1);
+    ::GetPrivateProfileString(sectionName, L"proxyHost", L"192.168.0.1", proxyoptions.host, 255, iniFilePath);
+    proxyoptions.port = ::GetPrivateProfileInt(sectionName, L"proxyPort", 8080, iniFilePath);
   } else {
     Report::strcpy(funcItem[menuentry]._itemName, L"How to install...");
     funcItem[menuentry]._pFunc = howtoUse;
@@ -805,6 +817,19 @@ void toggleCheckUpdates() {
   doCheckUpdates = !doCheckUpdates;
   ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemCheckUpdates]._cmdID, MF_BYCOMMAND | (doCheckUpdates?MF_CHECKED:MF_UNCHECKED));
   savePluginParams();
+}
+
+void optionsDlg() {
+  #ifdef __XMLTOOLS_DEBUG__
+    Report::_printf_inf("optionsDlg()");
+  #endif
+
+  COptionsDlg* dlg = new COptionsDlg(NULL, &proxyoptions);
+  if (dlg->DoModal() == IDOK) {
+    ::WritePrivateProfileString(sectionName, L"proxyEnabled", proxyoptions.status?L"1":L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"proxyHost", proxyoptions.host, iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"proxyPort", std::to_wstring(proxyoptions.port).c_str(), iniFilePath);
+  }
 }
 
 void aboutBox() {

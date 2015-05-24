@@ -159,6 +159,7 @@
     <ClCompile Include="AboutBoxDlg.cpp" />
     <ClCompile Include="HyperLinkCtrl.cpp" />
     <ClCompile Include="LoadLibrary.cpp" />
+    <ClCompile Include="OptionsDlg.cpp" />
     <ClCompile Include="Report.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -185,6 +186,7 @@
     <ClInclude Include="HyperLinkCtrl.h" />
     <ClInclude Include="LoadLibrary.h" />
     <ClInclude Include="Notepad_plus_msgs.h" />
+    <ClInclude Include="OptionsDlg.h" />
     <ClInclude Include="PluginInterface.h" />
     <ClInclude Include="Report.h" />
     <ClInclude Include="Resource.h" />

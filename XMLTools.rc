@@ -196,6 +196,21 @@ BEGIN
     CTEXT           "Donate",IDC_ABOUTURL,7,55,161,10
 END
 
+IDD_OPTIONS DIALOGEX 0, 0, 247, 94
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Options"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,137,73,50,14
+    PUSHBUTTON      "Annuler",IDCANCEL,190,73,50,14
+    GROUPBOX        "Proxy",IDC_STATIC,7,7,233,61
+    CONTROL         "Enable proxy",IDC_CHKENABLEPROXY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,19,58,10
+    LTEXT           "Proxy host",IDC_STATIC,26,34,36,8
+    EDITTEXT        IDC_EDITPROXYHOST,80,32,150,12,ES_AUTOHSCROLL
+    LTEXT           "Proxy port",IDC_STATIC,26,50,35,8
+    EDITTEXT        IDC_EDITPROXYPORT,80,48,150,12,ES_AUTOHSCROLL
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -262,6 +277,20 @@ BEGIN
         VERTGUIDE, 87
         TOPMARGIN, 7
         BOTTOMMARGIN, 87
+    END
+
+    IDD_OPTIONS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 240
+        VERTGUIDE, 15
+        VERTGUIDE, 26
+        VERTGUIDE, 80
+        VERTGUIDE, 230
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 87
+        HORZGUIDE, 38
+        HORZGUIDE, 54
     END
 END
 #endif    // APSTUDIO_INVOKED

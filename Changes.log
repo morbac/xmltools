@@ -4,6 +4,10 @@
                         ChangeLog
 ================================================================
 
+Release 2.4.7
+-------------
+- Add proxy support
+
 Release 2.4.6
 -------------
 - Fix PrettyPrint on handling of quote delimiters used in xml attribute value

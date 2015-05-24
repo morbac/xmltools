@@ -54,6 +54,9 @@
     <ClCompile Include="AboutBoxDlg.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="OptionsDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="XMLTools.def">
@@ -110,6 +113,9 @@
       <Filter>Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="AboutBoxDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="OptionsDlg.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>

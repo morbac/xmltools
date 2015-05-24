@@ -199,7 +199,7 @@ void CXSLTransformDlg::OnBtnTransform() {
       Report::_printf_err(L"The transformation has generated empty document.");
     } else {
       ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FILE_NEW);
-	  Report::setEncoding(encoding, hCurrentEditView);
+      Report::setEncoding(encoding, hCurrentEditView);
       ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(doc_txt_ptr));
     }
   } else {
