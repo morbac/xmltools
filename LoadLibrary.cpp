@@ -77,6 +77,11 @@ int                    (*pXmlKeepBlanksDefault)(int val);
 int                    (*pXmlThrDefIndentTreeOutput)(int v);
 const char *           (*pXmlThrDefTreeIndentString)(const char * v);
 
+void	                 (*pXmlNanoHTTPInit)(void);
+void	                 (*pXmlNanoHTTPScanProxy)(const char * URL);
+const char *           (*pXmlNanoHTTPAuthHeader)(void *ctx);
+
+
 //-------------------------------------------------------------------------------------------------
 
 xsltStylesheetPtr      (*pXsltParseStylesheetDoc)(xmlDocPtr doc);
@@ -191,6 +196,10 @@ int loadLibraries(wchar_t* nppMainPath, wchar_t* appDataPath) {
   pXmlKeepBlanksDefault =         (int (__cdecl *)(int))GetProcAddress(hInstLibXML, "xmlKeepBlanksDefault"); assert(pXmlKeepBlanksDefault);
   pXmlThrDefIndentTreeOutput =    (int (__cdecl *)(int))GetProcAddress(hInstLibXML, "xmlThrDefIndentTreeOutput"); assert(pXmlThrDefIndentTreeOutput);
   pXmlThrDefTreeIndentString =    (const char * (__cdecl *)(const char *))GetProcAddress(hInstLibXML, "xmlThrDefTreeIndentString"); assert(pXmlThrDefTreeIndentString);
+
+  pXmlNanoHTTPInit =              (void (__cdecl *)(void)) GetProcAddress(hInstLibXML, "xmlNanoHTTPInit"); assert(pXmlNanoHTTPInit);
+  pXmlNanoHTTPScanProxy =         (void (__cdecl *)(const char *)) GetProcAddress(hInstLibXML, "xmlNanoHTTPScanProxy"); assert(pXmlNanoHTTPScanProxy);
+  pXmlNanoHTTPAuthHeader =        (const char * (__cdecl *)(void *)) GetProcAddress(hInstLibXML, "xmlNanoHTTPAuthHeader"); assert(pXmlNanoHTTPAuthHeader);
 
   //-----------------------------------------------------------------------------------------------
   

@@ -4,7 +4,9 @@
 struct struct_proxyoptions {
   bool status;
   wchar_t host[255];
-  int port;
+  long port;
+  wchar_t username[255];
+  wchar_t password[255];
 };
 
 // Boîte de dialogue COptionsDlg
@@ -35,4 +37,6 @@ public:
 
   CEdit editProxyHost;
   CEdit editProxyPort;
+  CEdit editProxyUsername;
+  CEdit editProxyPassword;
 };

@@ -27,6 +27,8 @@ void COptionsDlg::DoDataExchange(CDataExchange* pDX)
   CDialogEx::DoDataExchange(pDX);
   DDX_Control(pDX, IDC_EDITPROXYHOST, editProxyHost);
   DDX_Control(pDX, IDC_EDITPROXYPORT, editProxyPort);
+  DDX_Control(pDX, IDC_EDITPROXYUSERNAME, editProxyUsername);
+  DDX_Control(pDX, IDC_EDITPROXYPASSWORD, editProxyPassword);
 }
 
 
@@ -51,6 +53,8 @@ BOOL COptionsDlg::OnInitDialog()
     }
     GetDlgItem(IDC_EDITPROXYHOST)->SetWindowTextW(this->proxyoptions->host);
     GetDlgItem(IDC_EDITPROXYPORT)->SetWindowTextW(std::to_wstring(this->proxyoptions->port).c_str());
+    //GetDlgItem(IDC_EDITPROXYUSERNAME)->SetWindowTextW(this->proxyoptions->username);
+    //GetDlgItem(IDC_EDITPROXYPASSWORD)->SetWindowTextW(this->proxyoptions->password);
   }
   
   updateEditFieldsStatus();
@@ -65,11 +69,15 @@ void COptionsDlg::updateEditFieldsStatus() {
     case BST_UNCHECKED: {
       GetDlgItem(IDC_EDITPROXYHOST)->EnableWindow(FALSE);
       GetDlgItem(IDC_EDITPROXYPORT)->EnableWindow(FALSE);
+      //GetDlgItem(IDC_EDITPROXYUSERNAME)->EnableWindow(FALSE);
+      //GetDlgItem(IDC_EDITPROXYPASSWORD)->EnableWindow(FALSE);
       break;
     }
     case BST_CHECKED: {
       GetDlgItem(IDC_EDITPROXYHOST)->EnableWindow(TRUE);
       GetDlgItem(IDC_EDITPROXYPORT)->EnableWindow(TRUE);
+      //GetDlgItem(IDC_EDITPROXYUSERNAME)->EnableWindow(TRUE);
+      //GetDlgItem(IDC_EDITPROXYPASSWORD)->EnableWindow(TRUE);
 
       GetDlgItem(IDC_EDITPROXYHOST)->SetFocus();
       break;
@@ -93,6 +101,12 @@ void COptionsDlg::OnBnClickedOk()
 
     this->editProxyPort.GetWindowText(buffer);
     this->proxyoptions->port = _wtoi((LPCTSTR)buffer);
+
+    //this->editProxyUsername.GetWindowText(buffer);
+    //wcscpy_s(this->proxyoptions->username, (const WCHAR *)buffer);
+
+    //this->editProxyPassword.GetWindowText(buffer);
+    //wcscpy_s(this->proxyoptions->password, (const WCHAR *)buffer);
   }
 
   CDialogEx::OnOK();

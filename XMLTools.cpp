@@ -178,6 +178,7 @@ void toggleCheckUpdates();
 void aboutBox();
 void optionsDlg();
 void howtoUse();
+void updateProxyConfig();
 
 int performXMLCheck(int informIfNoError);
 void savePluginParams();
@@ -458,6 +459,10 @@ CXMLToolsApp::CXMLToolsApp() {
     proxyoptions.status = (::GetPrivateProfileInt(sectionName, L"proxyEnabled", 0, iniFilePath) == 1);
     ::GetPrivateProfileString(sectionName, L"proxyHost", L"192.168.0.1", proxyoptions.host, 255, iniFilePath);
     proxyoptions.port = ::GetPrivateProfileInt(sectionName, L"proxyPort", 8080, iniFilePath);
+    ::GetPrivateProfileString(sectionName, L"proxyUser", L"", proxyoptions.username, 255, iniFilePath);
+    ::GetPrivateProfileString(sectionName, L"proxyPass", L"", proxyoptions.password, 255, iniFilePath);
+
+    updateProxyConfig();
   } else {
     Report::strcpy(funcItem[menuentry]._itemName, L"How to install...");
     funcItem[menuentry]._pFunc = howtoUse;
@@ -729,18 +734,46 @@ size_t curlWriteData(void *ptr, size_t size, size_t nmemb, void *stream) {
 std::wstring getLatestVersion(const char* url) {
   CURL *curl;
 
-  curl = curl_easy_init();
+  curl= curl_easy_init();
   if (curl) {
+    std::wstring result;
+    //curl_easy_setopt(curl, CURLOPT_FRESH_CONNECT, TRUE);
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "XMLTools");
     curl_easy_setopt(curl, CURLOPT_URL, url);
-  
-    std::wstring result;
+
+    if (proxyoptions.status && wcslen(proxyoptions.host) > 0) {
+		  curl_easy_setopt(curl, CURLOPT_PROXY, Report::wchar2char(proxyoptions.host));
+      curl_easy_setopt(curl, CURLOPT_PROXYPORT, proxyoptions.port);
+
+      /*if (wcslen(proxyoptions.username) > 0) {
+		    curl_easy_setopt(curl, CURLOPT_PROXYAUTH, CURLAUTH_ANY);
+        
+        curl_easy_setopt(curl, CURLOPT_PROXYUSERNAME, Report::wchar2char(proxyoptions.username));
+        if (wcslen(proxyoptions.password) > 0) {
+          curl_easy_setopt(curl, CURLOPT_PROXYPASSWORD, Report::wchar2char(proxyoptions.password));
+        }
+	    }*/
+	  } else {
+		  curl_easy_setopt(curl, CURLOPT_PROXY, NULL);
+		  curl_easy_setopt(curl, CURLOPT_PROXYPORT, NULL);
+		  //curl_easy_setopt(curl, CURLOPT_PROXYUSERNAME, NULL);
+		  //curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, NULL);
+		  //curl_easy_setopt(curl, CURLOPT_PROXYAUTH, CURLAUTH_NONE);
+    }
+ 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteData);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
 
     CURLcode rescode = curl_easy_perform(curl);
+    long httpCode = 0;
+    curl_easy_getinfo(curl, CURLINFO_HTTP_CODE, &httpCode);
+
     curl_easy_cleanup(curl);
+
+    if (httpCode != 200) {
+      result = L"";
+    }
 
     return result;
   }
@@ -829,6 +862,34 @@ void optionsDlg() {
     ::WritePrivateProfileString(sectionName, L"proxyEnabled", proxyoptions.status?L"1":L"0", iniFilePath);
     ::WritePrivateProfileString(sectionName, L"proxyHost", proxyoptions.host, iniFilePath);
     ::WritePrivateProfileString(sectionName, L"proxyPort", std::to_wstring(proxyoptions.port).c_str(), iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"proxyUser", proxyoptions.username, iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"proxyPass", proxyoptions.password, iniFilePath);
+
+    updateProxyConfig();
+  }
+}
+
+void updateProxyConfig() {
+  // proxy settings for libxml
+  if (proxyoptions.status && wcslen(proxyoptions.host) > 0) {
+    std::string proxyurl("http://");
+    /*if (wcslen(proxyoptions.username) > 0) {
+      proxyurl += Report::wchar2char(proxyoptions.username);
+
+      if (wcslen(proxyoptions.password) > 0) {
+        proxyurl += ":";
+        proxyurl += Report::wchar2char(proxyoptions.password);
+      }
+      proxyurl += "@";
+    }*/
+
+    proxyurl += Report::wchar2char(proxyoptions.host);
+    proxyurl += ":";
+    proxyurl += std::to_string(proxyoptions.port);
+    //proxyurl += "/";
+    pXmlNanoHTTPScanProxy(proxyurl.c_str());  // http://toto:admin@127.0.0.1:8080
+  } else {
+    pXmlNanoHTTPScanProxy(NULL);
   }
 }
 
@@ -836,9 +897,6 @@ void aboutBox() {
   #ifdef __XMLTOOLS_DEBUG__
     Report::_printf_inf("aboutBox()");
   #endif
-  
-  /*Report::_printf_inf(L"%s \r\n \r\n- libXML %s \r\n- libXSTL %s",
-      TEXT(XMLTOOLS_ABOUTINFO), TEXT(LIBXML_DOTTED_VERSION), TEXT(LIBXSLT_DOTTED_VERSION));*/
 
   CAboutBoxDlg* dlg = new CAboutBoxDlg();
   dlg->DoModal();
@@ -848,6 +906,7 @@ void howtoUse() {
   #ifdef __XMLTOOLS_DEBUG__
     Report::_printf_inf("howtoUse()");
   #endif
+
   CHowtoUseDlg* dlg = new CHowtoUseDlg();
   dlg->DoModal();
 }
@@ -959,6 +1018,8 @@ void XMLValidation(int informIfNoError) {
   bool dtdValidation = false;
 
   pXmlResetLastError();
+
+  pXmlNanoHTTPScanProxy("http://toto:admin@127.0.0.1:8080");
   doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
 
   delete [] data;

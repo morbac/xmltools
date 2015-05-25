@@ -73,7 +73,9 @@ extern xmlGlobalStatePtr (*pXmlGetGlobalState)(void);
 extern int (*pXmlKeepBlanksDefault)(int val);
 extern int (*pXmlThrDefIndentTreeOutput)(int v);
 extern const char * (*pXmlThrDefTreeIndentString)(const char * v);
-
+extern void (*pXmlNanoHTTPInit)(void);
+extern void (*pXmlNanoHTTPScanProxy)(const char * URL);
+extern const char * (*pXmlNanoHTTPAuthHeader)(void *ctx);
 //xmlNodePtr pXmlRemoveNs(xmlNodePtr tree, xmlNsPtr ns);
 
 //-------------------------------------------------------------------------------------------------

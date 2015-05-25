@@ -27,13 +27,13 @@ CAboutBoxDlg::~CAboutBoxDlg()
 void CAboutBoxDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-  DDX_Control(pDX, IDC_ABOUTURL, m_wndExtURL);
 }
 
 
 BEGIN_MESSAGE_MAP(CAboutBoxDlg, CDialog)
 	//{{AFX_MSG_MAP(CAboutBoxDlg)
 	//}}AFX_MSG_MAP
+  ON_BN_CLICKED(IDC_BUTTON1, &CAboutBoxDlg::OnBnClickedButton1)
 END_MESSAGE_MAP()
 
 
@@ -51,8 +51,10 @@ BOOL CAboutBoxDlg::OnInitDialog()
         XMLTOOLS_VERSION_NUMBER, TEXT(LIBXML_DOTTED_VERSION), TEXT(LIBXSLT_DOTTED_VERSION)).c_str());
   #endif
 
-  m_wndExtURL.SetURL(PAYPAL_URL);
-
   return TRUE;  // return TRUE unless you set the focus to a control
   // EXCEPTION : les pages de propriétés OCX devraient retourner FALSE
+}
+
+void CAboutBoxDlg::OnBnClickedButton1() {
+  ShellExecute(NULL, TEXT("open"), PAYPAL_URL, NULL, NULL, SW_SHOW);
 }
