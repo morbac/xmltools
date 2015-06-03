@@ -21,6 +21,7 @@
 #define IDD_OPTIONS                     2007
 #define IDC_BTN_EXPLORE_XSDFILE         2008
 #define IDC_BTN_CLEARLIST               2008
+#define IDD_DLGDEBUG                    2008
 #define IDC_EDIT_ROOTELEMSAMPLE         2009
 #define IDC_EDIT_MULTILINEMSG           2010
 #define IDC_EDIT_XSLTFILE               2011
@@ -39,14 +40,15 @@
 #define IDC_EDITPROXYUSERNAME           2025
 #define IDC_EDITPROXYPASSWORD           2026
 #define IDC_BUTTON1                     2027
+#define IDC_EDITDEBUG                   2029
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        2008
+#define _APS_NEXT_RESOURCE_VALUE        2009
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2028
+#define _APS_NEXT_CONTROL_VALUE         2030
 #define _APS_NEXT_SYMED_VALUE           2000
 #endif
 #endif

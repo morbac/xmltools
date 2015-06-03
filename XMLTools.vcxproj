@@ -157,6 +157,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AboutBoxDlg.cpp" />
+    <ClCompile Include="DebugDlg.cpp" />
     <ClCompile Include="HyperLinkCtrl.cpp" />
     <ClCompile Include="LoadLibrary.cpp" />
     <ClCompile Include="OptionsDlg.cpp" />
@@ -183,6 +184,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutBoxDlg.h" />
+    <ClInclude Include="DebugDlg.h" />
     <ClInclude Include="HyperLinkCtrl.h" />
     <ClInclude Include="LoadLibrary.h" />
     <ClInclude Include="Notepad_plus_msgs.h" />
