@@ -129,7 +129,6 @@ int menuitemCheckXML = -1,
 
 std::string lastXMLSchema("");
 
-int enableBufferActivated = 0;
 int nbopenfiles1, nbopenfiles2;
 
 // Here're the declaration my functions ///////////////////////////////////////
@@ -635,23 +634,21 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
     }
     case NPPN_FILEOPENED:
       dbgln("NPP Event: NPPN_FILEOPENED");
-      enableBufferActivated++;
-      dbg("  enableBufferActivated: "); dbgln(std::to_string(enableBufferActivated).c_str());
+      TCHAR filename[MAX_PATH];
+      ::SendMessage(nppData._nppHandle, NPPM_GETFULLPATHFROMBUFFERID, notifyCode->nmhdr.idFrom, reinterpret_cast<LPARAM>(filename));
+      dbg("  bufferID: "); dbgln(std::to_string(notifyCode->nmhdr.idFrom).c_str());
+      dbg("  filename: "); dbgln(filename);
       break;
     case NPPN_BUFFERACTIVATED: {
       dbgln("NPP Event: NPPN_BUFFERACTIVATED");
-      dbg("  enableBufferActivated: "); dbgln(std::to_string(enableBufferActivated).c_str());
-      if (enableBufferActivated > 0) {
-        --enableBufferActivated;
-        if (doAutoXMLType) {
-          // si le fichier n'a pas de type défini et qu'il commence par "<?xml ", on lui attribue le type L_XML
-          LangType docType = L_EXTERNAL;
-          ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
-          dbg("  Current langtype: "); dbgln(std::to_string(docType).c_str());
-          //Report::_printf_inf("%s", getLangType(docType));
-          if (docType != L_XML) {
-            setAutoXMLType();
-          }
+      if (doAutoXMLType) {
+        // si le fichier n'a pas de type défini et qu'il commence par "<?xml ", on lui attribue le type L_XML
+        LangType docType = L_EXTERNAL;
+        ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
+        dbg("  Current langtype: "); dbgln(std::to_string(docType).c_str());
+        //Report::_printf_inf("%s", getLangType(docType));
+        if (docType != L_XML) {
+          setAutoXMLType();
         }
 
 	      /*if (doPrettyPrint) {
@@ -677,6 +674,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 
 void insertXMLCheckTag() {
   dbgln("insertXMLCheckTag()");
+
   doCheckXML = !doCheckXML;
   ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemCheckXML]._cmdID, MF_BYCOMMAND | (doCheckXML?MF_CHECKED:MF_UNCHECKED));
   savePluginParams();
@@ -684,6 +682,7 @@ void insertXMLCheckTag() {
 
 void insertValidationTag() {
   dbgln("insertValidationTag()");
+
   doValidation = !doValidation;
   ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemValidation]._cmdID, MF_BYCOMMAND | (doValidation?MF_CHECKED:MF_UNCHECKED));
   savePluginParams();
@@ -691,6 +690,7 @@ void insertValidationTag() {
 /*
 void insertPrettyPrintTag() {
   dbgln("insertPrettyPrintTag()");
+
   doPrettyPrint = !doPrettyPrint;
   ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemPrettyPrint]._cmdID, MF_BYCOMMAND | (doPrettyPrint?MF_CHECKED:MF_UNCHECKED));
   savePluginParams();
@@ -698,6 +698,7 @@ void insertPrettyPrintTag() {
 
 void insertXMLCloseTag() {
   dbgln("insertXMLCloseTag()");
+
   doCloseTag = !doCloseTag;
   ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemCloseTag]._cmdID, MF_BYCOMMAND | (doCloseTag?MF_CHECKED:MF_UNCHECKED));
   savePluginParams();
@@ -706,6 +707,7 @@ void insertXMLCloseTag() {
 bool tagAutoIndentWarningDisplayed = false;
 void insertTagAutoIndent() {
   dbgln("insertTagAutoIndent()");
+
   if (!tagAutoIndentWarningDisplayed) {
     Report::_printf_inf(L"This function is in alpha state and might disappear in future release.");
     tagAutoIndentWarningDisplayed = true;
@@ -719,6 +721,7 @@ void insertTagAutoIndent() {
 bool insertAttributeAutoCompleteWarningDisplayed = false;
 void insertAttributeAutoComplete() {
   dbgln("insertAttributeAutoComplete()");
+
   if (!insertAttributeAutoCompleteWarningDisplayed) {
     Report::_printf_inf(L"This function is in alpha state and might disappear in future release.");
     insertAttributeAutoCompleteWarningDisplayed = true;
@@ -731,6 +734,7 @@ void insertAttributeAutoComplete() {
 
 void insertAutoXMLType() {
   dbgln("insertAutoXMLType()");
+
   doAutoXMLType = !doAutoXMLType;
   ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemAutoXMLType]._cmdID, MF_BYCOMMAND | (doAutoXMLType?MF_CHECKED:MF_UNCHECKED));
   savePluginParams();
@@ -738,6 +742,7 @@ void insertAutoXMLType() {
 
 void togglePreventXXE() {
   dbgln("togglePreventXXE()");
+
   doPreventXXE = !doPreventXXE;
   ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemPreventXXE]._cmdID, MF_BYCOMMAND | (doPreventXXE?MF_CHECKED:MF_UNCHECKED));
   savePluginParams();
@@ -831,6 +836,7 @@ struct version{
 
 void checkUpdates() {
   dbgln("checkUpdates()");
+
   // Let check if an online check is required
   wchar_t next[80];
   ::GetPrivateProfileString(sectionName, L"dateOfNextCheck", L"19800101", next, 80, iniFilePath);
@@ -872,6 +878,7 @@ void checkUpdates() {
 
 void toggleCheckUpdates() {
   dbgln("toggleCheckUpdates()");
+
   doCheckUpdates = !doCheckUpdates;
   ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemCheckUpdates]._cmdID, MF_BYCOMMAND | (doCheckUpdates?MF_CHECKED:MF_UNCHECKED));
   savePluginParams();
@@ -879,6 +886,7 @@ void toggleCheckUpdates() {
 
 void optionsDlg() {
   dbgln("optionsDlg()");
+
   COptionsDlg* dlg = new COptionsDlg(NULL, &proxyoptions);
   if (dlg->DoModal() == IDOK) {
     ::WritePrivateProfileString(sectionName, L"proxyEnabled", proxyoptions.status?L"1":L"0", iniFilePath);
@@ -908,6 +916,8 @@ void dbgln(CString line) {
 }
 
 void updateProxyConfig() {
+  dbgln("updateProxyConfig()");
+
   // proxy settings for libxml
   if (proxyoptions.status && wcslen(proxyoptions.host) > 0) {
     std::string proxyurl("http://");
@@ -949,6 +959,7 @@ void howtoUse() {
 
 int performXMLCheck(int informIfNoError) {
   dbgln("performXMLCheck()");
+
   int currentEdit, currentLength, res = 0;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
@@ -999,11 +1010,13 @@ int performXMLCheck(int informIfNoError) {
 
 void autoXMLCheck() {
   dbgln("autoXMLCheck()");
+
   performXMLCheck(0);
 }
 
 void manualXMLCheck() {
   dbgln("manualXMLCheck()");
+
   performXMLCheck(1);
 }
 
@@ -1012,6 +1025,7 @@ void manualXMLCheck() {
 CSelectFileDlg* pSelectFileDlg = NULL;
 void XMLValidation(int informIfNoError) {
   dbgln("XMLValidation()");
+
   // 0. On change le dossier courant
   wchar_t currenPath[MAX_PATH] = { '\0' };
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTDIRECTORY, MAX_PATH, (LPARAM)currenPath);
@@ -1244,11 +1258,13 @@ void XMLValidation(int informIfNoError) {
 
 void autoValidation() {
   dbgln("autoValidation()");
+
   XMLValidation(0);
 }
 
 void manualValidation() {
   dbgln("manualValidation()");
+
   XMLValidation(1);
 }
 
@@ -1256,6 +1272,7 @@ void manualValidation() {
 
 void closeXMLTag() {
   dbgln("closeXMLTag()");
+
   char buf[512];
   int currentEdit;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
@@ -1317,6 +1334,7 @@ void closeXMLTag() {
 
 void tagAutoIndent() {
   dbgln("tagAutoIndent()");
+
   // On n'indente que si l'on est dans un noeud (au niveau de l'attribut ou
   // au niveau du contenu. Donc on recherche le dernier < ou >. S'il s'agit
   // d'un >, on regarde qu'il n'y ait pas de / avant (sinon on se retrouve
@@ -1384,6 +1402,7 @@ void tagAutoIndent() {
 
 void attributeAutoComplete() {
   dbgln(L"attributeAutoComplete()");
+
   Report::_printf_inf(L"attributeAutoComplete()");
 }
 
@@ -1399,17 +1418,17 @@ void setAutoXMLType() {
   // on récupère les 6 premiers caractères du fichier
   char head[8] = { '\0' };
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, 7, reinterpret_cast<LPARAM>(&head));
-  ::SendMessage(hCurrentEditView, SCI_SETSEL, 0, 0);
 
   if (strlen(head) >= 6 && !strcmp(head, "<?xml ")) {
-    LangType newType = L_XML;
-    ::SendMessage(nppData._nppHandle, NPPM_SETCURRENTLANGTYPE, 0, (LPARAM) newType);
+    ::SendMessage(nppData._nppHandle, NPPM_SETCURRENTLANGTYPE, 0, (LPARAM) L_XML);
   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 std::wstring currentXPath() {
+  dbgln("currentXPath()");
+
   int currentEdit, currentLength;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
@@ -1514,6 +1533,7 @@ CXPathEvalDlg *pXPathEvalDlg = NULL;
 
 void evaluateXPath() {
   dbgln("evaluateXPath()");
+
   if (pXPathEvalDlg == NULL) {
     pXPathEvalDlg = new CXPathEvalDlg(NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
     pXPathEvalDlg->Create(CXPathEvalDlg::IDD,NULL);
@@ -1534,6 +1554,7 @@ void evaluateXPath() {
 CXSLTransformDlg *pXSLTransformDlg = NULL;
 void performXSLTransform() {
   dbgln("performXSLTransform()");
+
   if (pXSLTransformDlg == NULL) {
     pXSLTransformDlg = new CXSLTransformDlg(NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
     pXSLTransformDlg->Create(CXSLTransformDlg::IDD,NULL);
@@ -1848,16 +1869,19 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 
 void prettyPrintXML() {
   dbgln("prettyPrintXML()");
+
   prettyPrint(false, false);
 }
 
 void prettyPrintXMLBreaks() {
   dbgln("prettyPrintXMLBreaks()");
+
   prettyPrint(false, true);
 }
 
 void prettyPrintText() {
   dbgln("prettyPrintText()");
+
   prettyPrint(true, false);
 }
 
@@ -2003,12 +2027,15 @@ void linarizeXML() {
 
 void togglePrettyPrintAllFiles() {
   dbgln("togglePrettyPrintAllFiles()");
+
 	doPrettyPrintAllOpenFiles = !doPrettyPrintAllOpenFiles;
 	::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemPrettyPrintAllFiles]._cmdID, MF_BYCOMMAND | (doPrettyPrintAllOpenFiles?MF_CHECKED:MF_UNCHECKED));
 	savePluginParams();
 }
 
 int initDocIterator() {
+  dbgln("initDocIterator()");
+
   nbopenfiles1 = (int) ::SendMessage(nppData._nppHandle, NPPM_GETNBOPENFILES, 0, PRIMARY_VIEW);
   nbopenfiles2 = (int) ::SendMessage(nppData._nppHandle, NPPM_GETNBOPENFILES, 0, SECOND_VIEW);
 
@@ -2021,6 +2048,8 @@ int initDocIterator() {
 }
 
 bool hasNextDoc(int* iter) {
+  dbgln("hasNextDoc()");
+
   if (doPrettyPrintAllOpenFiles) {
     if (*iter < 0 || *iter >= (nbopenfiles1+nbopenfiles2)) return false;
 
@@ -2044,6 +2073,7 @@ bool hasNextDoc(int* iter) {
 
 void convertText2XML() {
   dbgln("convertText2XML()");
+
   int currentEdit, isReadOnly, xOffset, yOffset;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
@@ -2124,6 +2154,7 @@ void convertText2XML() {
 
 void convertXML2Text() {
   dbgln("convertXML2Text()");
+
   int currentEdit, isReadOnly, xOffset, yOffset;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
@@ -2204,6 +2235,7 @@ void convertXML2Text() {
 
 int validateSelectionForComment(std::string str, std::string::size_type sellength) {
   dbgln("validateSelectionForComment()");
+
   // Validate the selection
   std::stack<int> checkstack;
   std::string::size_type curpos = 0;
