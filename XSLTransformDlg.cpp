@@ -15,6 +15,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+//extern void updateProxyConfig();
+
 /////////////////////////////////////////////////////////////////////////////
 // CXSLTransformDlg dialog
 
@@ -184,6 +186,7 @@ void CXSLTransformDlg::OnBtnTransform() {
   std::string file = Report::narrow(wfile);
   cur = pXsltParseStylesheetFile(reinterpret_cast<const xmlChar*>(file.c_str()));
   pXmlResetLastError();
+  //updateProxyConfig();
   doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, this->m_iFlags);
   delete [] data;
   data = NULL;

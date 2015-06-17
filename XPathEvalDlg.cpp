@@ -15,6 +15,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+//extern void updateProxyConfig();
+
 /////////////////////////////////////////////////////////////////////////////
 // CXPathEvalDlg dialog
 
@@ -156,6 +158,7 @@ int CXPathEvalDlg::execute_xpath_expression(std::wstring& xpathExpr) {
 
   /* Load XML document */
   pXmlResetLastError();
+  //updateProxyConfig();
   doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, this->m_iFlags);
   str.clear();
 

@@ -266,7 +266,7 @@ END_MESSAGE_MAP()
 
 CXMLToolsApp::CXMLToolsApp() {
   dbgln("XML Tools plugin");
-  dbg("version "); dbgln(XMLTOOLS_VERSION_NUMBER);
+  dbg("version "); dbg(XMLTOOLS_VERSION_NUMBER); dbg(" "); dbgln(XMLTOOLS_VERSION_STATUS);
   dbg("libXML: "); dbgln(LIBXML_DOTTED_VERSION);
   dbg("libXSLT: "); dbgln(LIBXSLT_DOTTED_VERSION);
 
@@ -858,6 +858,9 @@ void checkUpdates() {
           CMessageDlg* dlg = new CMessageDlg();
           std::wstring msg(L"A new release of XMLTools plugin is available on NPP Plugins project.\r\nCurrent installed version: ");
           msg += XMLTOOLS_VERSION_NUMBER;
+          msg += L" (";
+          msg += XMLTOOLS_VERSION_STATUS;
+          msg += L")";
           msg += L"\r\nVersions available online on https://sourceforge.net/projects/npp-plugins/files/XML%20Tools/ :\r\n\r\n";
           msg += latestavailable;
           dlg->m_sMessage = msg.c_str();
@@ -972,6 +975,7 @@ int performXMLCheck(int informIfNoError) {
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
   
   pXmlResetLastError();
+  //updateProxyConfig();
   xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
   
   delete [] data;
@@ -1058,13 +1062,12 @@ void XMLValidation(int informIfNoError) {
   bool dtdValidation = false;
 
   pXmlResetLastError();
-
-  pXmlNanoHTTPScanProxy("http://toto:admin@127.0.0.1:8080");
+  //updateProxyConfig();
   doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
 
   delete [] data;
   data = NULL;
-  
+
   if (doc == NULL) {
     xmlErrorPtr err = pXmlGetLastError();
     
@@ -1180,12 +1183,14 @@ void XMLValidation(int informIfNoError) {
           err = pXmlGetLastError();
 
           if (err != NULL) {
+            wchar_t* tmpmsg = Report::castChar(err->message);
             if (err->line > 0) {
               ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
+              Report::_printf_err(L"Unable to parse schema file. \r\nParsing error at line %d: \r\n%s", err->line, tmpmsg);
+            } else {
+              Report::_printf_err(L"Following error occurred during schema file parsing: \r\n%s", tmpmsg);
             }
-			      wchar_t* tmpmsg = Report::castChar(err->message);  
-            Report::_printf_err(L"Unable to parse schema file. \r\nParsing error at line %d: \r\n%s", err->line, tmpmsg);
-			      delete[] tmpmsg;
+            delete[] tmpmsg;
           } else {
             Report::_printf_err(L"Unable to parse schema file.");
           }
@@ -1471,6 +1476,7 @@ std::wstring currentXPath() {
     str.erase(currentPos);
     str += "><X>";
 
+    //updateProxyConfig();
     xmlDocPtr doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, XML_PARSE_RECOVER | (doPreventXXE ? defFlagsNoXXE : defFlags));
     str.clear();
     
@@ -1628,6 +1634,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 	
     // Check de la syntaxe (disabled)
     /*if (FALSE) {
+      //updateProxyConfig();
       xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
       if (doc == NULL) {
         xmlErrorPtr err;
@@ -1914,6 +1921,7 @@ void prettyPrintLibXML() {
 
     xmlDocPtr doc;
 
+    //updateProxyConfig();
     doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
     if (doc == NULL) {
       Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
