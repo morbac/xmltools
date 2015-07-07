@@ -65,9 +65,6 @@
     <None Include="XMLTools.def">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="res\XMLTools.rc2">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HyperLinkCtrl.h">

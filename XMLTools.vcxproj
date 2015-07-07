@@ -177,7 +177,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="XMLTools.def" />
-    <None Include="res\XMLTools.rc2" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="XMLTools.rc" />
