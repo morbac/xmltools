@@ -4,6 +4,11 @@
                         ChangeLog
 ================================================================
 
+Release 2.4.8
+-------------
+- Add "Pretty print (attributes)" function
+- Fix pretty print of comments and CDATA blocs containing < or > char
+
 Release 2.4.7
 -------------
 - Add proxy support

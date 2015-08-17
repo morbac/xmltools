@@ -401,6 +401,7 @@ CXMLToolsApp::CXMLToolsApp() {
     ++menuentry;
   
     Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (attributes)");
+    registerShortcut(funcItem+menuentry, true, true, true, 'A');
     funcItem[menuentry]._pFunc = prettyPrintAttributes;
     ++menuentry;
   
@@ -412,6 +413,7 @@ CXMLToolsApp::CXMLToolsApp() {
     ++menuentry;*/
   
     Report::strcpy(funcItem[menuentry]._itemName, L"Linarize XML");
+    registerShortcut(funcItem+menuentry, true, true, true, 'L');
     funcItem[menuentry]._pFunc = linarizeXML;
     ++menuentry;
 
@@ -1674,10 +1676,20 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 
         if (cc == '<' && curpos < str.length()-3 && !str.compare(curpos,4,"<!--")) {
           // Let's skip the comment
-          curpos = str.find("-->",curpos+1);
+          curpos = str.find("-->",curpos+1)+2;
+          // Adds a line break after comment if required
+          nexwchar_t = str.find_first_not_of(" \t",curpos+1);
+          if (nexwchar_t != std::string::npos && str.at(nexwchar_t) == '<') {
+            str.insert(++curpos,eolchar);
+          }
         } else if (cc == '<' && curpos < str.length()-8 && !str.compare(curpos,9,"<![CDATA[")) {
           // Let's skip the CDATA block
-          curpos = str.find("]]>",curpos+1);
+          curpos = str.find("]]>",curpos+1)+2;
+          // Adds a line break after CDATA if required
+          nexwchar_t = str.find_first_not_of(" \t",curpos+1);
+          if (nexwchar_t != std::string::npos && str.at(nexwchar_t) == '<') {
+            str.insert(++curpos,eolchar);
+          }
         } else if (cc == '>') {
           // Let's see if '>' is a end tag char (it might also be simple text)
           // To perform test, we search last of "<>". If it is a '>', current '>' is
@@ -1707,7 +1719,6 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
                 } else if (str.at(nexwchar_t+1) == '/' && !isclosingtag && nexwchar_t == curpos+1) {
                   // Case of "<data id="..."></data>" -> replace by "<data id="..."/>"
                   str.replace(curpos,endnext-curpos,"/");
-                  //str.insert(++curpos,"#");
                 }
               }
             }
@@ -2022,6 +2033,10 @@ void prettyPrintAttributes() {
     char pc, cc, nc, nnc;
     int tagsignlevel = 0, nattrs = 0;
 
+    std::string eolchar;
+    int eolmode;
+    Report::getEOLChar(hCurrentEditView, &eolmode, &eolchar);
+
     int prevspecchar = -1;
     while (curpos < (long)str.length() && (curpos = str.find_first_of("<>\"",curpos)) >= 0) {
       strlength = str.length();
@@ -2056,17 +2071,17 @@ void prettyPrintAttributes() {
           prevspecchar = curpos++;
         } else if (in_attribute) {
           if (++nattrs > 1) {
-            long attrpos = str.find_last_of("\t \n", curpos-1)+1;
-            if (str.at(attrpos) != '\n') {
-              long spacpos = str.find_last_not_of("\t ", attrpos-1)+1;
+            long attrpos = str.find_last_of(eolchar+"\t ", curpos-1)+1;
+            if (!Report::isEOL(str, strlength, attrpos, eolmode)) {
+              long spacpos = str.find_last_not_of(eolchar+"\t ", attrpos-1)+1;
               str.replace(spacpos, attrpos-spacpos, lineindent);
               curpos -= attrpos-spacpos;
               curpos += lineindent.length();
             }
           } else {
-            long attrpos = str.find_last_of("\t \n", curpos-1)+1;
-            if (str.at(attrpos) != '\n') {
-              long linestart = str.find_last_of("\n", attrpos-1)+1;
+            long attrpos = str.find_last_of(eolchar+"\t ", curpos-1)+1;
+            if (!Report::isEOL(str, strlength, attrpos, eolmode)) {
+              long linestart = str.find_last_of(eolchar, attrpos-1)+1;
               lineindent = str.substr(linestart, attrpos-linestart);
               long lineindentlen = lineindent.length();
               for (long i = 0; i < lineindentlen; ++i) {
@@ -2075,7 +2090,7 @@ void prettyPrintAttributes() {
                     lineindent.replace(i, 1, " ");
                 }
               }
-              lineindent.insert(0,"\r\n");
+              lineindent.insert(0,eolchar);
             }
           }
           ++curpos;
