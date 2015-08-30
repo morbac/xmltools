@@ -1441,7 +1441,8 @@ void setAutoXMLType() {
 std::wstring currentXPath() {
   dbgln("currentXPath()");
 
-  int currentEdit, currentLength;
+  int currentEdit;
+  std::string::size_type currentLength, currentPos;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
   currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
@@ -1453,7 +1454,7 @@ std::wstring currentXPath() {
   size_t size = (currentLength+1)*sizeof(char);
   memset(data, '\0', size);
 
-  std::string::size_type currentPos = long(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
+  currentPos = long(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
 
   std::string str(data);
@@ -1467,9 +1468,11 @@ std::wstring currentXPath() {
   // let's reach the end of current tag (if we are inside a tag)
   if (currentPos > begpos && currentPos <= endpos) {
     currentPos = str.find_last_of("<>", currentPos-1)+1;
-    bool isinsideclosingtag = (currentPos > 0 && str.at(currentPos-1) == '<' && str.at(currentPos) == '/');
 
-    if (isinsideclosingtag) {
+    // check if we are in a closing tag
+    if (currentPos >= 1 && currentPos < currentLength-2 && str.at(currentPos-1) == '<'  && str.at(currentPos) == '!' && str.at(currentPos+1) == '-' && str.at(currentPos+2) == '-') {  // check if in a comment
+      return nodepath;
+    } else if (currentPos >= 1 && str.at(currentPos-1) == '<' && str.at(currentPos) == '/') {
       // if we are inside closing tag (inside </x>, let's go back before '<' char so we are inside node)
       --currentPos;
     } else {
@@ -1486,7 +1489,7 @@ std::wstring currentXPath() {
     //updateProxyConfig();
     xmlDocPtr doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, XML_PARSE_RECOVER | (doPreventXXE ? defFlagsNoXXE : defFlags));
     str.clear();
-    
+
     if (doc == NULL) return nodepath;
 
     UniMode encoding = Report::getEncoding(doc->encoding, NULL);
