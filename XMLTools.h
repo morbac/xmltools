@@ -17,7 +17,7 @@
 //---------------------------------------------------------------------------
 
 #define XMLTOOLS_VERSION_NUMBER L"2.4.8"
-#define XMLTOOLS_VERSION_STATUS L"unicode beta"
+#define XMLTOOLS_VERSION_STATUS L"unicode"
 
 //---------------------------------------------------------------------------
 
