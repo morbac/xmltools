@@ -1315,7 +1315,7 @@ void closeXMLTag() {
 
       if (*pCur == '<') {
         ++pCur;
-        if (*pCur == '/') return;
+        if (*pCur == '/' || *pCur == '!') return;
 
         // search attributes of 
 		    while (*pCur != '>' && *pCur != ' ' && *pCur != '\n' && *pCur != '\r') {
