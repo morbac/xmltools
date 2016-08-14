@@ -52,7 +52,7 @@ BOOL COptionsDlg::OnInitDialog()
       ((CButton*) GetDlgItem(IDC_CHKENABLEPROXY))->SetCheck(BST_UNCHECKED);
     }
     GetDlgItem(IDC_EDITPROXYHOST)->SetWindowTextW(this->proxyoptions->host);
-    GetDlgItem(IDC_EDITPROXYPORT)->SetWindowTextW(std::to_wstring(this->proxyoptions->port).c_str());
+    GetDlgItem(IDC_EDITPROXYPORT)->SetWindowTextW(std::to_wstring(static_cast<long long>(this->proxyoptions->port)).c_str());
     //GetDlgItem(IDC_EDITPROXYUSERNAME)->SetWindowTextW(this->proxyoptions->username);
     //GetDlgItem(IDC_EDITPROXYPASSWORD)->SetWindowTextW(this->proxyoptions->password);
   }

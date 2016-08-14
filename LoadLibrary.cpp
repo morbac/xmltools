@@ -77,8 +77,8 @@ int                    (*pXmlKeepBlanksDefault)(int val);
 int                    (*pXmlThrDefIndentTreeOutput)(int v);
 const char *           (*pXmlThrDefTreeIndentString)(const char * v);
 
-void	                 (*pXmlNanoHTTPInit)(void);
-void	                 (*pXmlNanoHTTPScanProxy)(const char * URL);
+void	               (*pXmlNanoHTTPInit)(void);
+void	               (*pXmlNanoHTTPScanProxy)(const char * URL);
 const char *           (*pXmlNanoHTTPAuthHeader)(void *ctx);
 
 
@@ -96,21 +96,32 @@ xsltTransformContextPtr(*pXsltNewTransformContext)(xsltStylesheetPtr style, xmlD
 //-------------------------------------------------------------------------------------------------
 
 HINSTANCE loadExtLib(const wchar_t* libFilename, const wchar_t* nppMainPath, const wchar_t* appDataPath) {
-  wchar_t   pszPath[MAX_PATH] = { '\0' };
-  HINSTANCE res = LoadLibrary(libFilename);
-  if (res == NULL) {
-    // try loading from main npp path
-    Report::strcpy(pszPath, nppMainPath);
-    PathAppend(pszPath, L"\\XMLTools\\");
-    PathAppend(pszPath, libFilename);
-	  res = LoadLibrary(pszPath);
+  wchar_t pszPath[MAX_PATH] = { '\0' };
 
-    // try loading from %appdata% path
+  // try loading from NPP plugins path (standard NPP location)
+  Report::strcpy(pszPath, nppMainPath);
+  PathAppend(pszPath, L"plugins\\XMLTools\\");
+  PathAppend(pszPath, libFilename);
+  HINSTANCE res = LoadLibrary(pszPath);
+
+  if (res == NULL) {
+    // try loading from %appdata% path (standard NPP UAC/AppData location)
+    Report::strcpy(pszPath, appDataPath);
+    PathAppend(pszPath, L"Notepad++\\");
+    PathAppend(pszPath, libFilename);
+    res = LoadLibrary(pszPath);
+
     if (res == NULL) {
-      Report::strcpy(pszPath, appDataPath);
-      PathAppend(pszPath, L"\\Notepad++\\");
+      // try loading from NPP sub path
+      Report::strcpy(pszPath, nppMainPath);
+      PathAppend(pszPath, L"XMLTools\\");
       PathAppend(pszPath, libFilename);
       res = LoadLibrary(pszPath);
+    
+      if (res == NULL) {
+        // try loading (from NPP main path)
+        res = LoadLibrary(libFilename);
+      }
     }
   }
   return res;  
@@ -121,18 +132,18 @@ int loadLibraries(wchar_t* nppMainPath, wchar_t* appDataPath) {
   HKEY    hKey = NULL;
   DWORD   size = MAX_PATH;
 
-  // loading dependances
+  // loading dependencies
   if (loadExtLib(L"libiconv-2.dll", nppMainPath, appDataPath) == NULL) return -1;
   if (loadExtLib(L"zlib1.dll", nppMainPath, appDataPath) == NULL) return -1;
   if (loadExtLib(L"libwinpthread-1.dll", nppMainPath, appDataPath) == NULL) return -1;
   
-  // loading libxml
+  // loading LIBXML
   hInstLibXML = loadExtLib(L"libxml2-2.dll", nppMainPath, appDataPath);
   if (hInstLibXML == NULL) {
 	  return -1;
   }
 
-  // loading libxslt
+  // loading LIBXSLT
   hInstLibXSL = loadExtLib(L"libxslt-1.dll", nppMainPath, appDataPath);
   if (hInstLibXSL == NULL) {
     return -1;
@@ -221,7 +232,7 @@ int loadLibraries(wchar_t* nppMainPath, wchar_t* appDataPath) {
 }
 
 /*
-xmlNodePtr pXmlRemoveNs(xmlNodePtr tree,xmlNsPtr ns) {
+xmlNodePtr pXmlRemoveNs(xmlNodePtr tree, xmlNsPtr ns) {
   xmlNsPtr nsDef,prev;
   xmlNodePtr node = tree;
   xmlNodePtr declNode = NULL;
