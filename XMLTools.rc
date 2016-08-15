@@ -157,7 +157,7 @@ CAPTION "Information"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,299,125,50,14
-    EDITTEXT        IDC_EDIT_MULTILINEMSG,7,7,342,115,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL
+    EDITTEXT        IDC_EDIT_MULTILINEMSG,7,7,342,115,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL | WS_HSCROLL
 END
 
 IDD_XSLTDLG DIALOGEX 0, 0, 292, 94
@@ -316,6 +316,17 @@ BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_MESSAGEDLG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
 
 #endif    // Français (Suisse) resources
 /////////////////////////////////////////////////////////////////////////////
