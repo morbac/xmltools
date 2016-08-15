@@ -2210,7 +2210,7 @@ void linarizeXML() {
       // Let erase leading space chars on line
       if (curpos != std::string::npos && curpos < str.length()) {
         nexwchar_t = str.find_first_not_of(" \t", curpos);
-        if (nexwchar_t >= curpos) {
+        if (nexwchar_t != std::string::npos && nexwchar_t >= curpos) {
           // And if the 1st char of next line is not '<' and last char of preceding
           // line is not '>', then we consider we are in text content, then let put
           // a space char
