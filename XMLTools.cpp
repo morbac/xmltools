@@ -195,59 +195,66 @@ void savePluginParams();
 
 void registerShortcut(FuncItem *item, bool enableALT, bool enableCTRL, bool enableSHIFT, unsigned char key) {
   if (!item) return;
-  item->_pShKey = new ShortcutKey();
+  item->_pShKey = new ShortcutKey; // no parentheses needed as it's Plain Old Data (POD) otherwise C4345
   item->_pShKey->_isAlt = enableALT;
   item->_pShKey->_isCtrl = enableCTRL;
   item->_pShKey->_isShift = enableSHIFT;
   item->_pShKey->_key = key;
 }
 
-// get given lang as string (for debug purposes only)
+// get given language as string (for debug purposes only)
 char* getLangType(LangType lg) {
-  if (lg == L_TEXT) return "L_TEXT";
-  if (lg == L_PHP) return "L_PHP";
-  if (lg == L_C) return "L_C";
-  if (lg == L_CPP) return "L_CPP";
-  if (lg == L_CS) return "L_CS";
-  if (lg == L_OBJC) return "L_OBJC";
-  if (lg == L_JAVA) return "L_JAVA";
-  if (lg == L_RC) return "L_RC";
-  if (lg == L_HTML) return "L_HTML";
-  if (lg == L_XML) return "L_XML";
-  if (lg == L_MAKEFILE) return "L_MAKEFILE";
-  if (lg == L_PASCAL) return "L_PASCAL";
-  if (lg == L_BATCH) return "L_BATCH";
-  if (lg == L_INI) return "L_INI";
-  if (lg == L_ASCII) return "L_ASCII";
-  if (lg == L_USER) return "L_USER";
-  if (lg == L_ASP) return "L_ASP";
-  if (lg == L_SQL) return "L_SQL";
-  if (lg == L_VB) return "L_VB";
-  if (lg == L_JS) return "L_JS";
-  if (lg == L_CSS) return "L_CSS";
-  if (lg == L_PERL) return "L_PERL";
-  if (lg == L_PYTHON) return "L_PYTHON";
-  if (lg == L_LUA) return "L_LUA";
-  if (lg == L_TEX) return "L_TEX";
-  if (lg == L_FORTRAN) return "L_FORTRAN";
-  if (lg == L_BASH) return "L_BASH";
-  if (lg == L_FLASH) return "L_FLASH";
-  if (lg == L_NSIS) return "L_NSIS";
-  if (lg == L_TCL) return "L_TCL";
-  if (lg == L_LISP) return "L_LISP";
-  if (lg == L_SCHEME) return "L_SCHEME";
-  if (lg == L_ASM) return "L_ASM";
-  if (lg == L_DIFF) return "L_DIFF";
-  if (lg == L_CAML) return "L_CAML";
-  if (lg == L_ADA) return "L_ADA";
-  if (lg == L_VERILOG) return "L_VERILOG";
-  if (lg == L_MATLAB) return "L_MATLAB";
-  if (lg == L_HASKELL) return "L_HASKELL";
-  if (lg == L_INNO) return "L_INNO";
+  if (lg == L_TEXT        ) return "L_TEXT";
+  if (lg == L_PHP         ) return "L_PHP";
+  if (lg == L_C           ) return "L_C";
+  if (lg == L_CPP         ) return "L_CPP";
+  if (lg == L_CS          ) return "L_CS";
+  if (lg == L_OBJC        ) return "L_OBJC";
+  if (lg == L_JAVA        ) return "L_JAVA";
+  if (lg == L_RC          ) return "L_RC";
+  if (lg == L_HTML        ) return "L_HTML";
+  if (lg == L_XML         ) return "L_XML";
+  if (lg == L_MAKEFILE    ) return "L_MAKEFILE";
+  if (lg == L_PASCAL      ) return "L_PASCAL";
+  if (lg == L_BATCH       ) return "L_BATCH";
+  if (lg == L_INI         ) return "L_INI";
+  if (lg == L_ASCII       ) return "L_ASCII";
+  if (lg == L_USER        ) return "L_USER";
+  if (lg == L_ASP         ) return "L_ASP";
+  if (lg == L_SQL         ) return "L_SQL";
+  if (lg == L_VB          ) return "L_VB";
+  if (lg == L_JS          ) return "L_JS";
+  if (lg == L_CSS         ) return "L_CSS";
+  if (lg == L_PERL        ) return "L_PERL";
+  if (lg == L_PYTHON      ) return "L_PYTHON";
+  if (lg == L_LUA         ) return "L_LUA";
+  if (lg == L_TEX         ) return "L_TEX";
+  if (lg == L_FORTRAN     ) return "L_FORTRAN";
+  if (lg == L_BASH        ) return "L_BASH";
+  if (lg == L_FLASH       ) return "L_FLASH";
+  if (lg == L_NSIS        ) return "L_NSIS";
+  if (lg == L_TCL         ) return "L_TCL";
+  if (lg == L_LISP        ) return "L_LISP";
+  if (lg == L_SCHEME      ) return "L_SCHEME";
+  if (lg == L_ASM         ) return "L_ASM";
+  if (lg == L_DIFF        ) return "L_DIFF";
+  if (lg == L_CAML        ) return "L_CAML";
+  if (lg == L_ADA         ) return "L_ADA";
+  if (lg == L_VERILOG     ) return "L_VERILOG";
+  if (lg == L_MATLAB      ) return "L_MATLAB";
+  if (lg == L_HASKELL     ) return "L_HASKELL";
+  if (lg == L_INNO        ) return "L_INNO";
   if (lg == L_SEARCHRESULT) return "L_SEARCHRESULT";
-  if (lg == L_CMAKE) return "L_CMAKE";
-  if (lg == L_YAML) return "L_YAML";
-  if (lg == L_EXTERNAL) return "L_EXTERNAL";
+  if (lg == L_CMAKE       ) return "L_CMAKE";
+  if (lg == L_YAML        ) return "L_YAML";
+  if (lg == L_COBOL       ) return "L_COBOL";
+  if (lg == L_GUI4CLI     ) return "L_GUI4CLI";
+  if (lg == L_D           ) return "L_D";
+  if (lg == L_POWERSHELL  ) return "L_POWERSHELL";
+  if (lg == L_R           ) return "L_R";
+  if (lg == L_JSP         ) return "L_JSP";
+  if (lg == L_COFFEESCRIPT) return "L_COFFEESCRIPT";
+  if (lg == L_EXTERNAL    ) return "L_EXTERNAL";
   
   return "";
 }
@@ -272,14 +279,12 @@ CXMLToolsApp::CXMLToolsApp() {
   dbg("libXSLT: "); dbgln(LIBXSLT_DOTTED_VERSION);
 
   dbg("Locating XMLToolsExt.ini... ");
-  wchar_t nppMainPath[MAX_PATH], appDataPath[MAX_PATH];
-  GetModuleFileName(::GetModuleHandle(XMLTOOLS_DLLNAME), nppMainPath, sizeof(nppMainPath));
+  wchar_t nppMainPath[MAX_PATH], appDataPath[MAX_PATH], nppPluginsPath[MAX_PATH]; 
+  GetModuleFileName(::GetModuleHandle(XMLTOOLS_DLLNAME), nppPluginsPath, sizeof(nppPluginsPath));
+  PathRemoveFileSpec(nppPluginsPath);   // remove the module name: get npp plugins path
   
-  // remove the module name : get plugins directory path
-  PathRemoveFileSpec(nppMainPath);
-  
-  // cd .. : get npp executable path
-  PathRemoveFileSpec(nppMainPath);
+  Report::strcpy(nppMainPath, nppPluginsPath);
+  PathRemoveFileSpec(nppMainPath);      // cd..: get npp executable path
   
   // Make localConf.xml path
   wchar_t localConfPath[MAX_PATH];
@@ -295,9 +300,23 @@ CXMLToolsApp::CXMLToolsApp() {
   SHGetPathFromIDList(pidl, appDataPath);
 
   if (isLocal) {
-	  Report::strcpy(iniFilePath, nppMainPath);
-    PathAppend(iniFilePath, L"XMLToolsExt.ini");
+    // try NPP plugins local configuration path (standard NPP location)
+    Report::strcpy(iniFilePath, nppPluginsPath);
+    PathAppend(iniFilePath, L"Config\\XMLToolsExt.ini");
+
+    if (PathFileExists(iniFilePath) == FALSE) {
+      // try NPP plugins path
+      Report::strcpy(iniFilePath, nppPluginsPath);
+      PathAppend(iniFilePath, L"XMLToolsExt.ini");
+
+      if (PathFileExists(iniFilePath) == FALSE) {
+        // try NPP main path
+        Report::strcpy(iniFilePath, nppMainPath);
+        PathAppend(iniFilePath, L"XMLToolsExt.ini");
+      }
+    }
   } else {
+    // try NPP plugins remote configuration path (standard NPP UAC/AppData location)
     Report::strcpy(iniFilePath, appDataPath);
     PathAppend(iniFilePath, L"Notepad++\\XMLToolsExt.ini");
   }
@@ -350,7 +369,7 @@ CXMLToolsApp::CXMLToolsApp() {
     doCloseTag = funcItem[menuentry]._init2Check;
     menuitemCloseTag = menuentry;
     ++menuentry;
-  /*
+/*
     Report::strcpy(funcItem[menuentry]._itemName, L"Tag auto-indent");
     funcItem[menuentry]._pFunc = insertTagAutoIndent;
     funcItem[menuentry]._init2Check = doAutoIndent = (::GetPrivateProfileInt(sectionName, L"doAutoIndent", 0, iniFilePath) != 0);
@@ -363,8 +382,8 @@ CXMLToolsApp::CXMLToolsApp() {
     funcItem[menuentry]._init2Check = doAttrAutoComplete = (::GetPrivateProfileInt(sectionName, L"doAttrAutoComplete", 0, iniFilePath) != 0);
     doAttrAutoComplete = funcItem[menuentry]._init2Check;
     menuitemAttrAutoComplete = menuentry;
-    ++menuentry;*/
-  
+    ++menuentry;
+*/
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
   
     Report::strcpy(funcItem[menuentry]._itemName, L"Set XML type automatically");
@@ -404,25 +423,25 @@ CXMLToolsApp::CXMLToolsApp() {
     registerShortcut(funcItem+menuentry, true, true, true, 'A');
     funcItem[menuentry]._pFunc = prettyPrintAttributes;
     ++menuentry;
-  
-    /*Report::strcpy(funcItem[menuentry]._itemName, L"Enable auto pretty print (libXML) [experimental]");
+/*
+    Report::strcpy(funcItem[menuentry]._itemName, L"Enable auto pretty print (libXML) [experimental]");
     funcItem[menuentry]._pFunc = insertPrettyPrintTag;
     funcItem[menuentry]._init2Check = doPrettyPrint = (::GetPrivateProfileInt(sectionName, L"doPrettyPrint", 0, iniFilePath) != 0);
     doPrettyPrint = funcItem[menuentry]._init2Check;
     menuitemPrettyPrint = menuentry;
-    ++menuentry;*/
-  
+    ++menuentry;
+*/
     Report::strcpy(funcItem[menuentry]._itemName, L"Linarize XML");
     registerShortcut(funcItem+menuentry, true, true, true, 'L');
     funcItem[menuentry]._pFunc = linarizeXML;
     ++menuentry;
 
-	  Report::strcpy(funcItem[menuentry]._itemName, L"Apply to all open files");
-	  funcItem[menuentry]._pFunc = togglePrettyPrintAllFiles;
-	  funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, L"doPrettyPrintAllOpenFiles", 0, iniFilePath) != 0);
-	  doPrettyPrintAllOpenFiles = funcItem[menuentry]._init2Check;
-	  menuitemPrettyPrintAllFiles = menuentry;
-	  ++menuentry;
+    Report::strcpy(funcItem[menuentry]._itemName, L"Apply to all open files");
+    funcItem[menuentry]._pFunc = togglePrettyPrintAllFiles;
+    funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, L"doPrettyPrintAllOpenFiles", 0, iniFilePath) != 0);
+    doPrettyPrintAllOpenFiles = funcItem[menuentry]._init2Check;
+    menuitemPrettyPrintAllFiles = menuentry;
+    ++menuentry;
   
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
   
@@ -506,22 +525,24 @@ CXMLToolsApp::CXMLToolsApp() {
 
   //Report::_printf_inf("menu entries: %d", menuentry);
 
-  /*Report::_printf_inf("%s\ndoCheckXML: %d %d\ndoValidation: %d %d\ndoCloseTag: %d %d\ndoAutoXMLType: %d %d\ndoPreventXXE: %d %d\nisLocal: %d",
+/*
+  Report::_printf_inf("%s\ndoCheckXML: %d %d\ndoValidation: %d %d\ndoCloseTag: %d %d\ndoAutoXMLType: %d %d\ndoPreventXXE: %d %d\nisLocal: %d",
     iniFilePath,
     doCheckXML, funcItem[menuitemCheckXML]._init2Check,
     doValidation, funcItem[menuitemValidation]._init2Check,
     doCloseTag, funcItem[menuitemCloseTag]._init2Check,
     doAutoXMLType, funcItem[menuitemAutoXMLType]._init2Check,
     doPreventXXE, funcItem[menuitemPreventXXE]._init2Check,
-    isLocal);*/
+    isLocal);
+*/
 
-    dbgln("Initialization finished.");
+  dbgln("Initialization finished.");
 }
 
 CXMLToolsApp::~CXMLToolsApp() {
   savePluginParams();
 
-  // Don't forget to deallocate your shortcut here
+  // Don't forget to de-allocate your shortcut here
   for (int i = 0; i < nbFunc; ++i) {
     if (funcItem[i]._pShKey) delete funcItem[i]._pShKey;
   }
@@ -599,14 +620,14 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       if (hMenu) {
         ::CheckMenuItem(hMenu, funcItem[menuitemCheckXML]._cmdID, MF_BYCOMMAND | (doCheckXML?MF_CHECKED:MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemValidation]._cmdID, MF_BYCOMMAND | (doValidation?MF_CHECKED:MF_UNCHECKED));
-        //::CheckMenuItem(hMenu, funcItem[menuitemPrettyPrint]._cmdID, MF_BYCOMMAND | (doPrettyPrint?MF_CHECKED:MF_UNCHECKED));
+//      ::CheckMenuItem(hMenu, funcItem[menuitemPrettyPrint]._cmdID, MF_BYCOMMAND | (doPrettyPrint?MF_CHECKED:MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemCloseTag]._cmdID, MF_BYCOMMAND | (doCloseTag?MF_CHECKED:MF_UNCHECKED));
-        //::CheckMenuItem(hMenu, funcItem[menuitemAutoIndent]._cmdID, MF_BYCOMMAND | (doAutoIndent?MF_CHECKED:MF_UNCHECKED));
-        //::CheckMenuItem(hMenu, funcItem[menuitemAttrAutoComplete]._cmdID, MF_BYCOMMAND | (doAttrAutoComplete?MF_CHECKED:MF_UNCHECKED));
+//      ::CheckMenuItem(hMenu, funcItem[menuitemAutoIndent]._cmdID, MF_BYCOMMAND | (doAutoIndent?MF_CHECKED:MF_UNCHECKED));
+//      ::CheckMenuItem(hMenu, funcItem[menuitemAttrAutoComplete]._cmdID, MF_BYCOMMAND | (doAttrAutoComplete?MF_CHECKED:MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemAutoXMLType]._cmdID, MF_BYCOMMAND | (doAutoXMLType?MF_CHECKED:MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemPreventXXE]._cmdID, MF_BYCOMMAND | (doPreventXXE?MF_CHECKED:MF_UNCHECKED));
-		    ::CheckMenuItem(hMenu, funcItem[menuitemPrettyPrintAllFiles]._cmdID, MF_BYCOMMAND | (doPrettyPrintAllOpenFiles?MF_CHECKED:MF_UNCHECKED));
-		    ::CheckMenuItem(hMenu, funcItem[menuitemCheckUpdates]._cmdID, MF_BYCOMMAND | (doCheckUpdates?MF_CHECKED:MF_UNCHECKED));
+        ::CheckMenuItem(hMenu, funcItem[menuitemPrettyPrintAllFiles]._cmdID, MF_BYCOMMAND | (doPrettyPrintAllOpenFiles?MF_CHECKED:MF_UNCHECKED));
+        ::CheckMenuItem(hMenu, funcItem[menuitemCheckUpdates]._cmdID, MF_BYCOMMAND | (doCheckUpdates?MF_CHECKED:MF_UNCHECKED));
 
         checkUpdates();
         #ifdef DEBUG
@@ -643,7 +664,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       dbgln("NPP Event: NPPN_FILEOPENED");
       TCHAR filename[MAX_PATH];
       ::SendMessage(nppData._nppHandle, NPPM_GETFULLPATHFROMBUFFERID, notifyCode->nmhdr.idFrom, reinterpret_cast<LPARAM>(filename));
-      dbg("  bufferID: "); dbgln(std::to_string(notifyCode->nmhdr.idFrom).c_str());
+      dbg("  bufferID: "); dbgln(std::to_string(static_cast<unsigned long long>(notifyCode->nmhdr.idFrom)).c_str());
       dbg("  filename: "); dbgln(filename);
       break;
     case NPPN_BUFFERACTIVATED: {
@@ -652,18 +673,19 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
         // si le fichier n'a pas de type défini et qu'il commence par "<?xml ", on lui attribue le type L_XML
         LangType docType = L_EXTERNAL;
         ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
-        dbg("  Current langtype: "); dbgln(std::to_string(docType).c_str());
+        dbg("  Current langtype: "); dbgln(std::to_string(static_cast<unsigned long long>(docType)).c_str());
         //Report::_printf_inf("%s", getLangType(docType));
         if (docType != L_XML) {
           setAutoXMLType();
         }
-
-	      /*if (doPrettyPrint) {
-		    LangType docType = L_EXTERNAL;
-          ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
-          //Report::_printf_inf("%s", getLangType(docType));
-          if (docType == L_XML) prettyPrintLibXML();
-	      }*/
+/*
+        if (doPrettyPrint) {
+	      LangType docType = L_EXTERNAL;
+           ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
+           //Report::_printf_inf("%s", getLangType(docType));
+           if (docType == L_XML) prettyPrintLibXML();
+        }
+*/
       }
       break;
     }
@@ -694,6 +716,7 @@ void insertValidationTag() {
   ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemValidation]._cmdID, MF_BYCOMMAND | (doValidation?MF_CHECKED:MF_UNCHECKED));
   savePluginParams();
 }
+
 /*
 void insertPrettyPrintTag() {
   dbgln("insertPrettyPrintTag()");
@@ -701,7 +724,8 @@ void insertPrettyPrintTag() {
   doPrettyPrint = !doPrettyPrint;
   ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemPrettyPrint]._cmdID, MF_BYCOMMAND | (doPrettyPrint?MF_CHECKED:MF_UNCHECKED));
   savePluginParams();
-}*/
+}
+*/
 
 void insertXMLCloseTag() {
   dbgln("insertXMLCloseTag()");
@@ -757,20 +781,20 @@ void togglePreventXXE() {
 
 size_t curlWriteData(void *ptr, size_t size, size_t nmemb, void *stream) {
   size_t pos = 0;
-	size_t total = size * nmemb;
-	char* tptr = (char*)ptr;
+  size_t total = size * nmemb;
+  char* tptr = (char*)ptr;
 
   // Don't allow result strings over 1k
-	if (reinterpret_cast<std::wstring*>(stream)->size() > 1024)
-		return 0;
+  if (reinterpret_cast<std::wstring*>(stream)->size() > 1024)
+    return 0;
 
-	while (pos < total)	{
-		reinterpret_cast<std::wstring*>(stream)->push_back(*tptr);
-		tptr++;
-		++pos;
-	}
+  while (pos < total)	{
+    reinterpret_cast<std::wstring*>(stream)->push_back(*tptr);
+    tptr++;
+    ++pos;
+  }
 
-	return total;
+  return total;
 }
 
 std::wstring getLatestVersion(const char* url) {
@@ -787,20 +811,21 @@ std::wstring getLatestVersion(const char* url) {
 		  curl_easy_setopt(curl, CURLOPT_PROXY, Report::wchar2char(proxyoptions.host));
       curl_easy_setopt(curl, CURLOPT_PROXYPORT, proxyoptions.port);
 
-      /*if (wcslen(proxyoptions.username) > 0) {
-		    curl_easy_setopt(curl, CURLOPT_PROXYAUTH, CURLAUTH_ANY);
-        
-        curl_easy_setopt(curl, CURLOPT_PROXYUSERNAME, Report::wchar2char(proxyoptions.username));
-        if (wcslen(proxyoptions.password) > 0) {
-          curl_easy_setopt(curl, CURLOPT_PROXYPASSWORD, Report::wchar2char(proxyoptions.password));
-        }
-	    }*/
-	  } else {
-		  curl_easy_setopt(curl, CURLOPT_PROXY, NULL);
-		  curl_easy_setopt(curl, CURLOPT_PROXYPORT, NULL);
-		  //curl_easy_setopt(curl, CURLOPT_PROXYUSERNAME, NULL);
-		  //curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, NULL);
-		  //curl_easy_setopt(curl, CURLOPT_PROXYAUTH, CURLAUTH_NONE);
+/*
+    if (wcslen(proxyoptions.username) > 0) {
+      curl_easy_setopt(curl, CURLOPT_PROXYAUTH, CURLAUTH_ANY);
+      curl_easy_setopt(curl, CURLOPT_PROXYUSERNAME, Report::wchar2char(proxyoptions.username));
+      if (wcslen(proxyoptions.password) > 0) {
+        curl_easy_setopt(curl, CURLOPT_PROXYPASSWORD, Report::wchar2char(proxyoptions.password));
+      }
+    }
+*/
+	} else {
+	  curl_easy_setopt(curl, CURLOPT_PROXY, NULL);
+	  curl_easy_setopt(curl, CURLOPT_PROXYPORT, NULL);
+//    curl_easy_setopt(curl, CURLOPT_PROXYUSERNAME, NULL);
+//    curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, NULL);
+//    curl_easy_setopt(curl, CURLOPT_PROXYAUTH, CURLAUTH_NONE);
     }
  
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteData);
@@ -844,7 +869,7 @@ struct version{
 void checkUpdates() {
   dbgln("checkUpdates()");
 
-  // Let check if an online check is required
+  // Lets check if an online check is required
   wchar_t next[80];
   ::GetPrivateProfileString(sectionName, L"dateOfNextCheck", L"19800101", next, 80, iniFilePath);
   dateOfNextCheckUpdates = next;
@@ -857,7 +882,7 @@ void checkUpdates() {
     wcsftime(buf, sizeof(buf), L"%Y%m%d", tstruct);
 
     if (wcscmp(next, buf) < 0) {
-      // let's download the latest stable version number
+      // lets download the latest stable version number
       std::wstring latestavailable = getLatestVersion(LATEST_STABLE_URL);
       if (!latestavailable.empty()) {
         // compare current number and latest stable version
@@ -901,7 +926,7 @@ void optionsDlg() {
   if (dlg->DoModal() == IDOK) {
     ::WritePrivateProfileString(sectionName, L"proxyEnabled", proxyoptions.status?L"1":L"0", iniFilePath);
     ::WritePrivateProfileString(sectionName, L"proxyHost", proxyoptions.host, iniFilePath);
-    ::WritePrivateProfileString(sectionName, L"proxyPort", std::to_wstring(proxyoptions.port).c_str(), iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"proxyPort", std::to_wstring(static_cast<long long>(proxyoptions.port)).c_str(), iniFilePath);
     ::WritePrivateProfileString(sectionName, L"proxyUser", proxyoptions.username, iniFilePath);
     ::WritePrivateProfileString(sectionName, L"proxyPass", proxyoptions.password, iniFilePath);
 
@@ -931,7 +956,8 @@ void updateProxyConfig() {
   // proxy settings for libxml
   if (proxyoptions.status && wcslen(proxyoptions.host) > 0) {
     std::string proxyurl("http://");
-    /*if (wcslen(proxyoptions.username) > 0) {
+/*
+    if (wcslen(proxyoptions.username) > 0) {
       proxyurl += Report::wchar2char(proxyoptions.username);
 
       if (wcslen(proxyoptions.password) > 0) {
@@ -939,11 +965,12 @@ void updateProxyConfig() {
         proxyurl += Report::wchar2char(proxyoptions.password);
       }
       proxyurl += "@";
-    }*/
+    }
+*/
 
     proxyurl += Report::wchar2char(proxyoptions.host);
     proxyurl += ":";
-    proxyurl += std::to_string(proxyoptions.port);
+    proxyurl += std::to_string(static_cast<long long>(proxyoptions.port));
     //proxyurl += "/";
     pXmlNanoHTTPScanProxy(proxyurl.c_str());  // http://toto:admin@127.0.0.1:8080
   } else {
@@ -1643,7 +1670,8 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 	  }
 	
     // Check de la syntaxe (disabled)
-    /*if (FALSE) {
+/*
+    if (FALSE) {
       //updateProxyConfig();
       xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
       if (doc == NULL) {
@@ -1666,7 +1694,8 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
       }
 
       pXmlFreeDoc(doc);
-    }*/
+    }
+*/
 
     str += data;
     delete[] data;
@@ -1730,7 +1759,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 
         ++curpos;           // go to next char
       }
-    /*
+/*
       while (curpos < str.length()-2 && (curpos = str.find("><",curpos)) != std::string::npos) {
         // we compare previous and next tags; if they are same, we don't add line break
         startprev = str.rfind("<",curpos);
@@ -1745,7 +1774,8 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           str.insert(++curpos,"\n");
 
         ++curpos;// go to next char
-      }*/
+      }
+*/
 
       // reinitialize cursor pos for second pass
       curpos = 0;
@@ -1878,12 +1908,12 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
       }
     }
 
-    // Send formated string to scintilla
-	  if (selend > selstart) {
+    // Send formatted string to scintilla
+    if (selend > selstart) {
       ::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(str.c_str()));
-	  } else {
-		  ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
-	  }
+    } else {
+      ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
+    }
 
     str.clear();
 
@@ -1940,7 +1970,7 @@ void prettyPrintLibXML() {
 
     xmlDocPtr doc;
 
-    //updateProxyConfig();
+//  updateProxyConfig();
     doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
     if (doc == NULL) {
       Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
@@ -1965,18 +1995,18 @@ void prettyPrintLibXML() {
     }
     if (indentString) pXmlThrDefTreeIndentString(indentString);
 
-    /*
-      ops->indent = 1;
-      ops->indent_tab = 0;
-      ops->indent_spaces = 2;
-      ops->omit_decl = 0;
-      ops->recovery = 0;
-      ops->dropdtd = 0;
-      ops->options = 0;
-    */
+/*
+    ops->indent = 1;
+    ops->indent_tab = 0;
+    ops->indent_spaces = 2;
+    ops->omit_decl = 0;
+    ops->recovery = 0;
+    ops->dropdtd = 0;
+    ops->options = 0;
+*/
     pXmlDocDumpFormatMemory(doc,&mem,&numbytes,1);
 
-    // Send formated string to scintilla
+    // Send formatted string to scintilla
     ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(mem));
 
     // Restore scrolling
@@ -2108,7 +2138,7 @@ void prettyPrintAttributes() {
       }
     }
 
-    // Send formated string to scintilla
+    // Send formatted string to scintilla
     ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
 
     // Restore scrolling
@@ -2173,7 +2203,7 @@ void linarizeXML() {
       }
     }
 
-    // Send formated string to scintilla
+    // Send formatted string to scintilla
     ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
 
     str.clear();
