@@ -19,32 +19,32 @@ class CHowtoUseDlg : public CDialog
 {
 // Construction
 public:
-	CHowtoUseDlg(CWnd* pParent = NULL);   // standard constructor
+  CHowtoUseDlg(CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
-	//{{AFX_DATA(CHowtoUseDlg)
-	enum { IDD = IDD_HOWTOUSE };
-		// NOTE: the ClassWizard will add data members here
-	//}}AFX_DATA
+  //{{AFX_DATA(CHowtoUseDlg)
+  enum { IDD = IDD_HOWTOUSE };
+    // NOTE: the ClassWizard will add data members here
+  //}}AFX_DATA
 
 
 // Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CHowtoUseDlg)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
+  // ClassWizard generated virtual function overrides
+  //{{AFX_VIRTUAL(CHowtoUseDlg)
+  protected:
+  virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+  //}}AFX_VIRTUAL
 
 // Implementation
 protected:
   CHyperLink m_wndExtlibsURL;
   CHyperLink m_wndExtlibsURL2;
 
-	// Generated message map functions
-	//{{AFX_MSG(CHowtoUseDlg)
-	virtual BOOL OnInitDialog();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+  // Generated message map functions
+  //{{AFX_MSG(CHowtoUseDlg)
+  virtual BOOL OnInitDialog();
+  //}}AFX_MSG
+  DECLARE_MESSAGE_MAP()
 public:
 };
 

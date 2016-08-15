@@ -21,30 +21,30 @@ static char THIS_FILE[] = __FILE__;
 // CXSLTransformDlg dialog
 
 CXSLTransformDlg::CXSLTransformDlg(CWnd* pParent /*=NULL*/, unsigned long flags /*= 0*/)
-	: CDialog(CXSLTransformDlg::IDD, pParent) {
-	//{{AFX_DATA_INIT(CXSLTransformDlg)
-	m_sXSLTFile = _T("");
-	m_sXSLTOptions = _T("");
-	//}}AFX_DATA_INIT
+  : CDialog(CXSLTransformDlg::IDD, pParent) {
+  //{{AFX_DATA_INIT(CXSLTransformDlg)
+  m_sXSLTFile = _T("");
+  m_sXSLTOptions = _T("");
+  //}}AFX_DATA_INIT
   
   this->m_iFlags = flags;
 }
 
 
 void CXSLTransformDlg::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CXSLTransformDlg)
-	DDX_Text(pDX, IDC_EDIT_XSLTFILE, m_sXSLTFile);
-	DDX_Text(pDX, IDC_EDIT_XSLTOPTIONS, m_sXSLTOptions);
-	//}}AFX_DATA_MAP
+  CDialog::DoDataExchange(pDX);
+  //{{AFX_DATA_MAP(CXSLTransformDlg)
+  DDX_Text(pDX, IDC_EDIT_XSLTFILE, m_sXSLTFile);
+  DDX_Text(pDX, IDC_EDIT_XSLTOPTIONS, m_sXSLTOptions);
+  //}}AFX_DATA_MAP
 }
 
 
 BEGIN_MESSAGE_MAP(CXSLTransformDlg, CDialog)
-	//{{AFX_MSG_MAP(CXSLTransformDlg)
-	ON_BN_CLICKED(IDC_BTN_TRANSFORM, OnBtnTransform)
-	ON_BN_CLICKED(IDC_BTN_BROWSEXSLTFILE, OnBtnBrowseXSLTFile)
-	//}}AFX_MSG_MAP
+  //{{AFX_MSG_MAP(CXSLTransformDlg)
+  ON_BN_CLICKED(IDC_BTN_TRANSFORM, OnBtnTransform)
+  ON_BN_CLICKED(IDC_BTN_BROWSEXSLTFILE, OnBtnBrowseXSLTFile)
+  //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -55,15 +55,15 @@ HWND CXSLTransformDlg::getCurrentHScintilla(int which) {
 }
 
 BOOL CXSLTransformDlg::OnInitDialog() {
-	CDialog::OnInitDialog();
-	
+  CDialog::OnInitDialog();
+  
   CRect myRect;
   GetWindowRect(&myRect);
 
   MoveWindow(myRect.left+100, myRect.top+100, myRect.Width(), myRect.Height());
 
-	return TRUE;  // return TRUE unless you set the focus to a control
-	              // EXCEPTION: OCX Property Pages should return FALSE
+  return TRUE;  // return TRUE unless you set the focus to a control
+                // EXCEPTION: OCX Property Pages should return FALSE
 }
 
 /*

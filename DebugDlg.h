@@ -5,21 +5,21 @@
 
 class CDebugDlg : public CDialog
 {
-	DECLARE_DYNAMIC(CDebugDlg)
+  DECLARE_DYNAMIC(CDebugDlg)
 
 public:
-	CDebugDlg(CWnd* pParent = NULL);   // constructeur standard
-	virtual ~CDebugDlg();
+  CDebugDlg(CWnd* pParent = NULL);   // constructeur standard
+  virtual ~CDebugDlg();
 
   void addLine(CString line);
 
 // Données de boîte de dialogue
-	enum { IDD = IDD_DLGDEBUG };
+  enum { IDD = IDD_DLGDEBUG };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // Prise en charge de DDX/DDV
+  virtual void DoDataExchange(CDataExchange* pDX);    // Prise en charge de DDX/DDV
 
-	DECLARE_MESSAGE_MAP()
+  DECLARE_MESSAGE_MAP()
 public:
   CString s_valDebug;
   afx_msg void OnSize(UINT nType, int cx, int cy);

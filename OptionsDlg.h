@@ -13,23 +13,23 @@ struct struct_proxyoptions {
 
 class COptionsDlg : public CDialogEx
 {
-	DECLARE_DYNAMIC(COptionsDlg)
+  DECLARE_DYNAMIC(COptionsDlg)
 
 public:
-	COptionsDlg(CWnd* pParent = NULL, struct struct_proxyoptions* proxyoptions = NULL);   // constructeur standard
-	virtual ~COptionsDlg();
+  COptionsDlg(CWnd* pParent = NULL, struct struct_proxyoptions* proxyoptions = NULL);   // constructeur standard
+  virtual ~COptionsDlg();
 
 // Données de boîte de dialogue
-	enum { IDD = IDD_OPTIONS };
+  enum { IDD = IDD_OPTIONS };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // Prise en charge de DDX/DDV
+  virtual void DoDataExchange(CDataExchange* pDX);    // Prise en charge de DDX/DDV
 
   void updateEditFieldsStatus();
 
    struct struct_proxyoptions* proxyoptions;
 
-	DECLARE_MESSAGE_MAP()
+  DECLARE_MESSAGE_MAP()
 public:
   virtual BOOL OnInitDialog();
   afx_msg void OnBnClickedChkenableproxy();

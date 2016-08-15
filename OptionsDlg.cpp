@@ -13,7 +13,7 @@
 IMPLEMENT_DYNAMIC(COptionsDlg, CDialogEx)
 
 COptionsDlg::COptionsDlg(CWnd* pParent /*=NULL*/, struct struct_proxyoptions* proxyoptions /*=NULL*/)
-	: CDialogEx(COptionsDlg::IDD, pParent)
+  : CDialogEx(COptionsDlg::IDD, pParent)
 {
   this->proxyoptions = proxyoptions;
 }

@@ -13,7 +13,7 @@
 
 #include "LoadLibrary.h"
 
-extern HANDLE	g_hModule;
+extern HANDLE  g_hModule;
 HINSTANCE hInstLibXML  = NULL;
 HINSTANCE hInstLibXSL  = NULL;
 
@@ -31,8 +31,8 @@ xmlCharEncoding        (*pXmlParseCharEncoding)(const char * name);
 int                    (*pUTF8Toisolat1)(unsigned char * out, int * outlen, const unsigned char * in, int * inlen);
 int                    (*pisolat1ToUTF8)(unsigned char * out, int * outlen, const unsigned char * in, int * inlen);
 
-int	                   (*pXmlSaveFormatFile)(const char * filename, xmlDocPtr cur, int format);
-void	                 (*pXmlDocDumpFormatMemory)(xmlDocPtr cur, xmlChar ** mem, int * size, int format);
+int                     (*pXmlSaveFormatFile)(const char * filename, xmlDocPtr cur, int format);
+void                   (*pXmlDocDumpFormatMemory)(xmlDocPtr cur, xmlChar ** mem, int * size, int format);
 xmlNodePtr             (*pXmlDocGetRootElement)(xmlDocPtr doc);
 
 void                   (*pXmlUnlinkNode)(xmlNodePtr node);
@@ -47,9 +47,12 @@ xmlSchemaParserCtxtPtr (*pXmlSchemaNewParserCtxt)(const char *URL);
 void                   (*pXmlSchemaFreeParserCtxt)(xmlSchemaParserCtxtPtr ctxt);
 xmlSchemaValidCtxtPtr  (*pXmlSchemaNewValidCtxt)(xmlSchemaPtr schema);
 void                   (*pXmlSchemaFree)(xmlSchemaPtr schema);
+xmlParserCtxtPtr       (*pXmlNewParserCtxt)(void);
 void                   (*pXmlSchemaSetValidErrors)(xmlSchemaValidCtxtPtr ctxt, xmlSchemaValidityErrorFunc err, xmlSchemaValidityWarningFunc warn, void *ctx);
 void                   (*pXmlSchemaFreeValidCtxt)(xmlSchemaValidCtxtPtr ctxt);
 int                    (*pXmlSchemaValidateDoc)(xmlSchemaValidCtxtPtr ctxt, xmlDocPtr instance);
+void                   (*pXmlSchemaValidateSetLocator)(xmlSchemaValidCtxtPtr vctxt, xmlSchemaValidityLocatorFunc f, void * ctxt);
+//int                    (*pXmlSchemaValidityLocatorFunc)(void * ctx, const char ** file, unsigned long * line);
 
 xmlValidCtxtPtr        (*pXmlNewValidCtxt)(void);
 void                   (*pXmlFreeValidCtxt)(xmlValidCtxtPtr);
@@ -77,8 +80,8 @@ int                    (*pXmlKeepBlanksDefault)(int val);
 int                    (*pXmlThrDefIndentTreeOutput)(int v);
 const char *           (*pXmlThrDefTreeIndentString)(const char * v);
 
-void	               (*pXmlNanoHTTPInit)(void);
-void	               (*pXmlNanoHTTPScanProxy)(const char * URL);
+void                   (*pXmlNanoHTTPInit)(void);
+void                   (*pXmlNanoHTTPScanProxy)(const char * URL);
 const char *           (*pXmlNanoHTTPAuthHeader)(void *ctx);
 
 
@@ -140,7 +143,7 @@ int loadLibraries(wchar_t* nppMainPath, wchar_t* appDataPath) {
   // loading LIBXML
   hInstLibXML = loadExtLib(L"libxml2-2.dll", nppMainPath, appDataPath);
   if (hInstLibXML == NULL) {
-	  return -1;
+    return -1;
   }
 
   // loading LIBXSLT
@@ -164,7 +167,7 @@ int loadLibraries(wchar_t* nppMainPath, wchar_t* appDataPath) {
   pisolat1ToUTF8 =                (int (__cdecl *)(unsigned char *, int *, const unsigned char *, int *))GetProcAddress(hInstLibXML, "isolat1ToUTF8"); assert(pisolat1ToUTF8);
 
   pXmlSaveFormatFile =            (int (__cdecl *)(const char *, xmlDocPtr, int))GetProcAddress(hInstLibXML, "xmlSaveFormatFile"); assert(pXmlSaveFormatFile);
-  pXmlDocDumpFormatMemory =       (void	(__cdecl *)(xmlDocPtr, xmlChar **, int *, int))GetProcAddress(hInstLibXML, "xmlDocDumpFormatMemory"); assert(pXmlDocDumpFormatMemory);
+  pXmlDocDumpFormatMemory =       (void  (__cdecl *)(xmlDocPtr, xmlChar **, int *, int))GetProcAddress(hInstLibXML, "xmlDocDumpFormatMemory"); assert(pXmlDocDumpFormatMemory);
   pXmlDocGetRootElement =         (xmlNodePtr (__cdecl *)(xmlDocPtr))GetProcAddress(hInstLibXML, "xmlDocGetRootElement"); assert(pXmlDocGetRootElement);
   pXmlUnlinkNode =                (void (__cdecl *)(xmlNodePtr))GetProcAddress(hInstLibXML, "xmlUnlinkNode"); assert(pXmlUnlinkNode);
   pXmlFreeNode =                  (void (__cdecl *)(xmlNodePtr))GetProcAddress(hInstLibXML, "xmlFreeNode"); assert(pXmlFreeNode);
@@ -178,9 +181,12 @@ int loadLibraries(wchar_t* nppMainPath, wchar_t* appDataPath) {
   pXmlSchemaFreeParserCtxt =      (void (__cdecl *)(xmlSchemaParserCtxtPtr))GetProcAddress(hInstLibXML, "xmlSchemaFreeParserCtxt"); assert(pXmlSchemaFreeParserCtxt);
   pXmlSchemaNewValidCtxt =        (xmlSchemaValidCtxtPtr (__cdecl *)(xmlSchemaPtr))GetProcAddress(hInstLibXML, "xmlSchemaNewValidCtxt"); assert(pXmlSchemaNewValidCtxt);
   pXmlSchemaFree =                (void (__cdecl *)(xmlSchemaPtr))GetProcAddress(hInstLibXML, "xmlSchemaFree"); assert(pXmlSchemaFree);
+  pXmlNewParserCtxt =             (xmlParserCtxtPtr (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlNewParserCtxt"); assert(pXmlNewParserCtxt);
   pXmlSchemaSetValidErrors =      (void (__cdecl *)(xmlSchemaValidCtxtPtr, xmlSchemaValidityErrorFunc, xmlSchemaValidityWarningFunc, void *))GetProcAddress(hInstLibXML, "xmlSchemaSetValidErrors"); assert(pXmlSchemaSetValidErrors);
   pXmlSchemaFreeValidCtxt =       (void (__cdecl *)(xmlSchemaValidCtxtPtr))GetProcAddress(hInstLibXML, "xmlSchemaFreeValidCtxt"); assert(pXmlSchemaFreeValidCtxt);
   pXmlSchemaValidateDoc =         (int (__cdecl *)(xmlSchemaValidCtxtPtr, xmlDocPtr))GetProcAddress(hInstLibXML, "xmlSchemaValidateDoc"); assert(pXmlSchemaValidateDoc);
+  pXmlSchemaValidateSetLocator =  (void (__cdecl *)(xmlSchemaValidCtxtPtr, xmlSchemaValidityLocatorFunc, void *))GetProcAddress(hInstLibXML, "xmlSchemaValidateSetLocator"); assert(pXmlSchemaValidateSetLocator);
+  //pXmlSchemaValidityLocatorFunc = (int (__cdecl *)(void *, const char **, unsigned long *))GetProcAddress(hInstLibXML, "xmlSchemaValidityLocatorFunc"); assert(pXmlSchemaValidityLocatorFunc);
 
   pXmlNewValidCtxt =              (xmlValidCtxtPtr (__cdecl *)(void))GetProcAddress(hInstLibXML, "xmlNewValidCtxt"); assert(pXmlNewValidCtxt);
   pXmlFreeValidCtxt =             (void (__cdecl *)(xmlValidCtxtPtr))GetProcAddress(hInstLibXML, "xmlFreeValidCtxt"); assert(pXmlFreeValidCtxt);

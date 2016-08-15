@@ -16,29 +16,29 @@ static char THIS_FILE[] = __FILE__;
 
 
 CSelectFileDlg::CSelectFileDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CSelectFileDlg::IDD, pParent)
+  : CDialog(CSelectFileDlg::IDD, pParent)
 {
-	//{{AFX_DATA_INIT(CSelectFileDlg)
-	m_sSelectedFilename = _T("");
-	m_sRootElementSample = _T("");
-	//}}AFX_DATA_INIT
+  //{{AFX_DATA_INIT(CSelectFileDlg)
+  m_sSelectedFilename = _T("");
+  m_sRootElementSample = _T("");
+  //}}AFX_DATA_INIT
 }
 
 
 void CSelectFileDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CSelectFileDlg)
-	DDX_Text(pDX, IDC_EDIT_FILENAME, m_sSelectedFilename);
-	DDX_Text(pDX, IDC_EDIT_ROOTELEMSAMPLE, m_sRootElementSample);
-	//}}AFX_DATA_MAP
+  CDialog::DoDataExchange(pDX);
+  //{{AFX_DATA_MAP(CSelectFileDlg)
+  DDX_Text(pDX, IDC_EDIT_FILENAME, m_sSelectedFilename);
+  DDX_Text(pDX, IDC_EDIT_ROOTELEMSAMPLE, m_sRootElementSample);
+  //}}AFX_DATA_MAP
 }
 
 
 BEGIN_MESSAGE_MAP(CSelectFileDlg, CDialog)
-	//{{AFX_MSG_MAP(CSelectFileDlg)
-	ON_BN_CLICKED(IDC_BTN_EXPLORE_XSDFILE, OnBtnExploreXSDFile)
-	//}}AFX_MSG_MAP
+  //{{AFX_MSG_MAP(CSelectFileDlg)
+  ON_BN_CLICKED(IDC_BTN_EXPLORE_XSDFILE, OnBtnExploreXSDFile)
+  //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////

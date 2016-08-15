@@ -12,7 +12,7 @@
 IMPLEMENT_DYNAMIC(CDebugDlg, CDialog)
 
 CDebugDlg::CDebugDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CDebugDlg::IDD, pParent)
+  : CDialog(CDebugDlg::IDD, pParent)
 {
 
 }
@@ -48,7 +48,7 @@ END_MESSAGE_MAP()
 
 void CDebugDlg::OnSize(UINT nType, int cx, int cy) {
   CDialog::OnSize(nType, cx, cy);
-	
+  
   CWnd *txt_wnd = GetDlgItem(IDC_EDITDEBUG);
   if (txt_wnd) {
     int border = 8;

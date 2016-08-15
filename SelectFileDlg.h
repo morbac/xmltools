@@ -14,32 +14,32 @@ class CSelectFileDlg : public CDialog
 {
 // Construction
 public:
-	CSelectFileDlg(CWnd* pParent = NULL);   // standard constructor
+  CSelectFileDlg(CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
-	//{{AFX_DATA(CSelectFileDlg)
-	enum { IDD = IDD_SELECTFILE };
-	CString	m_sSelectedFilename;
-	CString	m_sRootElementSample;
-	//}}AFX_DATA
+  //{{AFX_DATA(CSelectFileDlg)
+  enum { IDD = IDD_SELECTFILE };
+  CString  m_sSelectedFilename;
+  CString  m_sRootElementSample;
+  //}}AFX_DATA
 
   CString ShowOpenFileDlg(CString filetypes);
 
 // Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CSelectFileDlg)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
+  // ClassWizard generated virtual function overrides
+  //{{AFX_VIRTUAL(CSelectFileDlg)
+  protected:
+  virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+  //}}AFX_VIRTUAL
 
 // Implementation
 protected:
 
-	// Generated message map functions
-	//{{AFX_MSG(CSelectFileDlg)
-	afx_msg void OnBtnExploreXSDFile();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+  // Generated message map functions
+  //{{AFX_MSG(CSelectFileDlg)
+  afx_msg void OnBtnExploreXSDFile();
+  //}}AFX_MSG
+  DECLARE_MESSAGE_MAP()
 };
 
 //{{AFX_INSERT_LOCATION}}

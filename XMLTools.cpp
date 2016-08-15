@@ -486,10 +486,10 @@ CXMLToolsApp::CXMLToolsApp() {
 
     Report::strcpy(funcItem[menuentry]._itemName, L"Check for plugin updates on startup");
     funcItem[menuentry]._pFunc = toggleCheckUpdates;
-	  funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, L"doCheckUpdates", 1, iniFilePath) != 0);
-	  doCheckUpdates = funcItem[menuentry]._init2Check;
-	  menuitemCheckUpdates = menuentry;
-	  ++menuentry;
+    funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, L"doCheckUpdates", 1, iniFilePath) != 0);
+    doCheckUpdates = funcItem[menuentry]._init2Check;
+    menuitemCheckUpdates = menuentry;
+    ++menuentry;
   
     Report::strcpy(funcItem[menuentry]._itemName, L"Options...");
     funcItem[menuentry]._pFunc = optionsDlg;
@@ -680,7 +680,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
         }
 /*
         if (doPrettyPrint) {
-	      LangType docType = L_EXTERNAL;
+        LangType docType = L_EXTERNAL;
            ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
            //Report::_printf_inf("%s", getLangType(docType));
            if (docType == L_XML) prettyPrintLibXML();
@@ -696,9 +696,9 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 }
 
 #ifdef UNICODE
-	extern "C" __declspec(dllexport) BOOL isUnicode() {
-		return TRUE;
-	}
+  extern "C" __declspec(dllexport) BOOL isUnicode() {
+    return TRUE;
+  }
 #endif //UNICODE
 
 void insertXMLCheckTag() {
@@ -788,7 +788,7 @@ size_t curlWriteData(void *ptr, size_t size, size_t nmemb, void *stream) {
   if (reinterpret_cast<std::wstring*>(stream)->size() > 1024)
     return 0;
 
-  while (pos < total)	{
+  while (pos < total) {
     reinterpret_cast<std::wstring*>(stream)->push_back(*tptr);
     tptr++;
     ++pos;
@@ -808,7 +808,7 @@ std::wstring getLatestVersion(const char* url) {
     curl_easy_setopt(curl, CURLOPT_URL, url);
 
     if (proxyoptions.status && wcslen(proxyoptions.host) > 0) {
-		  curl_easy_setopt(curl, CURLOPT_PROXY, Report::wchar2char(proxyoptions.host));
+      curl_easy_setopt(curl, CURLOPT_PROXY, Report::wchar2char(proxyoptions.host));
       curl_easy_setopt(curl, CURLOPT_PROXYPORT, proxyoptions.port);
 
 /*
@@ -820,17 +820,17 @@ std::wstring getLatestVersion(const char* url) {
       }
     }
 */
-	} else {
-	  curl_easy_setopt(curl, CURLOPT_PROXY, NULL);
-	  curl_easy_setopt(curl, CURLOPT_PROXYPORT, NULL);
+  } else {
+    curl_easy_setopt(curl, CURLOPT_PROXY, NULL);
+    curl_easy_setopt(curl, CURLOPT_PROXYPORT, NULL);
 //    curl_easy_setopt(curl, CURLOPT_PROXYUSERNAME, NULL);
 //    curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, NULL);
 //    curl_easy_setopt(curl, CURLOPT_PROXYAUTH, CURLAUTH_NONE);
     }
  
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteData);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
-		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
 
     CURLcode rescode = curl_easy_perform(curl);
     long httpCode = 0;
@@ -1058,6 +1058,28 @@ void manualXMLCheck() {
   performXMLCheck(1);
 }
 
+static int xmlSchemaValidateStreamLocator(void *ctx, const char** file, unsigned long *line) {
+	xmlParserCtxtPtr ctxt;
+
+	if ((ctx == NULL) || ((file == NULL) && (line == NULL)))
+		return(-1);
+
+	if (file != NULL)
+		*file = NULL;
+	if (line != NULL)
+		*line = 0;
+
+	ctxt = (xmlParserCtxtPtr)ctx;
+	if (ctxt->input != NULL) {
+		if (file != NULL)
+			*file = ctxt->input->filename;
+		if (line != NULL)
+			*line = ctxt->input->line;
+		return(0);
+	}
+	return(-1);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 CSelectFileDlg* pSelectFileDlg = NULL;
@@ -1109,9 +1131,9 @@ void XMLValidation(int informIfNoError) {
       if (err->line > 0) {
         ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
       }
-	    wchar_t* tmpmsg = Report::castChar(err->message);
+      wchar_t* tmpmsg = Report::castChar(err->message);
       Report::_printf_err(L"XML Parsing error at line %d: \r\n%s", err->line, tmpmsg);
-	    delete[] tmpmsg;
+      delete[] tmpmsg;
     } else {
       Report::_printf_err(L"Failed to parse document");
     }
@@ -1158,9 +1180,9 @@ void XMLValidation(int informIfNoError) {
         }
 
         if (dtdPtr == NULL) {
-		      wchar_t* tmpmsg = Report::castChar(dtd_filename.c_str());  
+          wchar_t* tmpmsg = Report::castChar(dtd_filename.c_str());  
           Report::_printf_err(L"Unable to load the DTD\r\n%s", tmpmsg);
-		      delete[] tmpmsg;
+          delete[] tmpmsg;
           abortValidation = true;
         } else {
           dtdValidation = true;
@@ -1182,7 +1204,7 @@ void XMLValidation(int informIfNoError) {
       pSelectFileDlg->m_sSelectedFilename = Report::widen(lastXMLSchema).c_str();
 
       CString rootSample = "<";
-	    Report::appendToCString(&rootSample, rootnode->name, encoding);
+      Report::appendToCString(&rootSample, rootnode->name, encoding);
       rootSample += "\r\n\txmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
       rootSample += "\r\n\txsi:noNamespaceSchemaLocation=\"XSD_FILE_PATH\">";
 
@@ -1237,6 +1259,7 @@ void XMLValidation(int informIfNoError) {
             Report::clearLog();
             Report::registerMessage("Validation of current file using XML schema:\r\n\r\n");
             pXmlSchemaSetValidErrors(vctxt, (xmlSchemaValidityErrorFunc) Report::registerError, (xmlSchemaValidityWarningFunc) Report::registerWarn, stderr);
+			//pXmlSchemaValidateSetLocator(vctxt, xmlSchemaValidateStreamLocator, pctxt);
 
             // Validation
             if (!pXmlSchemaValidateDoc(vctxt, doc)) {
@@ -1251,9 +1274,9 @@ void XMLValidation(int informIfNoError) {
           // 2.4. On libère le parseur
           pXmlSchemaFree(schema);
           pXmlSchemaFreeValidCtxt(vctxt);
-		    }
+        }
 
-		    pXmlSchemaFreeParserCtxt(pctxt);
+        pXmlSchemaFreeParserCtxt(pctxt);
       }
     }
 
@@ -1337,15 +1360,15 @@ void closeXMLTag() {
       // search the beginning of tag
       // TODO: optimize by not looping on every char !
       for (; pCur > pBegin && *pCur != '<' && *pCur != '>' ;) {
-		    --pCur;
-	    }
+        --pCur;
+      }
 
       if (*pCur == '<') {
         ++pCur;
         if (*pCur == '/' || *pCur == '!') return;
 
         // search attributes of 
-		    while (*pCur != '>' && *pCur != ' ' && *pCur != '\n' && *pCur != '\r') {
+        while (*pCur != '>' && *pCur != ' ' && *pCur != '\n' && *pCur != '\r') {
         //while (IsCharAlphaNumeric(*pCur) || strchr(":_-.", *pCur) != NULL) {
           if (insertStringSize == MAX_TAGNAME_LENGTH-1) return;
           insertString[insertStringSize++] = *pCur;
@@ -1622,7 +1645,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     xOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETXOFFSET, 0, 0);
     yOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
 
-	  char *data = NULL;
+    char *data = NULL;
 
     // count the < and > signs; > are ignored if tagsignlevel <= 0. This prevent indent errors if text or attributes contain > sign.
     int tagsignlevel = 0;
@@ -1647,28 +1670,28 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     // il faudrait calculer l'indentation de la 1re ligne de sélection, mais l'indentation
     // de cette ligne n'est peut-être pas correcte. On pourrait la déterminer en récupérant
     // le path de la banche sélectionnée...
-	  selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-	  selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
+    selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
+    selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
 
     std::string str("");
     std::string eolchar;
     int eolmode;
     Report::getEOLChar(hCurrentEditView, &eolmode, &eolchar);
 
-	  if (selend > selstart) {
-		  currentLength = selend-selstart;
-		  data = new char[currentLength+1];
-		  if (!data) return;  // allocation error, abort check
-		  memset(data, '\0', currentLength+1);
-		  ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
-	  } else {
-		  currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
-		  data = new char[currentLength+1];
-		  if (!data) return;  // allocation error, abort check
-		  memset(data, '\0', currentLength+1);
-		  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
-	  }
-	
+    if (selend > selstart) {
+      currentLength = selend-selstart;
+      data = new char[currentLength+1];
+      if (!data) return;  // allocation error, abort check
+      memset(data, '\0', currentLength+1);
+      ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
+    } else {
+      currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+      data = new char[currentLength+1];
+      if (!data) return;  // allocation error, abort check
+      memset(data, '\0', currentLength+1);
+      ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
+    }
+
     // Check de la syntaxe (disabled)
 /*
     if (FALSE) {
@@ -1682,9 +1705,9 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           if (err->line > 0) {
             ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
           }
-		      wchar_t* tmpmsg = Report::castChar(err->message);  
+          wchar_t* tmpmsg = Report::castChar(err->message);  
           Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.\nLine %d: \r\n%s", err->line, tmpmsg);
-	        delete[] tmpmsg;
+          delete[] tmpmsg;
         } else {
           Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
         }
@@ -2213,9 +2236,9 @@ void linarizeXML() {
 void togglePrettyPrintAllFiles() {
   dbgln("togglePrettyPrintAllFiles()");
 
-	doPrettyPrintAllOpenFiles = !doPrettyPrintAllOpenFiles;
-	::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemPrettyPrintAllFiles]._cmdID, MF_BYCOMMAND | (doPrettyPrintAllOpenFiles?MF_CHECKED:MF_UNCHECKED));
-	savePluginParams();
+  doPrettyPrintAllOpenFiles = !doPrettyPrintAllOpenFiles;
+  ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemPrettyPrintAllFiles]._cmdID, MF_BYCOMMAND | (doPrettyPrintAllOpenFiles?MF_CHECKED:MF_UNCHECKED));
+  savePluginParams();
 }
 
 int initDocIterator() {

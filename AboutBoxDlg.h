@@ -25,19 +25,19 @@
 */
 class CAboutBoxDlg : public CDialog
 {
-	DECLARE_DYNAMIC(CAboutBoxDlg)
+  DECLARE_DYNAMIC(CAboutBoxDlg)
 
 public:
-	CAboutBoxDlg(CWnd* pParent = NULL);   // constructeur standard
-	virtual ~CAboutBoxDlg();
+  CAboutBoxDlg(CWnd* pParent = NULL);   // constructeur standard
+  virtual ~CAboutBoxDlg();
 
 // Données de boîte de dialogue
-	enum { IDD = IDD_ABOUTBOX };
+  enum { IDD = IDD_ABOUTBOX };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // Prise en charge de DDX/DDV
+  virtual void DoDataExchange(CDataExchange* pDX);    // Prise en charge de DDX/DDV
 
-	DECLARE_MESSAGE_MAP()
+  DECLARE_MESSAGE_MAP()
 public:
   virtual BOOL OnInitDialog();
   afx_msg void OnBnClickedButton1();

@@ -16,27 +16,27 @@ static char THIS_FILE[] = __FILE__;
 
 
 CMessageDlg::CMessageDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CMessageDlg::IDD, pParent)
+  : CDialog(CMessageDlg::IDD, pParent)
 {
-	//{{AFX_DATA_INIT(CMessageDlg)
-	m_sMessage = _T("");
-	//}}AFX_DATA_INIT
+  //{{AFX_DATA_INIT(CMessageDlg)
+  m_sMessage = _T("");
+  //}}AFX_DATA_INIT
 }
 
 
 void CMessageDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CMessageDlg)
-	DDX_Text(pDX, IDC_EDIT_MULTILINEMSG, m_sMessage);
-	//}}AFX_DATA_MAP
+  CDialog::DoDataExchange(pDX);
+  //{{AFX_DATA_MAP(CMessageDlg)
+  DDX_Text(pDX, IDC_EDIT_MULTILINEMSG, m_sMessage);
+  //}}AFX_DATA_MAP
 }
 
 
 BEGIN_MESSAGE_MAP(CMessageDlg, CDialog)
-	//{{AFX_MSG_MAP(CMessageDlg)
-	ON_WM_SIZE()
-	//}}AFX_MSG_MAP
+  //{{AFX_MSG_MAP(CMessageDlg)
+  ON_WM_SIZE()
+  //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////

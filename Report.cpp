@@ -216,7 +216,7 @@ void Report::strcpy(char* dest, const wchar_t* src) {
 
 void Report::strcpy(char* dest, std::wstring& src) {
   //strcpy(params[nbparams], key.c_str());
-	std::copy(src.c_str(), src.c_str()+src.length()+1, dest);
+  std::copy(src.c_str(), src.c_str()+src.length()+1, dest);
 }
 
 void Report::strcpy(wchar_t* dest, const wchar_t* src) {
@@ -400,12 +400,12 @@ void Report::setEncoding(UniMode encoding, HWND npp /* = NULL */) {
   
   // uni8Bit=0, uniUTF8=1, uni16BE=2, uni16LE=3, uniCookie=4, uni7Bit=5, uni16BE_NoBOM=6, uni16LE_NoBOM=7
   switch (encoding) {
-	  case uni8Bit: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_ANSI); break;
-	  case uniUTF8: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_UTF_8); break;
-	  case uni16BE: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_UCS_2BE); break;
-	  case uni16LE: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_UCS_2LE); break;
-	  case uniCookie: 
-	  default: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_AS_UTF_8); break;
+    case uni8Bit: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_ANSI); break;
+    case uniUTF8: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_UTF_8); break;
+    case uni16BE: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_UCS_2BE); break;
+    case uni16LE: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_UCS_2LE); break;
+    case uniCookie: 
+    default: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_AS_UTF_8); break;
   }
 }
 
@@ -484,69 +484,69 @@ void Report::appendToCString(CString* dest, const xmlChar* source, UniMode encod
 }
 
 unsigned int Report::UTF8Length(const wchar_t *uptr, unsigned int tlen) {
-	unsigned int len = 0;
-	for (unsigned int i = 0; i < tlen && uptr[i]; ++i) {
-		unsigned int uch = uptr[i];
-		if (uch < 0x80)
-			++len;
-		else if (uch < 0x800)
-			len += 2;
-		else 
-			len +=3;
-	}
-	return len;
+  unsigned int len = 0;
+  for (unsigned int i = 0; i < tlen && uptr[i]; ++i) {
+    unsigned int uch = uptr[i];
+    if (uch < 0x80)
+      ++len;
+    else if (uch < 0x800)
+      len += 2;
+    else 
+      len +=3;
+  }
+  return len;
 }
 
 void Report::UTF8FromUCS2(const wchar_t *uptr, unsigned int tlen, char *putf, unsigned int len) {
-	int k = 0;
-	for (unsigned int i = 0; i < tlen && uptr[i]; ++i) {
-		unsigned int uch = uptr[i];
-		if (uch < 0x80) {
-			putf[k++] = static_cast<char>(uch);
-		} else if (uch < 0x800) {
-			putf[k++] = static_cast<char>(0xC0 | (uch >> 6));
-			putf[k++] = static_cast<char>(0x80 | (uch & 0x3f));
-		} else {
-			putf[k++] = static_cast<char>(0xE0 | (uch >> 12));
-			putf[k++] = static_cast<char>(0x80 | ((uch >> 6) & 0x3f));
-			putf[k++] = static_cast<char>(0x80 | (uch & 0x3f));
-		}
-	}
-	putf[len] = '\0';
+  int k = 0;
+  for (unsigned int i = 0; i < tlen && uptr[i]; ++i) {
+    unsigned int uch = uptr[i];
+    if (uch < 0x80) {
+      putf[k++] = static_cast<char>(uch);
+    } else if (uch < 0x800) {
+      putf[k++] = static_cast<char>(0xC0 | (uch >> 6));
+      putf[k++] = static_cast<char>(0x80 | (uch & 0x3f));
+    } else {
+      putf[k++] = static_cast<char>(0xE0 | (uch >> 12));
+      putf[k++] = static_cast<char>(0x80 | ((uch >> 6) & 0x3f));
+      putf[k++] = static_cast<char>(0x80 | (uch & 0x3f));
+    }
+  }
+  putf[len] = '\0';
 }
 
 unsigned int Report::UCS2Length(const char *s, unsigned int len) {
-	unsigned int ulen = 0;
-	for (unsigned int i=0; i<len; ++i) {
-		UCHAR ch = static_cast<UCHAR>(s[i]);
-		if ((ch < 0x80) || (ch > (0x80 + 0x40)))
-			++ulen;
-	}
-	return ulen;
+  unsigned int ulen = 0;
+  for (unsigned int i=0; i<len; ++i) {
+    UCHAR ch = static_cast<UCHAR>(s[i]);
+    if ((ch < 0x80) || (ch > (0x80 + 0x40)))
+      ++ulen;
+  }
+  return ulen;
 }
 
 unsigned int Report::UCS2FromUTF8(const char *s, unsigned int len, wchar_t *tbuf, unsigned int tlen) {
-	unsigned int ui=0;
-	const UCHAR *us = reinterpret_cast<const UCHAR *>(s);
-	unsigned int i=0;
-	while ((i<len) && (ui<tlen)) {
-		UCHAR ch = us[i++];
-		if (ch < 0x80) {
-			tbuf[ui] = ch;
-		} else if (ch < 0x80 + 0x40 + 0x20) {
-			tbuf[ui] = static_cast<wchar_t>((ch & 0x1F) << 6);
-			ch = us[i++];
-			tbuf[ui] = static_cast<wchar_t>(tbuf[ui] + (ch & 0x7F));
-		} else {
-			tbuf[ui] = static_cast<wchar_t>((ch & 0xF) << 12);
-			ch = us[i++];
-			tbuf[ui] = static_cast<wchar_t>(tbuf[ui] + ((ch & 0x7F) << 6));
-			ch = us[i++];
-			tbuf[ui] = static_cast<wchar_t>(tbuf[ui] + (ch & 0x7F));
-		}
-		ui++;
-	}
-	return ui;
+  unsigned int ui=0;
+  const UCHAR *us = reinterpret_cast<const UCHAR *>(s);
+  unsigned int i=0;
+  while ((i<len) && (ui<tlen)) {
+    UCHAR ch = us[i++];
+    if (ch < 0x80) {
+      tbuf[ui] = ch;
+    } else if (ch < 0x80 + 0x40 + 0x20) {
+      tbuf[ui] = static_cast<wchar_t>((ch & 0x1F) << 6);
+      ch = us[i++];
+      tbuf[ui] = static_cast<wchar_t>(tbuf[ui] + (ch & 0x7F));
+    } else {
+      tbuf[ui] = static_cast<wchar_t>((ch & 0xF) << 12);
+      ch = us[i++];
+      tbuf[ui] = static_cast<wchar_t>(tbuf[ui] + ((ch & 0x7F) << 6));
+      ch = us[i++];
+      tbuf[ui] = static_cast<wchar_t>(tbuf[ui] + (ch & 0x7F));
+    }
+    ui++;
+  }
+  return ui;
 }
 
 unsigned int Report::ascii_to_utf8(const char * pszASCII, unsigned int lenASCII, char * pszUTF8) {

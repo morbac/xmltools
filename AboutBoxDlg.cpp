@@ -15,7 +15,7 @@
 IMPLEMENT_DYNAMIC(CAboutBoxDlg, CDialogEx)
 
 CAboutBoxDlg::CAboutBoxDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CAboutBoxDlg::IDD, pParent)
+  : CDialog(CAboutBoxDlg::IDD, pParent)
 {
 
 }
@@ -26,13 +26,13 @@ CAboutBoxDlg::~CAboutBoxDlg()
 
 void CAboutBoxDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
+  CDialog::DoDataExchange(pDX);
 }
 
 
 BEGIN_MESSAGE_MAP(CAboutBoxDlg, CDialog)
-	//{{AFX_MSG_MAP(CAboutBoxDlg)
-	//}}AFX_MSG_MAP
+  //{{AFX_MSG_MAP(CAboutBoxDlg)
+  //}}AFX_MSG_MAP
   ON_BN_CLICKED(IDC_BUTTON1, &CAboutBoxDlg::OnBnClickedButton1)
 END_MESSAGE_MAP()
 

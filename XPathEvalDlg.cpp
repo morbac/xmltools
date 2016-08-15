@@ -45,8 +45,8 @@ BEGIN_MESSAGE_MAP(CXPathEvalDlg, CDialog)
   //{{AFX_MSG_MAP(CXPathEvalDlg)
   ON_BN_CLICKED(IDC_BTN_EVALUATE, OnBtnEvaluate)
   ON_BN_CLICKED(IDC_BTN_COPY2CLIPBOARD, OnBnClickedBtnCopy2clipboard)
-	ON_WM_SIZE()
-	//}}AFX_MSG_MAP
+  ON_WM_SIZE()
+  //}}AFX_MSG_MAP
   ON_EN_CHANGE(IDC_EDIT_EXPRESSION, OnEnChangeEditExpression)
 //  ON_WM_DESTROY()
 //ON_WM_CLOSE()
@@ -213,8 +213,8 @@ int CXPathEvalDlg::register_namespaces_ex(xmlXPathContextPtr xpathCtx, xmlDocPtr
     xmlNsPtr ns = node->nsDef;
     while (node->type == XML_ELEMENT_NODE && ns) {
       if (ns->prefix != NULL) {
-		    pXmlXPathRegisterNs(xpathCtx, ns->prefix, ns->href);
-	    }
+        pXmlXPathRegisterNs(xpathCtx, ns->prefix, ns->href);
+      }
       ns = ns->next;
     }
     node = node->next;
@@ -253,7 +253,7 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
       break;
     }
     case XPATH_NODESET: {
-      xmlNodeSetPtr	nodes = xpathObj->nodesetval;
+      xmlNodeSetPtr  nodes = xpathObj->nodesetval;
       int size = (nodes) ? nodes->nodeNr : 0;
 
       if (size == 0) {
@@ -267,7 +267,7 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
         assert(nodes->nodeTab[i]);
 
         xmlNodePtr cur = nodes->nodeTab[i];
-		    bool doIgnore = false;
+        bool doIgnore = false;
 
         switch (cur->type) {
           case XML_ELEMENT_NODE: {
@@ -287,9 +287,9 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
               xmlNodePtr txtnode = cur->children;
               itemvalue = L"";
               while (txtnode != cur->last) {
-		            if (txtnode->type == XML_TEXT_NODE) {
+                if (txtnode->type == XML_TEXT_NODE) {
                   Report::appendToCString(&itemvalue, txtnode->content, encoding);
-		            }
+                }
                 txtnode = txtnode->next;
               }
               if (txtnode->type == XML_TEXT_NODE) {
@@ -340,52 +340,52 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
               itemvalue = "";
             }
             break;
-		      }
+          }
           case XML_TEXT_NODE: {
-		        itemtype = "Text";
-		        itemname = "";
-		        itemvalue = "";
-		        Report::appendToCString(&itemvalue, cur->content, encoding);
+            itemtype = "Text";
+            itemname = "";
+            itemvalue = "";
+            Report::appendToCString(&itemvalue, cur->content, encoding);
 
-		        itemvalue.Trim();
-		        if (itemvalue.IsEmpty()) {
+            itemvalue.Trim();
+            if (itemvalue.IsEmpty()) {
               doIgnore = true;
             }
             break;
           } 
           case XML_NAMESPACE_DECL: {
-		        itemtype = "NS";
-		        itemname = "";
-		        itemvalue = "";
-		        Report::appendToCString(&itemvalue, cur->name, encoding);
+            itemtype = "NS";
+            itemname = "";
+            itemvalue = "";
+            Report::appendToCString(&itemvalue, cur->name, encoding);
 
-		        itemvalue.Trim();
-		        if (itemvalue.IsEmpty()) {
+            itemvalue.Trim();
+            if (itemvalue.IsEmpty()) {
               doIgnore = true;
             }
             break;
           }
-		      case XML_CDATA_SECTION_NODE: itemtype = "XML_CDATA_SECTION_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
-		      case XML_ENTITY_REF_NODE: itemtype = "XML_ENTITY_REF_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
-		      case XML_ENTITY_NODE: itemtype = "XML_ENTITY_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
-		      case XML_PI_NODE: itemtype = "XML_PI_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
-		      case XML_COMMENT_NODE: itemtype = "XML_COMMENT_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
-		      case XML_DOCUMENT_TYPE_NODE: itemtype = "XML_DOCUMENT_TYPE_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
-		      case XML_DOCUMENT_FRAG_NODE: itemtype = "XML_DOCUMENT_FRAG_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
-		      case XML_NOTATION_NODE: itemtype = "XML_NOTATION_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
-		      case XML_HTML_DOCUMENT_NODE: itemtype = "XML_HTML_DOCUMENT_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
-		      case XML_DTD_NODE: itemtype = "XML_DTD_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
-		      case XML_ELEMENT_DECL: itemtype = "XML_ELEMENT_DECL"; itemname = ""; itemvalue = "(element type not supported)"; break;
-		      case XML_ATTRIBUTE_DECL: itemtype = "XML_ATTRIBUTE_DECL"; itemname = ""; itemvalue = "(element type not supported)"; break;
-		      case XML_ENTITY_DECL: itemtype = "XML_ENTITY_DECL"; itemname = ""; itemvalue = "(element type not supported)"; break;
-		      case XML_XINCLUDE_START: itemtype = "XML_XINCLUDE_START"; itemname = ""; itemvalue = "(element type not supported)"; break;
-		      case XML_XINCLUDE_END: itemtype = "XML_XINCLUDE_END"; itemname = ""; itemvalue = "(element type not supported)"; break;
-		      case XML_DOCB_DOCUMENT_NODE: itemtype = "XML_DOCB_DOCUMENT_NODE"; itemname = ""; itemvalue = "(element type not supported)" ;break;
+          case XML_CDATA_SECTION_NODE: itemtype = "XML_CDATA_SECTION_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+          case XML_ENTITY_REF_NODE: itemtype = "XML_ENTITY_REF_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+          case XML_ENTITY_NODE: itemtype = "XML_ENTITY_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+          case XML_PI_NODE: itemtype = "XML_PI_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+          case XML_COMMENT_NODE: itemtype = "XML_COMMENT_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+          case XML_DOCUMENT_TYPE_NODE: itemtype = "XML_DOCUMENT_TYPE_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+          case XML_DOCUMENT_FRAG_NODE: itemtype = "XML_DOCUMENT_FRAG_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+          case XML_NOTATION_NODE: itemtype = "XML_NOTATION_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+          case XML_HTML_DOCUMENT_NODE: itemtype = "XML_HTML_DOCUMENT_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+          case XML_DTD_NODE: itemtype = "XML_DTD_NODE"; itemname = ""; itemvalue = "(element type not supported)"; break;
+          case XML_ELEMENT_DECL: itemtype = "XML_ELEMENT_DECL"; itemname = ""; itemvalue = "(element type not supported)"; break;
+          case XML_ATTRIBUTE_DECL: itemtype = "XML_ATTRIBUTE_DECL"; itemname = ""; itemvalue = "(element type not supported)"; break;
+          case XML_ENTITY_DECL: itemtype = "XML_ENTITY_DECL"; itemname = ""; itemvalue = "(element type not supported)"; break;
+          case XML_XINCLUDE_START: itemtype = "XML_XINCLUDE_START"; itemname = ""; itemvalue = "(element type not supported)"; break;
+          case XML_XINCLUDE_END: itemtype = "XML_XINCLUDE_END"; itemname = ""; itemvalue = "(element type not supported)"; break;
+          case XML_DOCB_DOCUMENT_NODE: itemtype = "XML_DOCB_DOCUMENT_NODE"; itemname = ""; itemvalue = "(element type not supported)" ;break;
         }          
 
         if (!doIgnore) {
-		      AddToList(listresults, itemtype, itemname, itemvalue);
-		    }
+          AddToList(listresults, itemtype, itemname, itemvalue);
+        }
       }
       break;
     }
@@ -423,14 +423,14 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
 }
 
 BOOL CXPathEvalDlg::OnInitDialog() {
-	CDialog::OnInitDialog();
-	
+  CDialog::OnInitDialog();
+  
   CListCtrl *listresults = (CListCtrl*) this->GetDlgItem(IDC_LIST_XPATHRESULTS);
 
-	// Initialize the destination list control
-	listresults->InsertColumn(0, L"Type", LVCFMT_LEFT, 50);
-	listresults->InsertColumn(1, L"Name", LVCFMT_LEFT, 100);
-	listresults->InsertColumn(2, L"Value", LVCFMT_LEFT, 400);
+  // Initialize the destination list control
+  listresults->InsertColumn(0, L"Type", LVCFMT_LEFT, 50);
+  listresults->InsertColumn(1, L"Name", LVCFMT_LEFT, 100);
+  listresults->InsertColumn(2, L"Value", LVCFMT_LEFT, 400);
 
   listresults->DeleteAllItems();
 
@@ -439,8 +439,8 @@ BOOL CXPathEvalDlg::OnInitDialog() {
   ClientToScreen(myRect);
   MoveWindow(myRect.left+100, myRect.top+100, myRect.Width(), myRect.Height());
 
-	return TRUE;  // return TRUE unless you set the focus to a control
-	              // EXCEPTION: OCX Property Pages should return FALSE
+  return TRUE;  // return TRUE unless you set the focus to a control
+                // EXCEPTION: OCX Property Pages should return FALSE
 }
 
 //void CXPathEvalDlg::OnClose() {
@@ -451,8 +451,8 @@ BOOL CXPathEvalDlg::OnInitDialog() {
 //}
 
 void CXPathEvalDlg::OnSize(UINT nType, int cx, int cy) {
-	CDialog::OnSize(nType, cx, cy);
-	
+  CDialog::OnSize(nType, cx, cy);
+  
   CWnd *btn_wnd = GetDlgItem(IDC_BTN_EVALUATE);
   CWnd *cpy_wnd = GetDlgItem(IDC_BTN_COPY2CLIPBOARD);
   CWnd *clr_wnd = GetDlgItem(IDC_BTN_CLEARLIST);
@@ -478,7 +478,7 @@ void CXPathEvalDlg::OnSize(UINT nType, int cx, int cy) {
                         border+inheight-btnheight-wndspace-btnheight,
                         btnwidth,
                         btnheight);
-	  in_wnd->MoveWindow(border,
+    in_wnd->MoveWindow(border,
                        border,
                        cx-2*border-btnwidth-wndspace,
                        inheight);
