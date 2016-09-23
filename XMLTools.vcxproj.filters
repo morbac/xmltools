@@ -21,9 +21,6 @@
     <ClCompile Include="HyperLinkCtrl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LoadLibrary.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Report.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -68,9 +65,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HyperLinkCtrl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LoadLibrary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Notepad_plus_msgs.h">

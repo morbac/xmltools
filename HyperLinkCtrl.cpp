@@ -118,8 +118,8 @@ BOOL CHyperLink::MailTo(CString url, CString name)
 	char *lpszName = new char[name.GetLength() + 1];
 	if (!lpszUrl) return FALSE;
 
-  strcpy(lpszUrl, reinterpret_cast<const char*>((LPCTSTR)url));
-	strcpy(lpszName, reinterpret_cast<const char*>((LPCTSTR)name));
+	strcpy_s(lpszUrl, url.GetLength() + 1, reinterpret_cast<const char*>((LPCTSTR)url.GetBuffer()));
+	strcpy_s(lpszName, url.GetLength() + 1, reinterpret_cast<const char*>((LPCTSTR)name));
 
 	// Load the MAPI Library
 	HINSTANCE hMapilib = LoadLibrary(L"MAPI32.DLL");
@@ -150,7 +150,7 @@ BOOL CHyperLink::MailTo(CString url, CString name)
 	MailMsg.lpFiles				= NULL;			//Details of Attachments.
 
 	// Send mail.
-	ULONG Error = lpfnMAPISendMail(0,(ULONG)AfxGetMainWnd(), &MailMsg, MAPI_LOGON_UI|MAPI_DIALOG, 0);
+	auto Error = lpfnMAPISendMail(0, (ULONG_PTR) AfxGetMainWnd(), &MailMsg, MAPI_LOGON_UI|MAPI_DIALOG, 0);
 
 	// Unload MAPI lib.
 	FreeLibrary(hMapilib);
@@ -218,7 +218,7 @@ HBRUSH CHyperLink::CtlColor(CDC* pDC, UINT nCtlColor)
 	return (HBRUSH)m_brBack;
 }
 
-void CHyperLink::OnTimer(UINT nIDEvent) 
+void CHyperLink::OnTimer(UINT_PTR nIDEvent) 
 {
 	CRect rect;
 	GetWindowRect(rect);

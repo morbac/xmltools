@@ -1,0 +1,6 @@
+curl 7.50.2
+libiconv 1.14
+libxml2 2.9.4
+libxslt 1.1.29
+xz 5.2.2
+zlib 1.2.8

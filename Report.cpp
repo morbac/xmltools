@@ -6,7 +6,8 @@
 #include "PluginInterface.h"
 #include "Report.h"
 #include "menuCmdID.h"
-#include "LoadLibrary.h"
+
+#include <libxml/encoding.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -317,7 +318,7 @@ UniMode Report::getEncoding(HWND npp /* = NULL */) {
 
 UniMode Report::getEncoding(const xmlChar* xmlencoding, HWND npp) {
   if (xmlencoding != NULL) {
-    xmlCharEncoding enc = pXmlParseCharEncoding(reinterpret_cast<const char*>(xmlencoding));
+    xmlCharEncoding enc = xmlParseCharEncoding(reinterpret_cast<const char*>(xmlencoding));
     return Report::getEncoding(enc, npp);
   } else {
     return Report::getEncoding(XML_CHAR_ENCODING_NONE, npp);

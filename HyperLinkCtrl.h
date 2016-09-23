@@ -63,7 +63,7 @@ public:
 protected:
 	//{{AFX_MSG(CHyperLink)
 	afx_msg HBRUSH CtlColor(CDC* pDC, UINT nCtlColor);
-	afx_msg void OnTimer(UINT nIDEvent);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
