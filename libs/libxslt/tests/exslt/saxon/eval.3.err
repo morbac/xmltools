@@ -1,0 +1,6 @@
+XPath error : Undefined namespace prefix
+xmlXPathCompiledEval: evaluation failed
+XPath error : Invalid expression
+xmlXPathCompiledEval: evaluation failed
+runtime error: file ./eval.3.xsl line 11 element value-of
+XPath evaluation returned no result.

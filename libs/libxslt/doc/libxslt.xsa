@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!DOCTYPE xsa PUBLIC "-//LM Garshol//DTD XML Software Autoupdate 1.0//EN//XML" "http://www.garshol.priv.no/download/xsa/xsa.dtd">
+<xsa>
+  <vendor>
+    <name>Daniel Veillard</name>
+    <email>daniel@veillard.com</email>
+    <url>http://veillard.com/</url>
+  </vendor>
+  <product id="libxslt">
+    <name>libxslt</name>
+    <version>1.1.28</version>
+    <last-release> Nov 21 2012</last-release>
+    <info-url>http://xmlsoft.org/XSLT/</info-url>
+    <changes>   -  Portability:
+    Fix python build by using libxsltmod_la_CPPFLAGS instead of AM_CPPFLAGS (Alexandre Rostovtsev),
+    configure should be more careful with linker script (Igor Pashev),
+    add gcrypt library in LIBADD, not LDFLAGS, as recommended (Roumen Petrov)
+  
+   -  Bug fixes:
+    Fix generate-id() to avoid generating the same ID (Stewart Brodie),
+    Fix crash with empty xsl:key/@match attribute (Nick Wellnhofer),
+    Crash when passing an uninitialized variable to document() (Nick Wellnhofer),
+    Add missing test docs to EXTRA_DIST (Nick Wellnhofer),
+    Fix regression: Default namespace not correctly used (Nick Wellnhofer)
+  
+   -  Cleanups:
+    Remove xsltTransStorageAdd and xsltTransStorageRemove from symbols.xml (Daniel Veillard),
+    autogen.sh cleanup (Daniel Richard),
+    consistent use of xslt processor (Roumen Petrov),
+    Add object files in tests/plugins to .gitignore (Nick Wellnhofer),
+    Fix error on bug-165 regression test (Daniel Veillard),
+    Remove xsltTransStorageAdd and xsltTransStorageRemove (Daniel Veillard),
+  
+
+</changes>
+  </product>
+</xsa>

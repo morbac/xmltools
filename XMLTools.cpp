@@ -31,11 +31,14 @@
 #include <algorithm>
 
 // libxml
-#include "LoadLibrary.h"
+//#include "LoadLibrary.h"
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xmlschemas.h>
 #include <libxml/globals.h>
+#include <libxml/nanohttp.h>
+#include <libxml/xmlerror.h>
+#include <libxml/parser.h>
 
 // curl
 #include <curl/curl.h>
@@ -94,7 +97,7 @@ unsigned long defFlags = XML_PARSE_NOENT | XML_PARSE_DTDLOAD;
 unsigned long defFlagsNoXXE = 0;
 
 // XML Loading status
-int libloadstatus = -1;
+int libloadstatus = 0;
 
 // INI file support
 wchar_t iniFilePath[MAX_PATH];
@@ -325,8 +328,8 @@ CXMLToolsApp::CXMLToolsApp() {
 
   // chargement de la librairie
   dbg("Loading libraries... ");
-  libloadstatus = loadLibraries(nppMainPath, appDataPath);
-  if (libloadstatus < 0) nbFunc = 1;
+  //libloadstatus = loadLibraries(nppMainPath, appDataPath);
+  //if (libloadstatus < 0) nbFunc = 1;
 
   int menuentry = 0;
   for (int i = 0; i < nbFunc; ++i) {
@@ -972,9 +975,9 @@ void updateProxyConfig() {
     proxyurl += ":";
     proxyurl += std::to_string(static_cast<long long>(proxyoptions.port));
     //proxyurl += "/";
-    pXmlNanoHTTPScanProxy(proxyurl.c_str());  // http://toto:admin@127.0.0.1:8080
+    xmlNanoHTTPScanProxy(proxyurl.c_str());  // http://toto:admin@127.0.0.1:8080
   } else {
-    pXmlNanoHTTPScanProxy(NULL);
+    xmlNanoHTTPScanProxy(NULL);
   }
 }
 
@@ -1008,14 +1011,14 @@ int performXMLCheck(int informIfNoError) {
 
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
   
-  pXmlResetLastError();
+  xmlResetLastError();
   //updateProxyConfig();
-  xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
+  xmlDocPtr doc = xmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
   
   delete [] data;
   data = NULL;
   
-  xmlErrorPtr err = pXmlGetLastError();
+  xmlErrorPtr err = xmlGetLastError();
 
   std::wstring nfomsg(L"No error detected.");
   std::wstring errmsg(L"");
@@ -1035,7 +1038,7 @@ int performXMLCheck(int informIfNoError) {
     }
   }
   
-  pXmlFreeDoc(doc);
+  xmlFreeDoc(doc);
 
   if (errmsg.length() > 0) {
     Report::_printf_err(errmsg.c_str());
@@ -1095,15 +1098,15 @@ void XMLValidation(int informIfNoError) {
   bool xsdValidation = false;
   bool dtdValidation = false;
 
-  pXmlResetLastError();
+  xmlResetLastError();
   //updateProxyConfig();
-  doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
+  doc = xmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
 
   delete [] data;
   data = NULL;
 
   if (doc == NULL) {
-    xmlErrorPtr err = pXmlGetLastError();
+    xmlErrorPtr err = xmlGetLastError();
     
     if (err != NULL) {
       if (err->line > 0) {
@@ -1122,16 +1125,16 @@ void XMLValidation(int informIfNoError) {
   // 2. Si le XMl est valide
   if (!abortValidation) {
     // 2.1. On essaie de retrouver le schéma ou la dtd das le document
-    rootnode = pXmlDocGetRootElement(doc);
+    rootnode = xmlDocGetRootElement(doc);
     if (rootnode == NULL) {
       Report::_printf_err(L"Empty XML document");
     } else {
       // 2.1.a. On recherche les attributs "xsi:noNamespaceSchemaLocation" ou "xsi:schemaLocation" dans la balise root
       // Exemple de balise root:
       //  <descript xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Descript_Shema.xsd">
-      xmlChar* propval = pXmlGetProp(rootnode, reinterpret_cast<const unsigned char*>("noNamespaceSchemaLocation"));
+      xmlChar* propval = xmlGetProp(rootnode, reinterpret_cast<const unsigned char*>("noNamespaceSchemaLocation"));
       if (propval == NULL) {
-        propval = pXmlGetProp(rootnode, reinterpret_cast<const unsigned char*>("schemaLocation"));
+        propval = xmlGetProp(rootnode, reinterpret_cast<const unsigned char*>("schemaLocation"));
         if (propval != NULL) {
           xml_schema = std::string(reinterpret_cast<const char*>(propval));
           xml_schema = xml_schema.substr(1+xml_schema.find_last_of(' '));
@@ -1153,7 +1156,7 @@ void XMLValidation(int informIfNoError) {
         }
         
         if (dtdPtr->SystemID || dtdPtr->ExternalID) {
-          dtdPtr = pXmlParseDTD(dtdPtr->ExternalID, dtdPtr->SystemID);
+          dtdPtr = xmlParseDTD(dtdPtr->ExternalID, dtdPtr->SystemID);
           doFreeDTDPtr = true;
         }
 
@@ -1206,15 +1209,15 @@ void XMLValidation(int informIfNoError) {
         xml_absolute_schema = xml_schema;
       }
 
-      if ((pctxt = pXmlSchemaNewParserCtxt(reinterpret_cast<const char*>(xml_absolute_schema.c_str()))) == NULL) {
+      if ((pctxt = xmlSchemaNewParserCtxt(reinterpret_cast<const char*>(xml_absolute_schema.c_str()))) == NULL) {
         Report::_printf_err(L"Unable to initialize parser.");
       } else {
         // Chargement du contenu du XML Schema
-        schema = pXmlSchemaParse(pctxt);
+        schema = xmlSchemaParse(pctxt);
 
         if (schema == NULL) {
           xmlErrorPtr err;
-          err = pXmlGetLastError();
+          err = xmlGetLastError();
 
           if (err != NULL) {
             wchar_t* tmpmsg = Report::castChar(err->message);
@@ -1230,16 +1233,16 @@ void XMLValidation(int informIfNoError) {
           }
         } else {
           // Création du contexte de validation
-          if ((vctxt = pXmlSchemaNewValidCtxt(schema)) == NULL) {
+          if ((vctxt = xmlSchemaNewValidCtxt(schema)) == NULL) {
             Report::_printf_err(L"Unable to create validation context.");
           } else {
             // Traitement des erreurs de validation
             Report::clearLog();
             Report::registerMessage("Validation of current file using XML schema:\r\n\r\n");
-            pXmlSchemaSetValidErrors(vctxt, (xmlSchemaValidityErrorFunc) Report::registerError, (xmlSchemaValidityWarningFunc) Report::registerWarn, stderr);
+            xmlSchemaSetValidErrors(vctxt, (xmlSchemaValidityErrorFunc) Report::registerError, (xmlSchemaValidityWarningFunc) Report::registerWarn, stderr);
 
             // Validation
-            if (!pXmlSchemaValidateDoc(vctxt, doc)) {
+            if (!xmlSchemaValidateDoc(vctxt, doc)) {
               if (informIfNoError) Report::_printf_inf(L"XML Schema validation:\r\nXML is valid.");
             } else {
               CMessageDlg* msgdlg = new CMessageDlg();
@@ -1249,11 +1252,11 @@ void XMLValidation(int informIfNoError) {
           }
 
           // 2.4. On libère le parseur
-          pXmlSchemaFree(schema);
-          pXmlSchemaFreeValidCtxt(vctxt);
+          xmlSchemaFree(schema);
+          xmlSchemaFreeValidCtxt(vctxt);
 		    }
 
-		    pXmlSchemaFreeParserCtxt(pctxt);
+		    xmlSchemaFreeParserCtxt(pctxt);
       }
     }
 
@@ -1262,7 +1265,7 @@ void XMLValidation(int informIfNoError) {
       xmlValidCtxtPtr vctxt;
 
       // Création du contexte de validation
-      if ((vctxt = pXmlNewValidCtxt())) {
+      if ((vctxt = xmlNewValidCtxt())) {
         // Affichage des erreurs de validation
         Report::clearLog();
         Report::registerMessage("Validation of current file using DTD:\r\n\r\n");
@@ -1271,7 +1274,7 @@ void XMLValidation(int informIfNoError) {
         vctxt->warning = (xmlValidityWarningFunc) Report::registerWarn;
 
         // Validation
-        if (pXmlValidateDtd(vctxt, doc, dtdPtr)) {
+        if (xmlValidateDtd(vctxt, doc, dtdPtr)) {
           if (informIfNoError) Report::_printf_inf(L"DTD validation:\r\nXML is valid.");
         } else {
           CMessageDlg* msgdlg = new CMessageDlg();
@@ -1279,17 +1282,17 @@ void XMLValidation(int informIfNoError) {
           msgdlg->DoModal();
         }
         // Libération de la mémoire
-        pXmlFreeValidCtxt(vctxt);
+        xmlFreeValidCtxt(vctxt);
       }
       if (doFreeDTDPtr) {
-        pXmlFreeDtd(dtdPtr);
+        xmlFreeDtd(dtdPtr);
       }
     }
   }
 
   // 3. On libère la mémoire
   rootnode = NULL;
-  pXmlFreeDoc(doc);
+  xmlFreeDoc(doc);
 
   // 4. On enregistre le nom du schéma utilisé pour le proposer la prochaine fois
   lastXMLSchema = xml_schema;
@@ -1514,13 +1517,13 @@ std::wstring currentXPath() {
     str += "><X>";
 
     //updateProxyConfig();
-    xmlDocPtr doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, XML_PARSE_RECOVER | (doPreventXXE ? defFlagsNoXXE : defFlags));
+    xmlDocPtr doc = xmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, XML_PARSE_RECOVER | (doPreventXXE ? defFlagsNoXXE : defFlags));
     str.clear();
 
     if (doc == NULL) return nodepath;
 
     UniMode encoding = Report::getEncoding(doc->encoding, NULL);
-    xmlNodePtr cur_node = pXmlDocGetRootElement(doc);
+    xmlNodePtr cur_node = xmlDocGetRootElement(doc);
 
     while (cur_node != NULL && cur_node->last != NULL) {
       if (cur_node->type == XML_ELEMENT_NODE) {
@@ -1535,7 +1538,7 @@ std::wstring currentXPath() {
       }
       cur_node = cur_node->last;
     }
-    pXmlFreeDoc(doc);
+    xmlFreeDoc(doc);
   }
 
   return nodepath;
@@ -1673,10 +1676,10 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 /*
     if (FALSE) {
       //updateProxyConfig();
-      xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
+      xmlDocPtr doc = xmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
       if (doc == NULL) {
         xmlErrorPtr err;
-        err = pXmlGetLastError();
+        err = xmlGetLastError();
 
         if (err != NULL) {
           if (err->line > 0) {
@@ -1693,7 +1696,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
         return;
       }
 
-      pXmlFreeDoc(doc);
+      xmlFreeDoc(doc);
     }
 */
 
@@ -1971,7 +1974,7 @@ void prettyPrintLibXML() {
     xmlDocPtr doc;
 
 //  updateProxyConfig();
-    doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
+    doc = xmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
     if (doc == NULL) {
       Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
       delete [] data;
@@ -1980,8 +1983,8 @@ void prettyPrintLibXML() {
 
     xmlChar *mem;
     int numbytes;
-    pXmlKeepBlanksDefault(0);
-    pXmlThrDefIndentTreeOutput(1);
+    xmlKeepBlanksDefault(0);
+    xmlThrDefIndentTreeOutput(1);
 
     char *indentString;
     if (usetabs) {
@@ -1993,7 +1996,7 @@ void prettyPrintLibXML() {
       for (int i=0; i<tabwidth; i++) indentString[i] = ' ';
       indentString[tabwidth] = 0;
     }
-    if (indentString) pXmlThrDefTreeIndentString(indentString);
+    if (indentString) xmlThrDefTreeIndentString(indentString);
 
 /*
     ops->indent = 1;
@@ -2004,7 +2007,7 @@ void prettyPrintLibXML() {
     ops->dropdtd = 0;
     ops->options = 0;
 */
-    pXmlDocDumpFormatMemory(doc,&mem,&numbytes,1);
+    xmlDocDumpFormatMemory(doc,&mem,&numbytes,1);
 
     // Send formatted string to scintilla
     ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(mem));
@@ -2013,8 +2016,8 @@ void prettyPrintLibXML() {
     ::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
     ::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
 
-    pXmlFree(mem);
-    pXmlFreeDoc(doc);
+    xmlFree(mem);
+    xmlFreeDoc(doc);
     if (indentString) free(indentString);
 
     delete [] data;
@@ -2052,7 +2055,7 @@ void prettyPrintAttributes() {
 
     xmlDocPtr doc;
 
-    doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
+    doc = xmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
     if (doc == NULL) {
       Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
       delete [] data;

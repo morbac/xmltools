@@ -7,7 +7,7 @@
 #include "XSLTransformDlg.h"
 #include "Report.h"
 #include "menuCmdID.h"
-#include "LoadLibrary.h"
+//#include "LoadLibrary.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -184,19 +184,19 @@ void CXSLTransformDlg::OnBtnTransform() {
 
   std::wstring wfile(m_sXSLTFile);
   std::string file = Report::narrow(wfile);
-  cur = pXsltParseStylesheetFile(reinterpret_cast<const xmlChar*>(file.c_str()));
-  pXmlResetLastError();
+  cur = xsltParseStylesheetFile(reinterpret_cast<const xmlChar*>(file.c_str()));
+  xmlResetLastError();
   //updateProxyConfig();
-  doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, this->m_iFlags);
+  doc = xmlReadMemory(data, currentLength, "noname.xml", NULL, this->m_iFlags);
   delete [] data;
   data = NULL;
 
-  //if (cur && doc) xsltctxt = pXsltNewTransformContext(cur, doc);
-  //if (xsltctxt) pXsltSetGenericErrorFunc(xsltctxt, (xmlGenericErrorFunc) Report::registerError);
-  res = pXsltApplyStylesheet(cur, doc, (const char**)params);
+  //if (cur && doc) xsltctxt = xsltNewTransformContext(cur, doc);
+  //if (xsltctxt) xsltSetGenericErrorFunc(xsltctxt, (xmlGenericErrorFunc) Report::registerError);
+  res = xsltApplyStylesheet(cur, doc, (const char**)params);
   
   if (res != NULL && cur != NULL) {
-    pXsltSaveResultToString(&doc_txt_ptr, &doc_txt_len, res, cur);
+    xsltSaveResultToString(&doc_txt_ptr, &doc_txt_len, res, cur);
 
     if (doc_txt_ptr == NULL || doc_txt_ptr[0] == '\0') {
       Report::_printf_err(L"The transformation has generated empty document.");
@@ -216,9 +216,9 @@ void CXSLTransformDlg::OnBtnTransform() {
     Report::_printf_err(msg.c_str());
   }
 
-  pXsltFreeStylesheet(cur);
-  pXmlFreeDoc(res);
-  pXmlFreeDoc(doc);
+  xsltFreeStylesheet(cur);
+  xmlFreeDoc(res);
+  xmlFreeDoc(doc);
 
   cleanParams(params, nbparams);
 
@@ -226,8 +226,8 @@ void CXSLTransformDlg::OnBtnTransform() {
   res = NULL;
   doc = NULL;
 
-  pXsltCleanupGlobals();
-  pXmlCleanupParser();
+  xsltCleanupGlobals();
+  xmlCleanupParser();
 }
 
 CString CXSLTransformDlg::ShowOpenFileDlg(CString filetypes) {

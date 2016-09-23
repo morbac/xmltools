@@ -7,7 +7,7 @@
 #include "XpathEvalDlg.h"
 #include "Report.h"
 #include <assert.h>
-#include "LoadLibrary.h"
+//#include "LoadLibrary.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -157,9 +157,9 @@ int CXPathEvalDlg::execute_xpath_expression(std::wstring& xpathExpr) {
   }
 
   /* Load XML document */
-  pXmlResetLastError();
+  xmlResetLastError();
   //updateProxyConfig();
-  doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, this->m_iFlags);
+  doc = xmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, this->m_iFlags);
   str.clear();
 
   if (doc == NULL) {
@@ -168,30 +168,30 @@ int CXPathEvalDlg::execute_xpath_expression(std::wstring& xpathExpr) {
   }
 
   /* Get document encoding */  
-  this->encoding = pXmlParseCharEncoding(reinterpret_cast<const char*>(doc->encoding));
+  this->encoding = xmlParseCharEncoding(reinterpret_cast<const char*>(doc->encoding));
 
   /* Create xpath evaluation context */
-  xpathCtx = pXmlXPathNewContext(doc);
+  xpathCtx = xmlXPathNewContext(doc);
   if (xpathCtx == NULL) {
     Report::_printf_err(L"Error: unable to create new XPath context\n");
-    pXmlFreeDoc(doc);
+    xmlFreeDoc(doc);
     return(-1);
   }
   
   /* Register namespaces */
   if (register_namespaces_ex(xpathCtx, doc) < 0) {
     Report::_printf_err(L"Error: failed to register namespaces list \"%s\"\n", nsList);
-    pXmlXPathFreeContext(xpathCtx); 
-    pXmlFreeDoc(doc);
+    xmlXPathFreeContext(xpathCtx); 
+    xmlFreeDoc(doc);
     return(-1);
   }
 
   /* Evaluate xpath expression */
-  xpathObj = pXmlXPathEvalExpression(reinterpret_cast<const xmlChar*>(Report::castWChar(xpathExpr.c_str())), xpathCtx);
+  xpathObj = xmlXPathEvalExpression(reinterpret_cast<const xmlChar*>(Report::castWChar(xpathExpr.c_str())), xpathCtx);
   if (xpathObj == NULL) {
     Report::_printf_err(L"Error: unable to evaluate xpath expression \"%s\"\n", xpathExpr.c_str());
-    pXmlXPathFreeContext(xpathCtx); 
-    pXmlFreeDoc(doc);
+    xmlXPathFreeContext(xpathCtx); 
+    xmlFreeDoc(doc);
     return(-1);
   }
 
@@ -199,9 +199,9 @@ int CXPathEvalDlg::execute_xpath_expression(std::wstring& xpathExpr) {
   print_xpath_nodes(xpathObj);
 
   /* Cleanup */
-  pXmlXPathFreeObject(xpathObj);
-  pXmlXPathFreeContext(xpathCtx); 
-  pXmlFreeDoc(doc);
+  xmlXPathFreeObject(xpathObj);
+  xmlXPathFreeContext(xpathCtx); 
+  xmlFreeDoc(doc);
 
   return(0);
 }
@@ -213,7 +213,7 @@ int CXPathEvalDlg::register_namespaces_ex(xmlXPathContextPtr xpathCtx, xmlDocPtr
     xmlNsPtr ns = node->nsDef;
     while (node->type == XML_ELEMENT_NODE && ns) {
       if (ns->prefix != NULL) {
-		    pXmlXPathRegisterNs(xpathCtx, ns->prefix, ns->href);
+		    xmlXPathRegisterNs(xpathCtx, ns->prefix, ns->href);
 	    }
       ns = ns->next;
     }
