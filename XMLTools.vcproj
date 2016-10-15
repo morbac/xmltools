@@ -36,7 +36,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
+				AdditionalOptions=""
 				AdditionalDependencies="shlwapi.lib"
 				OutputFile=".\Release/XMLTools.dll"
 				LinkIncremental="1"
@@ -95,7 +95,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
+				AdditionalOptions=""
 				AdditionalDependencies="shlwapi.lib libXML2.lib libxslt.lib"
 				OutputFile="C:\Program Files\Notepad++\plugins\XMLTools.dll"
 				LinkIncremental="2"

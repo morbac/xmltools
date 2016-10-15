@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Fichier Include généré de Microsoft Visual C++.
+// fichier Include Microsoft Visual C++.
 // Utilisé par XMLTools.rc
 //
 #define IDD_INPUTDLG                    2000
