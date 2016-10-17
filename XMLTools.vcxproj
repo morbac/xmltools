@@ -43,7 +43,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfAtl>false</UseOfAtl>
-    <UseOfMfc>Static</UseOfMfc>
+    <UseOfMfc>false</UseOfMfc>
     <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -101,8 +101,10 @@
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>.\libs\libcurl\curl-7.41.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>.\libs\libcurl\64bit;$(VC_LibraryPath_x64);$(WindowsSdk_71A_LibraryPath_x64);</LibraryPath>
+    <IncludePath>.\libs\libcurl\curl-7.41.0\include;$(IncludePath);$(WindowsSdk_71A_IncludePath);</IncludePath>
+    <LibraryPath>.\libs\libcurl\64bit;$(VC_LibraryPath_x64);$(WindowsSdk_71A_LibraryPath_x64);C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64</LibraryPath>
+    <ExecutablePath>$(VC_ExecutablePath_x64);$(WindowsSdk_71A_ExecutablePath);$(WindowsSDK_ExecutablePath);$(VS_ExecutablePath);$(MSBuild_ExecutablePath);$(FxCopDir);$(PATH);</ExecutablePath>
+    <ExcludePath>$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);$(WindowsSDK_IncludePath);$(MSBuild_ExecutablePath);$(VC_LibraryPath_x64);</ExcludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -271,11 +273,12 @@
       <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <ExpandAttributedSource>false</ExpandAttributedSource>
     </ClCompile>
     <Link>
-      <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>
+      </AdditionalOptions>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ModuleDefinitionFile>.\XMLTools.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -283,7 +286,8 @@
       <SubSystem>Windows</SubSystem>
       <ImportLibrary>.\Debug/XMLTools.lib</ImportLibrary>
       <AdditionalDependencies>libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <ImageHasSafeExceptionHandlers>
+      </ImageHasSafeExceptionHandlers>
       <MinimumRequiredVersion>
       </MinimumRequiredVersion>
       <OutputFile>C:\Program Files\Notepad++\plugins\XMLTools.dll</OutputFile>
@@ -295,7 +299,7 @@
       <TypeLibraryName>.\Debug/XMLTools.tlb</TypeLibraryName>
     </Midl>
     <ResourceCompile>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_USING_V110_SDK71_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x100c</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>

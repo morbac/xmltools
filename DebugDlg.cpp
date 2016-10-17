@@ -27,6 +27,7 @@ void CDebugDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 void CDebugDlg::addLine(CString line) {
+  TRACE(line);
   this->s_valDebug += line;
   if (this->m_hWnd) {
     CEdit* edit = (CEdit*) GetDlgItem(IDC_EDITDEBUG);

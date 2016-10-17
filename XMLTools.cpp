@@ -611,7 +611,10 @@ HWND getCurrentHScintilla(int which) {
 
 // If you don't need get the notification from Notepad++, just let it be empty.
 extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
-  if (libloadstatus != 0) return;
+  if (libloadstatus != 0) {
+    dbgln("NPP Event skipped (not ready)");
+    return;
+  }
 
   switch (notifyCode->nmhdr.code) {
     case NPPN_READY: {

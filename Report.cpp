@@ -327,7 +327,7 @@ UniMode Report::getEncoding(const xmlChar* xmlencoding, HWND npp) {
 UniMode Report::getEncoding(xmlCharEncoding xmlencoding, HWND npp) {
   if (xmlencoding == XML_CHAR_ENCODING_NONE) {
     HWND nppwnd = (npp == NULL ? nppData._nppHandle : npp);
-    int bufferid = int(::SendMessage(nppwnd, NPPM_GETCURRENTBUFFERID, 0, 0));
+    LRESULT bufferid = ::SendMessage(nppwnd, NPPM_GETCURRENTBUFFERID, 0, 0);
     return UniMode(::SendMessage(nppwnd, NPPM_GETBUFFERENCODING, bufferid, 0));
   } else {
     // uni8Bit=0, uniUTF8=1, uni16BE=2, uni16LE=3, uniCookie=4, uni7Bit=5, uni16BE_NoBOM=6, uni16LE_NoBOM=7
