@@ -1752,31 +1752,38 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           // Let's see if '>' is a end tag char (it might also be simple text)
           // To perform test, we search last of "<>". If it is a '>', current '>' is
           // simple text, if not, it is a end tag char. '>' text chars are ignored.
-          prevspecchar = str.find_last_of("<>",curpos-1);
-          if (prevspecchar != std::string::npos && str.at(prevspecchar) == '<') {
-            // We have found a '>' char and we are in a tag, let's see if it's an opening or closing one
-            isclosingtag = (curpos > 0 && str.at(curpos-1) == '/');
+          prevspecchar = str.find_last_of("<>\"'", curpos - 1);
+          // skip attributes which can contain > char
+          while (prevspecchar != std::string::npos && (str.at(prevspecchar) == '\"' || str.at(prevspecchar) == '\'')) {
+            prevspecchar = str.find_last_of("=", prevspecchar - 1);
+            prevspecchar = str.find_last_of("<>\"'", prevspecchar - 1);
+          }
+          if (prevspecchar != std::string::npos) {
+            if (str.at(prevspecchar) == '<') {
+              // We have found a '>' char and we are in a tag, let's see if it's an opening or closing one
+              isclosingtag = (curpos > 0 && str.at(curpos - 1) == '/');
 
-            nexwchar_t = str.find_first_not_of(" \t",curpos+1);
-            deltapos = nexwchar_t-curpos;
-            if (nexwchar_t != std::string::npos &&
-                str.at(nexwchar_t) == '<' &&
-                curpos < str.length()-(deltapos+1)) {
-              // we compare previous and next tags; if they are same, we don't add line break
-              startprev = str.rfind("<",curpos);
-              endnext = str.find(">",nexwchar_t);
+              nexwchar_t = str.find_first_not_of(" \t", curpos + 1);
+              deltapos = nexwchar_t - curpos;
+              // Test below identifies a <x><y> case and excludes <x>abc<y> case; in second case, we won't add line break
+              if (nexwchar_t != std::string::npos && str.at(nexwchar_t) == '<' && curpos < str.length() - (deltapos + 1)) {
+                // we compare previous and next tags; if they are same, we don't add line break
+                startprev = str.rfind("<", curpos);
+                endnext = str.find(">", nexwchar_t);
 
-              if (startprev != std::string::npos && endnext != std::string::npos && curpos > startprev && endnext > nexwchar_t) {
-                tagend = str.find_first_of(" />",startprev+1);
-                std::string tag1(str.substr(startprev+1,tagend-startprev-1));
-                tagend = str.find_first_of(" />",nexwchar_t+2);
-                std::string tag2(str.substr(nexwchar_t+2,tagend-nexwchar_t-2));
-                if (strcmp(tag1.c_str(),tag2.c_str()) || isclosingtag) {
-                  // Case of "<data><data>..." -> add a line break between tags
-                  str.insert(++curpos,eolchar);
-                } else if (str.at(nexwchar_t+1) == '/' && !isclosingtag && nexwchar_t == curpos+1) {
-                  // Case of "<data id="..."></data>" -> replace by "<data id="..."/>"
-                  str.replace(curpos,endnext-curpos,"/");
+                if (startprev != std::string::npos && endnext != std::string::npos && curpos > startprev && endnext > nexwchar_t) {
+                  tagend = str.find_first_of(" />", startprev + 1);
+                  std::string tag1(str.substr(startprev + 1, tagend - startprev - 1));
+                  tagend = str.find_first_of(" />", nexwchar_t + 2);
+                  std::string tag2(str.substr(nexwchar_t + 2, tagend - nexwchar_t - 2));
+                  if (strcmp(tag1.c_str(), tag2.c_str()) || isclosingtag) {
+                    // Case of "<data><data>..." -> add a line break between tags
+                    str.insert(++curpos, eolchar);
+                  }
+                  else if (str.at(nexwchar_t + 1) == '/' && !isclosingtag && nexwchar_t == curpos + 1) {
+                    // Case of "<data id="..."></data>" -> replace by "<data id="..."/>"
+                    str.replace(curpos, endnext - curpos, "/");
+                  }
                 }
               }
             }
@@ -1822,13 +1829,19 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           in_cdata = true;
         } else if (curpos < strlength-1 && !str.compare(curpos,2,"<?")) {
           in_header = true;
-        } else if (curpos < strlength &&
-                   (!str.compare(curpos,1,"\"") || !str.compare(curpos,1,"'")) &&
-                   str.at(curpos) == attributeQuote &&
-                   prevspecchar != std::string::npos &&
-                   str.at(prevspecchar) == '<') {
-          in_attribute = !in_attribute;
-          attributeQuote = str.at(curpos);  // store the attribute quote char to detect the end of attribute
+        } else if (!in_comment && !in_cdata && !in_header && curpos < strlength && (str.at(curpos) == '\"' || str.at(curpos) == '\'')) {
+          if (in_attribute && attributeQuote != '\0' && str.at(curpos) == attributeQuote && prevspecchar != std::string::npos && str.at(prevspecchar) == '<') {
+            // attribute end
+            in_attribute = false;
+            attributeQuote = '\0';  // store the attribute quote char to detect the end of attribute
+          }
+          else if (!in_attribute) {
+            std::string::size_type x = str.find_last_not_of(" \t", curpos-1);
+            if (x != std::string::npos && str.at(x) == '=') {
+              in_attribute = true;
+              attributeQuote = str.at(curpos);  // store the attribute quote char to detect the end of attribute
+            }
+          }
         }
       }
 
@@ -1856,7 +1869,12 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
         // managing of case where '>' char is present in text content
         in_text = false;
         if (cc == '>') {
-          std::string::size_type tmppos = str.find_last_of("<>", curpos-1);
+          std::string::size_type tmppos = str.find_last_of("<>\"'", curpos - 1);
+          // skip attributes which can contain > char
+          while (tmppos != std::string::npos && (str.at(tmppos) == '\"' || str.at(tmppos) == '\'')) {
+            tmppos = str.find_last_of("=", tmppos - 1);
+            tmppos = str.find_last_of("<>\"'", tmppos - 1);
+          }
           in_text = (tmppos != std::string::npos && str.at(tmppos) == '>');
         }
 
