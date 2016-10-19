@@ -84,26 +84,26 @@
     <GenerateManifest>true</GenerateManifest>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
     <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <IncludePath>.\libs\libcurl\curl-7.41.0\include;.\libs\libxml\32bit\include;.\libs\libxml\32bit\include\libxml2;$(IncludePath)</IncludePath>
+    <IncludePath>.\libs\libcurl\curl-7.41.0\include;.\libs\libxml\x86\include;.\libs\libxml\x86\include\libxml2;$(IncludePath)</IncludePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
-    <LibraryPath>.\libs\libcurl\32bit;.\libs\libxml\32bit\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir_71A)lib</LibraryPath>
+    <LibraryPath>.\libs\libcurl\x86;.\libs\libxml\x86\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir_71A)lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>.\libs\libcurl\curl-7.41.0\include;.\libs\libxml\32bit\include;.\libs\libxml\32bit\include\libxml2;$(IncludePath)</IncludePath>
-    <LibraryPath>.\libs\libcurl\32bit;.\libs\libxml\32bit\lib;$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);</LibraryPath>
+    <IncludePath>.\libs\libcurl\curl-7.41.0\include;.\libs\libxml\x86\include;.\libs\libxml\x86\include\libxml2;$(IncludePath)</IncludePath>
+    <LibraryPath>.\libs\libcurl\x86;.\libs\libxml\x86\lib;$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateManifest>true</GenerateManifest>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
     <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <IncludePath>.\libs\libcurl\curl-7.41.0\include;.\libs\libxml\64bit\include;.\libs\libxml\64bit\include\libxml2;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>.\libs\libcurl\curl-7.41.0\include;.\libs\libxml\x64\include;.\libs\libxml\x64\include\libxml2;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <ReferencePath>$(VC_ReferencesPath_x64);</ReferencePath>
-    <LibraryPath>.\libs\libcurl\64bit;.\libs\libxml\64bit\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryPath>.\libs\libcurl\x64;.\libs\libxml\x64\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>.\libs\libcurl\curl-7.41.0\include;.\libs\libxml\64bit\include;.\libs\libxml\64bit\include\libxml2;$(IncludePath);$(WindowsSdk_71A_IncludePath);</IncludePath>
-    <LibraryPath>.\libs\libcurl\64bit;.\libs\libxml\64bit\lib;$(VC_LibraryPath_x64);$(WindowsSdk_71A_LibraryPath_x64);C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64</LibraryPath>
+    <IncludePath>.\libs\libcurl\curl-7.41.0\include;.\libs\libxml\x64\include;.\libs\libxml\x64\include\libxml2;$(IncludePath);$(WindowsSdk_71A_IncludePath);</IncludePath>
+    <LibraryPath>.\libs\libcurl\x64;.\libs\libxml\x64\lib;$(VC_LibraryPath_x64);$(WindowsSdk_71A_LibraryPath_x64);C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64</LibraryPath>
     <ExecutablePath>$(VC_ExecutablePath_x64);$(WindowsSdk_71A_ExecutablePath);$(WindowsSDK_ExecutablePath);$(VS_ExecutablePath);$(MSBuild_ExecutablePath);$(FxCopDir);$(PATH);</ExecutablePath>
     <ExcludePath>$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);$(WindowsSDK_IncludePath);$(MSBuild_ExecutablePath);$(VC_LibraryPath_x64);</ExcludePath>
   </PropertyGroup>
