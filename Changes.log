@@ -4,6 +4,15 @@
                         ChangeLog
 ================================================================
 
+Release 2.4.9.1
+---------------
+- Patch pretty print function error which occurred when text contains "='" sequence
+
+Release 2.4.9
+-------------
+- Compilation of 64bit version of the plugin
+- Fix pretty print with attributes and/or text containing > char
+
 Release 2.4.8
 -------------
 - Add "Pretty print (attributes)" function

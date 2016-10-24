@@ -1752,16 +1752,23 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           // Let's see if '>' is a end tag char (it might also be simple text)
           // To perform test, we search last of "<>". If it is a '>', current '>' is
           // simple text, if not, it is a end tag char. '>' text chars are ignored.
-          prevspecchar = str.find_last_of("<>\"'", curpos - 1);
-          // skip attributes which can contain > char
-          while (prevspecchar != std::string::npos && (str.at(prevspecchar) == '\"' || str.at(prevspecchar) == '\'')) {
-            prevspecchar = str.find_last_of("=", prevspecchar - 1);
-            prevspecchar = str.find_last_of("<>\"'", prevspecchar - 1);
+          prevspecchar = str.find_last_of("<>", curpos - 1);
+          if (prevspecchar != std::string::npos && str.at(prevspecchar) == '>') {
+            // current > is simple text, in text node
+            ++curpos;
+            continue;
           }
-          if (prevspecchar != std::string::npos) {
+          else if (prevspecchar != std::string::npos) {
+            std::string::size_type nextt = str.find_first_of("<>", curpos + 1);
+            if (nextt != std::string::npos && str.at(nextt) == '>') {
+              // current > is text in attribute
+              ++curpos;
+              continue;
+            }
+
             if (str.at(prevspecchar) == '<') {
               // We have found a '>' char and we are in a tag, let's see if it's an opening or closing one
-              isclosingtag = (curpos > 0 && str.at(curpos - 1) == '/');
+              isclosingtag = ( (curpos > 0 && str.at(curpos - 1) == '/') || str.at(prevspecchar+1) == '/');
 
               nexwchar_t = str.find_first_not_of(" \t", curpos + 1);
               deltapos = nexwchar_t - curpos;
@@ -1779,8 +1786,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
                   if (strcmp(tag1.c_str(), tag2.c_str()) || isclosingtag) {
                     // Case of "<data><data>..." -> add a line break between tags
                     str.insert(++curpos, eolchar);
-                  }
-                  else if (str.at(nexwchar_t + 1) == '/' && !isclosingtag && nexwchar_t == curpos + 1) {
+                  } else if (str.at(nexwchar_t + 1) == '/' && !isclosingtag && nexwchar_t == curpos + 1) {
                     // Case of "<data id="..."></data>" -> replace by "<data id="..."/>"
                     str.replace(curpos, endnext - curpos, "/");
                   }
@@ -1824,20 +1830,22 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
       if (!Report::isEOL(str, strlength, curpos, eolmode)) {
         if (curpos < strlength-3 && !str.compare(curpos,4,"<!--")) {
           in_comment = true;
-        }
-        if (curpos < strlength-8 && !str.compare(curpos,9,"<![CDATA[")) {
+        } else if (curpos < strlength-8 && !str.compare(curpos,9,"<![CDATA[")) {
           in_cdata = true;
         } else if (curpos < strlength-1 && !str.compare(curpos,2,"<?")) {
           in_header = true;
-        } else if (!in_comment && !in_cdata && !in_header && curpos < strlength && (str.at(curpos) == '\"' || str.at(curpos) == '\'')) {
+        } else if (!in_comment && !in_cdata && !in_header &&
+                   curpos < strlength && (str.at(curpos) == '\"' || str.at(curpos) == '\'')) {
           if (in_attribute && attributeQuote != '\0' && str.at(curpos) == attributeQuote && prevspecchar != std::string::npos && str.at(prevspecchar) == '<') {
             // attribute end
             in_attribute = false;
             attributeQuote = '\0';  // store the attribute quote char to detect the end of attribute
-          }
-          else if (!in_attribute) {
+          } else if (!in_attribute) {
             std::string::size_type x = str.find_last_not_of(" \t", curpos-1);
-            if (x != std::string::npos && str.at(x) == '=') {
+            std::string::size_type tagbeg = str.find_last_of("<>", x-1);
+            std::string::size_type tagend = str.find_first_of("<>", curpos+1);
+            if (x != std::string::npos && tagbeg != std::string::npos && tagend != std::string::npos &&
+                str.at(x) == '=' && str.at(tagbeg) == '<' && str.at(tagend) == '>') {
               in_attribute = true;
               attributeQuote = str.at(curpos);  // store the attribute quote char to detect the end of attribute
             }
