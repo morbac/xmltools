@@ -1732,7 +1732,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
       while (curpos < str.length() && (curpos = str.find_first_of("<>",curpos)) != std::string::npos) {
         cc = str.at(curpos);
 
-        if (cc == '<' && curpos < str.length()-3 && !str.compare(curpos,4,"<!--")) {
+        if (cc == '<' && curpos < str.length()-4 && !str.compare(curpos,4,"<!--")) {
           // Let's skip the comment
           curpos = str.find("-->",curpos+1)+2;
           // Adds a line break after comment if required
@@ -1740,7 +1740,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           if (nexwchar_t != std::string::npos && str.at(nexwchar_t) == '<') {
             str.insert(++curpos,eolchar);
           }
-        } else if (cc == '<' && curpos < str.length()-8 && !str.compare(curpos,9,"<![CDATA[")) {
+        } else if (cc == '<' && curpos < str.length()-9 && !str.compare(curpos,9,"<![CDATA[")) {
           // Let's skip the CDATA block
           curpos = str.find("]]>",curpos+1)+2;
           // Adds a line break after CDATA if required
@@ -1828,11 +1828,12 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     strlength = str.length();
     while (curpos < strlength && (curpos = str.find_first_of(sep,curpos)) != std::string::npos) {
       if (!Report::isEOL(str, strlength, curpos, eolmode)) {
-        if (curpos < strlength-3 && !str.compare(curpos,4,"<!--")) {
+        if (curpos < strlength-4 && !str.compare(curpos,4,"<!--")) {
           in_comment = true;
-        } else if (curpos < strlength-8 && !str.compare(curpos,9,"<![CDATA[")) {
+        }
+        if (curpos < strlength-9 && !str.compare(curpos,9,"<![CDATA[")) {
           in_cdata = true;
-        } else if (curpos < strlength-1 && !str.compare(curpos,2,"<?")) {
+        } else if (curpos < strlength-2 && !str.compare(curpos,2,"<?")) {
           in_header = true;
         } else if (!in_comment && !in_cdata && !in_header &&
                    curpos < strlength && (str.at(curpos) == '\"' || str.at(curpos) == '\'')) {

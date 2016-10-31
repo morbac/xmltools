@@ -4,6 +4,10 @@
                         ChangeLog
 ================================================================
 
+Release 2.4.9.2
+---------------
+- Fix pretty print function infinite loop when data ends with <!-- or <![CDATA[
+
 Release 2.4.9.1
 ---------------
 - Patch pretty print function error which occurred when text contains "='" sequence

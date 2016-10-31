@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// French (France) resources
+// Français (France) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
 LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
@@ -25,8 +25,8 @@ LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,4,9,1
- PRODUCTVERSION 2,4,9,1
+ FILEVERSION 2,4,9,2
+ PRODUCTVERSION 2,4,9,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -42,12 +42,12 @@ BEGIN
         BLOCK "040004b0"
         BEGIN
             VALUE "FileDescription", "XMLTools DLL"
-            VALUE "FileVersion", "2.4.9.1"
+            VALUE "FileVersion", "2.4.9.2"
             VALUE "InternalName", "XMLTools"
             VALUE "LegalCopyright", "Copyright (C) 2016"
             VALUE "OriginalFilename", "XMLTools.DLL"
             VALUE "ProductName", "Bibliothèque de liaison dynamique XMLTools"
-            VALUE "ProductVersion", "2.4.9.1"
+            VALUE "ProductVersion", "2.4.9.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -56,12 +56,12 @@ BEGIN
     END
 END
 
-#endif    // French (France) resources
+#endif    // Français (France) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// French (Switzerland) resources
+// Français (Suisse) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRS)
 LANGUAGE LANG_FRENCH, SUBLANG_FRENCH_SWISS
@@ -328,7 +328,7 @@ BEGIN
     0
 END
 
-#endif    // French (Switzerland) resources
+#endif    // Français (Suisse) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
