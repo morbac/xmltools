@@ -450,13 +450,13 @@ CXMLToolsApp::CXMLToolsApp() {
     funcItem[menuentry]._pFunc = getCurrentXPath;
     ++menuentry;
   
-    Report::strcpy(funcItem[menuentry]._itemName, L"Evaluate XPath expression");
+    Report::strcpy(funcItem[menuentry]._itemName, L"Evaluate XPath expression...");
     funcItem[menuentry]._pFunc = evaluateXPath;
     ++menuentry;
   
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
   
-    Report::strcpy(funcItem[menuentry]._itemName, L"XSL Transformation");
+    Report::strcpy(funcItem[menuentry]._itemName, L"XSL Transformation...");
     funcItem[menuentry]._pFunc = performXSLTransform;
     ++menuentry;
   
@@ -501,7 +501,7 @@ CXMLToolsApp::CXMLToolsApp() {
       ++menuentry;
     #endif
   
-    Report::strcpy(funcItem[menuentry]._itemName, L"About XML Tools");
+    Report::strcpy(funcItem[menuentry]._itemName, L"About XML Tools / Donate...");
     funcItem[menuentry]._pFunc = aboutBox;
     ++menuentry;
 
@@ -1753,43 +1753,43 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           // To perform test, we search last of "<>". If it is a '>', current '>' is
           // simple text, if not, it is a end tag char. '>' text chars are ignored.
           prevspecchar = str.find_last_of("<>", curpos - 1);
-          if (prevspecchar != std::string::npos && str.at(prevspecchar) == '>') {
-            // current > is simple text, in text node
-            ++curpos;
-            continue;
-          }
-          else if (prevspecchar != std::string::npos) {
-            std::string::size_type nextt = str.find_first_of("<>", curpos + 1);
+          if (prevspecchar != std::string::npos) {
+            // let's see if our '>' is in attribute
+            std::string::size_type nextt = str.find_first_of("\"'", prevspecchar + 1);
+            if (str.at(prevspecchar) == '>' && (nextt == std::string::npos || nextt > curpos)) {
+              // current > is simple text, in text node
+              ++curpos;
+              continue;
+            }
+            nextt = str.find_first_of("<>", curpos + 1);
             if (nextt != std::string::npos && str.at(nextt) == '>') {
               // current > is text in attribute
               ++curpos;
               continue;
             }
 
-            if (str.at(prevspecchar) == '<') {
-              // We have found a '>' char and we are in a tag, let's see if it's an opening or closing one
-              isclosingtag = ( (curpos > 0 && str.at(curpos - 1) == '/') || str.at(prevspecchar+1) == '/');
+            // We have found a '>' char and we are in a tag, let's see if it's an opening or closing one
+            isclosingtag = ( (curpos > 0 && str.at(curpos - 1) == '/') || str.at(prevspecchar+1) == '/');
 
-              nexwchar_t = str.find_first_not_of(" \t", curpos + 1);
-              deltapos = nexwchar_t - curpos;
-              // Test below identifies a <x><y> case and excludes <x>abc<y> case; in second case, we won't add line break
-              if (nexwchar_t != std::string::npos && str.at(nexwchar_t) == '<' && curpos < str.length() - (deltapos + 1)) {
-                // we compare previous and next tags; if they are same, we don't add line break
-                startprev = str.rfind("<", curpos);
-                endnext = str.find(">", nexwchar_t);
+            nexwchar_t = str.find_first_not_of(" \t", curpos + 1);
+            deltapos = nexwchar_t - curpos;
+            // Test below identifies a <x><y> case and excludes <x>abc<y> case; in second case, we won't add line break
+            if (nexwchar_t != std::string::npos && str.at(nexwchar_t) == '<' && curpos < str.length() - (deltapos + 1)) {
+              // we compare previous and next tags; if they are same, we don't add line break
+              startprev = str.rfind("<", curpos);
+              endnext = str.find(">", nexwchar_t);
 
-                if (startprev != std::string::npos && endnext != std::string::npos && curpos > startprev && endnext > nexwchar_t) {
-                  tagend = str.find_first_of(" />", startprev + 1);
-                  std::string tag1(str.substr(startprev + 1, tagend - startprev - 1));
-                  tagend = str.find_first_of(" />", nexwchar_t + 2);
-                  std::string tag2(str.substr(nexwchar_t + 2, tagend - nexwchar_t - 2));
-                  if (strcmp(tag1.c_str(), tag2.c_str()) || isclosingtag) {
-                    // Case of "<data><data>..." -> add a line break between tags
-                    str.insert(++curpos, eolchar);
-                  } else if (str.at(nexwchar_t + 1) == '/' && !isclosingtag && nexwchar_t == curpos + 1) {
-                    // Case of "<data id="..."></data>" -> replace by "<data id="..."/>"
-                    str.replace(curpos, endnext - curpos, "/");
-                  }
+              if (startprev != std::string::npos && endnext != std::string::npos && curpos > startprev && endnext > nexwchar_t) {
+                tagend = str.find_first_of(" />", startprev + 1);
+                std::string tag1(str.substr(startprev + 1, tagend - startprev - 1));
+                tagend = str.find_first_of(" />", nexwchar_t + 2);
+                std::string tag2(str.substr(nexwchar_t + 2, tagend - nexwchar_t - 2));
+                if (strcmp(tag1.c_str(), tag2.c_str()) || isclosingtag) {
+                  // Case of "<data><data>..." -> add a line break between tags
+                  str.insert(++curpos, eolchar);
+                } else if (str.at(nexwchar_t + 1) == '/' && !isclosingtag && nexwchar_t == curpos + 1) {
+                  // Case of "<data id="..."></data>" -> replace by "<data id="..."/>"
+                  str.replace(curpos, endnext - curpos, "/");
                 }
               }
             }
