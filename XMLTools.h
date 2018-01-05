@@ -16,7 +16,7 @@
 
 //---------------------------------------------------------------------------
 
-#define XMLTOOLS_VERSION_NUMBER L"2.4.10"
+#define XMLTOOLS_VERSION_NUMBER L"2.4.11"
 #ifdef V64BIT
 #define XMLTOOLS_VERSION_STATUS L"unicode 64bit"
 #else

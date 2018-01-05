@@ -81,17 +81,14 @@ const wchar_t localConfFile[] = L"doLocalConf.xml";
 
 // The number of functionality
 #ifdef _DEBUG
-  const int TOTAL_FUNCS = 34;
+  const int TOTAL_FUNCS = 35;
 #else
-  const int TOTAL_FUNCS = 33;
+  const int TOTAL_FUNCS = 34;
 #endif
 int nbFunc = TOTAL_FUNCS;
 
 NppData nppData;
 CDebugDlg* debugdlg = new CDebugDlg();
-
-unsigned long defFlags = XML_PARSE_NOENT | XML_PARSE_DTDLOAD;
-unsigned long defFlagsNoXXE = 0;
 
 // XML Loading status
 int libloadstatus = -1;
@@ -110,6 +107,7 @@ bool doCheckXML = false,
      doAttrAutoComplete = false,
      doAutoXMLType = false,
      doPreventXXE = true,
+     doAllowHuge = false,
      doPrettyPrintAllOpenFiles = false,
      doCheckUpdates = true;
 
@@ -124,6 +122,7 @@ int menuitemCheckXML = -1,
     menuitemAttrAutoComplete = -1,
     menuitemAutoXMLType = -1,
     menuitemPreventXXE = -1,
+    menuitemAllowHuge = -1,
     menuitemPrettyPrintAllFiles = -1,
     menuitemCheckUpdates = -1;
 
@@ -153,6 +152,7 @@ void setAutoXMLType();
 void insertAutoXMLType();
 
 void togglePreventXXE();
+void toggleAllowHuge();
 
 void prettyPrintXML();
 void prettyPrintXMLBreaks();
@@ -190,6 +190,13 @@ void debugDlg();
 
 int performXMLCheck(int informIfNoError);
 void savePluginParams();
+
+unsigned long getFlags() {
+  unsigned long res = 0;
+  if (!doPreventXXE) res |= (XML_PARSE_NOENT | XML_PARSE_DTDLOAD);
+  if (doAllowHuge) res |= XML_PARSE_HUGE;
+  return res;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -399,6 +406,13 @@ CXMLToolsApp::CXMLToolsApp() {
     doPreventXXE = funcItem[menuentry]._init2Check;
     menuitemPreventXXE = menuentry;
     ++menuentry;
+
+    Report::strcpy(funcItem[menuentry]._itemName, L"Allow huge files");
+    funcItem[menuentry]._pFunc = toggleAllowHuge;
+    funcItem[menuentry]._init2Check = doAllowHuge = (::GetPrivateProfileInt(sectionName, L"doAllowHuge", 0, iniFilePath) != 0);
+    doAllowHuge = funcItem[menuentry]._init2Check;
+    menuitemAllowHuge = menuentry;
+    ++menuentry;
   
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
   
@@ -526,13 +540,14 @@ CXMLToolsApp::CXMLToolsApp() {
   //Report::_printf_inf("menu entries: %d", menuentry);
 
 /*
-  Report::_printf_inf("%s\ndoCheckXML: %d %d\ndoValidation: %d %d\ndoCloseTag: %d %d\ndoAutoXMLType: %d %d\ndoPreventXXE: %d %d\nisLocal: %d",
+  Report::_printf_inf("%s\ndoCheckXML: %d %d\ndoValidation: %d %d\ndoCloseTag: %d %d\ndoAutoXMLType: %d %d\ndoPreventXXE: %d %d\ndoAllowHuge: %d %d\nisLocal: %d",
     iniFilePath,
     doCheckXML, funcItem[menuitemCheckXML]._init2Check,
     doValidation, funcItem[menuitemValidation]._init2Check,
     doCloseTag, funcItem[menuitemCloseTag]._init2Check,
     doAutoXMLType, funcItem[menuitemAutoXMLType]._init2Check,
     doPreventXXE, funcItem[menuitemPreventXXE]._init2Check,
+    doAllowHuge, funcItem[menuitemAllowHuge]._init2Check,
     isLocal);
 */
 
@@ -559,6 +574,7 @@ void savePluginParams() {
   //funcItem[menuitemAttrAutoComplete]._init2Check = doAttrAutoComplete;
   funcItem[menuitemAutoXMLType]._init2Check = doAutoXMLType;
   funcItem[menuitemPreventXXE]._init2Check = doPreventXXE;
+  funcItem[menuitemAllowHuge]._init2Check = doAllowHuge;
   funcItem[menuitemPrettyPrintAllFiles]._init2Check = doPrettyPrintAllOpenFiles;
   funcItem[menuitemCheckUpdates]._init2Check = doCheckUpdates;
 
@@ -570,6 +586,7 @@ void savePluginParams() {
   //::WritePrivateProfileString(sectionName, L"doAttrAutoComplete", doAttrAutoComplete?L"1":L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"doAutoXMLType", doAutoXMLType?L"1":L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"doPreventXXE", doPreventXXE?L"1":L"0", iniFilePath);
+  ::WritePrivateProfileString(sectionName, L"doAllowHuge", doAllowHuge?L"1" : L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"doPrettyPrintAllOpenFiles", doPrettyPrintAllOpenFiles?L"1":L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"doCheckUpdates", doCheckUpdates?L"1":L"0", iniFilePath);
 
@@ -629,6 +646,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 //      ::CheckMenuItem(hMenu, funcItem[menuitemAttrAutoComplete]._cmdID, MF_BYCOMMAND | (doAttrAutoComplete?MF_CHECKED:MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemAutoXMLType]._cmdID, MF_BYCOMMAND | (doAutoXMLType?MF_CHECKED:MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemPreventXXE]._cmdID, MF_BYCOMMAND | (doPreventXXE?MF_CHECKED:MF_UNCHECKED));
+        ::CheckMenuItem(hMenu, funcItem[menuitemAllowHuge]._cmdID, MF_BYCOMMAND | (doAllowHuge ? MF_CHECKED : MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemPrettyPrintAllFiles]._cmdID, MF_BYCOMMAND | (doPrettyPrintAllOpenFiles?MF_CHECKED:MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemCheckUpdates]._cmdID, MF_BYCOMMAND | (doCheckUpdates?MF_CHECKED:MF_UNCHECKED));
 
@@ -779,6 +797,14 @@ void togglePreventXXE() {
 
   doPreventXXE = !doPreventXXE;
   ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemPreventXXE]._cmdID, MF_BYCOMMAND | (doPreventXXE?MF_CHECKED:MF_UNCHECKED));
+  savePluginParams();
+}
+
+void toggleAllowHuge() {
+  dbgln("toggleAllowHuge()");
+
+  doAllowHuge = !doAllowHuge;
+  ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemAllowHuge]._cmdID, MF_BYCOMMAND | (doAllowHuge ? MF_CHECKED : MF_UNCHECKED));
   savePluginParams();
 }
 
@@ -1013,7 +1039,7 @@ int performXMLCheck(int informIfNoError) {
   
   pXmlResetLastError();
   //updateProxyConfig();
-  xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
+  xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, getFlags());
   
   delete [] data;
   data = NULL;
@@ -1122,7 +1148,7 @@ void XMLValidation(int informIfNoError) {
 
   pXmlResetLastError();
   //updateProxyConfig();
-  doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
+  doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, getFlags());
 
   delete [] data;
   data = NULL;
@@ -1540,7 +1566,7 @@ std::wstring currentXPath() {
     str += "><X>";
 
     //updateProxyConfig();
-    xmlDocPtr doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, XML_PARSE_RECOVER | (doPreventXXE ? defFlagsNoXXE : defFlags));
+    xmlDocPtr doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, XML_PARSE_RECOVER | getFlags());
     str.clear();
 
     if (doc == NULL) return nodepath;
@@ -1604,7 +1630,7 @@ void evaluateXPath() {
   dbgln("evaluateXPath()");
 
   if (pXPathEvalDlg == NULL) {
-    pXPathEvalDlg = new CXPathEvalDlg(NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
+    pXPathEvalDlg = new CXPathEvalDlg(NULL, getFlags());
     pXPathEvalDlg->Create(CXPathEvalDlg::IDD,NULL);
   }
   pXPathEvalDlg->ShowWindow(SW_SHOW);
@@ -1625,7 +1651,7 @@ void performXSLTransform() {
   dbgln("performXSLTransform()");
 
   if (pXSLTransformDlg == NULL) {
-    pXSLTransformDlg = new CXSLTransformDlg(NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
+    pXSLTransformDlg = new CXSLTransformDlg(NULL, getFlags());
     pXSLTransformDlg->Create(CXSLTransformDlg::IDD,NULL);
   }
   pXSLTransformDlg->ShowWindow(SW_SHOW);
@@ -1699,7 +1725,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 /*
     if (FALSE) {
       //updateProxyConfig();
-      xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
+      xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, getFlags());
       if (doc == NULL) {
         xmlErrorPtr err;
         err = pXmlGetLastError();
@@ -2024,7 +2050,7 @@ void prettyPrintLibXML() {
     xmlDocPtr doc;
 
 //  updateProxyConfig();
-    doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, (doPreventXXE ? defFlagsNoXXE : defFlags));
+    doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, getFlags());
     if (doc == NULL) {
       Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
       delete [] data;
