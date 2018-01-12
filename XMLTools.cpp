@@ -81,9 +81,9 @@ const wchar_t localConfFile[] = L"doLocalConf.xml";
 
 // The number of functionality
 #ifdef _DEBUG
-  const int TOTAL_FUNCS = 35;
+  const int TOTAL_FUNCS = 36;
 #else
-  const int TOTAL_FUNCS = 34;
+  const int TOTAL_FUNCS = 35;
 #endif
 int nbFunc = TOTAL_FUNCS;
 
@@ -167,6 +167,8 @@ int initDocIterator();
 bool hasNextDoc(int* iter);
 
 void getCurrentXPath();
+void getCurrentXPathStd();
+void getCurrentXPathPredicate();
 void evaluateXPath();
 
 void performXSLTransform();
@@ -461,7 +463,11 @@ CXMLToolsApp::CXMLToolsApp() {
   
     Report::strcpy(funcItem[menuentry]._itemName, L"Current XML Path");
     registerShortcut(funcItem+menuentry, true, true, true, 'P');
-    funcItem[menuentry]._pFunc = getCurrentXPath;
+    funcItem[menuentry]._pFunc = getCurrentXPathStd;
+    ++menuentry;
+
+    Report::strcpy(funcItem[menuentry]._itemName, L"Current XML Path with predicates");
+    funcItem[menuentry]._pFunc = getCurrentXPathPredicate;
     ++menuentry;
   
     Report::strcpy(funcItem[menuentry]._itemName, L"Evaluate XPath expression...");
@@ -1523,7 +1529,7 @@ void setAutoXMLType() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-std::wstring currentXPath() {
+std::wstring currentXPath(bool preciseXPath) {
   dbgln("currentXPath()");
 
   int currentEdit;
@@ -1552,7 +1558,8 @@ std::wstring currentXPath() {
 
   // let's reach the end of current tag (if we are inside a tag)
   if (currentPos > begpos && currentPos <= endpos) {
-    currentPos = str.find_last_of("<>", currentPos-1)+1;
+    currentPos = str.find_last_of("\"<>", currentPos-1)+1;
+    bool cursorInAttribute = false;
 
     // check if we are in a closing tag
     if (currentPos >= 1 && currentPos < currentLength-2 && str.at(currentPos-1) == '<'  && str.at(currentPos) == '!' && str.at(currentPos+1) == '-' && str.at(currentPos+2) == '-') {  // check if in a comment
@@ -1561,11 +1568,16 @@ std::wstring currentXPath() {
       // if we are inside closing tag (inside </x>, let's go back before '<' char so we are inside node)
       --currentPos;
     } else {
-      // let's get the end of current tag or text
-      currentPos = str.find_first_of("<>", currentPos);
-      // if inside a auto-closing tag (ex. '<x/>'), let's go back before '/' char, the '>' is added before slash)
-      if (currentPos > 0 && str.at(currentPos-1) == '/'
-                         && str.at(currentPos)   == '>') --currentPos;
+      if (currentPos >= 2 > 0 && str.at(currentPos - 1) == '\"' && str.at(currentPos - 2) == '=') {
+        cursorInAttribute = true;
+        currentPos = str.find('\"', currentPos) + 1;
+      } else {
+        // let's get the end of current tag or text
+        size_t s = str.find_first_of("<>", currentPos);
+        // if inside a auto-closing tag (ex. '<x/>'), let's go back before '/' char, the '>' is added before slash)
+        if (s > 0 && str.at(s) == '>' && str.at(s - 1) == '/') currentPos = s - 1;
+        else currentPos = s;
+      }
     }
 
     str.erase(currentPos);
@@ -1579,9 +1591,11 @@ std::wstring currentXPath() {
 
     UniMode encoding = Report::getEncoding(doc->encoding, NULL);
     xmlNodePtr cur_node = pXmlDocGetRootElement(doc);
+    std::wstring attr(L"");
 
     while (cur_node != NULL && cur_node->last != NULL) {
       if (cur_node->type == XML_ELEMENT_NODE) {
+        attr = L"";
         nodepath += L"/";
         if (cur_node->ns) {
           if (cur_node->ns->prefix != NULL) {
@@ -1590,8 +1604,34 @@ std::wstring currentXPath() {
           }
         }
         Report::appendToWStdString(&nodepath, cur_node->name, encoding);
+        
+        // count preceding siblings
+        if (preciseXPath) {
+          int pos = 1;
+          xmlNodePtr n = cur_node->prev;
+          while (n) {
+            if (n->type == XML_ELEMENT_NODE && pXmlStrEqual(n->name, cur_node->name)) ++pos;
+            n = n->prev;
+          }
+          nodepath += Report::str_format(L"[%d]", pos).c_str();
+        }
+
+        // get last attribute
+        if (cursorInAttribute) {
+          xmlAttrPtr a = cur_node->properties;
+          while (a) {
+            if (a->type == XML_ATTRIBUTE_NODE) {
+              attr = Report::widen(a->name);
+              a = a->next;
+            }
+          }
+        }
       }
       cur_node = cur_node->last;
+    }
+
+    if (cursorInAttribute && attr.length() > 0) {
+      nodepath += Report::str_format(L"/@%s", attr.c_str()).c_str();
     }
     pXmlFreeDoc(doc);
   }
@@ -1599,10 +1639,10 @@ std::wstring currentXPath() {
   return nodepath;
 }
 
-void getCurrentXPath() {
+void getCurrentXPath(bool precise) {
   dbgln("getCurrentXPath()");
   
-  std::wstring nodepath(currentXPath());
+  std::wstring nodepath(currentXPath(precise));
   std::wstring tmpmsg(L"Current node cannot be resolved.");
 
   if (nodepath.length() > 0) {
@@ -1622,6 +1662,15 @@ void getCurrentXPath() {
   
   Report::_printf_inf(tmpmsg.c_str());
 }
+void getCurrentXPathStd() {
+  dbgln("getCurrentXPathStd()");
+  getCurrentXPath(false);
+}
+void getCurrentXPathPredicate() {
+  dbgln("getCurrentXPathPredicate()");
+  getCurrentXPath(true);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 

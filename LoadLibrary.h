@@ -81,6 +81,7 @@ extern void (*pXmlNanoHTTPInit)(void);
 extern void (*pXmlNanoHTTPScanProxy)(const char * URL);
 extern const char * (*pXmlNanoHTTPAuthHeader)(void *ctx);
 //xmlNodePtr pXmlRemoveNs(xmlNodePtr tree, xmlNsPtr ns);
+extern int(*pXmlStrEqual)(const xmlChar *str1, const xmlChar *str2);
 
 //-------------------------------------------------------------------------------------------------
 

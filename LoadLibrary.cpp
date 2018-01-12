@@ -85,6 +85,8 @@ void                   (*pXmlNanoHTTPInit)(void);
 void                   (*pXmlNanoHTTPScanProxy)(const char * URL);
 const char *           (*pXmlNanoHTTPAuthHeader)(void *ctx);
 
+int                    (*pXmlStrEqual)(const xmlChar *str1, const xmlChar *str2);
+
 
 //-------------------------------------------------------------------------------------------------
 
@@ -219,6 +221,8 @@ int loadLibraries(wchar_t* nppMainPath, wchar_t* appDataPath) {
   pXmlNanoHTTPInit =              (void (__cdecl *)(void)) GetProcAddress(hInstLibXML, "xmlNanoHTTPInit"); assert(pXmlNanoHTTPInit);
   pXmlNanoHTTPScanProxy =         (void (__cdecl *)(const char *)) GetProcAddress(hInstLibXML, "xmlNanoHTTPScanProxy"); assert(pXmlNanoHTTPScanProxy);
   pXmlNanoHTTPAuthHeader =        (const char * (__cdecl *)(void *)) GetProcAddress(hInstLibXML, "xmlNanoHTTPAuthHeader"); assert(pXmlNanoHTTPAuthHeader);
+
+  pXmlStrEqual =                  (int (__cdecl *)(const xmlChar *, const xmlChar *)) GetProcAddress(hInstLibXML, "xmlStrEqual"); assert(pXmlStrEqual);
 
   //-----------------------------------------------------------------------------------------------
   
