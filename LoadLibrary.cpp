@@ -60,6 +60,7 @@ void                   (*pXmlFreeValidCtxt)(xmlValidCtxtPtr);
 xmlDtdPtr              (*pXmlParseDTD)(const xmlChar *ExternalID, const xmlChar *SystemID);
 void                   (*pXmlFreeDtd)(xmlDtdPtr cur);
 int                    (*pXmlValidateDtd)(xmlValidCtxtPtr ctxt, xmlDocPtr doc, xmlDtdPtr dtd);
+int                    (*pXmlValidateDtdFinal)(xmlValidCtxtPtr ctxt, xmlDocPtr doc);
 
 xmlXPathContextPtr     (*pXmlXPathNewContext)(xmlDocPtr doc);
 void                   (*pXmlXPathFreeContext)(xmlXPathContextPtr ctxt);
@@ -194,6 +195,7 @@ int loadLibraries(wchar_t* nppMainPath, wchar_t* appDataPath) {
   pXmlParseDTD =                  (xmlDtdPtr (__cdecl *)(const xmlChar *, const xmlChar *))GetProcAddress(hInstLibXML, "xmlParseDTD"); assert(pXmlParseDTD);
   pXmlFreeDtd =                   (void (__cdecl *)(xmlDtdPtr))GetProcAddress(hInstLibXML, "xmlFreeDtd"); assert(pXmlFreeDtd);
   pXmlValidateDtd =               (int (__cdecl *)(xmlValidCtxtPtr, xmlDocPtr, xmlDtdPtr))GetProcAddress(hInstLibXML, "xmlValidateDtd"); assert(pXmlValidateDtd);
+  pXmlValidateDtdFinal =          (int(__cdecl *)(xmlValidCtxtPtr, xmlDocPtr))GetProcAddress(hInstLibXML, "xmlValidateDtdFinal"); assert(pXmlValidateDtdFinal);
 
   pXmlXPathNewContext =           (xmlXPathContextPtr (__cdecl *)(xmlDocPtr))GetProcAddress(hInstLibXML, "xmlXPathNewContext"); assert(pXmlXPathNewContext);
   pXmlXPathFreeContext =          (void (__cdecl *)(xmlXPathContextPtr))GetProcAddress(hInstLibXML, "xmlXPathFreeContext"); assert(pXmlXPathFreeContext);

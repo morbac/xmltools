@@ -1115,12 +1115,12 @@ CSelectFileDlg* pSelectFileDlg = NULL;
 void XMLValidation(int informIfNoError) {
   dbgln("XMLValidation()");
 
-  // 0. On change le dossier courant
+  // 0. change current folder
   wchar_t currenPath[MAX_PATH] = { '\0' };
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTDIRECTORY, MAX_PATH, (LPARAM)currenPath);
   _chdir(Report::narrow(currenPath).data());
 
-  // 1. On valide le XML
+  // 1. check xml syntax
   bool abortValidation = false;
   std::string xml_schema("");
   int currentEdit, currentLength;
@@ -1170,16 +1170,16 @@ void XMLValidation(int informIfNoError) {
     abortValidation = true;
   }
 
-  // 2. Si le XMl est valide
+  // 2. is xml is valid...
   if (!abortValidation) {
-    // 2.1. On essaie de retrouver le schéma ou la dtd das le document
+    // 2.1. try to get schema or dtd in document
     rootnode = pXmlDocGetRootElement(doc);
     if (rootnode == NULL) {
       Report::_printf_err(L"Empty XML document");
     } else {
-      // 2.1.a. On recherche les attributs "xsi:noNamespaceSchemaLocation" ou "xsi:schemaLocation" dans la balise root
-      // Exemple de balise root:
-      //  <descript xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Descript_Shema.xsd">
+      // 2.1.a. search for attributes "xsi:noNamespaceSchemaLocation" or "xsi:schemaLocation" in root tag
+      // expected root tag sample:
+      //   <descript xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Descript_Shema.xsd">
       xmlChar* propval = pXmlGetProp(rootnode, reinterpret_cast<const unsigned char*>("noNamespaceSchemaLocation"));
       if (propval == NULL) {
         propval = pXmlGetProp(rootnode, reinterpret_cast<const unsigned char*>("schemaLocation"));
@@ -1193,7 +1193,7 @@ void XMLValidation(int informIfNoError) {
         xsdValidation = true;
       }
 
-      // 2.1.b On recheche un DOCTYPE avant la balise root
+      // 2.1.b search for DOCTYPE before root tag
       dtdPtr = doc->intSubset;
       if (dtdPtr) {
         std::string dtd_filename("");
@@ -1220,12 +1220,12 @@ void XMLValidation(int informIfNoError) {
       propval = NULL;
     }
 
-    // Vérification des éléments: si on a à la fois une DTD et un schéma, on prend le schéma
+    // elements check: if we have both a DTD and a schema, we use the schema
     if (xsdValidation) dtdValidation = false;
   }
   
   if (!abortValidation) {
-    // 2.2. Si l'attribut est absent, on demande à l'utilisateur de fournir le chemin du fichier XSD
+    // 2.2. if attribute is missing, let's ask to user to provide an xsd path
     if (xml_schema.length() == 0 && !dtdValidation) {
       if (pSelectFileDlg == NULL) {
           pSelectFileDlg = new CSelectFileDlg();
@@ -1243,16 +1243,16 @@ void XMLValidation(int informIfNoError) {
       }
     }
 
-    // 2.3.a. On procède à la validation par schéma
+    // 2.3.a. schema validation process
     if (xml_schema.length() > 0 && !dtdValidation) {
-      // on concatène le chemin du document courant 
+      // concat provided path wiht current path
       wchar_t destpath[MAX_PATH] = { '\0' };
       ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTDIRECTORY, MAX_PATH, (LPARAM)destpath);
       std::string xml_absolute_schema = Report::narrow(destpath);
       xml_absolute_schema.append("\\");
       xml_absolute_schema.append(xml_schema);
 
-      // si le fichier existe, on le garde, sinon on reprend la valeur initiale (permet de gérer le cas où on reçoit une URL)
+      // if the file exists, let's use it, otherwise let's use the initial value (for the case we get an URL)
       if (PathFileExists(Report::widen(xml_absolute_schema).c_str()) == FALSE) {
         xml_absolute_schema = xml_schema;
       }
@@ -1260,7 +1260,7 @@ void XMLValidation(int informIfNoError) {
       if ((pctxt = pXmlSchemaNewParserCtxt(reinterpret_cast<const char*>(xml_absolute_schema.c_str()))) == NULL) {
         Report::_printf_err(L"Unable to initialize parser.");
       } else {
-        // Chargement du contenu du XML Schema
+        // load content of xml schema
         schema = pXmlSchemaParse(pctxt);
 
         if (schema == NULL) {
@@ -1280,17 +1280,17 @@ void XMLValidation(int informIfNoError) {
             Report::_printf_err(L"Unable to parse schema file.");
           }
         } else {
-          // Création du contexte de validation
+          // create validation context
           if ((vctxt = pXmlSchemaNewValidCtxt(schema)) == NULL) {
             Report::_printf_err(L"Unable to create validation context.");
           } else {
-            // Traitement des erreurs de validation
+            // handle validation errors
             Report::clearLog();
             Report::registerMessage("Validation of current file using XML schema:\r\n\r\n");
             pXmlSchemaSetValidErrors(vctxt, (xmlSchemaValidityErrorFunc) Report::registerError, (xmlSchemaValidityWarningFunc) Report::registerWarn, stderr);
-			//pXmlSchemaValidateSetLocator(vctxt, xmlSchemaValidateStreamLocator, pctxt);
+            //pXmlSchemaValidateSetLocator(vctxt, xmlSchemaValidateStreamLocator, pctxt);
 
-            // Validation
+            // validation
             if (!pXmlSchemaValidateDoc(vctxt, doc)) {
               if (informIfNoError) Report::_printf_inf(L"XML Schema validation:\r\nXML is valid.");
             } else {
@@ -1300,7 +1300,7 @@ void XMLValidation(int informIfNoError) {
             }
           }
 
-          // 2.4. On libère le parseur
+          // 2.4. free parser
           pXmlSchemaFree(schema);
           pXmlSchemaFreeValidCtxt(vctxt);
         }
@@ -1309,28 +1309,34 @@ void XMLValidation(int informIfNoError) {
       }
     }
 
-    // 2.3.b On procède à la validation par DTD
+    // 2.3.b dtd validation process
     if (dtdPtr && dtdValidation) {
       xmlValidCtxtPtr vctxt;
 
-      // Création du contexte de validation
+      // create validation context
       if ((vctxt = pXmlNewValidCtxt())) {
-        // Affichage des erreurs de validation
+        // show validation errors
         Report::clearLog();
         Report::registerMessage("Validation of current file using DTD:\r\n\r\n");
         vctxt->userData = (void *) stderr;
         vctxt->error = (xmlValidityErrorFunc) Report::registerError;
         vctxt->warning = (xmlValidityWarningFunc) Report::registerWarn;
 
-        // Validation
+        // validation
         if (pXmlValidateDtd(vctxt, doc, dtdPtr)) {
-          if (informIfNoError) Report::_printf_inf(L"DTD validation:\r\nXML is valid.");
+          if (pXmlValidateDtdFinal(vctxt, doc)) {
+            if (informIfNoError) Report::_printf_inf(L"DTD validation:\r\nXML is valid.");
+          } else {
+            CMessageDlg* msgdlg = new CMessageDlg();
+            msgdlg->m_sMessage = Report::getLog().c_str();
+            msgdlg->DoModal();
+          }
         } else {
           CMessageDlg* msgdlg = new CMessageDlg();
           msgdlg->m_sMessage = Report::getLog().c_str();
           msgdlg->DoModal();
         }
-        // Libération de la mémoire
+        // free memory
         pXmlFreeValidCtxt(vctxt);
       }
       if (doFreeDTDPtr) {
@@ -1339,11 +1345,11 @@ void XMLValidation(int informIfNoError) {
     }
   }
 
-  // 3. On libère la mémoire
+  // 3. clean memory
   rootnode = NULL;
   pXmlFreeDoc(doc);
 
-  // 4. On enregistre le nom du schéma utilisé pour le proposer la prochaine fois
+  // 4. save schema name for next call
   lastXMLSchema = xml_schema;
 }
 

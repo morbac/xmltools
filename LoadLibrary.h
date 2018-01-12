@@ -71,6 +71,7 @@ extern xmlChar * (*pXmlStrdup)(const xmlChar *cur);
 extern const xmlChar * (*pXmlStrchr)(const xmlChar *str, xmlChar val);
 extern int (*pXmlXPathRegisterNs)(xmlXPathContextPtr ctxt, const xmlChar *prefix, const xmlChar *ns_uri);
 extern int (*pXmlValidateDtd)(xmlValidCtxtPtr ctxt, xmlDocPtr doc, xmlDtdPtr dtd);
+extern int (*pXmlValidateDtdFinal)(xmlValidCtxtPtr ctxt, xmlDocPtr doc);
 extern int (*pXmlSchemaValidateDoc)(xmlSchemaValidCtxtPtr ctxt, xmlDocPtr instance);
 extern xmlGlobalStatePtr (*pXmlGetGlobalState)(void);
 extern int (*pXmlKeepBlanksDefault)(int val);
