@@ -62,7 +62,7 @@ void CMessageDlg::OnSize(UINT nType, int cx, int cy)
   CWnd *edit_wnd = GetDlgItem(IDC_EDIT_MULTILINEMSG);
   CWnd *btn_wnd = GetDlgItem(IDOK);
   
-  if (btn_wnd && btn_wnd) {
+  if (btn_wnd && edit_wnd) {
     const int border = 8;
     const int wndspace = 6;
     const int btnwidth = 75;

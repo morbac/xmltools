@@ -47,7 +47,7 @@ END_MESSAGE_MAP()
 CString CSelectFileDlg::ShowOpenFileDlg(CString filetypes)
 {
   CFileDialog dlg(TRUE, NULL, NULL, NULL, filetypes);
-  int ret = dlg.DoModal();
+  INT_PTR ret = dlg.DoModal();
   if (ret == IDOK) {
     return dlg.GetPathName();
   }
