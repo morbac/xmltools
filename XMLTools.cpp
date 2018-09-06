@@ -29,6 +29,7 @@
 #include <assert.h>
 #include <locale>
 #include <algorithm>
+#include <array>
 
 // libxml
 #include "LoadLibrary.h"
@@ -289,7 +290,7 @@ CXMLToolsApp::CXMLToolsApp() {
 
   dbg("Locating XMLToolsExt.ini... ");
   wchar_t nppMainPath[MAX_PATH], appDataPath[MAX_PATH], nppPluginsPath[MAX_PATH]; 
-  GetModuleFileName(::GetModuleHandle(XMLTOOLS_DLLNAME), nppPluginsPath, sizeof(nppPluginsPath));
+  GetModuleFileName(::GetModuleHandle(XMLTOOLS_DLLNAME), nppPluginsPath, MAX_PATH);
   PathRemoveFileSpec(nppPluginsPath);   // remove the module name: get npp plugins path
   
   Report::strcpy(nppMainPath, nppPluginsPath);
@@ -913,10 +914,10 @@ void checkUpdates() {
     time_t now = time(0);
     struct tm*  tstruct = localtime(&now);
 
-    wchar_t buf[80];
-    wcsftime(buf, sizeof(buf), L"%Y%m%d", tstruct);
+    std::array<wchar_t, 80> buf;
+    wcsftime(buf.data(), buf.size(), L"%Y%m%d", tstruct);
 
-    if (wcscmp(next, buf) < 0) {
+    if (wcscmp(next, buf.data()) < 0) {
       // lets download the latest stable version number
       std::wstring latestavailable = getLatestVersion(LATEST_STABLE_URL);
       if (!latestavailable.empty()) {
@@ -938,8 +939,8 @@ void checkUpdates() {
       // Compute next check date
       tstruct->tm_mday += NDAYS_BETWEEN_UPDATE_CHECK;
       mktime(tstruct);
-      wcsftime(buf, sizeof(buf), L"%Y%m%d", tstruct);
-      dateOfNextCheckUpdates = buf;
+      wcsftime(buf.data(), buf.size(), L"%Y%m%d", tstruct);
+      dateOfNextCheckUpdates = buf.data();
 
       savePluginParams();
     }
@@ -1568,7 +1569,7 @@ std::wstring currentXPath(bool preciseXPath) {
       // if we are inside closing tag (inside </x>, let's go back before '<' char so we are inside node)
       --currentPos;
     } else {
-      if (currentPos >= 2 > 0 && str.at(currentPos - 1) == '\"' && str.at(currentPos - 2) == '=') {
+      if (currentPos >= 2 && str.at(currentPos - 1) == '\"' && str.at(currentPos - 2) == '=') {
         cursorInAttribute = true;
         currentPos = str.find('\"', currentPos) + 1;
       } else {
@@ -2634,7 +2635,7 @@ void commentSelection() {
   int errflag = validateSelectionForComment(str, sellength);
   if (errflag) {
     wchar_t msg[512];
-    swprintf(msg, 512, L"The current selection covers part only one portion of another comment.\nUncomment process may be not applicable.\n\nDo you want to continue ?", errflag);
+    swprintf(msg, 512, L"The current selection covers part only one portion of another comment.\nUncomment process may be not applicable.\n\nDo you want to continue ? %d", errflag);
     if (::MessageBox(nppData._nppHandle, msg, L"XML Tools plugin", MB_YESNO | MB_ICONASTERISK) == IDNO) {
       str.clear();
       return;

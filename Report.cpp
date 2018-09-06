@@ -114,7 +114,7 @@ std::wstring Report::str_format(const wchar_t* s, ...) {
 std::string Report::str_format(const char* s, ...) {
   if (!s || !strlen(s)) return "";
   
-  int buffersize = 2*strlen(s);
+  size_t buffersize = 2*strlen(s);
   char * buffer = (char*) malloc(buffersize*sizeof(char));
   memset(buffer, '\0', buffersize);
 
@@ -236,14 +236,14 @@ std::string Report::narrow(const std::wstring& ws) {
 }
 
 std::wstring Report::widen(const char* s) {
-  int len = strlen(s);
+  size_t len = strlen(s);
   std::wstring res(len, L' '); // Make room for characters
   std::copy(s, s+len, res.begin());
   return res;
 }
 
 std::wstring Report::widen(const xmlChar* s) {
-  int len = _mbslen(s);
+  size_t len = _mbslen(s);
   std::wstring res(len, L' '); // Make room for characters
   std::copy(s, s+len, res.begin());
   return res;
