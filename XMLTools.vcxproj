@@ -116,7 +116,7 @@
       <Optimization>MaxSpeed</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>.\libs\libcurl\curl-7.57.0\include;.\libs\libxml\x86\include;.\libs\libxml\x86\include\libxml2;$(UniversalCRT_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\libs\libcurl\curl-7.62.0\include;.\libs\libxml\x86\include;.\libs\libxml\x86\include\libxml2;$(UniversalCRT_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -173,7 +173,7 @@
       <ExpandAttributedSource>false</ExpandAttributedSource>
       <MinimalRebuild>false</MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>.\libs\libcurl\curl-7.57.0\include;.\libs\libxml\x86\include;.\libs\libxml\x86\include\libxml2;$(UniversalCRT_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\libs\libcurl\curl-7.62.0\include;.\libs\libxml\x86\include;.\libs\libxml\x86\include\libxml2;$(UniversalCRT_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
@@ -216,7 +216,7 @@
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <AdditionalIncludeDirectories>.\libs\libcurl\curl-7.57.0\include;.\libs\libxml\$(Platform)\include;.\libs\libxml\$(Platform)\include\libxml2;$(UniversalCRT_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\libs\libcurl\curl-7.62.0\include;.\libs\libxml\$(Platform)\include;.\libs\libxml\$(Platform)\include\libxml2;$(UniversalCRT_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -271,7 +271,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <ExpandAttributedSource>false</ExpandAttributedSource>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>.\libs\libcurl\curl-7.57.0\include;.\libs\libxml\$(Platform)\include;.\libs\libxml\$(Platform)\include\libxml2;$(UniversalCRT_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\libs\libcurl\curl-7.62.0\include;.\libs\libxml\$(Platform)\include;.\libs\libxml\$(Platform)\include\libxml2;$(UniversalCRT_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalOptions>

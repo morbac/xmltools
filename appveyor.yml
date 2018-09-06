@@ -24,7 +24,7 @@ install:
 
 
     - cd "%APPVEYOR_BUILD_FOLDER%"\libs\libcurl
-    - curl -o curl.zip https://curl.haxx.se/download/curl-7.57.0.zip
+    - curl -o curl.zip https://curl.haxx.se/download/curl-7.62.0.zip
     - 7z x -y curl.zip > nul
 
     - cd "%APPVEYOR_BUILD_FOLDER%"\libs\libxml\install
@@ -44,7 +44,7 @@ build_script:
 after_build:
     - cd "%APPVEYOR_BUILD_FOLDER%"
     - ps: |
-        #Push-AppveyorArtifact "$env:PLATFORM_INPUT\$env:CONFIGURATION\XMLTools.dll" -FileName XMLTools.dll
+        Push-AppveyorArtifact "$env:PLATFORM_INPUT\$env:CONFIGURATION\XMLTools.dll" -FileName XMLTools.dll
         if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:PLATFORMTOOLSET -eq "v140_xp" -and $env:CONFIGURATION -eq "Release")
         {
             if($env:ARCH -eq "x64"){
