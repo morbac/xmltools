@@ -4,6 +4,17 @@
                         ChangeLog
 ================================================================
 
+Release 2.4.11
+--------------
+- Add option for huge files support
+- Fix DTD validation
+- Improve "Current XML Path" function (the xpath contains attribute name if cursor is in attribute value)
+- Adapt plugin for Plugin Admin (NPP v7.6)
+
+Release 2.4.10
+--------------
+- Fix pretty print formating with attributes containing '>' char
+
 Release 2.4.9.2
 ---------------
 - Fix pretty print function infinite loop when data ends with <!-- or <![CDATA[

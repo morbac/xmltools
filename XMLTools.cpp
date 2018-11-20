@@ -38,9 +38,6 @@
 #include <libxml/xmlschemas.h>
 #include <libxml/globals.h>
 
-// curl
-#include <curl/curl.h>
-
 //#define __XMLTOOLS_DEBUG__
 
 #ifdef _DEBUG
@@ -82,9 +79,9 @@ const wchar_t localConfFile[] = L"doLocalConf.xml";
 
 // The number of functionality
 #ifdef _DEBUG
-  const int TOTAL_FUNCS = 36;
-#else
   const int TOTAL_FUNCS = 35;
+#else
+  const int TOTAL_FUNCS = 34;
 #endif
 int nbFunc = TOTAL_FUNCS;
 
@@ -109,10 +106,8 @@ bool doCheckXML = false,
      doAutoXMLType = false,
      doPreventXXE = true,
      doAllowHuge = false,
-     doPrettyPrintAllOpenFiles = false,
-     doCheckUpdates = true;
+     doPrettyPrintAllOpenFiles = false;
 
-std::wstring dateOfNextCheckUpdates(L"19800101");
 struct struct_proxyoptions proxyoptions;
 
 int menuitemCheckXML = -1,
@@ -124,8 +119,7 @@ int menuitemCheckXML = -1,
     menuitemAutoXMLType = -1,
     menuitemPreventXXE = -1,
     menuitemAllowHuge = -1,
-    menuitemPrettyPrintAllFiles = -1,
-    menuitemCheckUpdates = -1;
+    menuitemPrettyPrintAllFiles = -1;
 
 std::string lastXMLSchema("");
 
@@ -179,9 +173,6 @@ void convertText2XML();
 
 void commentSelection();
 void uncommentSelection();
-
-void checkUpdates();
-void toggleCheckUpdates();
 
 void aboutBox();
 void optionsDlg();
@@ -312,30 +303,30 @@ CXMLToolsApp::CXMLToolsApp() {
   if (isLocal) {
     // try NPP plugins local configuration path (standard NPP location)
     Report::strcpy(iniFilePath, nppPluginsPath);
-    PathAppend(iniFilePath, L"Config\\XMLToolsExt.ini");
+    PathAppend(iniFilePath, L"Config\\XMLTools.ini");
 
     if (PathFileExists(iniFilePath) == FALSE) {
       // try NPP plugins path
       Report::strcpy(iniFilePath, nppPluginsPath);
-      PathAppend(iniFilePath, L"XMLToolsExt.ini");
+      PathAppend(iniFilePath, L"XMLTools.ini");
 
       if (PathFileExists(iniFilePath) == FALSE) {
         // try NPP main path
         Report::strcpy(iniFilePath, nppMainPath);
-        PathAppend(iniFilePath, L"XMLToolsExt.ini");
+        PathAppend(iniFilePath, L"XMLTools.ini");
       }
     }
   } else {
     // try NPP plugins remote configuration path (standard NPP UAC/AppData location)
     Report::strcpy(iniFilePath, appDataPath);
-    PathAppend(iniFilePath, L"Notepad++\\XMLToolsExt.ini");
+    PathAppend(iniFilePath, L"Notepad++\\XMLTools.ini");
   }
 
   dbgln(iniFilePath);
 
   // chargement de la librairie
   dbg("Loading libraries... ");
-  libloadstatus = loadLibraries(nppMainPath, appDataPath);
+  libloadstatus = loadLibraries(nppMainPath, nppPluginsPath);
   if (libloadstatus < 0) nbFunc = 1;
 
   int menuentry = 0;
@@ -505,13 +496,6 @@ CXMLToolsApp::CXMLToolsApp() {
   
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Check for plugin updates on startup");
-    funcItem[menuentry]._pFunc = toggleCheckUpdates;
-    funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, L"doCheckUpdates", 1, iniFilePath) != 0);
-    doCheckUpdates = funcItem[menuentry]._init2Check;
-    menuitemCheckUpdates = menuentry;
-    ++menuentry;
-  
     Report::strcpy(funcItem[menuentry]._itemName, L"Options...");
     funcItem[menuentry]._pFunc = optionsDlg;
     ++menuentry;
@@ -583,7 +567,6 @@ void savePluginParams() {
   funcItem[menuitemPreventXXE]._init2Check = doPreventXXE;
   funcItem[menuitemAllowHuge]._init2Check = doAllowHuge;
   funcItem[menuitemPrettyPrintAllFiles]._init2Check = doPrettyPrintAllOpenFiles;
-  funcItem[menuitemCheckUpdates]._init2Check = doCheckUpdates;
 
   ::WritePrivateProfileString(sectionName, L"doCheckXML", doCheckXML?L"1":L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"doValidation", doValidation?L"1":L"0", iniFilePath);
@@ -595,9 +578,6 @@ void savePluginParams() {
   ::WritePrivateProfileString(sectionName, L"doPreventXXE", doPreventXXE?L"1":L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"doAllowHuge", doAllowHuge?L"1" : L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"doPrettyPrintAllOpenFiles", doPrettyPrintAllOpenFiles?L"1":L"0", iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"doCheckUpdates", doCheckUpdates?L"1":L"0", iniFilePath);
-
-  ::WritePrivateProfileString(sectionName, L"dateOfNextCheck", dateOfNextCheckUpdates.c_str(), iniFilePath);
 }
 
 /*
@@ -655,9 +635,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
         ::CheckMenuItem(hMenu, funcItem[menuitemPreventXXE]._cmdID, MF_BYCOMMAND | (doPreventXXE?MF_CHECKED:MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemAllowHuge]._cmdID, MF_BYCOMMAND | (doAllowHuge ? MF_CHECKED : MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemPrettyPrintAllFiles]._cmdID, MF_BYCOMMAND | (doPrettyPrintAllOpenFiles?MF_CHECKED:MF_UNCHECKED));
-        ::CheckMenuItem(hMenu, funcItem[menuitemCheckUpdates]._cmdID, MF_BYCOMMAND | (doCheckUpdates?MF_CHECKED:MF_UNCHECKED));
 
-        checkUpdates();
         #ifdef DEBUG
           debugdlg->Create(CDebugDlg::IDD,NULL);
           debugDlg();
@@ -812,146 +790,6 @@ void toggleAllowHuge() {
 
   doAllowHuge = !doAllowHuge;
   ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemAllowHuge]._cmdID, MF_BYCOMMAND | (doAllowHuge ? MF_CHECKED : MF_UNCHECKED));
-  savePluginParams();
-}
-
-size_t curlWriteData(void *ptr, size_t size, size_t nmemb, void *stream) {
-  size_t pos = 0;
-  size_t total = size * nmemb;
-  char* tptr = (char*)ptr;
-
-  // Don't allow result strings over 1k
-  if (reinterpret_cast<std::wstring*>(stream)->size() > 1024)
-    return 0;
-
-  while (pos < total) {
-    reinterpret_cast<std::wstring*>(stream)->push_back(*tptr);
-    tptr++;
-    ++pos;
-  }
-
-  return total;
-}
-
-std::wstring getLatestVersion(const char* url) {
-  CURL *curl;
-
-  curl= curl_easy_init();
-  if (curl) {
-    std::wstring result;
-    //curl_easy_setopt(curl, CURLOPT_FRESH_CONNECT, TRUE);
-    curl_easy_setopt(curl, CURLOPT_USERAGENT, "XMLTools");
-    curl_easy_setopt(curl, CURLOPT_URL, url);
-
-    if (proxyoptions.status && wcslen(proxyoptions.host) > 0) {
-      curl_easy_setopt(curl, CURLOPT_PROXY, Report::wchar2char(proxyoptions.host));
-      curl_easy_setopt(curl, CURLOPT_PROXYPORT, proxyoptions.port);
-
-/*
-    if (wcslen(proxyoptions.username) > 0) {
-      curl_easy_setopt(curl, CURLOPT_PROXYAUTH, CURLAUTH_ANY);
-      curl_easy_setopt(curl, CURLOPT_PROXYUSERNAME, Report::wchar2char(proxyoptions.username));
-      if (wcslen(proxyoptions.password) > 0) {
-        curl_easy_setopt(curl, CURLOPT_PROXYPASSWORD, Report::wchar2char(proxyoptions.password));
-      }
-    }
-*/
-  } else {
-    curl_easy_setopt(curl, CURLOPT_PROXY, NULL);
-    curl_easy_setopt(curl, CURLOPT_PROXYPORT, NULL);
-//    curl_easy_setopt(curl, CURLOPT_PROXYUSERNAME, NULL);
-//    curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, NULL);
-//    curl_easy_setopt(curl, CURLOPT_PROXYAUTH, CURLAUTH_NONE);
-    }
- 
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteData);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
-
-    CURLcode rescode = curl_easy_perform(curl);
-    long httpCode = 0;
-    curl_easy_getinfo(curl, CURLINFO_HTTP_CODE, &httpCode);
-
-    curl_easy_cleanup(curl);
-
-    if (httpCode != 200) {
-      result = L"";
-    }
-
-    return result;
-  }
-
-  return L"";
-}
-
-struct version{
-  version(std::wstring versionStr) {
-    std::size_t p = versionStr.find_first_of(L"\r\n");
-    if (p != std::string::npos) {
-      swscanf(versionStr.substr(0, p).c_str(), L"%d.%d.%d", &major, &minor, &revision);
-    } else {
-      swscanf(versionStr.c_str(), L"%d.%d.%d", &major, &minor, &revision);
-    }
-  }
-  bool operator < (const version &other) {
-    if (major < other.major) return true;
-    if (minor < other.minor) return true;
-    if (revision < other.revision) return true;
-    return false;
-  }
-  int major,minor,revision;
-};
-
-void checkUpdates() {
-  dbgln("checkUpdates()");
-
-  // Lets check if an online check is required
-  wchar_t next[80];
-  ::GetPrivateProfileString(sectionName, L"dateOfNextCheck", L"19800101", next, 80, iniFilePath);
-  dateOfNextCheckUpdates = next;
-
-  if (doCheckUpdates) {
-    time_t now = time(0);
-    struct tm*  tstruct = localtime(&now);
-
-    std::array<wchar_t, 80> buf;
-    wcsftime(buf.data(), buf.size(), L"%Y%m%d", tstruct);
-
-    if (wcscmp(next, buf.data()) < 0) {
-      // lets download the latest stable version number
-      std::wstring latestavailable = getLatestVersion(LATEST_STABLE_URL);
-      if (!latestavailable.empty()) {
-        // compare current number and latest stable version
-        if (version(XMLTOOLS_VERSION_NUMBER) < version(latestavailable.c_str())) {
-          CMessageDlg* dlg = new CMessageDlg();
-          std::wstring msg(L"A new release of XMLTools plugin is available on NPP Plugins project.\r\nCurrent installed version: ");
-          msg += XMLTOOLS_VERSION_NUMBER;
-          msg += L" (";
-          msg += XMLTOOLS_VERSION_STATUS;
-          msg += L")";
-          msg += L"\r\nVersions available online on https://sourceforge.net/projects/npp-plugins/files/XML%20Tools/ :\r\n\r\n";
-          msg += latestavailable;
-          dlg->m_sMessage = msg.c_str();
-          dlg->DoModal();
-        }
-      }
-
-      // Compute next check date
-      tstruct->tm_mday += NDAYS_BETWEEN_UPDATE_CHECK;
-      mktime(tstruct);
-      wcsftime(buf.data(), buf.size(), L"%Y%m%d", tstruct);
-      dateOfNextCheckUpdates = buf.data();
-
-      savePluginParams();
-    }
-  }
-}
-
-void toggleCheckUpdates() {
-  dbgln("toggleCheckUpdates()");
-
-  doCheckUpdates = !doCheckUpdates;
-  ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemCheckUpdates]._cmdID, MF_BYCOMMAND | (doCheckUpdates?MF_CHECKED:MF_UNCHECKED));
   savePluginParams();
 }
 

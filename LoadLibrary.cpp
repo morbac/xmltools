@@ -106,21 +106,21 @@ HINSTANCE loadExtLib(const wchar_t* libFilename, const wchar_t* nppMainPath, con
 
   // try loading from NPP plugins path (standard NPP location)
   Report::strcpy(pszPath, nppMainPath);
-  PathAppend(pszPath, L"plugins\\XMLTools\\");
+  PathAppend(pszPath, L"plugins\\XMLTools\\libs\\");
   PathAppend(pszPath, libFilename);
   HINSTANCE res = LoadLibrary(pszPath);
 
   if (res == NULL) {
     // try loading from %appdata% path (standard NPP UAC/AppData location)
     Report::strcpy(pszPath, appDataPath);
-    PathAppend(pszPath, L"Notepad++\\");
+    PathAppend(pszPath, L"Notepad++\\libs\\");
     PathAppend(pszPath, libFilename);
     res = LoadLibrary(pszPath);
 
     if (res == NULL) {
       // try loading from NPP sub path
       Report::strcpy(pszPath, nppMainPath);
-      PathAppend(pszPath, L"XMLTools\\");
+      PathAppend(pszPath, L"XMLTools\\libs\\");
       PathAppend(pszPath, libFilename);
       res = LoadLibrary(pszPath);
     
