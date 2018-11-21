@@ -101,56 +101,36 @@ xsltTransformContextPtr(*pXsltNewTransformContext)(xsltStylesheetPtr style, xmlD
 
 //-------------------------------------------------------------------------------------------------
 
-HINSTANCE loadExtLib(const wchar_t* libFilename, const wchar_t* nppMainPath, const wchar_t* appDataPath) {
+HINSTANCE loadExtLib(const wchar_t* libFilename, const wchar_t* pluginHomePath) {
   wchar_t pszPath[MAX_PATH] = { '\0' };
 
   // try loading from NPP plugins path (standard NPP location)
-  Report::strcpy(pszPath, nppMainPath);
-  PathAppend(pszPath, L"plugins\\XMLTools\\libs\\");
+  Report::strcpy(pszPath, pluginHomePath);
+  PathAppend(pszPath, L"\\libs\\");
   PathAppend(pszPath, libFilename);
   HINSTANCE res = LoadLibrary(pszPath);
 
-  if (res == NULL) {
-    // try loading from %appdata% path (standard NPP UAC/AppData location)
-    Report::strcpy(pszPath, appDataPath);
-    PathAppend(pszPath, L"Notepad++\\libs\\");
-    PathAppend(pszPath, libFilename);
-    res = LoadLibrary(pszPath);
-
-    if (res == NULL) {
-      // try loading from NPP sub path
-      Report::strcpy(pszPath, nppMainPath);
-      PathAppend(pszPath, L"XMLTools\\libs\\");
-      PathAppend(pszPath, libFilename);
-      res = LoadLibrary(pszPath);
-    
-      if (res == NULL) {
-        // try loading (from NPP main path)
-        res = LoadLibrary(libFilename);
-      }
-    }
-  }
   return res;  
 }
 
-int loadLibraries(wchar_t* nppMainPath, wchar_t* appDataPath) {
+int loadLibraries(wchar_t* pluginHomePath) {
   BOOL    bRet = FALSE;
   HKEY    hKey = NULL;
   DWORD   size = MAX_PATH;
 
   // loading dependencies
-  if (loadExtLib(L"libiconv-2.dll", nppMainPath, appDataPath) == NULL) return -1;
-  if (loadExtLib(L"zlib1.dll", nppMainPath, appDataPath) == NULL) return -1;
-  if (loadExtLib(L"libwinpthread-1.dll", nppMainPath, appDataPath) == NULL) return -1;
+  if (loadExtLib(L"libiconv-2.dll", pluginHomePath) == NULL) return -1;
+  if (loadExtLib(L"zlib1.dll", pluginHomePath) == NULL) return -1;
+  if (loadExtLib(L"libwinpthread-1.dll", pluginHomePath) == NULL) return -1;
   
   // loading LIBXML
-  hInstLibXML = loadExtLib(L"libxml2-2.dll", nppMainPath, appDataPath);
+  hInstLibXML = loadExtLib(L"libxml2-2.dll", pluginHomePath);
   if (hInstLibXML == NULL) {
     return -1;
   }
 
   // loading LIBXSLT
-  hInstLibXSL = loadExtLib(L"libxslt-1.dll", nppMainPath, appDataPath);
+  hInstLibXSL = loadExtLib(L"libxslt-1.dll", pluginHomePath);
   if (hInstLibXSL == NULL) {
     return -1;
   }

@@ -95,6 +95,6 @@ extern xsltTransformContextPtr(*pXsltNewTransformContext)(xsltStylesheetPtr styl
 
 //------------------------------------------------------------------------------------------------
 
-int loadLibraries(wchar_t* nppMainPath, wchar_t* appDataPath);
+int loadLibraries(wchar_t* pluginHomePath);
 
 #endif __LOAD_XML_LIBRARY__

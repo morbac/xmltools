@@ -91,8 +91,10 @@ CDebugDlg* debugdlg = new CDebugDlg();
 // XML Loading status
 int libloadstatus = -1;
 
-// INI file support
-wchar_t iniFilePath[MAX_PATH];
+// PATHs
+wchar_t pluginHomePath[MAX_PATH] = { '\0' }; 
+wchar_t pluginConfigPath[MAX_PATH] = { '\0' };
+wchar_t iniFilePath[MAX_PATH] = { '\0' };
 const wchar_t sectionName[] = L"XML Tools";
 
 // Declaration of functionality (FuncItem) Array
@@ -183,6 +185,7 @@ void dbgln(CString line);
 void debugDlg();
 
 int performXMLCheck(int informIfNoError);
+void initializePlugin();
 void savePluginParams();
 
 unsigned long getFlags() {
@@ -278,55 +281,36 @@ CXMLToolsApp::CXMLToolsApp() {
   dbg("version "); dbg(XMLTOOLS_VERSION_NUMBER); dbg(" "); dbgln(XMLTOOLS_VERSION_STATUS);
   dbg("libXML: "); dbgln(LIBXML_DOTTED_VERSION);
   dbg("libXSLT: "); dbgln(LIBXSLT_DOTTED_VERSION);
+}
 
-  dbg("Locating XMLToolsExt.ini... ");
-  wchar_t nppMainPath[MAX_PATH], appDataPath[MAX_PATH], nppPluginsPath[MAX_PATH]; 
-  GetModuleFileName(::GetModuleHandle(XMLTOOLS_DLLNAME), nppPluginsPath, MAX_PATH);
-  PathRemoveFileSpec(nppPluginsPath);   // remove the module name: get npp plugins path
-  
-  Report::strcpy(nppMainPath, nppPluginsPath);
-  PathRemoveFileSpec(nppMainPath);      // cd..: get npp executable path
-  
-  // Make localConf.xml path
-  wchar_t localConfPath[MAX_PATH];
-  Report::strcpy(localConfPath, nppMainPath);
-  PathAppend(localConfPath, localConfFile);
-  //Report::_printf_err("%s", localConfPath);
-  
-  // Test if localConf.xml exist
-  bool isLocal = (PathFileExists(localConfPath) == TRUE);
-  
-  ITEMIDLIST *pidl;
-  SHGetSpecialFolderLocation(NULL, CSIDL_APPDATA, &pidl);
-  SHGetPathFromIDList(pidl, appDataPath);
-
-  if (isLocal) {
-    // try NPP plugins local configuration path (standard NPP location)
-    Report::strcpy(iniFilePath, nppPluginsPath);
-    PathAppend(iniFilePath, L"Config\\XMLTools.ini");
-
-    if (PathFileExists(iniFilePath) == FALSE) {
-      // try NPP plugins path
-      Report::strcpy(iniFilePath, nppPluginsPath);
-      PathAppend(iniFilePath, L"XMLTools.ini");
-
-      if (PathFileExists(iniFilePath) == FALSE) {
-        // try NPP main path
-        Report::strcpy(iniFilePath, nppMainPath);
-        PathAppend(iniFilePath, L"XMLTools.ini");
-      }
-    }
-  } else {
-    // try NPP plugins remote configuration path (standard NPP UAC/AppData location)
-    Report::strcpy(iniFilePath, appDataPath);
-    PathAppend(iniFilePath, L"Notepad++\\XMLTools.ini");
+CXMLToolsApp::~CXMLToolsApp() {
+  // Don't forget to de-allocate your shortcut here
+  for (int i = 0; i < nbFunc; ++i) {
+    if (funcItem[i]._pShKey) delete funcItem[i]._pShKey;
   }
+}
 
+void initializePlugin() {
+  dbgln("initializePlugin()");
+
+  dbg("Get plugin home dir... ");
+  ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINHOMEPATH, MAX_PATH, (LPARAM)pluginHomePath);
+  PathAppend(pluginHomePath, L"\\XMLTools");
+  //_chdir(Report::narrow(pluginHomePath).data());
+  dbgln(pluginHomePath);
+
+  dbg("Get plugin config dir... ");
+  ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)pluginConfigPath);
+  dbgln(pluginConfigPath);
+
+  dbg("Locating XMLTools.ini... ");
+  Report::strcpy(iniFilePath, pluginConfigPath);
+  PathAppend(iniFilePath, L"\\XMLTools.ini");
   dbgln(iniFilePath);
 
   // chargement de la librairie
   dbg("Loading libraries... ");
-  libloadstatus = loadLibraries(nppMainPath, nppPluginsPath);
+  libloadstatus = loadLibraries(pluginHomePath);
   if (libloadstatus < 0) nbFunc = 1;
 
   int menuentry = 0;
@@ -337,19 +321,21 @@ CXMLToolsApp::CXMLToolsApp() {
   if (!libloadstatus) {
     dbgln("OK");
 
+    dbg("Building plugin menu entries... ");
+
     Report::strcpy(funcItem[menuentry]._itemName, L"Enable XML syntax auto-check");
     funcItem[menuentry]._pFunc = insertXMLCheckTag;
     funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, L"doCheckXML", 1, iniFilePath) != 0);
     doCheckXML = funcItem[menuentry]._init2Check;
     menuitemCheckXML = menuentry;
     ++menuentry;
-  
+
     Report::strcpy(funcItem[menuentry]._itemName, L"Check XML syntax now");
     funcItem[menuentry]._pFunc = manualXMLCheck;
     ++menuentry;
 
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-  
+
     Report::strcpy(funcItem[menuentry]._itemName, L"Enable auto-validation");
     funcItem[menuentry]._pFunc = insertValidationTag;
     funcItem[menuentry]._init2Check = doValidation = (::GetPrivateProfileInt(sectionName, L"doValidation", 0, iniFilePath) != 0);
@@ -359,41 +345,41 @@ CXMLToolsApp::CXMLToolsApp() {
 
     Report::strcpy(funcItem[menuentry]._itemName, L"Validate now");
     funcItem[menuentry]._pFunc = manualValidation;
-    registerShortcut(funcItem+menuentry, true, true, true, 'M');
+    registerShortcut(funcItem + menuentry, true, true, true, 'M');
     ++menuentry;
-  
+
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-  
+
     Report::strcpy(funcItem[menuentry]._itemName, L"Tag auto-close");
     funcItem[menuentry]._pFunc = insertXMLCloseTag;
     funcItem[menuentry]._init2Check = doCloseTag = (::GetPrivateProfileInt(sectionName, L"doCloseTag", 1, iniFilePath) != 0);
     doCloseTag = funcItem[menuentry]._init2Check;
     menuitemCloseTag = menuentry;
     ++menuentry;
-/*
+    /*
     Report::strcpy(funcItem[menuentry]._itemName, L"Tag auto-indent");
     funcItem[menuentry]._pFunc = insertTagAutoIndent;
     funcItem[menuentry]._init2Check = doAutoIndent = (::GetPrivateProfileInt(sectionName, L"doAutoIndent", 0, iniFilePath) != 0);
     doAutoIndent = funcItem[menuentry]._init2Check;
     menuitemAutoIndent = menuentry;
     ++menuentry;
-  
+
     Report::strcpy(funcItem[menuentry]._itemName, L"Auto-complete attributes");
     funcItem[menuentry]._pFunc = insertAttributeAutoComplete;
     funcItem[menuentry]._init2Check = doAttrAutoComplete = (::GetPrivateProfileInt(sectionName, L"doAttrAutoComplete", 0, iniFilePath) != 0);
     doAttrAutoComplete = funcItem[menuentry]._init2Check;
     menuitemAttrAutoComplete = menuentry;
     ++menuentry;
-*/
+    */
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-  
+
     Report::strcpy(funcItem[menuentry]._itemName, L"Set XML type automatically");
     funcItem[menuentry]._pFunc = insertAutoXMLType;
     funcItem[menuentry]._init2Check = doAutoXMLType = (::GetPrivateProfileInt(sectionName, L"doAutoXMLType", 1, iniFilePath) != 0);
     doAutoXMLType = funcItem[menuentry]._init2Check;
     menuitemAutoXMLType = menuentry;
     ++menuentry;
-  
+
     Report::strcpy(funcItem[menuentry]._itemName, L"Prevent XXE");
     funcItem[menuentry]._pFunc = togglePreventXXE;
     funcItem[menuentry]._init2Check = doPreventXXE = (::GetPrivateProfileInt(sectionName, L"doPreventXXE", 1, iniFilePath) != 0);
@@ -407,40 +393,40 @@ CXMLToolsApp::CXMLToolsApp() {
     doAllowHuge = funcItem[menuentry]._init2Check;
     menuitemAllowHuge = menuentry;
     ++menuentry;
-  
+
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-  
+
     Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (XML only)");
     funcItem[menuentry]._pFunc = prettyPrintXML;
     ++menuentry;
-  
+
     Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (XML only - with line breaks)");
-    registerShortcut(funcItem+menuentry, true, true, true, 'B');
+    registerShortcut(funcItem + menuentry, true, true, true, 'B');
     funcItem[menuentry]._pFunc = prettyPrintXMLBreaks;
     ++menuentry;
-  
+
     Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (Text indent)");
     funcItem[menuentry]._pFunc = prettyPrintText;
     ++menuentry;
-  
+
     Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (libXML) [experimental]");
     funcItem[menuentry]._pFunc = prettyPrintLibXML;
     ++menuentry;
-  
+
     Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (attributes)");
-    registerShortcut(funcItem+menuentry, true, true, true, 'A');
+    registerShortcut(funcItem + menuentry, true, true, true, 'A');
     funcItem[menuentry]._pFunc = prettyPrintAttributes;
     ++menuentry;
-/*
+    /*
     Report::strcpy(funcItem[menuentry]._itemName, L"Enable auto pretty print (libXML) [experimental]");
     funcItem[menuentry]._pFunc = insertPrettyPrintTag;
     funcItem[menuentry]._init2Check = doPrettyPrint = (::GetPrivateProfileInt(sectionName, L"doPrettyPrint", 0, iniFilePath) != 0);
     doPrettyPrint = funcItem[menuentry]._init2Check;
     menuitemPrettyPrint = menuentry;
     ++menuentry;
-*/
+    */
     Report::strcpy(funcItem[menuentry]._itemName, L"Linarize XML");
-    registerShortcut(funcItem+menuentry, true, true, true, 'L');
+    registerShortcut(funcItem + menuentry, true, true, true, 'L');
     funcItem[menuentry]._pFunc = linarizeXML;
     ++menuentry;
 
@@ -450,65 +436,67 @@ CXMLToolsApp::CXMLToolsApp() {
     doPrettyPrintAllOpenFiles = funcItem[menuentry]._init2Check;
     menuitemPrettyPrintAllFiles = menuentry;
     ++menuentry;
-  
+
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-  
+
     Report::strcpy(funcItem[menuentry]._itemName, L"Current XML Path");
-    registerShortcut(funcItem+menuentry, true, true, true, 'P');
+    registerShortcut(funcItem + menuentry, true, true, true, 'P');
     funcItem[menuentry]._pFunc = getCurrentXPathStd;
     ++menuentry;
 
     Report::strcpy(funcItem[menuentry]._itemName, L"Current XML Path with predicates");
     funcItem[menuentry]._pFunc = getCurrentXPathPredicate;
     ++menuentry;
-  
+
     Report::strcpy(funcItem[menuentry]._itemName, L"Evaluate XPath expression...");
     funcItem[menuentry]._pFunc = evaluateXPath;
     ++menuentry;
-  
+
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-  
+
     Report::strcpy(funcItem[menuentry]._itemName, L"XSL Transformation...");
     funcItem[menuentry]._pFunc = performXSLTransform;
     ++menuentry;
-  
+
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-  
+
     Report::strcpy(funcItem[menuentry]._itemName, L"Convert selection XML to text (<> => &&lt;&&gt;)");
     funcItem[menuentry]._pFunc = convertXML2Text;
     ++menuentry;
-  
+
     Report::strcpy(funcItem[menuentry]._itemName, L"Convert selection text to XML (&&lt;&&gt; => <>)");
     funcItem[menuentry]._pFunc = convertText2XML;
     ++menuentry;
-  
+
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-  
+
     Report::strcpy(funcItem[menuentry]._itemName, L"Comment selection");
-    registerShortcut(funcItem+menuentry, true, true, true, 'C');
+    registerShortcut(funcItem + menuentry, true, true, true, 'C');
     funcItem[menuentry]._pFunc = commentSelection;
     ++menuentry;
-  
+
     Report::strcpy(funcItem[menuentry]._itemName, L"Uncomment selection");
-    registerShortcut(funcItem+menuentry, true, true, true, 'R');
+    registerShortcut(funcItem + menuentry, true, true, true, 'R');
     funcItem[menuentry]._pFunc = uncommentSelection;
     ++menuentry;
-  
+
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
     Report::strcpy(funcItem[menuentry]._itemName, L"Options...");
     funcItem[menuentry]._pFunc = optionsDlg;
     ++menuentry;
 
-    #ifdef _DEBUG
-      Report::strcpy(funcItem[menuentry]._itemName, L"Debug window...");
-      funcItem[menuentry]._pFunc = debugDlg;
-      ++menuentry;
-    #endif
-  
+#ifdef _DEBUG
+    Report::strcpy(funcItem[menuentry]._itemName, L"Debug window...");
+    funcItem[menuentry]._pFunc = debugDlg;
+    ++menuentry;
+#endif
+
     Report::strcpy(funcItem[menuentry]._itemName, L"About XML Tools / Donate...");
     funcItem[menuentry]._pFunc = aboutBox;
     ++menuentry;
+
+    dbgln("done.");
 
     // Load proxy settings in ini file
     proxyoptions.status = (::GetPrivateProfileInt(sectionName, L"proxyEnabled", 0, iniFilePath) == 1);
@@ -518,7 +506,8 @@ CXMLToolsApp::CXMLToolsApp() {
     ::GetPrivateProfileString(sectionName, L"proxyPass", L"", proxyoptions.password, 255, iniFilePath);
 
     updateProxyConfig();
-  } else {
+  }
+  else {
     dbgln("ERROR");
 
     Report::strcpy(funcItem[menuentry]._itemName, L"How to install...");
@@ -530,28 +519,20 @@ CXMLToolsApp::CXMLToolsApp() {
 
   //Report::_printf_inf("menu entries: %d", menuentry);
 
-/*
+  /*
   Report::_printf_inf("%s\ndoCheckXML: %d %d\ndoValidation: %d %d\ndoCloseTag: %d %d\ndoAutoXMLType: %d %d\ndoPreventXXE: %d %d\ndoAllowHuge: %d %d\nisLocal: %d",
-    iniFilePath,
-    doCheckXML, funcItem[menuitemCheckXML]._init2Check,
-    doValidation, funcItem[menuitemValidation]._init2Check,
-    doCloseTag, funcItem[menuitemCloseTag]._init2Check,
-    doAutoXMLType, funcItem[menuitemAutoXMLType]._init2Check,
-    doPreventXXE, funcItem[menuitemPreventXXE]._init2Check,
-    doAllowHuge, funcItem[menuitemAllowHuge]._init2Check,
-    isLocal);
-*/
+  iniFilePath,
+  doCheckXML, funcItem[menuitemCheckXML]._init2Check,
+  doValidation, funcItem[menuitemValidation]._init2Check,
+  doCloseTag, funcItem[menuitemCloseTag]._init2Check,
+  doAutoXMLType, funcItem[menuitemAutoXMLType]._init2Check,
+  doPreventXXE, funcItem[menuitemPreventXXE]._init2Check,
+  doAllowHuge, funcItem[menuitemAllowHuge]._init2Check,
+  isLocal);
+  */
 
   dbgln("Initialization finished.");
-}
-
-CXMLToolsApp::~CXMLToolsApp() {
-  savePluginParams();
-
-  // Don't forget to de-allocate your shortcut here
-  for (int i = 0; i < nbFunc; ++i) {
-    if (funcItem[i]._pShKey) delete funcItem[i]._pShKey;
-  }
+  dbgln("");
 }
 
 void savePluginParams() {
@@ -590,6 +571,8 @@ void savePluginParams() {
 // The setInfo function gets the needed infos from Notepad++ plugins system
 extern "C" __declspec(dllexport) void setInfo(NppData notpadPlusData) {
   nppData = notpadPlusData;
+
+  initializePlugin();
 }
 
 // The getName function tells Notepad++ plugins system its name
@@ -695,9 +678,12 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       }
       break;
     }
-    /*default: {
+    case NPPN_SHUTDOWN: {
+      savePluginParams();
+    }
+    default: {
       dbg("NPP Event: "); dbgln(std::to_string(notifyCode->nmhdr.code).c_str());
-    }*/
+    }
   }
 }
 
