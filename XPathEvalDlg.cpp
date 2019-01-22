@@ -1,7 +1,7 @@
 // XpathEvalDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "Scintilla.h"
 #include "XMLTools.h"
 #include "XpathEvalDlg.h"

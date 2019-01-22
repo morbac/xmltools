@@ -2,7 +2,7 @@
 //
 
 // notepad++
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "XMLTools.h"
 #include "PluginInterface.h"
 #include "Scintilla.h"

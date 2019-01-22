@@ -2,7 +2,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "PluginInterface.h"
 #include "Report.h"
 #include "menuCmdID.h"

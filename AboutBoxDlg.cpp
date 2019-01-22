@@ -1,7 +1,7 @@
 // AboutBoxDlg.cpp : fichier d'implémentation
 //
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "XMLTools.h"
 #include "AboutBoxDlg.h"
 #include "afxdialogex.h"

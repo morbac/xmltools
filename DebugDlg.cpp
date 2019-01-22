@@ -1,7 +1,7 @@
 // DebugDlg.cpp : fichier d'implémentation
 //
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "XMLTools.h"
 #include "DebugDlg.h"
 #include "afxdialogex.h"

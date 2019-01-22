@@ -1,7 +1,7 @@
 // OptionsDlg.cpp : fichier d'implémentation
 //
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "XMLTools.h"
 #include "OptionsDlg.h"
 #include "afxdialogex.h"
