@@ -145,7 +145,7 @@ void tagAutoIndent();
 void insertAttributeAutoComplete();
 void attributeAutoComplete();
 
-void setAutoXMLType();
+bool setAutoXMLType();
 void insertAutoXMLType();
 
 void togglePreventXXE();
@@ -637,10 +637,16 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       }
       break;
     }
-    case SCN_CHARADDED: {
-      dbgln("NPP Event: SCN_CHARADDED");
+    case SCN_CHARADDED:
+    case SCN_MODIFIED: {
+      dbgln("NPP Event: SCN_CHARADDED/SCN_MODIFIED");
       LangType docType;
       ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
+      if (doAutoXMLType && docType != L_XML) {
+        if (setAutoXMLType()) {
+          docType = L_XML;
+        }
+      }
       if (docType == L_XML) {
         // remarque: le closeXMLTag doit s'exécuter avant les autres
         if (doCloseTag && notifyCode->ch == '>') closeXMLTag();
@@ -1336,7 +1342,7 @@ void attributeAutoComplete() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void setAutoXMLType() {
+bool setAutoXMLType() {
   dbgln("setAutoXMLType()");
 
   int currentEdit;
@@ -1349,7 +1355,10 @@ void setAutoXMLType() {
 
   if (strlen(head) >= 6 && !strcmp(head, "<?xml ")) {
     ::SendMessage(nppData._nppHandle, NPPM_SETCURRENTLANGTYPE, 0, (LPARAM) L_XML);
+    return true;
   }
+
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
