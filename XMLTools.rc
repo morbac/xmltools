@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Français (France) resources
+// FranÃ§ais (France) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
 LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
@@ -56,12 +56,12 @@ BEGIN
     END
 END
 
-#endif    // Français (France) resources
+#endif    // FranÃ§ais (France) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Français (Suisse) resources
+// FranÃ§ais (Suisse) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRS)
 LANGUAGE LANG_FRENCH, SUBLANG_FRENCH_SWISS
@@ -182,8 +182,8 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,65,91,50,14
     CTEXT           "Unable to load libXML and/or libXSLT.",IDC_STATIC,7,7,167,10
-    CTEXT           "Please install external DLLs into NPP root directory (same directory than Notepad++.exe) or in ""%appdata%\\Notepad++"" folder and restart NPP.",IDC_STATIC,7,25,167,42
-    CTEXT           "These libraries are available in the subfolder ""ext_libs"" of xmltools zip archive.",IDC_STATIC,7,62,167,29
+    CTEXT           "Please install external DLLs into NPP root directory (same directory as Notepad++.exe) or into ""%appdata%\\Notepad++"" folder and restart NPP.",IDC_STATIC,7,25,167,42
+    CTEXT           "These libraries are available in the subfolder ""ext_libs"" of the xmltools zip archive.",IDC_STATIC,7,62,167,29
 END
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 179, 55
@@ -328,7 +328,7 @@ BEGIN
     0
 END
 
-#endif    // Français (Suisse) resources
+#endif    // FranÃ§ais (Suisse) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
