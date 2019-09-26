@@ -182,7 +182,11 @@ struct toolbarIcons {
 //BOOL NPPM_GETENABLETHEMETEXTUREFUNC(0, 0)
 
 #define NPPM_GETPLUGINSCONFIGDIR (NPPMSG + 46)
-//void NPPM_GETPLUGINSCONFIGDIR(int strLen, TCHAR *str)
+//INT NPPM_GETPLUGINSCONFIGDIR(int strLen, TCHAR *str)
+// Get user's plugin config directory path. It's useful if plugins want to save/load parameters for the current user
+// Returns the number of TCHAR copied/to copy.
+// Users should call it with "str" be NULL to get the required number of TCHAR (not including the terminating nul character),
+// allocate "str" buffer with the return value + 1, then call it again to get the path.
 
 #define NPPM_MSGTOPLUGIN (NPPMSG + 47)
 //BOOL NPPM_MSGTOPLUGIN(TCHAR *destModuleName, CommunicationInfo *info)
@@ -190,8 +194,8 @@ struct toolbarIcons {
 // if destModule or info is NULL, then return value is FALSE
 struct CommunicationInfo {
   long internalMsg;
-  const TCHAR * srcModuleName;
-  void * info; // defined by plugin
+  const TCHAR* srcModuleName;
+  void* info; // defined by plugin
 };
 
 #define NPPM_MENUCOMMAND (NPPMSG + 48)
@@ -349,22 +353,22 @@ struct CommunicationInfo {
 // Use to identify if subclassing is necessary
 
 #define NPPM_ALLOCATECMDID   (NPPMSG + 81)
-// BOOL NPPM_ALLOCATECMDID(int numberRequested, int* startNumber)
-// sets startNumber to the initial command ID if successful
-// Returns: TRUE if successful, FALSE otherwise. startNumber will also be set to 0 if unsuccessful
+  // BOOL NPPM_ALLOCATECMDID(int numberRequested, int* startNumber)
+  // sets startNumber to the initial command ID if successful
+  // Returns: TRUE if successful, FALSE otherwise. startNumber will also be set to 0 if unsuccessful
 
 #define NPPM_ALLOCATEMARKER  (NPPMSG + 82)
-// BOOL NPPM_ALLOCATEMARKER(int numberRequested, int* startNumber)
-// sets startNumber to the initial command ID if successful
-// Allocates a marker number to a plugin
-// Returns: TRUE if successful, FALSE otherwise. startNumber will also be set to 0 if unsuccessful
+  // BOOL NPPM_ALLOCATEMARKER(int numberRequested, int* startNumber)
+  // sets startNumber to the initial command ID if successful
+  // Allocates a marker number to a plugin
+  // Returns: TRUE if successful, FALSE otherwise. startNumber will also be set to 0 if unsuccessful
 
 #define NPPM_GETLANGUAGENAME  (NPPMSG + 83)
 // INT NPPM_GETLANGUAGENAME(int langType, TCHAR *langName)
 // Get programming language name from the given language type (LangType)
 // Return value is the number of copied character / number of character to copy (\0 is not included)
 // You should call this function 2 times - the first time you pass langName as NULL to get the number of characters to copy.
-// You allocate a buffer of the length of (the number of characters + 1) then call NPPM_GETLANGUAGENAME function the 2nd time
+  // You allocate a buffer of the length of (the number of characters + 1) then call NPPM_GETLANGUAGENAME function the 2nd time
 // by passing allocated buffer as argument langName
 
 #define NPPM_GETLANGUAGEDESC  (NPPMSG + 84)
@@ -372,7 +376,7 @@ struct CommunicationInfo {
 // Get programming language short description from the given language type (LangType)
 // Return value is the number of copied character / number of character to copy (\0 is not included)
 // You should call this function 2 times - the first time you pass langDesc as NULL to get the number of characters to copy.
-// You allocate a buffer of the length of (the number of characters + 1) then call NPPM_GETLANGUAGEDESC function the 2nd time
+  // You allocate a buffer of the length of (the number of characters + 1) then call NPPM_GETLANGUAGEDESC function the 2nd time
 // by passing allocated buffer as argument langDesc
 
 #define NPPM_SHOWDOCSWITCHER    (NPPMSG + 85)
@@ -533,13 +537,13 @@ struct CommunicationInfo {
 //scnNotification->nmhdr.code = NPPN_SHORTCUTSREMAPPED;
 //scnNotification->nmhdr.hwndFrom = ShortcutKeyStructurePointer;
 //scnNotification->nmhdr.idFrom = cmdID;
-//where ShortcutKeyStructurePointer is pointer of struct ShortcutKey:
-//struct ShortcutKey {
-//	bool _isCtrl;
-//	bool _isAlt;
-//	bool _isShift;
-//	UCHAR _key;
-//};
+  //where ShortcutKeyStructurePointer is pointer of struct ShortcutKey:
+  //struct ShortcutKey {
+  //	bool _isCtrl;
+  //	bool _isAlt;
+  //	bool _isShift;
+  //	UCHAR _key;
+  //};
 
 #define NPPN_FILEBEFORELOAD (NPPN_FIRST + 14) // To notify plugins that the current file is about to be loaded
 //scnNotification->nmhdr.code = NPPN_FILEBEFOREOPEN;
@@ -555,8 +559,8 @@ struct CommunicationInfo {
 //scnNotification->nmhdr.code = NPPN_READONLYCHANGED;
 //scnNotification->nmhdr.hwndFrom = bufferID;
 //scnNotification->nmhdr.idFrom = docStatus;
-// where bufferID is BufferID
-//       docStatus can be combined by DOCSTATUS_READONLY and DOCSTATUS_BUFFERDIRTY
+  // where bufferID is BufferID
+  //       docStatus can be combined by DOCSTATUS_READONLY and DOCSTATUS_BUFFERDIRTY
 
 #define DOCSTATUS_READONLY 1
 #define DOCSTATUS_BUFFERDIRTY 2

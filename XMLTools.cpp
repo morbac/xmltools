@@ -158,7 +158,7 @@ void prettyPrintSelection();
 void prettyPrintLibXML();
 void prettyPrintAttributes();
 //void insertPrettyPrintTag();
-void linarizeXML();
+void linearizeXML();
 void togglePrettyPrintAllFiles();
 int initDocIterator();
 bool hasNextDoc(int* iter);
@@ -425,9 +425,9 @@ void initializePlugin() {
     menuitemPrettyPrint = menuentry;
     ++menuentry;
     */
-    Report::strcpy(funcItem[menuentry]._itemName, L"Linarize XML");
+    Report::strcpy(funcItem[menuentry]._itemName, L"Linearize XML");
     registerShortcut(funcItem + menuentry, true, true, true, 'L');
-    funcItem[menuentry]._pFunc = linarizeXML;
+    funcItem[menuentry]._pFunc = linearizeXML;
     ++menuentry;
 
     Report::strcpy(funcItem[menuentry]._itemName, L"Apply to all open files");
@@ -576,7 +576,7 @@ extern "C" __declspec(dllexport) void setInfo(NppData notpadPlusData) {
 }
 
 // The getName function tells Notepad++ plugins system its name
-extern "C" __declspec(dllexport) const wchar_t * getName() {
+extern "C" __declspec(dllexport) const TCHAR* getName() {
   return PLUGIN_NAME;
 }
 
@@ -598,7 +598,7 @@ HWND getCurrentHScintilla(int which) {
 
 // If you don't need get the notification from Notepad++, just let it be empty.
 extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
-  if (libloadstatus != 0) {
+   if (libloadstatus != 0) {
     dbgln("NPP Event skipped (not ready)");
     return;
   }
@@ -647,11 +647,16 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
           docType = L_XML;
         }
       }
+      char lastChar = '\0';
+      if (notifyCode->ch != 0) lastChar = notifyCode->ch;
+      else if (notifyCode->text != NULL) lastChar = notifyCode->text[strlen(notifyCode->text) - 1];
       if (docType == L_XML) {
         // remarque: le closeXMLTag doit s'exécuter avant les autres
-        if (doCloseTag && notifyCode->ch == '>') closeXMLTag();
-        //if (doAutoIndent && notifyCode->ch == '\n') tagAutoIndent();
-        //if (doAttrAutoComplete && notifyCode->ch == '\"') attributeAutoComplete();
+        if (doCloseTag && lastChar == '>') {
+          closeXMLTag();
+        }
+        //if (doAutoIndent && lastChar == '\n') tagAutoIndent();
+        //if (doAttrAutoComplete && lastChar == '\"') attributeAutoComplete();
       }
       break;
     }
@@ -2119,8 +2124,8 @@ void prettyPrintAttributes() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void linarizeXML() {
-  dbgln("linarizeXML()");
+void linearizeXML() {
+  dbgln("linearizeXML()");
 
   int docIterator = initDocIterator();
   while (hasNextDoc(&docIterator)) {

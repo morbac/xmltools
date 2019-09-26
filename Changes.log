@@ -4,6 +4,11 @@
                         ChangeLog
 ================================================================
 
+Release 2.4.12
+--------------
+- Fix typo 'Linarize' -> 'Linearize'
+
+
 Release 2.4.11
 --------------
 - Add option for huge files support
