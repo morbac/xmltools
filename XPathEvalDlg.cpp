@@ -223,7 +223,7 @@ int CXPathEvalDlg::register_namespaces_ex(xmlXPathContextPtr xpathCtx, xmlDocPtr
   return(0);
 }
 
-void CXPathEvalDlg::AddToList(CListCtrl *list, CString type, CString name, CString value) {
+void CXPathEvalDlg::AddToList(CListCtrl *list, CStringW type, CStringW name, CStringW value) {
   int idx = list->GetItemCount();
   list->InsertItem(idx, type);
   list->SetItemText(idx, 1, name);
@@ -240,7 +240,7 @@ void CXPathEvalDlg::AddToList(CListCtrl *list, CString type, CString name, CStri
  * Prints the @nodes content to @output.
  */
 void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
-  CString itemtype, itemname, itemvalue;
+  CStringW itemtype, itemname, itemvalue;
   CListCtrl *listresults = (CListCtrl*) this->GetDlgItem(IDC_LIST_XPATHRESULTS);
   
   listresults->DeleteAllItems();

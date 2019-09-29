@@ -230,7 +230,7 @@ void CXSLTransformDlg::OnBtnTransform() {
   pXmlCleanupParser();
 }
 
-CString CXSLTransformDlg::ShowOpenFileDlg(CString filetypes) {
+CStringW CXSLTransformDlg::ShowOpenFileDlg(CStringW filetypes) {
   CFileDialog dlg(TRUE, NULL, NULL, NULL, filetypes);
   INT_PTR ret = dlg.DoModal();
   if (ret == IDOK) {
@@ -240,6 +240,6 @@ CString CXSLTransformDlg::ShowOpenFileDlg(CString filetypes) {
 }
 
 void CXSLTransformDlg::OnBtnBrowseXSLTFile() {
-  CString ret = ShowOpenFileDlg("XSL Files (*.xsl)|*.xsl|XML Files (*.xml)|*.xml|All files (*.*)|*.*|");
+  CStringW ret = ShowOpenFileDlg("XSL Files (*.xsl)|*.xsl|XML Files (*.xml)|*.xml|All files (*.*)|*.*|");
   if (ret.GetLength()) GetDlgItem(IDC_EDIT_XSLTFILE)->SetWindowText(ret);
 }

@@ -27,8 +27,8 @@ public:
 // Dialog Data
   //{{AFX_DATA(CXPathEvalDlg)
   enum { IDD = IDD_XPATHEVAL };
-  CString m_sExpression;
-  CString m_sResult;
+  CStringW m_sExpression;
+  CStringW m_sResult;
   //}}AFX_DATA
 
 
@@ -48,7 +48,7 @@ protected:
   //int register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList);
   int register_namespaces_ex(xmlXPathContextPtr xpathCtx, xmlDocPtr doc);
   void print_xpath_nodes(xmlXPathObjectPtr xpathObj);
-  void AddToList(CListCtrl *list, CString type, CString name, CString value);
+  void AddToList(CListCtrl *list, CStringW type, CStringW name, CStringW value);
 
   HWND getCurrentHScintilla(int which);
 

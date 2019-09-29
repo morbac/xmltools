@@ -180,8 +180,8 @@ void aboutBox();
 void optionsDlg();
 void howtoUse();
 void updateProxyConfig();
-void dbg(CString line);
-void dbgln(CString line);
+void dbg(CStringW line);
+void dbgln(CStringW line);
 void debugDlg();
 
 int performXMLCheck(int informIfNoError);
@@ -809,13 +809,13 @@ void debugDlg() {
   debugdlg->ShowWindow(SW_SHOW);
 }
 
-void dbg(CString line) {
+void dbg(CStringW line) {
   #ifdef DEBUG
     debugdlg->addLine(line);
   #endif
 }
 
-void dbgln(CString line) {
+void dbgln(CStringW line) {
   #ifdef DEBUG
     debugdlg->addLine(line+"\r\n");
   #endif
@@ -1074,7 +1074,7 @@ void XMLValidation(int informIfNoError) {
       }
       pSelectFileDlg->m_sSelectedFilename = Report::widen(lastXMLSchema).c_str();
 
-      CString rootSample = "<";
+      CStringW rootSample = "<";
       Report::appendToCString(&rootSample, rootnode->name, encoding);
       rootSample += "\r\n\txmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
       rootSample += "\r\n\txsi:noNamespaceSchemaLocation=\"XSD_FILE_PATH\">";

@@ -19,11 +19,11 @@ public:
 // Dialog Data
   //{{AFX_DATA(CInputDlg)
   enum { IDD = IDD_INPUTDLG };
-  CString  m_sInputCaption;
-  CString  m_sInputBuffer;
+  CStringW m_sInputCaption;
+  CStringW m_sInputBuffer;
   //}}AFX_DATA
 
-  CString m_sInputTitle;
+  CStringW m_sInputTitle;
 
 // Overrides
   // ClassWizard generated virtual function overrides

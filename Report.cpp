@@ -129,7 +129,7 @@ std::string Report::str_format(const char* s, ...) {
   return std::string(buffer);
 }
 
-CString Report::cstring(const wchar_t* s, ...) {
+CStringW Report::cstring(const wchar_t* s, ...) {
   if (!s || !wcslen(s)) return "";
 
   va_list msg;
@@ -141,7 +141,7 @@ CString Report::cstring(const wchar_t* s, ...) {
 
   if (wcslen(buffer) <= 0) return "";
 
-  return CString(buffer);
+  return CStringW(buffer);
 }
 
 void Report::clearLog() {
@@ -463,7 +463,7 @@ void Report::appendToWStdString(std::wstring* dest, const xmlChar* source, UniMo
   }
 }
 
-void Report::appendToCString(CString* dest, const char* source, UniMode encoding) {
+void Report::appendToCString(CStringW* dest, const char* source, UniMode encoding) {
   if (source == NULL) {
     Report::appendToCString(dest, "(null)", encoding);
   } else {
@@ -473,7 +473,7 @@ void Report::appendToCString(CString* dest, const char* source, UniMode encoding
   }
 }
 
-void Report::appendToCString(CString* dest, const xmlChar* source, UniMode encoding) {
+void Report::appendToCString(CStringW* dest, const xmlChar* source, UniMode encoding) {
   if (source == NULL) {
     Report::appendToCString(dest, "(null)", encoding);
   } else {
@@ -602,6 +602,14 @@ int Report::utf8_to_ascii(const char * pszUTF8, unsigned int lenUTF8, char * psz
   int nbByte = ::WideCharToMultiByte(CP_ACP, 0, pszUCS2, lenUCS2, pszASCII, lenUCS2 + 1, NULL, NULL);
   delete [] pszUCS2;
   return nbByte;
+}
+
+CStringA Report::UTF16toUTF8(const CStringW& utf16) {
+  return CW2A(utf16, CP_UTF8);
+}
+
+CStringW Report::UTF8toUTF16(const CStringA& utf8) {
+  return CA2W(utf8, CP_UTF8);
 }
 
 void Report::getEOLChar(HWND hwnd, int* eolmode, std::string* eolchar) {

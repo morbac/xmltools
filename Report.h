@@ -46,7 +46,7 @@ public:
 
   static std::wstring str_format(const wchar_t* s, ...);
   static std::string str_format(const char* s, ...);
-  static CString cstring(const wchar_t* s, ...);
+  static CStringW cstring(const wchar_t* s, ...);
 
   static void strcpy(char* dest, const wchar_t* src);
   static void strcpy(char* dest, std::wstring& src);
@@ -78,8 +78,8 @@ public:
   static char* castWChar(const wchar_t* orig, UniMode encoding = uniEnd);
   static void appendToStdString(std::wstring* dest, const char* source, UniMode encoding);
   static void appendToWStdString(std::wstring* dest, const xmlChar* source, UniMode encoding);
-  static void appendToCString(CString* dest, const char* source, UniMode encoding);
-  static void appendToCString(CString* dest, const xmlChar* source, UniMode encoding);
+  static void appendToCString(CStringW* dest, const char* source, UniMode encoding);
+  static void appendToCString(CStringW* dest, const xmlChar* source, UniMode encoding);
 
   static unsigned int UTF8Length(const wchar_t * uptr, unsigned int tlen);
   static void UTF8FromUCS2(const wchar_t * uptr, unsigned int tlen, char * putf, unsigned int len);
@@ -88,6 +88,8 @@ public:
   static unsigned int ascii_to_utf8(const char * pszASCII, unsigned int lenASCII, char * pszUTF8);
   static int utf8_to_ascii(const char * pszUTF8, unsigned int lenUTF8, char * pszASCII);
 
+  static CStringA UTF16toUTF8(const CStringW& utf16);
+  static CStringW UTF8toUTF16(const CStringA& utf8);
   
   static void getEOLChar(HWND hwnd, int* eolmode, std::string* eolchar);
   static bool isEOL(const std::string& txt, const std::string::size_type txtlength, unsigned int pos, int mode);

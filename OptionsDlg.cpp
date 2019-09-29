@@ -95,7 +95,7 @@ void COptionsDlg::OnBnClickedOk()
   if (this->proxyoptions != NULL) {
     this->proxyoptions->status = (((CButton*) GetDlgItem(IDC_CHKENABLEPROXY))->GetCheck() == BST_CHECKED);
 
-    CString buffer;
+    CStringW buffer;
     this->editProxyHost.GetWindowText(buffer);
     wcscpy_s(this->proxyoptions->host, (const WCHAR *)buffer);
 

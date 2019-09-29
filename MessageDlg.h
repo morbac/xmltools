@@ -19,7 +19,7 @@ public:
 // Dialog Data
   //{{AFX_DATA(CMessageDlg)
   enum { IDD = IDD_MESSAGEDLG };
-  CString  m_sMessage;
+  CStringW  m_sMessage;
   //}}AFX_DATA
 
 

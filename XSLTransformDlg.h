@@ -35,11 +35,11 @@ public:
 // Dialog Data
   //{{AFX_DATA(CXSLTransformDlg)
   enum { IDD = IDD_XSLTDLG };
-  CString  m_sXSLTFile;
-  CString  m_sXSLTOptions;
+  CStringW  m_sXSLTFile;
+  CStringW  m_sXSLTOptions;
   //}}AFX_DATA
 
-  CString ShowOpenFileDlg(CString filetypes);
+  CStringW ShowOpenFileDlg(CStringW filetypes);
 
 // Overrides
   // ClassWizard generated virtual function overrides

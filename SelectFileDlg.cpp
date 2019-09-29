@@ -44,7 +44,7 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CSelectFileDlg message handlers
 
-CString CSelectFileDlg::ShowOpenFileDlg(CString filetypes)
+CStringW CSelectFileDlg::ShowOpenFileDlg(CStringW filetypes)
 {
   CFileDialog dlg(TRUE, NULL, NULL, NULL, filetypes);
   INT_PTR ret = dlg.DoModal();
@@ -56,6 +56,6 @@ CString CSelectFileDlg::ShowOpenFileDlg(CString filetypes)
 
 void CSelectFileDlg::OnBtnExploreXSDFile() 
 {
-  CString ret = ShowOpenFileDlg("XML Schema (*.xsd)|*.xsd|All files (*.*)|*.*|");
+  CStringW ret = ShowOpenFileDlg("XML Schema (*.xsd)|*.xsd|All files (*.*)|*.*|");
   if (ret.GetLength()) GetDlgItem(IDC_EDIT_FILENAME)->SetWindowText(ret);
 }

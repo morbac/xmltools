@@ -26,7 +26,7 @@ void CDebugDlg::DoDataExchange(CDataExchange* pDX)
   CDialog::DoDataExchange(pDX);
 }
 
-void CDebugDlg::addLine(CString line) {
+void CDebugDlg::addLine(CStringW line) {
   TRACE(line);
   this->s_valDebug += line;
   if (this->m_hWnd) {

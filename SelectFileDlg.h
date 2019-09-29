@@ -19,11 +19,11 @@ public:
 // Dialog Data
   //{{AFX_DATA(CSelectFileDlg)
   enum { IDD = IDD_SELECTFILE };
-  CString  m_sSelectedFilename;
-  CString  m_sRootElementSample;
+  CStringW  m_sSelectedFilename;
+  CStringW  m_sRootElementSample;
   //}}AFX_DATA
 
-  CString ShowOpenFileDlg(CString filetypes);
+  CStringW ShowOpenFileDlg(CStringW filetypes);
 
 // Overrides
   // ClassWizard generated virtual function overrides
