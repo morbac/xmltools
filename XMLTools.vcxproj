@@ -82,10 +82,10 @@
     <GenerateManifest>true</GenerateManifest>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
     <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <LibraryPath>.\libs\libxml\x86\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir_71A)lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>.\libs\libxml\x86\lib;$(VC_LibraryPath_x86);$(WindowsSdk_LibraryPath_x86);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LibraryPath>.\libs\libxml\x86\lib;$(VC_LibraryPath_x86);$(WindowsSdk_LibraryPath_x86)</LibraryPath>
+    <LibraryPath>.\libs\libxml\x86\lib;$(VC_LibraryPath_x86);$(WindowsSdk_LibraryPath_x86);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateManifest>true</GenerateManifest>
@@ -155,7 +155,7 @@
     </ResourceCompile>
     <PostBuildEvent>
       <Message>Copy the dll into Notepad++ plugin folder</Message>
-      <Command>xcopy /y "$(TargetPath)" "$(ProgramFiles)\Notepad++\plugins\XMLTools"</Command>
+      <Command>if EXIST "$(ProgramFiles)\Notepad++\plugins\" ( xcopy /y "$(TargetPath)" "$(ProgramFiles)\Notepad++\plugins\XMLTools\" )</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -205,7 +205,7 @@
       <Culture>0x100c</Culture>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>xcopy /y "$(TargetPath)" "$(ProgramFiles)\Notepad++\plugins\XMLTools"</Command>
+      <Command>if EXIST "$(ProgramFiles)\Notepad++\plugins\" ( xcopy /y "$(TargetPath)" "$(ProgramFiles)\Notepad++\plugins\XMLTools\" )</Command>
       <Message>Copy the dll into Notepad++ plugin folder</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -263,7 +263,7 @@
     </ResourceCompile>
     <PostBuildEvent>
       <Message>Copy the dll into Notepad++ plugin folder</Message>
-      <Command>xcopy /y "$(TargetPath)" "$(ProgramW6432)\Notepad++\plugins\XMLTools"</Command>
+      <Command>if EXIST "$(ProgramW6432)\Notepad++\plugins\" ( xcopy /y "$(TargetPath)" "$(ProgramW6432)\Notepad++\plugins\XMLTools\" )</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -315,7 +315,7 @@
       <Culture>0x100c</Culture>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>xcopy /y "$(TargetPath)" "$(ProgramW6432)\Notepad++\plugins\XMLTools"</Command>
+      <Command>if EXIST "$(ProgramW6432)\Notepad++\plugins\" ( xcopy /y "$(TargetPath)" "$(ProgramW6432)\Notepad++\plugins\XMLTools\" )</Command>
       <Message>Copy the dll into Notepad++ plugin folder</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
