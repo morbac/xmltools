@@ -638,9 +638,8 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       }
       break;
     }
-    case SCN_CHARADDED:
-    case SCN_MODIFIED: {
-      dbgln("NPP Event: SCN_CHARADDED/SCN_MODIFIED");
+    case SCN_CHARADDED: {
+      dbgln("NPP Event: SCN_CHARADDED");
       LangType docType;
       ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
       if (doAutoXMLType && docType != L_XML) {
@@ -648,12 +647,9 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
           docType = L_XML;
         }
       }
-      char lastChar = '\0';
-      if (notifyCode->ch != 0) lastChar = notifyCode->ch;
-      else if (notifyCode->text != NULL) lastChar = notifyCode->text[strlen(notifyCode->text) - 1];
       if (docType == L_XML) {
         // remarque: le closeXMLTag doit s'exécuter avant les autres
-        if (doCloseTag && lastChar == '>') {
+        if (doCloseTag && notifyCode->ch == '>') {
           closeXMLTag();
         }
         //if (doAutoIndent && lastChar == '\n') tagAutoIndent();
