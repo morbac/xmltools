@@ -191,7 +191,8 @@ void savePluginParams();
 unsigned long getFlags() {
   unsigned long res = 0;
   if (!doPreventXXE) res |= (XML_PARSE_NOENT | XML_PARSE_DTDLOAD);
-  if (doAllowHuge) res |= XML_PARSE_HUGE;
+  else res |= (XML_PARSE_RECOVER | XML_PARSE_NONET);
+  if (doAllowHuge) res |= (XML_PARSE_HUGE);
   return res;
 }
 
