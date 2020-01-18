@@ -31,12 +31,7 @@
 #include <algorithm>
 #include <array>
 
-// libxml
-#include "LoadLibrary.h"
-#include <libxml/parser.h>
-#include <libxml/tree.h>
-#include <libxml/xmlschemas.h>
-#include <libxml/globals.h>
+#include "MSXMLHelper.h"
 
 //#define __XMLTOOLS_DEBUG__
 
@@ -79,17 +74,14 @@ const wchar_t localConfFile[] = L"doLocalConf.xml";
 
 // The number of functionality
 #ifdef _DEBUG
-  const int TOTAL_FUNCS = 35;
-#else
   const int TOTAL_FUNCS = 34;
+#else
+  const int TOTAL_FUNCS = 33;
 #endif
 int nbFunc = TOTAL_FUNCS;
 
 NppData nppData;
 CDebugDlg* debugdlg = new CDebugDlg();
-
-// XML Loading status
-int libloadstatus = -1;
 
 // PATHs
 wchar_t pluginHomePath[MAX_PATH] = { '\0' }; 
@@ -155,7 +147,6 @@ void prettyPrintXML();
 void prettyPrintXMLBreaks();
 void prettyPrintText();
 void prettyPrintSelection();
-void prettyPrintLibXML();
 void prettyPrintAttributes();
 //void insertPrettyPrintTag();
 void linearizeXML();
@@ -187,14 +178,6 @@ void debugDlg();
 int performXMLCheck(int informIfNoError);
 void initializePlugin();
 void savePluginParams();
-
-unsigned long getFlags() {
-  unsigned long res = 0;
-  if (!doPreventXXE) res |= (XML_PARSE_NOENT | XML_PARSE_DTDLOAD);
-  else res |= (XML_PARSE_RECOVER | XML_PARSE_NONET);
-  if (doAllowHuge) res |= (XML_PARSE_HUGE);
-  return res;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -280,8 +263,6 @@ END_MESSAGE_MAP()
 CXMLToolsApp::CXMLToolsApp() {
   dbgln("XML Tools plugin");
   dbg("version "); dbg(XMLTOOLS_VERSION_NUMBER); dbg(" "); dbgln(XMLTOOLS_VERSION_STATUS);
-  dbg("libXML: "); dbgln(LIBXML_DOTTED_VERSION);
-  dbg("libXSLT: "); dbgln(LIBXSLT_DOTTED_VERSION);
 }
 
 CXMLToolsApp::~CXMLToolsApp() {
@@ -309,212 +290,194 @@ void initializePlugin() {
   PathAppend(iniFilePath, L"\\XMLTools.ini");
   dbgln(iniFilePath);
 
-  // chargement de la librairie
-  dbg("Loading libraries... ");
-  libloadstatus = loadLibraries(pluginHomePath);
-  if (libloadstatus < 0) nbFunc = 1;
-
   int menuentry = 0;
   for (int i = 0; i < nbFunc; ++i) {
     funcItem[i]._init2Check = false;
   }
 
-  if (!libloadstatus) {
-    dbgln("OK");
+  dbg("Building plugin menu entries... ");
 
-    dbg("Building plugin menu entries... ");
+  Report::strcpy(funcItem[menuentry]._itemName, L"Enable XML syntax auto-check");
+  funcItem[menuentry]._pFunc = insertXMLCheckTag;
+  funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, L"doCheckXML", 1, iniFilePath) != 0);
+  doCheckXML = funcItem[menuentry]._init2Check;
+  menuitemCheckXML = menuentry;
+  ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Enable XML syntax auto-check");
-    funcItem[menuentry]._pFunc = insertXMLCheckTag;
-    funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, L"doCheckXML", 1, iniFilePath) != 0);
-    doCheckXML = funcItem[menuentry]._init2Check;
-    menuitemCheckXML = menuentry;
-    ++menuentry;
+  Report::strcpy(funcItem[menuentry]._itemName, L"Check XML syntax now");
+  funcItem[menuentry]._pFunc = manualXMLCheck;
+  ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Check XML syntax now");
-    funcItem[menuentry]._pFunc = manualXMLCheck;
-    ++menuentry;
+  funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
+  Report::strcpy(funcItem[menuentry]._itemName, L"Enable auto-validation");
+  funcItem[menuentry]._pFunc = insertValidationTag;
+  funcItem[menuentry]._init2Check = doValidation = (::GetPrivateProfileInt(sectionName, L"doValidation", 0, iniFilePath) != 0);
+  doValidation = funcItem[menuentry]._init2Check;
+  menuitemValidation = menuentry;
+  ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Enable auto-validation");
-    funcItem[menuentry]._pFunc = insertValidationTag;
-    funcItem[menuentry]._init2Check = doValidation = (::GetPrivateProfileInt(sectionName, L"doValidation", 0, iniFilePath) != 0);
-    doValidation = funcItem[menuentry]._init2Check;
-    menuitemValidation = menuentry;
-    ++menuentry;
+  Report::strcpy(funcItem[menuentry]._itemName, L"Validate now");
+  funcItem[menuentry]._pFunc = manualValidation;
+  registerShortcut(funcItem + menuentry, true, true, true, 'M');
+  ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Validate now");
-    funcItem[menuentry]._pFunc = manualValidation;
-    registerShortcut(funcItem + menuentry, true, true, true, 'M');
-    ++menuentry;
+  funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
+  Report::strcpy(funcItem[menuentry]._itemName, L"Tag auto-close");
+  funcItem[menuentry]._pFunc = insertXMLCloseTag;
+  funcItem[menuentry]._init2Check = doCloseTag = (::GetPrivateProfileInt(sectionName, L"doCloseTag", 1, iniFilePath) != 0);
+  doCloseTag = funcItem[menuentry]._init2Check;
+  menuitemCloseTag = menuentry;
+  ++menuentry;
+  /*
+  Report::strcpy(funcItem[menuentry]._itemName, L"Tag auto-indent");
+  funcItem[menuentry]._pFunc = insertTagAutoIndent;
+  funcItem[menuentry]._init2Check = doAutoIndent = (::GetPrivateProfileInt(sectionName, L"doAutoIndent", 0, iniFilePath) != 0);
+  doAutoIndent = funcItem[menuentry]._init2Check;
+  menuitemAutoIndent = menuentry;
+  ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Tag auto-close");
-    funcItem[menuentry]._pFunc = insertXMLCloseTag;
-    funcItem[menuentry]._init2Check = doCloseTag = (::GetPrivateProfileInt(sectionName, L"doCloseTag", 1, iniFilePath) != 0);
-    doCloseTag = funcItem[menuentry]._init2Check;
-    menuitemCloseTag = menuentry;
-    ++menuentry;
-    /*
-    Report::strcpy(funcItem[menuentry]._itemName, L"Tag auto-indent");
-    funcItem[menuentry]._pFunc = insertTagAutoIndent;
-    funcItem[menuentry]._init2Check = doAutoIndent = (::GetPrivateProfileInt(sectionName, L"doAutoIndent", 0, iniFilePath) != 0);
-    doAutoIndent = funcItem[menuentry]._init2Check;
-    menuitemAutoIndent = menuentry;
-    ++menuentry;
+  Report::strcpy(funcItem[menuentry]._itemName, L"Auto-complete attributes");
+  funcItem[menuentry]._pFunc = insertAttributeAutoComplete;
+  funcItem[menuentry]._init2Check = doAttrAutoComplete = (::GetPrivateProfileInt(sectionName, L"doAttrAutoComplete", 0, iniFilePath) != 0);
+  doAttrAutoComplete = funcItem[menuentry]._init2Check;
+  menuitemAttrAutoComplete = menuentry;
+  ++menuentry;
+  */
+  funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Auto-complete attributes");
-    funcItem[menuentry]._pFunc = insertAttributeAutoComplete;
-    funcItem[menuentry]._init2Check = doAttrAutoComplete = (::GetPrivateProfileInt(sectionName, L"doAttrAutoComplete", 0, iniFilePath) != 0);
-    doAttrAutoComplete = funcItem[menuentry]._init2Check;
-    menuitemAttrAutoComplete = menuentry;
-    ++menuentry;
-    */
-    funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
+  Report::strcpy(funcItem[menuentry]._itemName, L"Set XML type automatically");
+  funcItem[menuentry]._pFunc = insertAutoXMLType;
+  funcItem[menuentry]._init2Check = doAutoXMLType = (::GetPrivateProfileInt(sectionName, L"doAutoXMLType", 1, iniFilePath) != 0);
+  doAutoXMLType = funcItem[menuentry]._init2Check;
+  menuitemAutoXMLType = menuentry;
+  ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Set XML type automatically");
-    funcItem[menuentry]._pFunc = insertAutoXMLType;
-    funcItem[menuentry]._init2Check = doAutoXMLType = (::GetPrivateProfileInt(sectionName, L"doAutoXMLType", 1, iniFilePath) != 0);
-    doAutoXMLType = funcItem[menuentry]._init2Check;
-    menuitemAutoXMLType = menuentry;
-    ++menuentry;
+  Report::strcpy(funcItem[menuentry]._itemName, L"Prevent XXE");
+  funcItem[menuentry]._pFunc = togglePreventXXE;
+  funcItem[menuentry]._init2Check = doPreventXXE = (::GetPrivateProfileInt(sectionName, L"doPreventXXE", 1, iniFilePath) != 0);
+  doPreventXXE = funcItem[menuentry]._init2Check;
+  menuitemPreventXXE = menuentry;
+  ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Prevent XXE");
-    funcItem[menuentry]._pFunc = togglePreventXXE;
-    funcItem[menuentry]._init2Check = doPreventXXE = (::GetPrivateProfileInt(sectionName, L"doPreventXXE", 1, iniFilePath) != 0);
-    doPreventXXE = funcItem[menuentry]._init2Check;
-    menuitemPreventXXE = menuentry;
-    ++menuentry;
+  Report::strcpy(funcItem[menuentry]._itemName, L"Allow huge files");
+  funcItem[menuentry]._pFunc = toggleAllowHuge;
+  funcItem[menuentry]._init2Check = doAllowHuge = (::GetPrivateProfileInt(sectionName, L"doAllowHuge", 0, iniFilePath) != 0);
+  doAllowHuge = funcItem[menuentry]._init2Check;
+  menuitemAllowHuge = menuentry;
+  ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Allow huge files");
-    funcItem[menuentry]._pFunc = toggleAllowHuge;
-    funcItem[menuentry]._init2Check = doAllowHuge = (::GetPrivateProfileInt(sectionName, L"doAllowHuge", 0, iniFilePath) != 0);
-    doAllowHuge = funcItem[menuentry]._init2Check;
-    menuitemAllowHuge = menuentry;
-    ++menuentry;
+  funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
+  Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (XML only)");
+  funcItem[menuentry]._pFunc = prettyPrintXML;
+  ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (XML only)");
-    funcItem[menuentry]._pFunc = prettyPrintXML;
-    ++menuentry;
+  Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (XML only - with line breaks)");
+  registerShortcut(funcItem + menuentry, true, true, true, 'B');
+  funcItem[menuentry]._pFunc = prettyPrintXMLBreaks;
+  ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (XML only - with line breaks)");
-    registerShortcut(funcItem + menuentry, true, true, true, 'B');
-    funcItem[menuentry]._pFunc = prettyPrintXMLBreaks;
-    ++menuentry;
+  Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (Text indent)");
+  funcItem[menuentry]._pFunc = prettyPrintText;
+  ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (Text indent)");
-    funcItem[menuentry]._pFunc = prettyPrintText;
-    ++menuentry;
+  Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (attributes)");
+  registerShortcut(funcItem + menuentry, true, true, true, 'A');
+  funcItem[menuentry]._pFunc = prettyPrintAttributes;
+  ++menuentry;
+  /*
+  Report::strcpy(funcItem[menuentry]._itemName, L"Enable auto pretty print (libXML) [experimental]");
+  funcItem[menuentry]._pFunc = insertPrettyPrintTag;
+  funcItem[menuentry]._init2Check = doPrettyPrint = (::GetPrivateProfileInt(sectionName, L"doPrettyPrint", 0, iniFilePath) != 0);
+  doPrettyPrint = funcItem[menuentry]._init2Check;
+  menuitemPrettyPrint = menuentry;
+  ++menuentry;
+  */
+  Report::strcpy(funcItem[menuentry]._itemName, L"Linearize XML");
+  registerShortcut(funcItem + menuentry, true, true, true, 'L');
+  funcItem[menuentry]._pFunc = linearizeXML;
+  ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (libXML) [experimental]");
-    funcItem[menuentry]._pFunc = prettyPrintLibXML;
-    ++menuentry;
+  Report::strcpy(funcItem[menuentry]._itemName, L"Apply to all open files");
+  funcItem[menuentry]._pFunc = togglePrettyPrintAllFiles;
+  funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, L"doPrettyPrintAllOpenFiles", 0, iniFilePath) != 0);
+  doPrettyPrintAllOpenFiles = funcItem[menuentry]._init2Check;
+  menuitemPrettyPrintAllFiles = menuentry;
+  ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (attributes)");
-    registerShortcut(funcItem + menuentry, true, true, true, 'A');
-    funcItem[menuentry]._pFunc = prettyPrintAttributes;
-    ++menuentry;
-    /*
-    Report::strcpy(funcItem[menuentry]._itemName, L"Enable auto pretty print (libXML) [experimental]");
-    funcItem[menuentry]._pFunc = insertPrettyPrintTag;
-    funcItem[menuentry]._init2Check = doPrettyPrint = (::GetPrivateProfileInt(sectionName, L"doPrettyPrint", 0, iniFilePath) != 0);
-    doPrettyPrint = funcItem[menuentry]._init2Check;
-    menuitemPrettyPrint = menuentry;
-    ++menuentry;
-    */
-    Report::strcpy(funcItem[menuentry]._itemName, L"Linearize XML");
-    registerShortcut(funcItem + menuentry, true, true, true, 'L');
-    funcItem[menuentry]._pFunc = linearizeXML;
-    ++menuentry;
+  funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Apply to all open files");
-    funcItem[menuentry]._pFunc = togglePrettyPrintAllFiles;
-    funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, L"doPrettyPrintAllOpenFiles", 0, iniFilePath) != 0);
-    doPrettyPrintAllOpenFiles = funcItem[menuentry]._init2Check;
-    menuitemPrettyPrintAllFiles = menuentry;
-    ++menuentry;
+  Report::strcpy(funcItem[menuentry]._itemName, L"Current XML Path");
+  registerShortcut(funcItem + menuentry, true, true, true, 'P');
+  funcItem[menuentry]._pFunc = getCurrentXPathStd;
+  ++menuentry;
 
-    funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
+  Report::strcpy(funcItem[menuentry]._itemName, L"Current XML Path with predicates");
+  funcItem[menuentry]._pFunc = getCurrentXPathPredicate;
+  ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Current XML Path");
-    registerShortcut(funcItem + menuentry, true, true, true, 'P');
-    funcItem[menuentry]._pFunc = getCurrentXPathStd;
-    ++menuentry;
+  Report::strcpy(funcItem[menuentry]._itemName, L"Evaluate XPath expression...");
+  funcItem[menuentry]._pFunc = evaluateXPath;
+  ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Current XML Path with predicates");
-    funcItem[menuentry]._pFunc = getCurrentXPathPredicate;
-    ++menuentry;
+  funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Evaluate XPath expression...");
-    funcItem[menuentry]._pFunc = evaluateXPath;
-    ++menuentry;
+  Report::strcpy(funcItem[menuentry]._itemName, L"XSL Transformation...");
+  funcItem[menuentry]._pFunc = performXSLTransform;
+  ++menuentry;
 
-    funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
+  funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"XSL Transformation...");
-    funcItem[menuentry]._pFunc = performXSLTransform;
-    ++menuentry;
+  Report::strcpy(funcItem[menuentry]._itemName, L"Convert selection XML to text (<> => &&lt;&&gt;)");
+  funcItem[menuentry]._pFunc = convertXML2Text;
+  ++menuentry;
 
-    funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
+  Report::strcpy(funcItem[menuentry]._itemName, L"Convert selection text to XML (&&lt;&&gt; => <>)");
+  funcItem[menuentry]._pFunc = convertText2XML;
+  ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Convert selection XML to text (<> => &&lt;&&gt;)");
-    funcItem[menuentry]._pFunc = convertXML2Text;
-    ++menuentry;
+  funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Convert selection text to XML (&&lt;&&gt; => <>)");
-    funcItem[menuentry]._pFunc = convertText2XML;
-    ++menuentry;
+  Report::strcpy(funcItem[menuentry]._itemName, L"Comment selection");
+  registerShortcut(funcItem + menuentry, true, true, true, 'C');
+  funcItem[menuentry]._pFunc = commentSelection;
+  ++menuentry;
 
-    funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
+  Report::strcpy(funcItem[menuentry]._itemName, L"Uncomment selection");
+  registerShortcut(funcItem + menuentry, true, true, true, 'R');
+  funcItem[menuentry]._pFunc = uncommentSelection;
+  ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Comment selection");
-    registerShortcut(funcItem + menuentry, true, true, true, 'C');
-    funcItem[menuentry]._pFunc = commentSelection;
-    ++menuentry;
+  funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Uncomment selection");
-    registerShortcut(funcItem + menuentry, true, true, true, 'R');
-    funcItem[menuentry]._pFunc = uncommentSelection;
-    ++menuentry;
-
-    funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-
-    Report::strcpy(funcItem[menuentry]._itemName, L"Options...");
-    funcItem[menuentry]._pFunc = optionsDlg;
-    ++menuentry;
+  Report::strcpy(funcItem[menuentry]._itemName, L"Options...");
+  funcItem[menuentry]._pFunc = optionsDlg;
+  ++menuentry;
 
 #ifdef _DEBUG
-    Report::strcpy(funcItem[menuentry]._itemName, L"Debug window...");
-    funcItem[menuentry]._pFunc = debugDlg;
-    ++menuentry;
+  Report::strcpy(funcItem[menuentry]._itemName, L"Debug window...");
+  funcItem[menuentry]._pFunc = debugDlg;
+  ++menuentry;
 #endif
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"About XML Tools / Donate...");
-    funcItem[menuentry]._pFunc = aboutBox;
-    ++menuentry;
+  Report::strcpy(funcItem[menuentry]._itemName, L"About XML Tools / Donate...");
+  funcItem[menuentry]._pFunc = aboutBox;
+  ++menuentry;
 
-    dbgln("done.");
+  CoInitialize(NULL);
 
-    // Load proxy settings in ini file
-    proxyoptions.status = (::GetPrivateProfileInt(sectionName, L"proxyEnabled", 0, iniFilePath) == 1);
-    ::GetPrivateProfileString(sectionName, L"proxyHost", L"192.168.0.1", proxyoptions.host, 255, iniFilePath);
-    proxyoptions.port = ::GetPrivateProfileInt(sectionName, L"proxyPort", 8080, iniFilePath);
-    ::GetPrivateProfileString(sectionName, L"proxyUser", L"", proxyoptions.username, 255, iniFilePath);
-    ::GetPrivateProfileString(sectionName, L"proxyPass", L"", proxyoptions.password, 255, iniFilePath);
+  dbgln("done.");
 
-    updateProxyConfig();
-  }
-  else {
-    dbgln("ERROR");
+  // Load proxy settings in ini file
+  proxyoptions.status = (::GetPrivateProfileInt(sectionName, L"proxyEnabled", 0, iniFilePath) == 1);
+  ::GetPrivateProfileString(sectionName, L"proxyHost", L"192.168.0.1", proxyoptions.host, 255, iniFilePath);
+  proxyoptions.port = ::GetPrivateProfileInt(sectionName, L"proxyPort", 8080, iniFilePath);
+  ::GetPrivateProfileString(sectionName, L"proxyUser", L"", proxyoptions.username, 255, iniFilePath);
+  ::GetPrivateProfileString(sectionName, L"proxyPass", L"", proxyoptions.password, 255, iniFilePath);
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"How to install...");
-    funcItem[menuentry]._pFunc = howtoUse;
-    ++menuentry;
-  }
+  updateProxyConfig();
 
   assert(menuentry == nbFunc);
 
@@ -599,11 +562,6 @@ HWND getCurrentHScintilla(int which) {
 
 // If you don't need get the notification from Notepad++, just let it be empty.
 extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
-   if (libloadstatus != 0) {
-    dbgln("NPP Event skipped (not ready)");
-    return;
-  }
-
   switch (notifyCode->nmhdr.code) {
     case NPPN_READY: {
       dbgln("NPP Event: NPPN_READY");
@@ -675,18 +633,12 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
         if (docType != L_XML) {
           setAutoXMLType();
         }
-/*
-        if (doPrettyPrint) {
-        LangType docType = L_EXTERNAL;
-           ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
-           //Report::_printf_inf("%s", getLangType(docType));
-           if (docType == L_XML) prettyPrintLibXML();
-        }
-*/
       }
       break;
     }
     case NPPN_SHUTDOWN: {
+      CoUninitialize();
+
       savePluginParams();
     }
     default: {
@@ -839,10 +791,12 @@ void updateProxyConfig() {
     proxyurl += Report::wchar2char(proxyoptions.host);
     proxyurl += ":";
     proxyurl += std::to_string(static_cast<long long>(proxyoptions.port));
-    //proxyurl += "/";
-    pXmlNanoHTTPScanProxy(proxyurl.c_str());  // http://toto:admin@127.0.0.1:8080
+
+    // v3
+    //pXmlNanoHTTPScanProxy(proxyurl.c_str());  // http://toto:admin@127.0.0.1:8080
   } else {
-    pXmlNanoHTTPScanProxy(NULL);
+    // v3
+    //pXmlNanoHTTPScanProxy(NULL);
   }
 }
 
@@ -870,46 +824,52 @@ int performXMLCheck(int informIfNoError) {
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
   currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
-  char *data = new char[currentLength+1];
+  char *data = new char[currentLength + sizeof(char)];
   if (!data) return -1;  // allocation error, abort check
-  memset(data, '\0', currentLength+1);
+  memset(data, '\0', currentLength + sizeof(char));
 
-  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
+  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
   
-  pXmlResetLastError();
   //updateProxyConfig();
-  xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, getFlags());
-  
-  delete [] data;
+  HRESULT hr = S_OK;
+  HRESULT hrRet = E_FAIL; // Default error code if failed to get from parse error.
+  IXMLDOMDocument* pXMLDom = NULL; 
+  IXMLDOMParseError* pXMLErr = NULL;
+  BSTR bstrReason = NULL;
+  long line = 0;
+  long linepos = 0;
+  long filepos = 0;
+  VARIANT_BOOL varStatus;
+
+  _bstr_t bstrXML(data);
+  CHK_ALLOC(bstrXML);
+
+  delete[] data;
   data = NULL;
-  
-  xmlErrorPtr err = pXmlGetLastError();
 
-  std::wstring nfomsg(L"No error detected.");
-  std::wstring errmsg(L"");
-
-  if (doc == NULL || err != NULL) {
-    if (err != NULL) {
-      if (err->line > 0) {
-        ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
-      }
-      wchar_t* tmpmsg = Report::castChar(err->message);
-      errmsg += Report::str_format(L"XML Parsing error at line %d: \r\n%s", err->line, tmpmsg);
-      delete[] tmpmsg;
-      res = 1;
-    } else if (doc == NULL) {
-      errmsg += L"Failed to parse document";
-      res = 2;
+  CHK_HR(CreateAndInitDOM(&pXMLDom));
+  CHK_HR(pXMLDom->loadXML(bstrXML, &varStatus));
+  if (varStatus == VARIANT_TRUE) {
+    if (informIfNoError) {
+      Report::_printf_inf(L"No error detected.");
     }
-  }
-  
-  pXmlFreeDoc(doc);
+  } else {
+    CHK_HR(pXMLDom->get_parseError(&pXMLErr));
+    CHK_HR(pXMLErr->get_line(&line));
+    CHK_HR(pXMLErr->get_linepos(&linepos));
+    CHK_HR(pXMLErr->get_filepos(&filepos));
+    CHK_HR(pXMLErr->get_errorCode(&hrRet));
+    CHK_HR(pXMLErr->get_reason(&bstrReason));
 
-  if (errmsg.length() > 0) {
-    Report::_printf_err(errmsg.c_str());
-  } else if (nfomsg.length() > 0 && informIfNoError) {
-    Report::_printf_inf(nfomsg.c_str());
+    if (filepos >= 0) {
+      ::SendMessage(hCurrentEditView, SCI_GOTOPOS, filepos - 1, 0);
+    }
+    Report::_printf_err(L"XML Parsing error at line %d, pos %d: \r\n%s", line, linepos, bstrReason);
   }
+
+CleanUp:
+  SAFE_RELEASE(pXMLDom);
+  SysFreeString(bstrXML);
 
   return res;
 }
@@ -926,31 +886,11 @@ void manualXMLCheck() {
   performXMLCheck(1);
 }
 
-static int xmlSchemaValidateStreamLocator(void *ctx, const char** file, unsigned long *line) {
-	xmlParserCtxtPtr ctxt;
-
-	if ((ctx == NULL) || ((file == NULL) && (line == NULL)))
-		return(-1);
-
-	if (file != NULL)
-		*file = NULL;
-	if (line != NULL)
-		*line = 0;
-
-	ctxt = (xmlParserCtxtPtr)ctx;
-	if (ctxt->input != NULL) {
-		if (file != NULL)
-			*file = ctxt->input->filename;
-		if (line != NULL)
-			*line = ctxt->input->line;
-		return(0);
-	}
-	return(-1);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 CSelectFileDlg* pSelectFileDlg = NULL;
+void XMLValidation(int informIfNoError) { }
+/* @V3
 void XMLValidation(int informIfNoError) {
   dbgln("XMLValidation()");
 
@@ -967,11 +907,11 @@ void XMLValidation(int informIfNoError) {
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
   currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
   
-  char *data = new char[currentLength+1];
+  char *data = new char[currentLength + sizeof(char)];
   if (!data) return;  // allocation error, abort check
-  memset(data, '\0', currentLength+1);
+  memset(data, '\0', currentLength + sizeof(char));
 
-  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
+  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
   UniMode encoding = Report::getEncoding();
   
@@ -1190,7 +1130,7 @@ void XMLValidation(int informIfNoError) {
 
   // 4. save schema name for next call
   lastXMLSchema = xml_schema;
-}
+}*/
 
 void autoValidation() {
   dbgln("autoValidation()");
@@ -1366,6 +1306,10 @@ bool setAutoXMLType() {
 ///////////////////////////////////////////////////////////////////////////////
 
 std::wstring currentXPath(bool preciseXPath) {
+  return L"";
+}
+/* @V3
+std::wstring currentXPath(bool preciseXPath) {
   dbgln("currentXPath()");
 
   int currentEdit;
@@ -1376,13 +1320,13 @@ std::wstring currentXPath(bool preciseXPath) {
   
   std::wstring nodepath(L"");
 
-  char *data = new char[currentLength+1];
+  char *data = new char[currentLength + sizeof(char)];
   if (!data) return nodepath;  // allocation error, abort check
-  size_t size = (currentLength+1)*sizeof(char);
+  size_t size = (currentLength + sizeof(char))*sizeof(char);
   memset(data, '\0', size);
 
   currentPos = long(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
-  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
+  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
   std::string str(data);
   delete [] data;
@@ -1398,7 +1342,7 @@ std::wstring currentXPath(bool preciseXPath) {
     bool cursorInAttribute = false;
 
     // check if we are in a closing tag
-    if (currentPos >= 1 && currentPos < currentLength-2 && str.at(currentPos-1) == '<'  && str.at(currentPos) == '!' && str.at(currentPos+1) == '-' && str.at(currentPos+2) == '-') {  // check if in a comment
+    if (currentPos >= 1 && currentPos < currentLength - 2 * sizeof(char) && str.at(currentPos-1) == '<'  && str.at(currentPos) == '!' && str.at(currentPos+1) == '-' && str.at(currentPos+2) == '-') {  // check if in a comment
       return nodepath;
     } else if (currentPos >= 1 && str.at(currentPos-1) == '<' && str.at(currentPos) == '/') {
       // if we are inside closing tag (inside </x>, let's go back before '<' char so we are inside node)
@@ -1473,7 +1417,7 @@ std::wstring currentXPath(bool preciseXPath) {
   }
 
   return nodepath;
-}
+}*/
 
 void getCurrentXPath(bool precise) {
   dbgln("getCurrentXPath()");
@@ -1530,7 +1474,7 @@ void evaluateXPath() {
 #else
 void evaluateXPath() {
   dbgln("evaluateXPath()");
-  Report::_printf_err("Function not available.");
+  Report::_printf_err(L"Function not available.");
 }
 
 #endif
@@ -1542,7 +1486,7 @@ void performXSLTransform() {
   dbgln("performXSLTransform()");
 
   if (pXSLTransformDlg == NULL) {
-    pXSLTransformDlg = new CXSLTransformDlg(NULL, getFlags());
+    pXSLTransformDlg = new CXSLTransformDlg(NULL, NULL);
     pXSLTransformDlg->Create(CXSLTransformDlg::IDD,NULL);
   }
   pXSLTransformDlg->ShowWindow(SW_SHOW);
@@ -1600,16 +1544,16 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 
     if (selend > selstart) {
       currentLength = selend-selstart;
-      data = new char[currentLength+1];
+      data = new char[currentLength + sizeof(char)];
       if (!data) return;  // allocation error, abort check
-      memset(data, '\0', currentLength+1);
+      memset(data, '\0', currentLength + sizeof(char));
       ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
     } else {
       currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
-      data = new char[currentLength+1];
+      data = new char[currentLength + sizeof(char)];
       if (!data) return;  // allocation error, abort check
-      memset(data, '\0', currentLength+1);
-      ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
+      memset(data, '\0', currentLength + sizeof(char));
+      ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
     }
 
     // Check de la syntaxe (disabled)
@@ -1911,86 +1855,6 @@ void prettyPrintText() {
   prettyPrint(true, false);
 }
 
-void prettyPrintLibXML() {
-  dbgln("prettyPrint()");
-
-  int docIterator = initDocIterator();
-  while (hasNextDoc(&docIterator)) {
-    int currentEdit, currentLength, isReadOnly, xOffset, yOffset;
-    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-    HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-
-    isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
-    if (isReadOnly) return;
-    
-    xOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETXOFFSET, 0, 0);
-    yOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
-
-    currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
-
-    char *data = new char[currentLength+1];
-    if (!data) return;  // allocation error, abort check
-    memset(data, '\0', currentLength+1);
-
-    ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
-
-    int tabwidth = ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
-    int usetabs = ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
-    if (tabwidth <= 0) tabwidth = 4;
-
-    xmlDocPtr doc;
-
-//  updateProxyConfig();
-    doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, getFlags());
-    if (doc == NULL) {
-      Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
-      delete [] data;
-      return;
-    }
-
-    xmlChar *mem;
-    int numbytes;
-    pXmlKeepBlanksDefault(0);
-    pXmlThrDefIndentTreeOutput(1);
-
-    char *indentString;
-    if (usetabs) {
-      indentString = (char*) malloc(2);
-      indentString[0] = '\t';
-      indentString[1] = 0;
-    } else {
-      indentString = (char*) malloc(tabwidth + 1);
-      for (int i=0; i<tabwidth; i++) indentString[i] = ' ';
-      indentString[tabwidth] = 0;
-    }
-    if (indentString) pXmlThrDefTreeIndentString(indentString);
-
-/*
-    ops->indent = 1;
-    ops->indent_tab = 0;
-    ops->indent_spaces = 2;
-    ops->omit_decl = 0;
-    ops->recovery = 0;
-    ops->dropdtd = 0;
-    ops->options = 0;
-*/
-    pXmlDocDumpFormatMemory(doc,&mem,&numbytes,1);
-
-    // Send formatted string to scintilla
-    ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(mem));
-
-    // Restore scrolling
-    ::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
-    ::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
-
-    pXmlFree(mem);
-    pXmlFreeDoc(doc);
-    if (indentString) free(indentString);
-
-    delete [] data;
-  }
-}
-
 void prettyPrintAttributes() {
   #ifdef __XMLTOOLS_DEBUG__
     Report::_printf_inf("prettyPrint()");
@@ -2010,26 +1874,20 @@ void prettyPrintAttributes() {
 
     currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
-    char *data = new char[currentLength+1];
+    char *data = new char[currentLength + sizeof(char)];
     if (!data) return;  // allocation error, abort check
-    memset(data, '\0', currentLength+1);
+    memset(data, '\0', currentLength + sizeof(char));
 
-    ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
+    ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
     int tabwidth = ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
     int usetabs = ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
     if (tabwidth <= 0) tabwidth = 4;
 
-    xmlDocPtr doc;
-
-    doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, 0);
-    if (doc == NULL) {
-      Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
-      delete [] data;
-      return;
-    }
-    std::string str = data;
-
+    HRESULT hr = S_OK;
+    IXMLDOMDocument* pXMLDom = NULL;
+    VARIANT_BOOL varStatus;
+    
     bool in_comment = false, in_header = false, in_attribute = false, in_nodetext = false, in_cdata = false;
     long curpos = 0, strlength = 0;
     std::string lineindent = "";
@@ -2038,6 +1896,19 @@ void prettyPrintAttributes() {
 
     std::string eolchar;
     int eolmode;
+
+    _bstr_t bstrXML(data);
+    std::string str = data;
+    delete[] data;
+
+    CHK_ALLOC(bstrXML);
+    CHK_HR(CreateAndInitDOM(&pXMLDom));
+    CHK_HR(pXMLDom->loadXML(bstrXML, &varStatus));
+    if (varStatus != VARIANT_TRUE) {
+      Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
+      goto CleanUp;
+    }
+
     Report::getEOLChar(hCurrentEditView, &eolmode, &eolchar);
 
     int prevspecchar = -1;
@@ -2115,7 +1986,9 @@ void prettyPrintAttributes() {
     ::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
     ::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
 
-    delete [] data;
+  CleanUp:
+    SAFE_RELEASE(pXMLDom);
+    SysFreeString(bstrXML);
   }
 }
 
@@ -2131,13 +2004,13 @@ void linearizeXML() {
     HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
     currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
-    char *data = new char[currentLength+1];
+    char *data = new char[currentLength + sizeof(char)];
     if (!data) return;  // allocation error, abort check
-    memset(data, '\0', currentLength+1);
+    memset(data, '\0', currentLength + sizeof(char));
 
     int currentPos = int(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
 
-    ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
+    ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
     std::string eolchar;
     int eolmode;

@@ -6,8 +6,8 @@
 #include "XMLTools.h"
 #include "XpathEvalDlg.h"
 #include "Report.h"
+#include "MSXMLHelper.h"
 #include <assert.h>
-#include "LoadLibrary.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -66,9 +66,8 @@ void CXPathEvalDlg::OnBtnEvaluate() {
   if (!m_sExpression.GetLength()) {
     Report::_printf_err(L"Empty expression; evaluation aborted.");
   } else {
-    std::wstring wexpr(m_sExpression);
     
-    execute_xpath_expression(wexpr);
+    execute_xpath_expression(m_sExpression);
   }
 }
 
@@ -82,13 +81,14 @@ void CXPathEvalDlg::OnBtnEvaluate() {
  *
  * Returns 0 on success and a negative value otherwise.
  */
-int CXPathEvalDlg::execute_xpath_expression(std::wstring& xpathExpr) {
-  xmlDocPtr doc;
-  xmlXPathContextPtr xpathCtx;
-  xmlXPathObjectPtr xpathObj; 
-  xmlChar* nsList = NULL;
-
-  assert(xpathExpr.c_str());
+int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
+  HRESULT hr = S_OK;
+  IXMLDOMDocument* pXMLDom = NULL;
+  IXMLDOMNodeList* pNodes = NULL;
+  IXMLDOMNode* pNode = NULL;
+  BSTR bstrNodeName = NULL;
+  BSTR bstrNodeValue = NULL;
+  VARIANT_BOOL varStatus;
 
   int currentEdit, currentLength;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
@@ -96,129 +96,59 @@ int CXPathEvalDlg::execute_xpath_expression(std::wstring& xpathExpr) {
 
   currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
-  char *data = new char[currentLength+1];
+  char *data = new char[currentLength];
   if (!data) return(-1);  // allocation error, abort check
-  memset(data, '\0', currentLength+1);
+  memset(data, '\0', currentLength);
 
-  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength+1, reinterpret_cast<LPARAM>(data));
+  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength, reinterpret_cast<LPARAM>(data));
+  
+  _bstr_t bstrXPath(xpathExpr);
+  _bstr_t bstrXML(data);
 
-  std::string str(data);
+  CHK_ALLOC(bstrXPath);
+  CHK_ALLOC(bstrXML);
   
   delete [] data;
   data = NULL;
-
-  /* First step, let's remove all default namespace declarations */
-  std::string::size_type curpos = 0;
-  std::string::size_type strlength = str.length();
-  bool in_attribute = false;
-  while (curpos < strlength && (curpos = str.find("xmlns=",curpos)) != std::string::npos) {
-    std::string::size_type quotepos = str.find_first_of("\"'",curpos+6);
-    in_attribute = false;
-    if (str.at(curpos-1) != ':') {
-      // check if we are in node
-      std::string::size_type nodepos = str.find_last_of("<>", curpos);
-      if (nodepos != std::string::npos && str.at(nodepos) == '<') {
-        // check if value is inside of attribute value; to perform this, we have to parse the current node
-        while (nodepos < strlength && nodepos < quotepos && (nodepos = str.find_first_of("\"'",nodepos)) != std::string::npos) {
-          if (nodepos < quotepos) {
-            in_attribute = true;
-            char quotechar = str.at(nodepos);
-            std::string::size_type nextquotepos = str.find(quotechar, nodepos+1);
-            if (nextquotepos < quotepos) {
-              nodepos = nextquotepos+1;
-              in_attribute = false;
-            } else {
-              break;
-            }
-          } else {
-            break;
-          }
-        }
-
-        if (!in_attribute) {
-          // get the attribute quote
-          if (quotepos != std::string::npos) {
-            char quotechar = str.at(quotepos);
-            std::string::size_type endpos = str.find(quotechar,curpos+7);
-            str.erase(curpos, endpos-curpos+1);
-            strlength = str.length();
-          } else {
-            ++curpos;
-          }
-        } else {
-          ++curpos;
-        }
-      } else {
-        ++curpos;
-      }
-    } else {
-      ++curpos;
-    }
-  }
-
-  /* Load XML document */
-  pXmlResetLastError();
-  //updateProxyConfig();
-  doc = pXmlReadMemory(str.c_str(), static_cast<int>(str.length()), "noname.xml", NULL, this->m_iFlags);
-  str.clear();
-
-  if (doc == NULL) {
-    Report::_printf_err(L"Error: unable to parse XML.");
-    return(-1);
-  }
-
-  /* Get document encoding */  
-  this->encoding = pXmlParseCharEncoding(reinterpret_cast<const char*>(doc->encoding));
-
-  /* Create xpath evaluation context */
-  xpathCtx = pXmlXPathNewContext(doc);
-  if (xpathCtx == NULL) {
-    Report::_printf_err(L"Error: unable to create new XPath context\n");
-    pXmlFreeDoc(doc);
-    return(-1);
-  }
   
-  /* Register namespaces */
-  if (register_namespaces_ex(xpathCtx, doc) < 0) {
-    Report::_printf_err(L"Error: failed to register namespaces list \"%s\"\n", nsList);
-    pXmlXPathFreeContext(xpathCtx); 
-    pXmlFreeDoc(doc);
-    return(-1);
-  }
+  CHK_HR(CreateAndInitDOM(&pXMLDom));
+  CHK_HR(pXMLDom->loadXML(bstrXML, &varStatus));
+  if (varStatus == VARIANT_TRUE) {
+    CHK_HR(pXMLDom->selectNodes(bstrXPath, &pNodes));
+    //get the length of node-set
+    long length;
+    CHK_HR(pNodes->get_length(&length));
+    for (long i = 0; i < length; i++) {
+      CHK_HR(pNodes->get_item(i, &pNode));
+      CHK_HR(pNode->get_nodeName(&bstrNodeName));
+      std::wstring str;
+      printf("Node (%d), <%S>:\n", i, bstrNodeName);
+      SysFreeString(bstrNodeName);
 
-  /* Evaluate xpath expression */
-  xpathObj = pXmlXPathEvalExpression(reinterpret_cast<const xmlChar*>(Report::castWChar(xpathExpr.c_str())), xpathCtx);
-  if (xpathObj == NULL) {
-    Report::_printf_err(L"Error: unable to evaluate xpath expression \"%s\"\n", xpathExpr.c_str());
-    pXmlXPathFreeContext(xpathCtx); 
-    pXmlFreeDoc(doc);
-    return(-1);
-  }
+      CHK_HR(pNode->get_xml(&bstrNodeValue));
+      printf("\t%S\n", bstrNodeValue);
+      SysFreeString(bstrNodeValue);
+      SAFE_RELEASE(pNode);
 
-  /* Print results */
-  print_xpath_nodes(xpathObj);
-
-  /* Cleanup */
-  pXmlXPathFreeObject(xpathObj);
-  pXmlXPathFreeContext(xpathCtx); 
-  pXmlFreeDoc(doc);
-
-  return(0);
-}
-
-int CXPathEvalDlg::register_namespaces_ex(xmlXPathContextPtr xpathCtx, xmlDocPtr doc) {
-  xmlNodePtr node = doc->children;
-
-  while (node) {
-    xmlNsPtr ns = node->nsDef;
-    while (node->type == XML_ELEMENT_NODE && ns) {
-      if (ns->prefix != NULL) {
-        pXmlXPathRegisterNs(xpathCtx, ns->prefix, ns->href);
-      }
-      ns = ns->next;
+      /* @V3
+      TODO: print result
+      */
     }
-    node = node->next;
+
+    goto CleanUp;
+  } else {
+    Report::_printf_err(L"Error: unable to parse XML.");
+    goto CleanUp;
   }
+
+CleanUp:
+  SAFE_RELEASE(pXMLDom);
+  SAFE_RELEASE(pNodes);
+  SAFE_RELEASE(pNode);
+  SysFreeString(bstrXML);
+  SysFreeString(bstrXPath);
+  SysFreeString(bstrNodeName);
+  SysFreeString(bstrNodeValue);
 
   return(0);
 }
@@ -239,6 +169,7 @@ void CXPathEvalDlg::AddToList(CListCtrl *list, CStringW type, CStringW name, CSt
  *
  * Prints the @nodes content to @output.
  */
+/* @V3
 void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
   CStringW itemtype, itemname, itemvalue;
   CListCtrl *listresults = (CListCtrl*) this->GetDlgItem(IDC_LIST_XPATHRESULTS);
@@ -414,13 +345,13 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
       AddToList(listresults, itemtype, itemname, itemvalue);
       break;
     }
-    /*case XPATH_POINT: Report::_printf_inf("XPATH_POINT"); break;
-    case XPATH_RANGE: Report::_printf_inf("XPATH_RANGE"); break;
-    case XPATH_LOCATIONSET: Report::_printf_inf("XPATH_LOCATIONSET"); break;
-    case XPATH_USERS: Report::_printf_inf("XPATH_USERS"); break;
-    case XPATH_XSLT_TREE: Report::_printf_inf("XPATH_XSLT_TREE"); break;*/
+    //case XPATH_POINT: Report::_printf_inf("XPATH_POINT"); break;
+    //case XPATH_RANGE: Report::_printf_inf("XPATH_RANGE"); break;
+    //case XPATH_LOCATIONSET: Report::_printf_inf("XPATH_LOCATIONSET"); break;
+    //case XPATH_USERS: Report::_printf_inf("XPATH_USERS"); break;
+    //case XPATH_XSLT_TREE: Report::_printf_inf("XPATH_XSLT_TREE"); break;
   }
-}
+}*/
 
 BOOL CXPathEvalDlg::OnInitDialog() {
   CDialog::OnInitDialog();

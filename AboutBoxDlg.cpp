@@ -7,8 +7,6 @@
 #include "afxdialogex.h"
 
 #include "Report.h"
-#include <libxml/xmlversion.h>
-#include <libxslt/xsltconfig.h>
 
 // Boîte de dialogue CAboutBoxDlg
 
@@ -44,8 +42,8 @@ BOOL CAboutBoxDlg::OnInitDialog()
   CDialog::OnInitDialog();
 
   #ifdef _DEBUG
-    SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s %s (debug)\r\n \r\nlibXML %s \r\nlibXSTL %s",
-          XMLTOOLS_VERSION_NUMBER, XMLTOOLS_VERSION_STATUS, TEXT(LIBXML_DOTTED_VERSION), TEXT(LIBXSLT_DOTTED_VERSION)).c_str());
+    SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s %s (debug)",
+          XMLTOOLS_VERSION_NUMBER, XMLTOOLS_VERSION_STATUS).c_str());
   #else
     SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s %s\r\n \r\nlibXML %s \r\nlibXSTL %s",
         XMLTOOLS_VERSION_NUMBER, XMLTOOLS_VERSION_STATUS, TEXT(LIBXML_DOTTED_VERSION), TEXT(LIBXSLT_DOTTED_VERSION)).c_str());

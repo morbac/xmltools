@@ -7,7 +7,7 @@
 #include "XSLTransformDlg.h"
 #include "Report.h"
 #include "menuCmdID.h"
-#include "LoadLibrary.h"
+#include "MSXMLHelper.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -117,6 +117,9 @@ void cleanParams(char* params[], int nparams) {
   }
 }
 
+void CXSLTransformDlg::OnBtnTransform() {
+}
+/* @V3
 void CXSLTransformDlg::OnBtnTransform() {
   #define MAX_PARAMS 16
   this->UpdateData();
@@ -228,7 +231,7 @@ void CXSLTransformDlg::OnBtnTransform() {
 
   pXsltCleanupGlobals();
   pXmlCleanupParser();
-}
+}*/
 
 CStringW CXSLTransformDlg::ShowOpenFileDlg(CStringW filetypes) {
   CFileDialog dlg(TRUE, NULL, NULL, NULL, filetypes);

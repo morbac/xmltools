@@ -10,8 +10,7 @@
 #endif // _MSC_VER > 1000
 
 #include <sstream>
-#include <libxml/xmlstring.h>
-#include <libxml/encoding.h>
+#include <atlstr.h>
 
 // from NPP source "Parameters.h"
 enum UniMode {uni8Bit=0, uniUTF8=1, uni16BE=2, uni16LE=3, uniCookie=4, uni7Bit=5, uni16BE_NoBOM=6, uni16LE_NoBOM=7, uniEnd};
@@ -55,7 +54,6 @@ public:
 
   static std::string narrow(const std::wstring& ws);
   static std::wstring widen(const char* s);
-  static std::wstring widen(const xmlChar* s);
   static std::wstring widen(const std::string& s);
 
   static std::string trimleft(const std::string& s);
@@ -69,17 +67,15 @@ public:
   static wchar_t* char2wchar(const char* s);
   static char* wchar2char(const wchar_t* ws);
 
+  /* V3
   static UniMode getEncoding(HWND npp = NULL);
-  static UniMode getEncoding(xmlCharEncoding xmlencoding, HWND npp);
-  static UniMode getEncoding(const xmlChar* xmlencoding, HWND npp );
+  */
   static void setEncoding(UniMode encoding, HWND npp = NULL);
 
   static wchar_t* castChar(const char* orig, UniMode encoding = uniEnd);
   static char* castWChar(const wchar_t* orig, UniMode encoding = uniEnd);
   static void appendToStdString(std::wstring* dest, const char* source, UniMode encoding);
-  static void appendToWStdString(std::wstring* dest, const xmlChar* source, UniMode encoding);
   static void appendToCString(CStringW* dest, const char* source, UniMode encoding);
-  static void appendToCString(CStringW* dest, const xmlChar* source, UniMode encoding);
 
   static unsigned int UTF8Length(const wchar_t * uptr, unsigned int tlen);
   static void UTF8FromUCS2(const wchar_t * uptr, unsigned int tlen, char * putf, unsigned int len);

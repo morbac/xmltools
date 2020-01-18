@@ -9,10 +9,6 @@
 
 #include "PluginInterface.h"
 
-#include <libxml/parser.h>
-#include <libxml/tree.h>
-#include <libxml/xpath.h>
-#include <libxml/xpathInternals.h>
 #include <string>
 
 /////////////////////////////////////////////////////////////////////////////
@@ -42,12 +38,9 @@ public:
 // Implementation
 protected:
   unsigned long m_iFlags;
-  xmlCharEncoding encoding;
 
-  int execute_xpath_expression(std::wstring& xpathExpr);
+  int execute_xpath_expression(CStringW xpathExpr);
   //int register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList);
-  int register_namespaces_ex(xmlXPathContextPtr xpathCtx, xmlDocPtr doc);
-  void print_xpath_nodes(xmlXPathObjectPtr xpathObj);
   void AddToList(CListCtrl *list, CStringW type, CStringW name, CStringW value);
 
   HWND getCurrentHScintilla(int which);

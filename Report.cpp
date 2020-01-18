@@ -6,7 +6,6 @@
 #include "PluginInterface.h"
 #include "Report.h"
 #include "menuCmdID.h"
-#include "LoadLibrary.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -146,7 +145,9 @@ CStringW Report::cstring(const wchar_t* s, ...) {
 
 void Report::clearLog() {
   currentLog.clear();
+  /* @V3
   currentEncoding = Report::getEncoding();
+  */
 }
 
 std::wstring Report::getLog() {
@@ -242,13 +243,6 @@ std::wstring Report::widen(const char* s) {
   return res;
 }
 
-std::wstring Report::widen(const xmlChar* s) {
-  size_t len = _mbslen(s);
-  std::wstring res(len, L' '); // Make room for characters
-  std::copy(s, s+len, res.begin());
-  return res;
-}
-
 std::wstring Report::widen(const std::string& s) {
   std::wstring res(s.length(), L' '); // Make room for characters
   std::copy(s.begin(), s.end(), res.begin());
@@ -311,7 +305,12 @@ char* Report::wchar2char(const wchar_t* ws) {
   return s;
 }
 
-UniMode Report::getEncoding(HWND npp /* = NULL */) {
+/* @V3
+UniMode Report::getEncoding(HWND npp) {
+  return Report::getEncoding(XML_CHAR_ENCODING_NONE, npp);
+}
+
+UniMode Report::getEncoding(const xmlChar* xmlencoding, HWND npp) {
   return Report::getEncoding(XML_CHAR_ENCODING_NONE, npp);
 }
 
@@ -353,45 +352,12 @@ UniMode Report::getEncoding(xmlCharEncoding xmlencoding, HWND npp) {
       case XML_CHAR_ENCODING_ASCII:  // pure ASCII
         return uni8Bit;
         break;
-      /*case XML_CHAR_ENCODING_EBCDIC: // EBCDIC uh!
-        break;
-      
-      case XML_CHAR_ENCODING_UCS2: // UCS-2
-        break;
-      case XML_CHAR_ENCODING_8859_1: // ISO-8859-1 ISO Latin 1
-        break;
-      case XML_CHAR_ENCODING_8859_2: // ISO-8859-2 ISO Latin 2
-        break;
-      case XML_CHAR_ENCODING_8859_3: // ISO-8859-3
-        break;
-      case XML_CHAR_ENCODING_8859_4: // ISO-8859-4
-        break;
-      case XML_CHAR_ENCODING_8859_5: // ISO-8859-5
-        break;
-      case XML_CHAR_ENCODING_8859_6: // ISO-8859-6
-        break;
-      case XML_CHAR_ENCODING_8859_7: // ISO-8859-7
-        break;
-      case XML_CHAR_ENCODING_8859_8: // ISO-8859-8
-        break;
-      case XML_CHAR_ENCODING_8859_9: // ISO-8859-9
-        break;
-      case XML_CHAR_ENCODING_2022_JP: // ISO-2022-JP
-        break;
-      case XML_CHAR_ENCODING_SHIFT_JIS: // Shift_JIS
-        break;
-      case XML_CHAR_ENCODING_EUC_JP: // EUC-JP
-        break;
-      
-      case XML_CHAR_ENCODING_ERROR: // No char encoding detected
-      case XML_CHAR_ENCODING_NONE: // No char encoding detected
-      */
       default:
         return uniUTF8;
 
     }
   }
-}
+}*/
 
 void Report::setEncoding(UniMode encoding, HWND npp /* = NULL */) {
   HWND nppwnd = (npp == NULL ? nppData._nppHandle : npp);
@@ -411,9 +377,11 @@ void Report::setEncoding(UniMode encoding, HWND npp /* = NULL */) {
 
 wchar_t* Report::castChar(const char* orig, UniMode encoding /*= uniEnd*/) {
   UniMode enc = encoding;
+  /* @V3
   if (encoding == uniEnd) {
     enc = Report::getEncoding();
   }
+  */
   if (enc == uni8Bit) {
     return Report::char2wchar(orig);
   } else {
@@ -428,9 +396,11 @@ wchar_t* Report::castChar(const char* orig, UniMode encoding /*= uniEnd*/) {
 
 char* Report::castWChar(const wchar_t* orig, UniMode encoding /*= uniEnd*/) {
   UniMode enc = encoding;
+  /* @V3
   if (encoding == uniEnd) {
     enc = Report::getEncoding();
   }
+  */
   if (enc == uni8Bit) {
     return Report::wchar2char(orig);
   } else {
@@ -453,31 +423,11 @@ void Report::appendToStdString(std::wstring* dest, const char* source, UniMode e
   }
 }
 
-void Report::appendToWStdString(std::wstring* dest, const xmlChar* source, UniMode encoding) {
-  if (source == NULL) {
-    Report::appendToStdString(dest, "(null)", encoding);
-  } else {
-    wchar_t* buffer = Report::castChar(reinterpret_cast<const char*>(source), encoding);
-    *dest += buffer;
-    delete[] buffer;
-  }
-}
-
 void Report::appendToCString(CStringW* dest, const char* source, UniMode encoding) {
   if (source == NULL) {
     Report::appendToCString(dest, "(null)", encoding);
   } else {
     wchar_t* buffer = Report::castChar(source, encoding);
-    *dest += buffer;
-    delete[] buffer;
-  }
-}
-
-void Report::appendToCString(CStringW* dest, const xmlChar* source, UniMode encoding) {
-  if (source == NULL) {
-    Report::appendToCString(dest, "(null)", encoding);
-  } else {
-    wchar_t* buffer = Report::castChar(reinterpret_cast<const char*>(source), encoding);
     *dest += buffer;
     delete[] buffer;
   }
