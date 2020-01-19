@@ -40,6 +40,7 @@ protected:
   unsigned long m_iFlags;
 
   int execute_xpath_expression(CStringW xpathExpr);
+  void print_xpath_nodes(IXMLDOMNodeList* pNodes);
   //int register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList);
   void AddToList(CListCtrl *list, CStringW type, CStringW name, CStringW value);
 

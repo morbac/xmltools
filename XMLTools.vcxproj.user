@@ -18,4 +18,7 @@
     <LocalDebuggerCommand>$(ProgramW6432)\Notepad++\notepad++.exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup>
+    <RESOURCE_FILE>XMLTools.rc</RESOURCE_FILE>
+  </PropertyGroup>
 </Project>

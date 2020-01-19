@@ -85,11 +85,8 @@ int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
   HRESULT hr = S_OK;
   IXMLDOMDocument* pXMLDom = NULL;
   IXMLDOMNodeList* pNodes = NULL;
-  IXMLDOMNode* pNode = NULL;
-  BSTR bstrNodeName = NULL;
-  BSTR bstrNodeValue = NULL;
   VARIANT_BOOL varStatus;
-
+  
   int currentEdit, currentLength;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
@@ -114,41 +111,22 @@ int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
   CHK_HR(CreateAndInitDOM(&pXMLDom));
   CHK_HR(pXMLDom->loadXML(bstrXML, &varStatus));
   if (varStatus == VARIANT_TRUE) {
-    CHK_HR(pXMLDom->selectNodes(bstrXPath, &pNodes));
-    //get the length of node-set
-    long length;
-    CHK_HR(pNodes->get_length(&length));
-    for (long i = 0; i < length; i++) {
-      CHK_HR(pNodes->get_item(i, &pNode));
-      CHK_HR(pNode->get_nodeName(&bstrNodeName));
-      std::wstring str;
-      printf("Node (%d), <%S>:\n", i, bstrNodeName);
-      SysFreeString(bstrNodeName);
-
-      CHK_HR(pNode->get_xml(&bstrNodeValue));
-      printf("\t%S\n", bstrNodeValue);
-      SysFreeString(bstrNodeValue);
-      SAFE_RELEASE(pNode);
-
-      /* @V3
-      TODO: print result
-      */
+    hr = pXMLDom->selectNodes(bstrXPath, &pNodes);
+    if (FAILED(hr)) {
+      Report::_printf_err(L"Error: error on XPath expression.");
+      goto CleanUp;
     }
 
-    goto CleanUp;
+    print_xpath_nodes(pNodes);
   } else {
     Report::_printf_err(L"Error: unable to parse XML.");
-    goto CleanUp;
   }
 
 CleanUp:
   SAFE_RELEASE(pXMLDom);
   SAFE_RELEASE(pNodes);
-  SAFE_RELEASE(pNode);
   SysFreeString(bstrXML);
   SysFreeString(bstrXPath);
-  SysFreeString(bstrNodeName);
-  SysFreeString(bstrNodeValue);
 
   return(0);
 }
@@ -162,6 +140,43 @@ void CXPathEvalDlg::AddToList(CListCtrl *list, CStringW type, CStringW name, CSt
   this->m_sResult.AppendFormat(L"%s\t%s\t%s\n", type, name, value);
 }
 
+void CXPathEvalDlg::print_xpath_nodes(IXMLDOMNodeList* pNodes) {
+  HRESULT hr = S_OK;
+  IXMLDOMNode* pNode = NULL;
+  BSTR bstrNodeName = NULL;
+  BSTR bstrNodeType = NULL;
+  BSTR bstrNodeValue = NULL;
+  long length;
+
+  CListCtrl* listresults = (CListCtrl*)this->GetDlgItem(IDC_LIST_XPATHRESULTS);
+  listresults->DeleteAllItems();
+
+  CHK_HR(pNodes->get_length(&length));
+
+  if (length == 0) {
+    AddToList(listresults, "", "No result", "");
+  } else {
+    for (long i = 0; i < length; ++i) {
+      CHK_HR(pNodes->get_item(i, &pNode));
+      CHK_HR(pNode->get_nodeName(&bstrNodeName));
+      CHK_HR(pNode->get_text(&bstrNodeValue));
+      CHK_HR(pNode->get_nodeTypeString(&bstrNodeType));
+
+      AddToList(listresults, bstrNodeType, bstrNodeName, bstrNodeValue);
+
+      SysFreeString(bstrNodeName);
+      SysFreeString(bstrNodeValue);
+      SysFreeString(bstrNodeType);
+      SAFE_RELEASE(pNode);
+    }
+  }
+
+CleanUp:
+  SAFE_RELEASE(pNode);
+  SysFreeString(bstrNodeName);
+  SysFreeString(bstrNodeValue);
+  SysFreeString(bstrNodeType);
+}
 /**
  * print_xpath_nodes:
  * @nodes:    the nodes set.
@@ -359,7 +374,7 @@ BOOL CXPathEvalDlg::OnInitDialog() {
   CListCtrl *listresults = (CListCtrl*) this->GetDlgItem(IDC_LIST_XPATHRESULTS);
 
   // Initialize the destination list control
-  listresults->InsertColumn(0, L"Type", LVCFMT_LEFT, 50);
+  listresults->InsertColumn(0, L"Type", LVCFMT_LEFT, 100);
   listresults->InsertColumn(1, L"Name", LVCFMT_LEFT, 100);
   listresults->InsertColumn(2, L"Value", LVCFMT_LEFT, 400);
 

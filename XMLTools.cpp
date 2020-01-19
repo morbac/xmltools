@@ -1454,30 +1454,23 @@ void getCurrentXPathPredicate() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if defined(LIBXML_XPATH_ENABLED) && defined(LIBXML_SAX1_ENABLED)
-
+/*
 int  execute_xpath_expression(const xmlChar* xpathExpr, const xmlChar* nsList);
 int  register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList);
 void print_xpath_nodes(xmlNodeSetPtr nodes);
+*/
 CXPathEvalDlg *pXPathEvalDlg = NULL;
 
 void evaluateXPath() {
   dbgln("evaluateXPath()");
 
   if (pXPathEvalDlg == NULL) {
-    pXPathEvalDlg = new CXPathEvalDlg(NULL, getFlags());
+    pXPathEvalDlg = new CXPathEvalDlg(NULL, NULL);
     pXPathEvalDlg->Create(CXPathEvalDlg::IDD,NULL);
   }
   pXPathEvalDlg->ShowWindow(SW_SHOW);
 }
 
-#else
-void evaluateXPath() {
-  dbgln("evaluateXPath()");
-  Report::_printf_err(L"Function not available.");
-}
-
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
