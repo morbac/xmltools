@@ -40,6 +40,12 @@ HRESULT CreateAndInitDOM(IXMLDOMDocument** ppDoc) {
   return hr;
 }
 
+// Helper function to create a SAX instance. 
+HRESULT CreateAndInitSAX(ISAXXMLReader** ppDoc) {
+  HRESULT hr = CoCreateInstance(__uuidof(SAXXMLReader60), NULL, CLSCTX_ALL, IID_PPV_ARGS(ppDoc));
+  return hr;
+}
+
 // Helper function to transform DOM to a string. 
 HRESULT TransformDOM2Str(IXMLDOMDocument* pXMLDom, IXMLDOMDocument* pXSLDoc) {
   HRESULT hr = S_OK;

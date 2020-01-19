@@ -15,6 +15,9 @@ HRESULT VariantFromObject(IUnknown * pUnk, VARIANT & varObject);
 // Helper function to create a DOM instance. 
 HRESULT CreateAndInitDOM(IXMLDOMDocument * *ppDoc);
 
+// Helper function to create a sax instance. 
+HRESULT CreateAndInitSAX(ISAXXMLReader * *ppDoc);
+
 // Helper function to transform DOM to a string. 
 HRESULT TransformDOM2Str(IXMLDOMDocument * pXMLDom, IXMLDOMDocument * pXSLDoc);
 

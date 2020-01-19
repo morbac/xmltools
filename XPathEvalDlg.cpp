@@ -375,7 +375,7 @@ BOOL CXPathEvalDlg::OnInitDialog() {
 
   // Initialize the destination list control
   listresults->InsertColumn(0, L"Type", LVCFMT_LEFT, 100);
-  listresults->InsertColumn(1, L"Name", LVCFMT_LEFT, 100);
+  listresults->InsertColumn(1, L"Name", LVCFMT_LEFT, 150);
   listresults->InsertColumn(2, L"Value", LVCFMT_LEFT, 400);
 
   listresults->DeleteAllItems();
