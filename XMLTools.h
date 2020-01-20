@@ -16,19 +16,13 @@
 
 //---------------------------------------------------------------------------
 
-#define XMLTOOLS_VERSION_NUMBER L"2.4.12.0"
+#define XMLTOOLS_VERSION_NUMBER L"3.0.0.0 alpha"
 #ifdef V64BIT
 #define XMLTOOLS_VERSION_STATUS L"unicode 64bit"
 #else
 #define XMLTOOLS_VERSION_STATUS L"unicode"
 #endif
 
-//---------------------------------------------------------------------------
-
-#define NDAYS_BETWEEN_UPDATE_CHECK 14
-#define XMLTOOLS_DLLNAME   L"XMLTools.dll"
-
-#define LATEST_STABLE_URL "http://sourceforge.net/projects/npp-plugins/files/XML%20Tools/latest_versions.txt/download"
 
 /////////////////////////////////////////////////////////////////////////////
 // CXMLToolsApp

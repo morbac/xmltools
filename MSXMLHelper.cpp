@@ -1,3 +1,5 @@
+#include "StdAfx.h"
+
 #include "MSXMLHelper.h"
 #include "Report.h"
 

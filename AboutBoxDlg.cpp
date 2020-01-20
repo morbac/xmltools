@@ -42,10 +42,10 @@ BOOL CAboutBoxDlg::OnInitDialog()
   CDialog::OnInitDialog();
 
   #ifdef _DEBUG
-    SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s %s (debug)",
+    SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s %s (debug)\r\n\r\nXML engine: MSXML",
           XMLTOOLS_VERSION_NUMBER, XMLTOOLS_VERSION_STATUS).c_str());
   #else
-    SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s %s",
+    SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s %s\r\n\r\nXML engine: MSXML",
         XMLTOOLS_VERSION_NUMBER, XMLTOOLS_VERSION_STATUS).c_str());
   #endif
 
