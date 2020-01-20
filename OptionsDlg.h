@@ -1,13 +1,6 @@
 #pragma once
 #include "afxwin.h"
-
-struct struct_proxyoptions {
-  bool status;
-  wchar_t host[255];
-  long port;
-  wchar_t username[255];
-  wchar_t password[255];
-};
+#include "base.h"
 
 // Boîte de dialogue COptionsDlg
 
@@ -16,7 +9,7 @@ class COptionsDlg : public CDialogEx
   DECLARE_DYNAMIC(COptionsDlg)
 
 public:
-  COptionsDlg(CWnd* pParent = NULL, struct struct_proxyoptions* proxyoptions = NULL);   // constructeur standard
+  COptionsDlg(CWnd* pParent = NULL);   // constructeur standard
   virtual ~COptionsDlg();
 
 // Données de boîte de dialogue
@@ -26,8 +19,6 @@ protected:
   virtual void DoDataExchange(CDataExchange* pDX);    // Prise en charge de DDX/DDV
 
   void updateEditFieldsStatus();
-
-   struct struct_proxyoptions* proxyoptions;
 
   DECLARE_MESSAGE_MAP()
 public:

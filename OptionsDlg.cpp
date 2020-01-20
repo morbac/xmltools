@@ -12,10 +12,9 @@
 
 IMPLEMENT_DYNAMIC(COptionsDlg, CDialogEx)
 
-COptionsDlg::COptionsDlg(CWnd* pParent /*=NULL*/, struct struct_proxyoptions* proxyoptions /*=NULL*/)
+COptionsDlg::COptionsDlg(CWnd* pParent /*=NULL*/)
   : CDialogEx(COptionsDlg::IDD, pParent)
 {
-  this->proxyoptions = proxyoptions;
 }
 
 COptionsDlg::~COptionsDlg()
@@ -45,18 +44,13 @@ BOOL COptionsDlg::OnInitDialog()
 {
   CDialogEx::OnInitDialog();
 
-  if (this->proxyoptions != NULL) {
-    if (this->proxyoptions->status) {
-      ((CButton*) GetDlgItem(IDC_CHKENABLEPROXY))->SetCheck(BST_CHECKED);
-    } else {
-      ((CButton*) GetDlgItem(IDC_CHKENABLEPROXY))->SetCheck(BST_UNCHECKED);
-    }
-    GetDlgItem(IDC_EDITPROXYHOST)->SetWindowTextW(this->proxyoptions->host);
-    GetDlgItem(IDC_EDITPROXYPORT)->SetWindowTextW(std::to_wstring(static_cast<long long>(this->proxyoptions->port)).c_str());
-    //GetDlgItem(IDC_EDITPROXYUSERNAME)->SetWindowTextW(this->proxyoptions->username);
-    //GetDlgItem(IDC_EDITPROXYPASSWORD)->SetWindowTextW(this->proxyoptions->password);
-  }
-  
+  ((CButton*) GetDlgItem(IDC_CHKENABLEPROXY))->SetCheck(proxyoptions.status ? BST_CHECKED : BST_UNCHECKED);
+  GetDlgItem(IDC_EDITPROXYHOST)->SetWindowTextW(proxyoptions.host);
+  GetDlgItem(IDC_EDITPROXYPORT)->SetWindowTextW(std::to_wstring(static_cast<long long>(proxyoptions.port)).c_str());
+  //GetDlgItem(IDC_EDITPROXYUSERNAME)->SetWindowTextW(this->proxyoptions->username);
+  //GetDlgItem(IDC_EDITPROXYPASSWORD)->SetWindowTextW(this->proxyoptions->password);
+  ((CButton*)GetDlgItem(IDC_CHKPROHIBITDTD))->SetCheck(xmlfeatures.prohibitDTD ? BST_CHECKED : BST_UNCHECKED);
+
   updateEditFieldsStatus();
 
   return TRUE;  // return TRUE unless you set the focus to a control
@@ -90,24 +84,23 @@ void COptionsDlg::OnBnClickedChkenableproxy() {
 }
 
 
-void COptionsDlg::OnBnClickedOk()
-{
-  if (this->proxyoptions != NULL) {
-    this->proxyoptions->status = (((CButton*) GetDlgItem(IDC_CHKENABLEPROXY))->GetCheck() == BST_CHECKED);
+void COptionsDlg::OnBnClickedOk() {
+  proxyoptions.status = (((CButton*) GetDlgItem(IDC_CHKENABLEPROXY))->GetCheck() == BST_CHECKED);
 
-    CStringW buffer;
-    this->editProxyHost.GetWindowText(buffer);
-    wcscpy_s(this->proxyoptions->host, (const WCHAR *)buffer);
+  CStringW buffer;
+  this->editProxyHost.GetWindowText(buffer);
+  wcscpy_s(proxyoptions.host, (const WCHAR *)buffer);
 
-    this->editProxyPort.GetWindowText(buffer);
-    this->proxyoptions->port = _wtoi((LPCTSTR)buffer);
+  this->editProxyPort.GetWindowText(buffer);
+  proxyoptions.port = _wtoi((LPCTSTR)buffer);
 
-    //this->editProxyUsername.GetWindowText(buffer);
-    //wcscpy_s(this->proxyoptions->username, (const WCHAR *)buffer);
+  //this->editProxyUsername.GetWindowText(buffer);
+  //wcscpy_s(this->proxyoptions->username, (const WCHAR *)buffer);
 
-    //this->editProxyPassword.GetWindowText(buffer);
-    //wcscpy_s(this->proxyoptions->password, (const WCHAR *)buffer);
-  }
+  //this->editProxyPassword.GetWindowText(buffer);
+  //wcscpy_s(this->proxyoptions->password, (const WCHAR *)buffer);
+
+  xmlfeatures.prohibitDTD = (((CButton*)GetDlgItem(IDC_CHKPROHIBITDTD))->GetCheck() == BST_CHECKED);
 
   CDialogEx::OnOK();
 }

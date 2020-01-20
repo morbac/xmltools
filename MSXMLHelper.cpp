@@ -1,7 +1,9 @@
 #include "StdAfx.h"
 
 #include "MSXMLHelper.h"
+#include "XMLTools.h"
 #include "Report.h"
+#include "base.h"
 
 // Helper function to create a VT_BSTR variant from a null terminated string. 
 HRESULT VariantFromString(PCWSTR wszValue, VARIANT& Variant) {
@@ -38,7 +40,7 @@ HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc) {
     (*ppDoc)->put_validateOnParse(VARIANT_FALSE);
     (*ppDoc)->put_resolveExternals(VARIANT_FALSE);
     (*ppDoc)->put_preserveWhiteSpace(VARIANT_TRUE);
-    (*ppDoc)->setProperty(L"ProhibitDTD", _variant_t(VARIANT_FALSE));
+    (*ppDoc)->setProperty(L"ProhibitDTD", _variant_t(xmlfeatures.prohibitDTD ? VARIANT_TRUE : VARIANT_FALSE));
   }
   return hr;
 }
@@ -47,7 +49,7 @@ HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc) {
 HRESULT CreateAndInitSAX(ISAXXMLReader** ppDoc) {
   HRESULT hr = CoCreateInstance(__uuidof(SAXXMLReader60), NULL, CLSCTX_ALL, IID_PPV_ARGS(ppDoc));
   if (SUCCEEDED(hr)) {
-    (*ppDoc)->putFeature(L"prohibit-dtd", _variant_t(VARIANT_FALSE));
+    (*ppDoc)->putFeature(L"prohibit-dtd", _variant_t(xmlfeatures.prohibitDTD ? VARIANT_TRUE : VARIANT_FALSE));
   }
   return hr;
 }

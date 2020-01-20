@@ -30,8 +30,6 @@
 #include <locale>
 #include <algorithm>
 #include <array>
-#include <vector>
-#include <string>
 
 #include "MSXMLHelper.h"
 
@@ -105,6 +103,7 @@ bool doCheckXML = false,
      doPrettyPrintAllOpenFiles = false;
 
 struct struct_proxyoptions proxyoptions;
+struct struct_xmlfeatures xmlfeatures;
 
 int menuitemCheckXML = -1,
     menuitemValidation = -1,
@@ -472,12 +471,13 @@ void initializePlugin() {
 
   dbgln("done.");
 
-  // Load proxy settings in ini file
+  // Load proxy settings and xml features in ini file
   proxyoptions.status = (::GetPrivateProfileInt(sectionName, L"proxyEnabled", 0, iniFilePath) == 1);
   ::GetPrivateProfileString(sectionName, L"proxyHost", L"192.168.0.1", proxyoptions.host, 255, iniFilePath);
   proxyoptions.port = ::GetPrivateProfileInt(sectionName, L"proxyPort", 8080, iniFilePath);
   ::GetPrivateProfileString(sectionName, L"proxyUser", L"", proxyoptions.username, 255, iniFilePath);
   ::GetPrivateProfileString(sectionName, L"proxyPass", L"", proxyoptions.password, 255, iniFilePath);
+  xmlfeatures.prohibitDTD = (::GetPrivateProfileInt(sectionName, L"prohibitDTD", 0, iniFilePath) == 1);
 
   updateProxyConfig();
 
@@ -744,13 +744,14 @@ void toggleAllowHuge() {
 void optionsDlg() {
   dbgln("optionsDlg()");
 
-  COptionsDlg* dlg = new COptionsDlg(NULL, &proxyoptions);
+  COptionsDlg* dlg = new COptionsDlg(NULL);
   if (dlg->DoModal() == IDOK) {
     ::WritePrivateProfileString(sectionName, L"proxyEnabled", proxyoptions.status?L"1":L"0", iniFilePath);
     ::WritePrivateProfileString(sectionName, L"proxyHost", proxyoptions.host, iniFilePath);
     ::WritePrivateProfileString(sectionName, L"proxyPort", std::to_wstring(static_cast<long long>(proxyoptions.port)).c_str(), iniFilePath);
     ::WritePrivateProfileString(sectionName, L"proxyUser", proxyoptions.username, iniFilePath);
     ::WritePrivateProfileString(sectionName, L"proxyPass", proxyoptions.password, iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"prohibitDTD", xmlfeatures.prohibitDTD ? L"1" : L"0", iniFilePath);
 
     updateProxyConfig();
   }
@@ -1368,115 +1369,7 @@ std::wstring currentXPath(bool preciseXPath) {
 
     varXML.SetString(str.c_str());
 
-    class : public ISAXContentHandler {
-      std::vector<std::wstring> vPath;
-
-    public:
-      virtual HRESULT STDMETHODCALLTYPE startElement(
-        /* [in] */ const wchar_t* pwchNamespaceUri,
-        /* [in] */ int cchNamespaceUri,
-        /* [in] */ const wchar_t* pwchLocalName,
-        /* [in] */ int cchLocalName,
-        /* [in] */ const wchar_t* pwchQName,
-        /* [in] */ int cchQName,
-        /* [in] */ ISAXAttributes* pAttributes) {
-        //prt(L"<%s", pwchLocalName, cchLocalName);
-        std::wstring str;
-        str.append(pwchQName, cchQName);
-        vPath.push_back(str);
-        return S_OK;
-      }
-
-      virtual HRESULT STDMETHODCALLTYPE endElement(
-        /* [in] */ const wchar_t* pwchNamespaceUri,
-        /* [in] */ int cchNamespaceUri,
-        /* [in] */ const wchar_t* pwchLocalName,
-        /* [in] */ int cchLocalName,
-        /* [in] */ const wchar_t* pwchQName,
-        /* [in] */ int cchQName) {
-        vPath.pop_back();
-        return S_OK;
-      }
-
-      std::wstring getPath() {
-        std::wstring res(L"");
-        size_t size = vPath.size();
-        for (size_t i = 0; i < size; ++i) {
-          res.append(L"/");
-          res.append(vPath.at(i));
-        }
-
-        return res;
-      }
-
-      // unchanged methods
-      virtual HRESULT STDMETHODCALLTYPE putDocumentLocator(
-        /* [in] */ ISAXLocator* pLocator) {
-        return S_OK;
-      }
-
-      virtual HRESULT STDMETHODCALLTYPE startDocument(void) {
-        return S_OK;
-      }
-
-      virtual HRESULT STDMETHODCALLTYPE endDocument(void) {
-        return S_OK;
-      }
-
-      virtual HRESULT STDMETHODCALLTYPE startPrefixMapping(
-        /* [in] */ const wchar_t* pwchPrefix,
-        /* [in] */ int cchPrefix,
-        /* [in] */ const wchar_t* pwchUri,
-        /* [in] */ int cchUri) {
-        return S_OK;
-      }
-
-      virtual HRESULT STDMETHODCALLTYPE endPrefixMapping(
-        /* [in] */ const wchar_t* pwchPrefix,
-        /* [in] */ int cchPrefix) {
-        return S_OK;
-      }
-
-      virtual HRESULT STDMETHODCALLTYPE characters(
-        /* [in] */ const wchar_t* pwchChars,
-        /* [in] */ int cchChars) {
-        return S_OK;
-      }
-
-      virtual HRESULT STDMETHODCALLTYPE ignorableWhitespace(
-        /* [in] */ const wchar_t* pwchChars,
-        /* [in] */ int cchChars) {
-        return S_OK;
-      }
-
-      virtual HRESULT STDMETHODCALLTYPE processingInstruction(
-        /* [in] */ const wchar_t* pwchTarget,
-        /* [in] */ int cchTarget,
-        /* [in] */ const wchar_t* pwchData,
-        /* [in] */ int cchData) {
-        return S_OK;
-      }
-
-      virtual HRESULT STDMETHODCALLTYPE skippedEntity(
-        /* [in] */ const wchar_t* pwchName,
-        /* [in] */ int cchName) {
-        return S_OK;
-      }
-
-      virtual HRESULT STDMETHODCALLTYPE QueryInterface(
-        /* [in] */ REFIID riid,
-        /* [iid_is][out] */ _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject) {
-        return S_OK;
-      }
-
-      virtual ULONG STDMETHODCALLTYPE AddRef(void) {
-        return 0;
-      }
-
-      virtual ULONG STDMETHODCALLTYPE Release(void) {
-        return 0;
-      }
-    } pPB;
+    PathBuilder pPB;
 
     CHK_HR(CreateAndInitSAX(&pRdr));
     pRdr->putContentHandler(&pPB);
