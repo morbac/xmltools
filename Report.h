@@ -90,6 +90,9 @@ public:
   static void getEOLChar(HWND hwnd, int* eolmode, std::string* eolchar);
   static bool isEOL(const std::string& txt, const std::string::size_type txtlength, unsigned int pos, int mode);
   static bool isEOL(const char cc, const char nc, int mode);
+
+  static int char2BSTR(char* inParam, BSTR* outParam);
+  static int char2BSTR(const CStringW& inParam, BSTR* outParam);
 };
 
 #endif // !defined(AFX_REPORT_H__A50BA8DF_F1C4_4E30_9CA7_59C3951C0981__INCLUDED_)

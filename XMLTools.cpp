@@ -838,12 +838,13 @@ int performXMLCheck(int informIfNoError) {
   IXMLDOMDocument* pXMLDom = NULL; 
   IXMLDOMParseError* pXMLErr = NULL;
   BSTR bstrReason = NULL;
+  BSTR bstrXML = NULL;
   long line = 0;
   long linepos = 0;
   long filepos = 0;
   VARIANT_BOOL varStatus;
 
-  _bstr_t bstrXML(data);
+  Report::char2BSTR(data, &bstrXML);
   CHK_ALLOC(bstrXML);
 
   delete[] data;
@@ -863,15 +864,15 @@ int performXMLCheck(int informIfNoError) {
     CHK_HR(pXMLErr->get_errorCode(&hrRet));
     CHK_HR(pXMLErr->get_reason(&bstrReason));
 
-    if (filepos >= 0) {
+    if (filepos > 0) {
       ::SendMessage(hCurrentEditView, SCI_GOTOPOS, filepos - 1, 0);
     }
     Report::_printf_err(L"XML Parsing error at line %d, pos %d: \r\n%s", line, linepos, bstrReason);
   }
 
 CleanUp:
-  SAFE_RELEASE(pXMLDom);
   SysFreeString(bstrXML);
+  SAFE_RELEASE(pXMLDom);
 
   return res;
 }
@@ -1366,8 +1367,6 @@ std::wstring currentXPath(bool preciseXPath) {
     str += ">";
 
     varXML.SetString(str.c_str());
-    _bstr_t bstrXML(str.c_str());
-    CHK_ALLOC(bstrXML);
 
     class : public ISAXContentHandler {
       std::vector<std::wstring> vPath;
@@ -1481,7 +1480,7 @@ std::wstring currentXPath(bool preciseXPath) {
 
     CHK_HR(CreateAndInitSAX(&pRdr));
     pRdr->putContentHandler(&pPB);
-    pRdr->parse(varXML);  // do not apply CHK_HR since bstrXML is invalid
+    pRdr->parse(varXML);
 
     nodepath = pPB.getPath();
     pRdr->Release();
@@ -2005,6 +2004,7 @@ void prettyPrintAttributes() {
     HRESULT hr = S_OK;
     IXMLDOMDocument* pXMLDom = NULL;
     VARIANT_BOOL varStatus;
+    BSTR bstrXML = NULL;
     
     bool in_comment = false, in_header = false, in_attribute = false, in_nodetext = false, in_cdata = false;
     long curpos = 0, strlength = 0;
@@ -2015,7 +2015,7 @@ void prettyPrintAttributes() {
     std::string eolchar;
     int eolmode;
 
-    _bstr_t bstrXML(data);
+    Report::char2BSTR(data, &bstrXML);
     std::string str = data;
     delete[] data;
 

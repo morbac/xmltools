@@ -594,15 +594,40 @@ bool Report::isEOL(const std::string& txt, const std::string::size_type txtlengt
 
 bool Report::isEOL(const char cc, const char nc, int mode) {
   switch (mode) {
-    case SC_EOL_CR:
-      return (cc == '\r');
-      break;
-    case SC_EOL_LF:
-      return (cc == '\n');
-      break;
-    case SC_EOL_CRLF:
-    default:
-      return (cc == '\r' && nc == '\n');
-      break;
+  case SC_EOL_CR:
+    return (cc == '\r');
+    break;
+  case SC_EOL_LF:
+    return (cc == '\n');
+    break;
+  case SC_EOL_CRLF:
+  default:
+    return (cc == '\r' && nc == '\n');
+    break;
   }
+}
+  
+int Report::char2BSTR(char* inParam, BSTR * outParam) {
+  ULONG size;
+  int retVal = -1;
+  WCHAR* tmp = NULL;
+
+  size = MultiByteToWideChar(CP_OEMCP, 0, inParam, -1, tmp, 0);
+  tmp = (WCHAR*)GlobalAlloc(GMEM_ZEROINIT, size * sizeof(WCHAR));
+
+  retVal = MultiByteToWideChar(CP_OEMCP, 0, inParam, -1, tmp, size);
+
+  if (0 != retVal) {
+    retVal = 1;
+    *outParam = SysAllocString(tmp);
+  }
+
+  GlobalFree(tmp);
+
+  return retVal;
+}
+
+int Report::char2BSTR(const CStringW& inParam, BSTR* outParam) {
+  *outParam = SysAllocString(inParam);
+  return -1;
 }

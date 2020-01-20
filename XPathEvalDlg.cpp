@@ -86,6 +86,8 @@ int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
   IXMLDOMDocument* pXMLDom = NULL;
   IXMLDOMNodeList* pNodes = NULL;
   VARIANT_BOOL varStatus;
+  BSTR bstrXPath = NULL;
+  BSTR bstrXML = NULL;
   
   int currentEdit, currentLength;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
@@ -98,9 +100,9 @@ int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
   memset(data, '\0', currentLength);
 
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength, reinterpret_cast<LPARAM>(data));
-  
-  _bstr_t bstrXPath(xpathExpr);
-  _bstr_t bstrXML(data);
+
+  Report::char2BSTR(xpathExpr, &bstrXPath);
+  Report::char2BSTR(data, &bstrXML);
 
   CHK_ALLOC(bstrXPath);
   CHK_ALLOC(bstrXML);

@@ -45,8 +45,8 @@ BOOL CAboutBoxDlg::OnInitDialog()
     SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s %s (debug)",
           XMLTOOLS_VERSION_NUMBER, XMLTOOLS_VERSION_STATUS).c_str());
   #else
-    SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s %s\r\n \r\nlibXML %s \r\nlibXSTL %s",
-        XMLTOOLS_VERSION_NUMBER, XMLTOOLS_VERSION_STATUS, TEXT(LIBXML_DOTTED_VERSION), TEXT(LIBXSLT_DOTTED_VERSION)).c_str());
+    SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s %s",
+        XMLTOOLS_VERSION_NUMBER, XMLTOOLS_VERSION_STATUS).c_str());
   #endif
 
   return TRUE;  // return TRUE unless you set the focus to a control
