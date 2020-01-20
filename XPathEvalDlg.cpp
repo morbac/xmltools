@@ -83,7 +83,7 @@ void CXPathEvalDlg::OnBtnEvaluate() {
  */
 int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
   HRESULT hr = S_OK;
-  IXMLDOMDocument* pXMLDom = NULL;
+  IXMLDOMDocument2* pXMLDom = NULL;
   IXMLDOMNodeList* pNodes = NULL;
   VARIANT_BOOL varStatus;
   BSTR bstrXPath = NULL;

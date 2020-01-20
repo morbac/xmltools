@@ -835,7 +835,7 @@ int performXMLCheck(int informIfNoError) {
   //updateProxyConfig();
   HRESULT hr = S_OK;
   HRESULT hrRet = E_FAIL; // Default error code if failed to get from parse error.
-  IXMLDOMDocument* pXMLDom = NULL; 
+  IXMLDOMDocument2* pXMLDom = NULL; 
   IXMLDOMParseError* pXMLErr = NULL;
   BSTR bstrReason = NULL;
   BSTR bstrXML = NULL;
@@ -2002,7 +2002,7 @@ void prettyPrintAttributes() {
     if (tabwidth <= 0) tabwidth = 4;
 
     HRESULT hr = S_OK;
-    IXMLDOMDocument* pXMLDom = NULL;
+    IXMLDOMDocument2* pXMLDom = NULL;
     VARIANT_BOOL varStatus;
     BSTR bstrXML = NULL;
     

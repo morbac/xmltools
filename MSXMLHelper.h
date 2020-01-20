@@ -13,7 +13,7 @@
 HRESULT VariantFromObject(IUnknown * pUnk, VARIANT & varObject);
 
 // Helper function to create a DOM instance. 
-HRESULT CreateAndInitDOM(IXMLDOMDocument * *ppDoc);
+HRESULT CreateAndInitDOM(IXMLDOMDocument2 * *ppDoc);
 
 // Helper function to create a sax instance. 
 HRESULT CreateAndInitSAX(ISAXXMLReader * *ppDoc);

@@ -30,7 +30,7 @@ CleanUp:
 }
 
 // Helper function to create a DOM instance. 
-HRESULT CreateAndInitDOM(IXMLDOMDocument** ppDoc) {
+HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc) {
   HRESULT hr = CoCreateInstance(__uuidof(DOMDocument60), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(ppDoc));
   if (SUCCEEDED(hr)) {
     // These methods should not fail so don't inspect result
@@ -38,6 +38,7 @@ HRESULT CreateAndInitDOM(IXMLDOMDocument** ppDoc) {
     (*ppDoc)->put_validateOnParse(VARIANT_FALSE);
     (*ppDoc)->put_resolveExternals(VARIANT_FALSE);
     (*ppDoc)->put_preserveWhiteSpace(VARIANT_TRUE);
+    (*ppDoc)->setProperty(L"ProhibitDTD", _variant_t(VARIANT_FALSE));
   }
   return hr;
 }
@@ -45,6 +46,9 @@ HRESULT CreateAndInitDOM(IXMLDOMDocument** ppDoc) {
 // Helper function to create a SAX instance. 
 HRESULT CreateAndInitSAX(ISAXXMLReader** ppDoc) {
   HRESULT hr = CoCreateInstance(__uuidof(SAXXMLReader60), NULL, CLSCTX_ALL, IID_PPV_ARGS(ppDoc));
+  if (SUCCEEDED(hr)) {
+    (*ppDoc)->putFeature(L"prohibit-dtd", _variant_t(VARIANT_FALSE));
+  }
   return hr;
 }
 
