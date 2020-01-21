@@ -37,6 +37,7 @@ void CXPathEvalDlg::DoDataExchange(CDataExchange* pDX)
   CDialog::DoDataExchange(pDX);
   //{{AFX_DATA_MAP(CXPathEvalDlg)
   DDX_Text(pDX, IDC_EDIT_EXPRESSION, m_sExpression);
+  DDX_Text(pDX, IDC_EDIT_NAMESPACE, m_sNamespace);
   //}}AFX_DATA_MAP
 }
 
@@ -47,7 +48,6 @@ BEGIN_MESSAGE_MAP(CXPathEvalDlg, CDialog)
   ON_BN_CLICKED(IDC_BTN_COPY2CLIPBOARD, OnBnClickedBtnCopy2clipboard)
   ON_WM_SIZE()
   //}}AFX_MSG_MAP
-  ON_EN_CHANGE(IDC_EDIT_EXPRESSION, OnEnChangeEditExpression)
 //  ON_WM_DESTROY()
 //ON_WM_CLOSE()
 ON_BN_CLICKED(IDC_BTN_CLEARLIST, &CXPathEvalDlg::OnBnClickedBtnClearlist)
@@ -85,6 +85,7 @@ int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
   HRESULT hr = S_OK;
   IXMLDOMDocument2* pXMLDom = NULL;
   IXMLDOMNodeList* pNodes = NULL;
+  IXMLDOMParseError* pXMLErr = NULL;
   VARIANT_BOOL varStatus;
   BSTR bstrXPath = NULL;
   BSTR bstrXML = NULL;
@@ -95,11 +96,11 @@ int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
 
   currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
-  char *data = new char[currentLength];
+  char *data = new char[currentLength + sizeof(char)];
   if (!data) return(-1);  // allocation error, abort check
-  memset(data, '\0', currentLength);
+  memset(data, '\0', currentLength + sizeof(char));
 
-  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength, reinterpret_cast<LPARAM>(data));
+  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
   Report::char2BSTR(xpathExpr, &bstrXPath);
   Report::char2BSTR(data, &bstrXML);
@@ -113,6 +114,7 @@ int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
   CHK_HR(CreateAndInitDOM(&pXMLDom));
   CHK_HR(pXMLDom->loadXML(bstrXML, &varStatus));
   if (varStatus == VARIANT_TRUE) {
+    CHK_HR(pXMLDom->setProperty(L"SelectionNamespaces", _variant_t(m_sNamespace)));
     hr = pXMLDom->selectNodes(bstrXPath, &pNodes);
     if (FAILED(hr)) {
       Report::_printf_err(L"Error: error on XPath expression.");
@@ -121,12 +123,14 @@ int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
 
     print_xpath_nodes(pNodes);
   } else {
-    Report::_printf_err(L"Error: unable to parse XML.");
+    CHK_HR(pXMLDom->get_parseError(&pXMLErr));
+    displayXMLError(pXMLErr, hCurrentEditView, L"Error: unable to parse XML");
   }
 
 CleanUp:
   SAFE_RELEASE(pXMLDom);
   SAFE_RELEASE(pNodes);
+  SAFE_RELEASE(pXMLErr);
   SysFreeString(bstrXML);
   SysFreeString(bstrXPath);
 
@@ -404,47 +408,63 @@ void CXPathEvalDlg::OnSize(UINT nType, int cx, int cy) {
   CWnd *btn_wnd = GetDlgItem(IDC_BTN_EVALUATE);
   CWnd *cpy_wnd = GetDlgItem(IDC_BTN_COPY2CLIPBOARD);
   CWnd *clr_wnd = GetDlgItem(IDC_BTN_CLEARLIST);
-  CWnd *in_wnd = GetDlgItem(IDC_EDIT_EXPRESSION);
+  CWnd* xpath_lbl = GetDlgItem(IDC_STATIC_XPATH);
+  CWnd *xpath_wnd = GetDlgItem(IDC_EDIT_EXPRESSION);
+  CWnd* ns_lbl = GetDlgItem(IDC_STATIC_NS);
+  CWnd* ns_wnd = GetDlgItem(IDC_EDIT_NAMESPACE);
   CWnd *out_wnd = GetDlgItem(IDC_LIST_XPATHRESULTS);
+  CWnd* nfo_wnd = GetDlgItem(IDC_STATIC_INFOS);
 
-  if (btn_wnd && in_wnd && out_wnd) {
+  if (btn_wnd && xpath_wnd && out_wnd) {
     const int border = 8;
     const int wndspace = 6;
-    const int btnwidth = 80;
-    const int btnheight = 28;
-    const int inheight = 96;
+    const int btnwidth = 96;
+    const int wndheight = 29;
+    const int lblwidth = 192;
+    const int nfoheight = 3 * wndheight;
 
-    btn_wnd->MoveWindow(cx-border-btnwidth,
-                        border,
-                        btnwidth,
-                        btnheight);
-    clr_wnd->MoveWindow(cx-border-btnwidth,
-                        border+inheight-btnheight,
-                        btnwidth,
-                        btnheight);
-    cpy_wnd->MoveWindow(cx-border-btnwidth,
-                        border+inheight-btnheight-wndspace-btnheight,
-                        btnwidth,
-                        btnheight);
-    in_wnd->MoveWindow(border,
+    xpath_lbl->MoveWindow(border,
                        border,
-                       cx-2*border-btnwidth-wndspace,
-                       inheight);
+                       lblwidth,
+                       wndheight);
+    xpath_wnd->MoveWindow(border + lblwidth + wndspace,
+                       border,
+                       cx - 2 * border - wndspace - lblwidth,
+                       wndheight);
+    ns_lbl->MoveWindow(border,
+                       border + wndheight + wndspace,
+                       lblwidth,
+                       wndheight);
+    ns_wnd->MoveWindow(border + lblwidth + wndspace,
+                       border + wndheight + wndspace,
+                       cx - 2 * border - wndspace - lblwidth,
+                       wndheight);
+
+    nfo_wnd->MoveWindow(border + lblwidth + wndspace,
+                       border + 2 * wndheight + 2 * wndspace,
+                       cx - 2 * border - wndspace - lblwidth,
+                       nfoheight);
+
+    btn_wnd->MoveWindow(cx - border - 3 * btnwidth - 2 * wndspace,
+                        border + 2 * wndheight + nfoheight + 3 * wndspace,
+                        btnwidth,
+                        wndheight);
+    cpy_wnd->MoveWindow(cx - border - 2 * btnwidth - wndspace,
+                        border + 2 * wndheight + nfoheight + 3 * wndspace,
+                        btnwidth,
+                        wndheight);
+    clr_wnd->MoveWindow(cx - border - btnwidth,
+                        border + 2 * wndheight + nfoheight + 3 * wndspace,
+                        btnwidth,
+                        wndheight);
+
     out_wnd->MoveWindow(border,
-                        border+inheight+wndspace,
-                        cx-2*border,
-                        cy-2*border-inheight-wndspace);
+                        border + 3 * wndheight + nfoheight + 4 * wndspace,
+                        cx - 2 * border,
+                        cy - 2 * border - 3 * wndheight - nfoheight - 4 * wndspace);
+
+    CDialog::UpdateWindow();
   }
-}
-
-void CXPathEvalDlg::OnEnChangeEditExpression()
-{
-  // TODO:  If this is a RICHEDIT control, the control will not
-  // send this notification unless you override the CDialog::OnInitDialog()
-  // function and call CRichEditCtrl().SetEventMask()
-  // with the ENM_CHANGE flag ORed into the mask.
-
-  // TODO:  Add your control notification handler code here
 }
 
 void CXPathEvalDlg::OnBnClickedBtnCopy2clipboard() {

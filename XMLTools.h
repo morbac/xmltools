@@ -16,7 +16,7 @@
 
 //---------------------------------------------------------------------------
 
-#define XMLTOOLS_VERSION_NUMBER L"3.0.0.0 alpha 20200121a"
+#define XMLTOOLS_VERSION_NUMBER L"3.0.0.0 alpha 20200121b"
 #ifdef V64BIT
 #define XMLTOOLS_VERSION_STATUS L"unicode 64bit"
 #else
@@ -37,6 +37,7 @@ struct struct_xmlfeatures {
 
 extern struct struct_proxyoptions proxyoptions;
 extern struct struct_xmlfeatures xmlfeatures;
+extern void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDesc = NULL);
 
 /////////////////////////////////////////////////////////////////////////////
 // CXMLToolsApp

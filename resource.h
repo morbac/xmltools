@@ -41,16 +41,19 @@
 #define IDC_EDITPROXYPASSWORD           2026
 #define IDC_BUTTON1                     2027
 #define IDC_EDITDEBUG                   2029
-#define IDC_CHECK1                      2030
 #define IDC_CHKPROHIBITDTD              2030
+#define IDC_EDIT_NAMESPACE              2031
+#define IDC_STATIC_XPATH                2032
+#define IDC_STATIC_NS                   2033
+#define IDC_STATIC_INFOS                2034
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        2010
+#define _APS_NEXT_RESOURCE_VALUE        2011
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2031
+#define _APS_NEXT_CONTROL_VALUE         2035
 #define _APS_NEXT_SYMED_VALUE           2000
 #endif
 #endif

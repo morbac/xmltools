@@ -31,14 +31,15 @@ CleanUp:
 }
 
 // Helper function to create a DOM instance. 
-HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc) {
+HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc, int options) {
   HRESULT hr = CoCreateInstance(__uuidof(DOMDocument60), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(ppDoc));
   if (SUCCEEDED(hr)) {
     // These methods should not fail so don't inspect result
-    (*ppDoc)->put_async(VARIANT_FALSE);
-    (*ppDoc)->put_validateOnParse(VARIANT_FALSE);
-    (*ppDoc)->put_resolveExternals(VARIANT_FALSE);
-    (*ppDoc)->put_preserveWhiteSpace(VARIANT_TRUE);
+    (*ppDoc)->put_async(options & INIT_OPTION_ASYNC ? VARIANT_TRUE : VARIANT_FALSE);
+    (*ppDoc)->put_validateOnParse(options & INIT_OPTION_VALIDATEONPARSE ? VARIANT_TRUE : VARIANT_FALSE);
+    (*ppDoc)->put_resolveExternals(options & INIT_OPTION_RESOLVEEXTERNALS ? VARIANT_TRUE : VARIANT_FALSE);
+    (*ppDoc)->put_preserveWhiteSpace(options & INIT_OPTION_PRESERVEWHITESPACE ? VARIANT_TRUE : VARIANT_FALSE);
+
     (*ppDoc)->setProperty(L"ProhibitDTD", _variant_t(xmlfeatures.prohibitDTD ? VARIANT_TRUE : VARIANT_FALSE));
   }
   return hr;

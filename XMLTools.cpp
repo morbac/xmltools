@@ -819,6 +819,32 @@ void howtoUse() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDesc) {
+  HRESULT hr = S_OK;
+  long line = 0;
+  long linepos = 0;
+  long filepos = 0;
+  BSTR bstrReason = NULL;
+
+  CHK_HR(pXMLErr->get_line(&line));
+  CHK_HR(pXMLErr->get_linepos(&linepos));
+  CHK_HR(pXMLErr->get_filepos(&filepos));
+  CHK_HR(pXMLErr->get_reason(&bstrReason));
+
+  if (filepos > 0) {
+    ::SendMessage(view, SCI_GOTOPOS, filepos - 1, 0);
+  }
+
+  if (szDesc != NULL) {
+    Report::_printf_err(L"%s - line %d, pos %d: \r\n%s", szDesc, line, linepos, bstrReason);
+  } else {
+    Report::_printf_err(L"XML Parsing error - line %d, pos %d: \r\n%s", line, linepos, bstrReason);
+  }
+
+CleanUp:
+  SysFreeString(bstrReason);
+}
+
 int performXMLCheck(int informIfNoError) {
   dbgln("performXMLCheck()");
 
@@ -835,14 +861,9 @@ int performXMLCheck(int informIfNoError) {
   
   //updateProxyConfig();
   HRESULT hr = S_OK;
-  HRESULT hrRet = E_FAIL; // Default error code if failed to get from parse error.
   IXMLDOMDocument2* pXMLDom = NULL; 
   IXMLDOMParseError* pXMLErr = NULL;
-  BSTR bstrReason = NULL;
   BSTR bstrXML = NULL;
-  long line = 0;
-  long linepos = 0;
-  long filepos = 0;
   VARIANT_BOOL varStatus;
 
   Report::char2BSTR(data, &bstrXML);
@@ -859,21 +880,13 @@ int performXMLCheck(int informIfNoError) {
     }
   } else {
     CHK_HR(pXMLDom->get_parseError(&pXMLErr));
-    CHK_HR(pXMLErr->get_line(&line));
-    CHK_HR(pXMLErr->get_linepos(&linepos));
-    CHK_HR(pXMLErr->get_filepos(&filepos));
-    CHK_HR(pXMLErr->get_errorCode(&hrRet));
-    CHK_HR(pXMLErr->get_reason(&bstrReason));
-
-    if (filepos > 0) {
-      ::SendMessage(hCurrentEditView, SCI_GOTOPOS, filepos - 1, 0);
-    }
-    Report::_printf_err(L"XML Parsing error at line %d, pos %d: \r\n%s", line, linepos, bstrReason);
+    displayXMLError(pXMLErr, hCurrentEditView, L"XML Parsing error");
   }
 
 CleanUp:
   SysFreeString(bstrXML);
   SAFE_RELEASE(pXMLDom);
+  SAFE_RELEASE(pXMLErr);
 
   return res;
 }
@@ -893,10 +906,16 @@ void manualXMLCheck() {
 ///////////////////////////////////////////////////////////////////////////////
 
 CSelectFileDlg* pSelectFileDlg = NULL;
-void XMLValidation(int informIfNoError) { }
-/* @V3
 void XMLValidation(int informIfNoError) {
   dbgln("XMLValidation()");
+
+  HRESULT hr = S_OK;
+  IXMLDOMDocument2* pXMLDom = NULL;
+  IXMLDOMParseError* pXMLErr = NULL;
+  IXMLDOMNodeList* pNodes = NULL;
+  VARIANT_BOOL varStatus;
+  BSTR bstrXML;
+  long length;
 
   // 0. change current folder
   wchar_t currenPath[MAX_PATH] = { '\0' };
@@ -917,8 +936,43 @@ void XMLValidation(int informIfNoError) {
 
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
-  UniMode encoding = Report::getEncoding();
+  Report::char2BSTR(data, &bstrXML);
+  CHK_ALLOC(bstrXML);
+
+  CHK_HR(CreateAndInitDOM(&pXMLDom, (INIT_OPTION_VALIDATEONPARSE | INIT_OPTION_RESOLVEEXTERNALS)));
+
   
+  /*
+  // Configure DOM properties for namespace selection.
+  CHK_HR(pXMLDoc->setProperty(L"SelectionLanguage", "XPath"));
+  //_bstr_t ns = L"xmlns:x='urn:book'";
+  CHK_HR(pXMLDoc->setProperty(L"SelectionNamespaces", "xmlns:x='urn:book'"));
+  */
+
+  CHK_HR(pXMLDom->loadXML(bstrXML, &varStatus));
+  if (varStatus == VARIANT_TRUE) {
+    // search for xsi:noNamespaceSchemaLocation or xsi:schemaLocation
+    CHK_HR(pXMLDom->setProperty(L"SelectionNamespaces", _variant_t("xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'")));
+    hr = pXMLDom->selectNodes(L"/*/@xsi:noNamespaceSchemaLocation", &pNodes);
+    CHK_HR(pNodes->get_length(&length));
+    SAFE_RELEASE(pNodes);
+    bool nnsl = (length > 0);
+    hr = pXMLDom->selectNodes(L"/*/@xsi:schemaLocation", &pNodes);
+    CHK_HR(pNodes->get_length(&length));
+    bool sl = (length > 0);
+
+    if (nnsl || sl) {
+      Report::_printf_inf(L"No error detected.");
+    } else {
+      // TODO: prompt for XSD path
+      Report::_printf_inf(L"TODO - this part is not finished");
+    }
+  } else {
+    CHK_HR(pXMLDom->get_parseError(&pXMLErr));
+    displayXMLError(pXMLErr, hCurrentEditView, L"XML Validation error");
+  }
+    
+  /*
   xmlDocPtr doc;
   xmlNodePtr rootnode;
   xmlSchemaPtr schema;
@@ -1134,7 +1188,13 @@ void XMLValidation(int informIfNoError) {
 
   // 4. save schema name for next call
   lastXMLSchema = xml_schema;
-}*/
+  */
+CleanUp:
+  SAFE_RELEASE(pXMLDom);
+  SAFE_RELEASE(pXMLErr);
+  SAFE_RELEASE(pNodes);
+  SysFreeString(bstrXML);
+}
 
 void autoValidation() {
   dbgln("autoValidation()");
@@ -1468,14 +1528,8 @@ void getCurrentXPathPredicate() {
   getCurrentXPath(true);
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 
-/*
-int  execute_xpath_expression(const xmlChar* xpathExpr, const xmlChar* nsList);
-int  register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList);
-void print_xpath_nodes(xmlNodeSetPtr nodes);
-*/
 CXPathEvalDlg *pXPathEvalDlg = NULL;
 
 void evaluateXPath() {
@@ -1487,7 +1541,6 @@ void evaluateXPath() {
   }
   pXPathEvalDlg->ShowWindow(SW_SHOW);
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 

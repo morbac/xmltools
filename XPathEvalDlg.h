@@ -24,6 +24,7 @@ public:
   //{{AFX_DATA(CXPathEvalDlg)
   enum { IDD = IDD_XPATHEVAL };
   CStringW m_sExpression;
+  CStringW m_sNamespace;
   CStringW m_sResult;
   //}}AFX_DATA
 
@@ -54,7 +55,6 @@ protected:
   //}}AFX_MSG
   DECLARE_MESSAGE_MAP()
 public:
-  afx_msg void OnEnChangeEditExpression();
   afx_msg void OnBnClickedBtnCopy2clipboard();
 //  afx_msg void OnDestroy();
 //  afx_msg void OnClose();
