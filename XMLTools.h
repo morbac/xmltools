@@ -16,13 +16,27 @@
 
 //---------------------------------------------------------------------------
 
-#define XMLTOOLS_VERSION_NUMBER L"3.0.0.0 alpha"
+#define XMLTOOLS_VERSION_NUMBER L"3.0.0.0 alpha 20200121a"
 #ifdef V64BIT
 #define XMLTOOLS_VERSION_STATUS L"unicode 64bit"
 #else
-#define XMLTOOLS_VERSION_STATUS L"unicode"
+#define XMLTOOLS_VERSION_STATUS L"unicode Win32"
 #endif
 
+struct struct_proxyoptions {
+  bool status;
+  wchar_t host[255];
+  long port;
+  wchar_t username[255];
+  wchar_t password[255];
+};
+
+struct struct_xmlfeatures {
+  bool prohibitDTD;
+};
+
+extern struct struct_proxyoptions proxyoptions;
+extern struct struct_xmlfeatures xmlfeatures;
 
 /////////////////////////////////////////////////////////////////////////////
 // CXMLToolsApp

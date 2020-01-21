@@ -3,7 +3,6 @@
 #include "MSXMLHelper.h"
 #include "XMLTools.h"
 #include "Report.h"
-#include "base.h"
 
 // Helper function to create a VT_BSTR variant from a null terminated string. 
 HRESULT VariantFromString(PCWSTR wszValue, VARIANT& Variant) {

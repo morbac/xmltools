@@ -349,7 +349,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutBoxDlg.h" />
-    <ClInclude Include="base.h" />
     <ClInclude Include="DebugDlg.h" />
     <ClInclude Include="MSXMLHelper.h" />
     <ClInclude Include="Notepad_plus_msgs.h" />

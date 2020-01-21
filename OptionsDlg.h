@@ -1,6 +1,5 @@
 #pragma once
 #include "afxwin.h"
-#include "base.h"
 
 // Boîte de dialogue COptionsDlg
 
