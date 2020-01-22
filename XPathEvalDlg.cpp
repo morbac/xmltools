@@ -385,6 +385,9 @@ BOOL CXPathEvalDlg::OnInitDialog() {
   listresults->InsertColumn(2, L"Value", LVCFMT_LEFT, 400);
 
   listresults->DeleteAllItems();
+  
+  CString nfo = "If your expression requires namespaces, please declare them in \"Namespace definition\" field the same way you declare namespaces in xml, for instance:\nxmlns:npp='http://notepad-plus-plus.org' xmlns:a='another-namespace'";
+  SetDlgItemTextW(IDC_STATIC_INFOS, nfo);
 
   CRect myRect;
   GetClientRect(&myRect);
@@ -405,23 +408,32 @@ BOOL CXPathEvalDlg::OnInitDialog() {
 void CXPathEvalDlg::OnSize(UINT nType, int cx, int cy) {
   CDialog::OnSize(nType, cx, cy);
   
-  CWnd *btn_wnd = GetDlgItem(IDC_BTN_EVALUATE);
-  CWnd *cpy_wnd = GetDlgItem(IDC_BTN_COPY2CLIPBOARD);
-  CWnd *clr_wnd = GetDlgItem(IDC_BTN_CLEARLIST);
+  CWnd* btn_wnd = GetDlgItem(IDC_BTN_EVALUATE);
+  CWnd* cpy_wnd = GetDlgItem(IDC_BTN_COPY2CLIPBOARD);
+  CWnd* clr_wnd = GetDlgItem(IDC_BTN_CLEARLIST);
   CWnd* xpath_lbl = GetDlgItem(IDC_STATIC_XPATH);
-  CWnd *xpath_wnd = GetDlgItem(IDC_EDIT_EXPRESSION);
+  CWnd* xpath_wnd = GetDlgItem(IDC_EDIT_EXPRESSION);
   CWnd* ns_lbl = GetDlgItem(IDC_STATIC_NS);
   CWnd* ns_wnd = GetDlgItem(IDC_EDIT_NAMESPACE);
-  CWnd *out_wnd = GetDlgItem(IDC_LIST_XPATHRESULTS);
+  CWnd* out_wnd = GetDlgItem(IDC_LIST_XPATHRESULTS);
   CWnd* nfo_wnd = GetDlgItem(IDC_STATIC_INFOS);
+  
 
   if (btn_wnd && xpath_wnd && out_wnd) {
+    wchar_t buffer[1024];
+    nfo_wnd->GetWindowTextW(buffer, 1023);
+
+    LONG units = GetDialogBaseUnits();
+
+    SIZE size;
+    GetTextExtentPoint32(nfo_wnd->GetDC()->GetSafeHdc(), buffer, lstrlen(buffer), &size);
+
     const int border = 8;
     const int wndspace = 6;
-    const int btnwidth = 96;
-    const int wndheight = 29;
+    const int btnwidth = MulDiv(LOWORD(units), 50, 4);
+    const int wndheight = MulDiv(HIWORD(units), 14, 8);
     const int lblwidth = 192;
-    const int nfoheight = 3 * wndheight;
+    const int nfoheight = size.cy * (int) fmin(8, 1 + round(((float)size.cx) / ((float)(cx - 2 * border - lblwidth))));
 
     xpath_lbl->MoveWindow(border,
                        border,

@@ -135,7 +135,7 @@ BEGIN
     EDITTEXT        IDC_EDIT_NAMESPACE,86,25,308,12,ES_AUTOHSCROLL
     LTEXT           "XPath expression",IDC_STATIC_XPATH,7,7,54,8
     LTEXT           "Namespace definition",IDC_STATIC_NS,7,29,67,8
-    LTEXT           "If your expression requires namespaces, please declare them in ""Namespace definition"" field the same way you declare namespaces in xml, for instance:\nxmlns:npp='http://notepad-plus-plus.org' xmlns:a='another-namespace'",IDC_STATIC_INFOS,86,68,308,33
+    LTEXT           "",IDC_STATIC_INFOS,86,68,308,33
 END
 
 IDD_SELECTFILE DIALOG 0, 0, 306, 140
