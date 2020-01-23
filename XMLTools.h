@@ -38,6 +38,8 @@ struct struct_xmlfeatures {
 extern struct struct_proxyoptions proxyoptions;
 extern struct struct_xmlfeatures xmlfeatures;
 extern void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDesc = NULL);
+extern void dbg(CStringW line);
+extern void dbgln(CStringW line);
 
 /////////////////////////////////////////////////////////////////////////////
 // CXMLToolsApp

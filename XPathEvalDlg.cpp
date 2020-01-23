@@ -423,15 +423,21 @@ void CXPathEvalDlg::OnSize(UINT nType, int cx, int cy) {
     wchar_t buffer[1024];
     nfo_wnd->GetWindowTextW(buffer, 1023);
 
+    CClientDC dc(this);
+    CFont* font;
+    font = GetFont();
+    dc.SelectObject(font);
+
     LONG units = GetDialogBaseUnits();
-
     SIZE size;
-    GetTextExtentPoint32(nfo_wnd->GetDC()->GetSafeHdc(), buffer, lstrlen(buffer), &size);
+    GetTextExtentPoint32(dc, buffer, lstrlen(buffer), &size);
 
+    // https://docs.microsoft.com/fr-fr/windows/win32/uxguide/vis-layout?redirectedfrom=MSDN#sizingandspacing
+    // http://msdn.microsoft.com/en-us/library/ms645502.aspx
     const int border = 8;
     const int wndspace = 6;
     const int btnwidth = MulDiv(LOWORD(units), 50, 4);
-    const int wndheight = MulDiv(HIWORD(units), 14, 8);
+    const int wndheight = (int) (14 * 1.5); // MulDiv(HIWORD(units), 14, 8);
     const int lblwidth = 192;
     const int nfoheight = size.cy * (int) fmin(8, 1 + round(((float)size.cx) / ((float)(cx - 2 * border - lblwidth))));
 
