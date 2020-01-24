@@ -88,7 +88,7 @@ int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
   IXMLDOMParseError* pXMLErr = NULL;
   VARIANT_BOOL varStatus;
   BSTR bstrXPath = NULL;
-  BSTR bstrXML = NULL;
+  VARIANT varXML;
   
   int currentEdit, currentLength;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
@@ -103,16 +103,16 @@ int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
   Report::char2BSTR(xpathExpr, &bstrXPath);
-  Report::char2BSTR(data, &bstrXML);
+  Report::char2VARIANT(data, &varXML);
 
   CHK_ALLOC(bstrXPath);
-  CHK_ALLOC(bstrXML);
+  //CHK_ALLOC(varXML);
   
   delete [] data;
   data = NULL;
   
   CHK_HR(CreateAndInitDOM(&pXMLDom));
-  CHK_HR(pXMLDom->loadXML(bstrXML, &varStatus));
+  CHK_HR(pXMLDom->load(varXML, &varStatus));
   if (varStatus == VARIANT_TRUE) {
     CHK_HR(pXMLDom->setProperty(L"SelectionNamespaces", _variant_t(m_sNamespace)));
     hr = pXMLDom->selectNodes(bstrXPath, &pNodes);
@@ -131,7 +131,7 @@ CleanUp:
   SAFE_RELEASE(pXMLDom);
   SAFE_RELEASE(pNodes);
   SAFE_RELEASE(pXMLErr);
-  SysFreeString(bstrXML);
+  VariantClear(&varXML);
   SysFreeString(bstrXPath);
 
   return(0);

@@ -2,6 +2,14 @@
 #include <string>
 #include <vector>
 
+/*
+https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ms757065(v%3Dvs.85)
+
+All XML processors are required to understand two transformations of the Unicode character
+encoding, UTF-8 and UTF-16. Microsoft XML Core Services (MSXML) supports more encodings,
+but all text in XML documents is treated internally as the Unicode UCS-2 character encoding.
+*/
+
 // Macro that calls a COM method returning HRESULT value.
 #define CHK_HR(stmt)        do { hr=(stmt); if (FAILED(hr)) goto CleanUp; } while(0)
 
@@ -15,10 +23,15 @@ typedef enum {
   INIT_OPTION_ASYNC              = 1 << 0,
   INIT_OPTION_VALIDATEONPARSE    = 1 << 1,
   INIT_OPTION_RESOLVEEXTERNALS   = 1 << 2,
-  INIT_OPTION_PRESERVEWHITESPACE = 1 << 3
+  INIT_OPTION_PRESERVEWHITESPACE = 1 << 3,
+  INIT_OPTION_ONDATAAVAILABLE    = 1 << 4,  // not used
+  INIT_OPTION_ONTRANSFORMNODE    = 1 << 5   // not used
 } xmlInitOptions;
 
-// Helper function packaging an object into a variant:
+// Helper function to create a VT_BSTR variant from a null terminated string.
+HRESULT VariantFromString(PCWSTR wszValue, VARIANT& Variant);
+
+// Helper function packaging an object into a variant.
 HRESULT VariantFromObject(IUnknown * pUnk, VARIANT & varObject);
 
 // Helper function to create a DOM instance. 

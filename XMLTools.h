@@ -13,6 +13,7 @@
 #endif
 
 #include "resource.h"    // main symbols
+#include <string>
 
 //---------------------------------------------------------------------------
 
@@ -31,8 +32,23 @@ struct struct_proxyoptions {
   wchar_t password[255];
 };
 
-struct struct_xmlfeatures {
-  bool prohibitDTD;
+struct struct_xmlfeatures {          // default value
+  bool allowDocumentFunction;        // True in 3.0. False in 6.0.
+  bool AllowXsltScript;              // True in 3.0. False in 6.0.
+  bool forceResync;                  // True
+  bool maxElementDepth;              // 0 in 3.0. 256 in 6.0.
+  bool maxXMLSize;                   // 0
+  bool multipleErrorMessages;        // False
+  bool newParser;                    // False
+  bool normalizeAttributeValues;     // False
+  bool populateElementDefaultValues; // False
+  bool prohibitDTD;                  // True in 3.0. False in 6.0.
+  bool resolveExternals;             // False
+  std::wstring selectionLanguage;    // "XSLPattern" in 3.0. "XPath" in 6.0
+  std::wstring selectionNamespace;   // ""
+  bool serverHTTPRequest;            // False
+  bool useInlineSchema;              // False
+  bool validateOnParse;              // True
 };
 
 extern struct struct_proxyoptions proxyoptions;

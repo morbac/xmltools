@@ -91,8 +91,16 @@ public:
   static bool isEOL(const std::string& txt, const std::string::size_type txtlength, unsigned int pos, int mode);
   static bool isEOL(const char cc, const char nc, int mode);
 
-  static int char2BSTR(char* inParam, BSTR* outParam);
-  static int char2BSTR(const CStringW& inParam, BSTR* outParam);
+  static void char2BSTR(char* inParam, BSTR* outParam);
+  static void char2VARIANT(char* inParam, VARIANT* outParam);
+  static void char2BSTR(const CStringW& inParam, BSTR* outParam);
+
+  // below methods got from https://github.com/RoelofBerg/Utf8Ucs2Converter
+
+  static bool utf8CharToUcs2Char(const char* utf8Tok, wchar_t* ucs2Char, uint32_t* utf8TokLen);
+  static void ucs2CharToUtf8Char(const wchar_t ucs2Char, char* utf8Tok);
+  static std::wstring utf8ToUcs2(const std::string& utf8Str);
+  static std::string ucs2ToUtf8(const std::wstring& ucs2Str);
 };
 
 #endif // !defined(AFX_REPORT_H__A50BA8DF_F1C4_4E30_9CA7_59C3951C0981__INCLUDED_)
