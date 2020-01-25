@@ -118,7 +118,143 @@ void cleanParams(char* params[], int nparams) {
 }
 
 void CXSLTransformDlg::OnBtnTransform() {
+  // inspired from https://www.codeguru.com/cpp/data/data-misc/xml/article.php/c4565/Doing-XSLT-with-MSXML-in-C.htm
+  // and msxsl tool source code (https://www.microsoft.com/en-us/download/details.aspx?id=21714)
+  HRESULT hr = S_OK;
+  HGLOBAL hg = NULL;
+  void* output = NULL;
+  IXMLDOMDocument2* pXml = NULL;
+  IXMLDOMDocument2* pXslt = NULL;
+  IXSLTemplate* pTemplate = NULL;
+  IXSLProcessor* pProcessor = NULL;
+  IXMLDOMParseError* pXMLErr = NULL;
+  IXMLDOMNodeList* pNodes = NULL;
+  IXMLDOMNode* pNode = NULL;
+  //IXMLDOMDocument2* pDOMObject = NULL;
+  IStream* pOutStream = NULL;
+  VARIANT varXML;
+  VARIANT varValue;
+  VARIANT_BOOL varStatus;
+  BSTR bstrEncoding = NULL;
+
+  this->UpdateData();
+
+  if (this->m_sXSLTFile.GetLength() <= 0) {
+    Report::_printf_err(L"XSLT File missing. Cannot continue.");
+    return;
+  }
+
+  int currentEdit, currentLength;
+  ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
+  HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
+  UniMode encoding = uniEnd;
+
+  currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+
+  char* data = new char[currentLength + sizeof(char)];
+  if (!data) return;  // allocation error, abort check
+  memset(data, '\0', currentLength + sizeof(char));
+
+  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
+
+  Report::char2VARIANT(data, &varXML);
+
+  delete[] data;
+  data = NULL;
+
+  // load xml
+  CHK_HR(CreateAndInitDOM(&pXml));
+  CHK_HR(pXml->load(varXML, &varStatus));
+  if (varStatus == VARIANT_TRUE) {
+    // load xsl
+    CHK_HR(CreateAndInitDOM(&pXslt, (INIT_OPTION_PRESERVEWHITESPACE | INIT_OPTION_FREETHREADED)));
+    CHK_HR(pXslt->load(_variant_t(m_sXSLTFile), &varStatus));
+    if (varStatus == VARIANT_TRUE) {
+      // detect output encoding
+      CHK_HR(pXslt->setProperty(L"SelectionNamespaces", variant_t(L"xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"")));
+      hr = pXslt->selectNodes(L"/xsl:stylesheet/xsl:output/@encoding", &pNodes);
+      if (SUCCEEDED(hr)) {
+        long length;
+        CHK_HR(pNodes->get_length(&length));
+        if (length == 1) {
+          pNodes->get_item(0, &pNode);
+          pNode->get_text(&bstrEncoding);
+          encoding = Report::getEncoding(bstrEncoding);
+        }
+      }
+      CHK_HR(pXslt->setProperty(L"SelectionNamespaces", variant_t(L"")));
+
+      // build template
+      CHK_HR(CreateAndInitXSLTemplate(&pTemplate));
+      CHK_HR(pTemplate->putref_stylesheet(pXslt));
+      CHK_HR(pTemplate->createProcessor(&pProcessor));
+
+      // set startMode
+      // @todo
+
+      // set parameters; let's decode params string; the string should have the following form:
+      //   variable1=value1;variable2=value2;variable3="value 3"
+      std::string::size_type i = std::string::npos;
+      std::wstring options = this->m_sXSLTOptions, key, val;
+      while ((i = getNextParam(options, i + 1, &key, &val)) != std::string::npos) {
+        _bstr_t var0(key.c_str());
+        VARIANT var1;
+        CHK_HR(VariantFromString(val.c_str(), var1));
+        CHK_HR(pProcessor->addParameter(var0, var1));
+      }
+
+      // prepare Stream object to store results of transformation,
+      // and set processor output to it
+      CHK_HR(CreateStreamOnHGlobal(0, TRUE, &pOutStream));
+      V_VT(&varValue) = VT_UNKNOWN;
+      V_UNKNOWN(&varValue) = (IUnknown*)pOutStream;
+      CHK_HR(pProcessor->put_output(varValue));
+
+      // attach to processor XML file we want to transform,
+      // add one parameter, maxprice, with a value of 35, and
+      // do the transformation
+      CHK_HR(pProcessor->put_input(_variant_t(pXml)));
+
+      // transform
+      CHK_HR(pProcessor->transform(&varStatus));
+      if (varStatus == VARIANT_TRUE) {
+        // get results of transformation and send them to a new NPP document
+        CHK_HR(pOutStream->Write((void const*)"\0", 1, 0));
+        CHK_HR(GetHGlobalFromStream(pOutStream, &hg));
+        output = GlobalLock(hg);
+
+        ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FILE_NEW);
+        if (encoding != uniEnd) Report::setEncoding(encoding, hCurrentEditView);
+        ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>((const char*)output));
+
+        GlobalUnlock(hg);
+      } else {
+        Report::_printf_err(L"An error occured during XSL transformation");
+      }
+    } else {
+      CHK_HR(pXslt->get_parseError(&pXMLErr));
+      displayXMLError(pXMLErr, hCurrentEditView, L"Error: unable to parse XML");
+    }
+  } else {
+    CHK_HR(pXml->get_parseError(&pXMLErr));
+    displayXMLError(pXMLErr, hCurrentEditView, L"Error while loading XSL");
+  }
+
+CleanUp:
+  SAFE_RELEASE(pXml);
+  SAFE_RELEASE(pXslt);
+  SAFE_RELEASE(pTemplate);
+  SAFE_RELEASE(pProcessor);
+  SAFE_RELEASE(pXMLErr);
+  //SAFE_RELEASE(pDOMObject);
+  SAFE_RELEASE(pOutStream);
+  SAFE_RELEASE(pNodes);
+  SAFE_RELEASE(pNode);
+  SysFreeString(bstrEncoding);
+  VariantClear(&varXML);
+  VariantClear(&varValue);
 }
+
 /* @V3
 void CXSLTransformDlg::OnBtnTransform() {
   #define MAX_PARAMS 16

@@ -25,7 +25,9 @@ typedef enum {
   INIT_OPTION_RESOLVEEXTERNALS   = 1 << 2,
   INIT_OPTION_PRESERVEWHITESPACE = 1 << 3,
   INIT_OPTION_ONDATAAVAILABLE    = 1 << 4,  // not used
-  INIT_OPTION_ONTRANSFORMNODE    = 1 << 5   // not used
+  INIT_OPTION_ONTRANSFORMNODE    = 1 << 5,  // not used
+
+  INIT_OPTION_FREETHREADED       = 1 << 9
 } xmlInitOptions;
 
 // Helper function to create a VT_BSTR variant from a null terminated string.
@@ -39,6 +41,9 @@ HRESULT CreateAndInitDOM(IXMLDOMDocument2 * *ppDoc, int options = INIT_OPTION_PR
 
 // Helper function to create a sax instance. 
 HRESULT CreateAndInitSAX(ISAXXMLReader * *ppDoc);
+
+// Helper function to create a xsl instance. 
+HRESULT CreateAndInitXSLTemplate(IXSLTemplate** pIXSLTemplate);
 
 // Helper function to transform DOM to a string. 
 HRESULT TransformDOM2Str(IXMLDOMDocument * pXMLDom, IXMLDOMDocument * pXSLDoc);

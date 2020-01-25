@@ -67,9 +67,8 @@ public:
   static wchar_t* char2wchar(const char* s);
   static char* wchar2char(const wchar_t* ws);
 
-  /* V3
   static UniMode getEncoding(HWND npp = NULL);
-  */
+  static UniMode getEncoding(BSTR encoding = NULL);
   static void setEncoding(UniMode encoding, HWND npp = NULL);
 
   static wchar_t* castChar(const char* orig, UniMode encoding = uniEnd);

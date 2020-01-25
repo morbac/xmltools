@@ -106,7 +106,6 @@ int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
   Report::char2VARIANT(data, &varXML);
 
   CHK_ALLOC(bstrXPath);
-  //CHK_ALLOC(varXML);
   
   delete [] data;
   data = NULL;
@@ -428,6 +427,7 @@ void CXPathEvalDlg::OnSize(UINT nType, int cx, int cy) {
     font = GetFont();
     dc.SelectObject(font);
 
+    float ratio = ((float) GetDeviceCaps(dc, LOGPIXELSX) / 96.f);
     LONG units = GetDialogBaseUnits();
     SIZE size;
     GetTextExtentPoint32(dc, buffer, lstrlen(buffer), &size);
@@ -437,7 +437,7 @@ void CXPathEvalDlg::OnSize(UINT nType, int cx, int cy) {
     const int border = 8;
     const int wndspace = 6;
     const int btnwidth = MulDiv(LOWORD(units), 50, 4);
-    const int wndheight = (int) (14 * 1.5); // MulDiv(HIWORD(units), 14, 8);
+    const int wndheight = (int) (14.f * 1.5f * ratio); // MulDiv(HIWORD(units), 14, 8);
     const int lblwidth = 192;
     const int nfoheight = size.cy * (int) fmin(8, 1 + round(((float)size.cx) / ((float)(cx - 2 * border - lblwidth))));
 

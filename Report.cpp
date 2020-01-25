@@ -305,7 +305,23 @@ char* Report::wchar2char(const wchar_t* ws) {
   return s;
 }
 
-/* @V3
+
+
+UniMode Report::getEncoding(HWND npp) {
+  HWND nppwnd = (npp == NULL ? nppData._nppHandle : npp);
+  LRESULT bufferid = ::SendMessage(nppwnd, NPPM_GETCURRENTBUFFERID, 0, 0);
+  return UniMode(::SendMessage(nppwnd, NPPM_GETBUFFERENCODING, bufferid, 0));
+}
+
+UniMode Report::getEncoding(BSTR encoding) {
+  CStringW cstring(encoding);
+  if (0 == cstring.Left(4).CompareNoCase(L"iso-")) {
+    return uni8Bit;
+  }
+  return uniUTF8;
+}
+
+/*
 UniMode Report::getEncoding(HWND npp) {
   return Report::getEncoding(XML_CHAR_ENCODING_NONE, npp);
 }
@@ -633,6 +649,8 @@ void Report::char2BSTR(char* inParam, BSTR * outParam) {
 }
 
 void Report::char2VARIANT(char* inParam, VARIANT* outParam) {
+  // from https://stackoverflow.com/questions/1822914/load-xml-into-c-msxml-from-byte-array?rq=1
+  // https://docs.microsoft.com/en-us/previous-versions/aa468560(v=msdn.10)?redirectedfrom=MSDN
   size_t len = strlen(inParam);
   SAFEARRAYBOUND rgsabound[1];
   rgsabound[0].lLbound = 0;
