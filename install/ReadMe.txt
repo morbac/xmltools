@@ -171,20 +171,8 @@ menu. It is disabled by default.
 
 Installation
 ------------
-There are two ways for installing the plugin:
-  1) using the auto-installer (EXE file)
-  2) copying the files manually
-
 For manual installation,  you have to copy the  plugin DLL  file
-(xmltools.dll) in Notepad++ "plugin" subfolder.  The plugin also
-requires following libXML dependances:
-  iconv.dll
-  libxml2.dll
-  zlib1.dll
-These DLL's  are quite common  and may  already be  installed on
-your computer. If Notepad++ claims about missing DLL at startup,
-simply copy missing DLL  either into Notepad++ root directory or
-in windows system32 directory.
+(XMLTools.dll) in Notepad++ "plugins/XMLTools" subfolder.
 
 
 ================================================================
@@ -192,17 +180,7 @@ in windows system32 directory.
 
 Source code
 -----------
-Source code is available on demand at nicolas.crittin@gmail.com.
-
-
-================================================================
-
-
-Links
------
-Notepad++:         http://notepad-plus.sourceforge.net
-libXML homepage:   http://xmlsoft.org
-libXML win32 port: http://www.zlatkovic.com/projects/libxml
+Source code is available on https://github.com/morbac/xmltools
 
 
 ================================================================

@@ -4,6 +4,10 @@
                         ChangeLog
 ================================================================
 
+Release 3.0.0
+-------------
+Replace libXML with MSXML
+
 Release 2.4.12
 --------------
 - Fix typo 'Linarize' -> 'Linearize'
