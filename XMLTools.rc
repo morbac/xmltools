@@ -138,20 +138,22 @@ BEGIN
     LTEXT           "",IDC_STATIC_INFOS,86,68,308,33
 END
 
-IDD_SELECTFILE DIALOG 0, 0, 306, 140
+IDD_SELECTFILE DIALOGEX 0, 0, 307, 168
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Select file..."
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     EDITTEXT        IDC_EDIT_FILENAME,7,19,267,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDC_BTN_EXPLORE_XSDFILE,279,19,20,12
-    EDITTEXT        IDC_EDIT_ROOTELEMSAMPLE,7,75,292,28,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL
-    DEFPUSHBUTTON   "OK",IDOK,249,119,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,196,119,50,14
+    PUSHBUTTON      "...",IDC_BTN_EXPLORE_XSDFILE,280,19,20,12
+    EDITTEXT        IDC_EDIT_ROOTELEMSAMPLE,7,102,293,28,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,250,147,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,196,147,50,14
     LTEXT           "Please select XML schema (XSD):",IDC_STATIC,7,7,224,8
-    LTEXT           "Important:",IDC_STATIC,7,36,84,8
-    LTEXT           "This dialog box is displayed because default validation schema cannot be found in XML root element. To avoid having to specify the XSD for every validation, please define the default XML schema in your root element using following syntax:",IDC_STATIC,7,48,292,26
-    LTEXT           "where XSD_FILE_PATH is the relative or absolute path of the XML schema file.",IDC_STATIC,7,106,292,8
+    LTEXT           "Important:",IDC_STATIC,7,63,84,8
+    LTEXT           "This dialog box is displayed because default validation schema cannot be found in XML root element. To avoid having to specify the XSD for every validation, please define the default XML schema in your root element using following syntax:",IDC_STATIC,7,74,293,26
+    LTEXT           "where XSD_FILE_PATH is the relative or absolute path of the XML schema file.",IDC_STATIC,7,132,293,8
+    EDITTEXT        IDC_EDIT_NAMESPACE,7,45,293,12,ES_AUTOHSCROLL
+    LTEXT           "Namespace URI:",IDC_STATIC,7,35,56,8
 END
 
 IDD_MESSAGEDLG DIALOGEX 0, 0, 356, 146
@@ -260,9 +262,9 @@ BEGIN
     IDD_SELECTFILE, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 299
+        RIGHTMARGIN, 300
         TOPMARGIN, 7
-        BOTTOMMARGIN, 133
+        BOTTOMMARGIN, 161
     END
 
     IDD_MESSAGEDLG, DIALOG
@@ -355,6 +357,11 @@ BEGIN
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 100, 0
+END
+
+IDD_SELECTFILE AFX_DIALOG_LAYOUT
+BEGIN
+    0
 END
 
 #endif    // French (Switzerland) resources

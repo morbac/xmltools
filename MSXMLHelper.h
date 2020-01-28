@@ -45,6 +45,9 @@ HRESULT CreateAndInitSAX(ISAXXMLReader * *ppDoc);
 // Helper function to create a xsl instance. 
 HRESULT CreateAndInitXSLTemplate(IXSLTemplate** pIXSLTemplate);
 
+// Helper function to create a xsd schema cache.
+HRESULT CreateAndInitSchema(IXMLDOMSchemaCollection2** pISchema);
+
 // Helper function to transform DOM to a string. 
 HRESULT TransformDOM2Str(IXMLDOMDocument * pXMLDom, IXMLDOMDocument * pXSLDoc);
 

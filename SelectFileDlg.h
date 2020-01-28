@@ -20,6 +20,7 @@ public:
   //{{AFX_DATA(CSelectFileDlg)
   enum { IDD = IDD_SELECTFILE };
   CStringW  m_sSelectedFilename;
+  CStringW  m_sValidationNamespace;
   CStringW  m_sRootElementSample;
   //}}AFX_DATA
 
@@ -40,6 +41,8 @@ protected:
   afx_msg void OnBtnExploreXSDFile();
   //}}AFX_MSG
   DECLARE_MESSAGE_MAP()
+public:
+  afx_msg void OnBnClickedOk();
 };
 
 //{{AFX_INSERT_LOCATION}}

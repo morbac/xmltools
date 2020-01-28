@@ -67,6 +67,14 @@ HRESULT CreateAndInitXSLTemplate(IXSLTemplate** pIXSLTemplate) {
   return hr;
 }
 
+// Helper function to create a SAX instance. 
+HRESULT CreateAndInitSchema(IXMLDOMSchemaCollection2** pISchema) {
+  HRESULT hr = CoCreateInstance(CLSID_XMLSchemaCache60, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(pISchema));
+  if (SUCCEEDED(hr)) {
+  }
+  return hr;
+}
+
 // Helper function to transform DOM to a string. 
 HRESULT TransformDOM2Str(IXMLDOMDocument* pXMLDom, IXMLDOMDocument* pXSLDoc) {
   HRESULT hr = S_OK;

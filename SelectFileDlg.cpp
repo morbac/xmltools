@@ -20,6 +20,7 @@ CSelectFileDlg::CSelectFileDlg(CWnd* pParent /*=NULL*/)
 {
   //{{AFX_DATA_INIT(CSelectFileDlg)
   m_sSelectedFilename = _T("");
+  m_sValidationNamespace = _T("");
   m_sRootElementSample = _T("");
   //}}AFX_DATA_INIT
 }
@@ -30,6 +31,7 @@ void CSelectFileDlg::DoDataExchange(CDataExchange* pDX)
   CDialog::DoDataExchange(pDX);
   //{{AFX_DATA_MAP(CSelectFileDlg)
   DDX_Text(pDX, IDC_EDIT_FILENAME, m_sSelectedFilename);
+  DDX_Text(pDX, IDC_EDIT_NAMESPACE, m_sValidationNamespace);
   DDX_Text(pDX, IDC_EDIT_ROOTELEMSAMPLE, m_sRootElementSample);
   //}}AFX_DATA_MAP
 }
@@ -39,6 +41,7 @@ BEGIN_MESSAGE_MAP(CSelectFileDlg, CDialog)
   //{{AFX_MSG_MAP(CSelectFileDlg)
   ON_BN_CLICKED(IDC_BTN_EXPLORE_XSDFILE, OnBtnExploreXSDFile)
   //}}AFX_MSG_MAP
+  ON_BN_CLICKED(IDOK, &CSelectFileDlg::OnBnClickedOk)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -58,4 +61,11 @@ void CSelectFileDlg::OnBtnExploreXSDFile()
 {
   CStringW ret = ShowOpenFileDlg("XML Schema (*.xsd)|*.xsd|All files (*.*)|*.*|");
   if (ret.GetLength()) GetDlgItem(IDC_EDIT_FILENAME)->SetWindowText(ret);
+}
+
+
+void CSelectFileDlg::OnBnClickedOk()
+{
+  // TODO: Add your control notification handler code here
+  CDialog::OnOK();
 }
