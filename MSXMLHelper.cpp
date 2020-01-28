@@ -34,9 +34,9 @@ CleanUp:
 HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc, int options) {
   HRESULT hr;
   if (options & INIT_OPTION_FREETHREADED) {
-    hr = CoCreateInstance(__uuidof(FreeThreadedDOMDocument60), NULL, CLSCTX_SERVER, IID_PPV_ARGS(ppDoc));
+    hr = CoCreateInstance(CLSID_FreeThreadedDOMDocument60, NULL, CLSCTX_SERVER, IID_PPV_ARGS(ppDoc));
   } else {
-    hr = CoCreateInstance(__uuidof(DOMDocument60), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(ppDoc));
+    hr = CoCreateInstance(CLSID_DOMDocument60, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(ppDoc));
   }
   if (SUCCEEDED(hr)) {
     // These methods should not fail so don't inspect result
@@ -52,7 +52,7 @@ HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc, int options) {
 
 // Helper function to create a XSL instance. 
 HRESULT CreateAndInitSAX(ISAXXMLReader** ppDoc) {
-  HRESULT hr = CoCreateInstance(__uuidof(SAXXMLReader60), NULL, CLSCTX_ALL, IID_PPV_ARGS(ppDoc));
+  HRESULT hr = CoCreateInstance(CLSID_SAXXMLReader60, NULL, CLSCTX_ALL, IID_PPV_ARGS(ppDoc));
   if (SUCCEEDED(hr)) {
     (*ppDoc)->putFeature(L"prohibit-dtd", _variant_t(xmlfeatures.prohibitDTD ? VARIANT_TRUE : VARIANT_FALSE));
   }
@@ -61,7 +61,7 @@ HRESULT CreateAndInitSAX(ISAXXMLReader** ppDoc) {
 
 // Helper function to create a SAX instance. 
 HRESULT CreateAndInitXSLTemplate(IXSLTemplate** pIXSLTemplate) {
-  HRESULT hr = CoCreateInstance(__uuidof(XSLTemplate60), NULL, CLSCTX_SERVER, IID_IXSLTemplate, (LPVOID*)(pIXSLTemplate));
+  HRESULT hr = CoCreateInstance(CLSID_XSLTemplate60, NULL, CLSCTX_SERVER, IID_IXSLTemplate, (LPVOID*)(pIXSLTemplate));
   if (SUCCEEDED(hr)) {
   }
   return hr;

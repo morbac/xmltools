@@ -965,7 +965,7 @@ void XMLValidation(int informIfNoError) {
       Report::_printf_inf(L"No error detected.");
     } else {
       // TODO: prompt for XSD path
-      Report::_printf_inf(L"TODO - this part is not finished");
+      Report::_printf_inf(L"TODO - prompt for XSD path");
     }
   } else {
     CHK_HR(pXMLDom->get_parseError(&pXMLErr));
