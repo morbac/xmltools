@@ -1616,15 +1616,12 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 
   int docIterator = initDocIterator();
   while (hasNextDoc(&docIterator)) {
-    int currentEdit, currentLength, isReadOnly, xOffset, yOffset;
+    int currentEdit, currentLength, isReadOnly;
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
     HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
 
     isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
     if (isReadOnly) return;
-    
-    xOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETXOFFSET, 0, 0);
-    yOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
 
     char *data = NULL;
 
@@ -1948,9 +1945,8 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 
     str.clear();
 
-    // Restore scrolling
-    ::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
-    ::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
+    // Put scroll at the left of the view
+    ::SendMessage(hCurrentEditView, SCI_SETXOFFSET, 0, 0);
   }
 }
 
@@ -1979,15 +1975,12 @@ void prettyPrintAttributes() {
 
   int docIterator = initDocIterator();
   while (hasNextDoc(&docIterator)) {
-    int currentEdit, currentLength, isReadOnly, xOffset, yOffset;
+    int currentEdit, currentLength, isReadOnly;
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
     HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
 
     isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
     if (isReadOnly) return;
-    
-    xOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETXOFFSET, 0, 0);
-    yOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
 
     currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
@@ -2100,9 +2093,8 @@ void prettyPrintAttributes() {
     // Send formatted string to scintilla
     ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
 
-    // Restore scrolling
-    ::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
-    ::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
+    // Put scroll at the left of the view
+    ::SendMessage(hCurrentEditView, SCI_SETXOFFSET, 0, 0);
 
   CleanUp:
     SAFE_RELEASE(pXMLDom);
@@ -2220,15 +2212,12 @@ bool hasNextDoc(int* iter) {
 void convertText2XML() {
   dbgln("convertText2XML()");
 
-  int currentEdit, isReadOnly, xOffset, yOffset;
+  int currentEdit, isReadOnly;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
   
   isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
   if (isReadOnly) return;
-  
-  xOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETXOFFSET, 0, 0);
-  yOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
 
   long selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
   long selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
@@ -2289,10 +2278,6 @@ void convertText2XML() {
   ::SendMessage(hCurrentEditView, SCI_SETCURRENTPOS, selstart, 0);
   ::SendMessage(hCurrentEditView, SCI_SETANCHOR, selstart+sellength, 0);
 
-  // Restore scrolling
-  //::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
-  //::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
-
   str.clear();
 }
 
@@ -2301,15 +2286,12 @@ void convertText2XML() {
 void convertXML2Text() {
   dbgln("convertXML2Text()");
 
-  int currentEdit, isReadOnly, xOffset, yOffset;
+  int currentEdit, isReadOnly;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
 
   isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
   if (isReadOnly) return;
-  
-  xOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETXOFFSET, 0, 0);
-  yOffset = (int) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
 
   long selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
   long selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
@@ -2370,10 +2352,6 @@ void convertXML2Text() {
   ::SendMessage(hCurrentEditView, SCI_SETCURRENTPOS, selstart, 0);
   ::SendMessage(hCurrentEditView, SCI_SETANCHOR, selstart+sellength, 0);
 
-  // Restore scrolling
-  //::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
-  //::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
-
   str.clear();
 }
 
@@ -2425,16 +2403,14 @@ int validateSelectionForComment(std::string str, std::string::size_type sellengt
 void commentSelection() {
   dbgln("commentSelection()");
 
-  long currentEdit, xOffset, yOffset;
+  long currentEdit;
   int isReadOnly;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
   
   isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
   if (isReadOnly) return;
-  
-  xOffset = (long) ::SendMessage(hCurrentEditView, SCI_GETXOFFSET, 0, 0);
-  yOffset = (long) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
+
   long selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
   long selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
   long sellength = selend-selstart;
@@ -2444,9 +2420,9 @@ void commentSelection() {
     return;
   }
 
-  char *data = new char[sellength+1];
+  char *data = new char[sellength+sizeof(char)];
   if (!data) return;  // allocation error, abort check
-  memset(data, '\0', sellength+1);
+  memset(data, '\0', sellength+sizeof(char));
 
   ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
 
@@ -2520,10 +2496,6 @@ void commentSelection() {
   ::SendMessage(hCurrentEditView, SCI_SETCURRENTPOS, selstart, 0);
   ::SendMessage(hCurrentEditView, SCI_SETANCHOR, selstart+sellength, 0);
 
-  // Restore scrolling
-  //::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
-  //::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
-
   str.clear();
 }
 
@@ -2532,16 +2504,13 @@ void commentSelection() {
 void uncommentSelection() {
   dbgln("uncommentSelection()");
 
-  long currentEdit, xOffset, yOffset;
+  long currentEdit;
   int isReadOnly;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
   
   isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
   if (isReadOnly) return;
-  
-  xOffset = (long) ::SendMessage(hCurrentEditView, SCI_GETXOFFSET, 0, 0);
-  yOffset = (long) ::SendMessage(hCurrentEditView, SCI_GETFIRSTVISIBLELINE, 0, 0);
 
   long selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
   long selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
@@ -2552,9 +2521,9 @@ void uncommentSelection() {
     return;
   }
 
-  char *data = new char[sellength+1];
+  char *data = new char[sellength+sizeof(char)];
   if (!data) return;  // allocation error, abort check
-  memset(data, '\0', sellength+1);
+  memset(data, '\0', sellength+sizeof(char));
 
   ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
 
@@ -2630,10 +2599,6 @@ void uncommentSelection() {
   // Defines selection without scrolling
   ::SendMessage(hCurrentEditView, SCI_SETCURRENTPOS, selstart, 0);
   ::SendMessage(hCurrentEditView, SCI_SETANCHOR, selstart+sellength, 0);
-
-  // Restore scrolling
-  //::SendMessage(hCurrentEditView, SCI_LINESCROLL, 0, yOffset);
-  //::SendMessage(hCurrentEditView, SCI_SETXOFFSET, xOffset, 0);
 
   str.clear();
 }
