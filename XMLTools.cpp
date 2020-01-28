@@ -1,4 +1,4 @@
-// XMLTools.cpp : Defines the initialization routines for the DLL.
+ï»¿// XMLTools.cpp : Defines the initialization routines for the DLL.
 //
 
 // notepad++
@@ -431,11 +431,11 @@ void initializePlugin() {
 
   funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-  Report::strcpy(funcItem[menuentry]._itemName, L"Convert selection XML to text (<> => &&lt;&&gt;)");
+  Report::strcpy(funcItem[menuentry]._itemName, L"Escape characters in selection (<> â†’ &&lt;&&gt;)");
   funcItem[menuentry]._pFunc = convertXML2Text;
   ++menuentry;
 
-  Report::strcpy(funcItem[menuentry]._itemName, L"Convert selection text to XML (&&lt;&&gt; => <>)");
+  Report::strcpy(funcItem[menuentry]._itemName, L"Unescape characters in selection (&&lt;&&gt; â†’ <>)");
   funcItem[menuentry]._pFunc = convertText2XML;
   ++menuentry;
 
@@ -591,7 +591,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       LangType docType;
       ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
       if (docType == L_XML) {
-        // comme la validation XSD effectue également un check de syntaxe, on n'exécute
+        // comme la validation XSD effectue Ã©galement un check de syntaxe, on n'exÃ©cute
         // le autoXMLCheck() que si doValidation est FALSE et doCheckXML est TRUE.
         if (doValidation) autoValidation();
         else if (doCheckXML) autoXMLCheck();
@@ -608,7 +608,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
         }
       }
       if (docType == L_XML) {
-        // remarque: le closeXMLTag doit s'exécuter avant les autres
+        // remarque: le closeXMLTag doit s'exÃ©cuter avant les autres
         if (doCloseTag && notifyCode->ch == '>') {
           closeXMLTag();
         }
@@ -627,7 +627,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
     case NPPN_BUFFERACTIVATED: {
       dbgln("NPP Event: NPPN_BUFFERACTIVATED");
       if (doAutoXMLType) {
-        // si le fichier n'a pas de type défini et qu'il commence par "<?xml ", on lui attribue le type L_XML
+        // si le fichier n'a pas de type dÃ©fini et qu'il commence par "<?xml ", on lui attribue le type L_XML
         LangType docType = L_EXTERNAL;
         ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
         dbg("  Current langtype: "); dbgln(std::to_string(static_cast<unsigned long long>(docType)).c_str());
@@ -1332,7 +1332,7 @@ void tagAutoIndent() {
   // On n'indente que si l'on est dans un noeud (au niveau de l'attribut ou
   // au niveau du contenu. Donc on recherche le dernier < ou >. S'il s'agit
   // d'un >, on regarde qu'il n'y ait pas de / avant (sinon on se retrouve
-  // au même niveau et il n'y a pas d'indentation à faire)
+  // au mÃªme niveau et il n'y a pas d'indentation Ã  faire)
   // Si le dernier symbole que l'on trouve est un <, alors on indente.
 
   char buf[512];
@@ -1367,7 +1367,7 @@ void tagAutoIndent() {
       char insertString[516] = { '\0' };
 
       --pCur;
-      // on récupère l'indentation actuelle
+      // on rÃ©cupÃ¨re l'indentation actuelle
       while (pCur > pBegin && *pCur != '\n' && *pCur != '\r') {
         if (*pCur == '\t') insertString[insertStringSize++] = '\t';
         else insertString[insertStringSize++] = ' ';
@@ -1385,7 +1385,7 @@ void tagAutoIndent() {
 
       currentPos += insertStringSize;
 
-      // on a trouvé le <, il reste à insérer une indentation après le curseur
+      // on a trouvÃ© le <, il reste Ã  insÃ©rer une indentation aprÃ¨s le curseur
       ::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, (LPARAM)insertString);
       ::SendMessage(hCurrentEditView, SCI_SETSEL, currentPos, currentPos);  
     }
@@ -1409,7 +1409,7 @@ bool setAutoXMLType() {
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
 
-  // on récupère les 6 premiers caractères du fichier
+  // on rÃ©cupÃ¨re les 6 premiers caractÃ¨res du fichier
   char head[8] = { '\0' };
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, 7, reinterpret_cast<LPARAM>(&head));
 
@@ -1647,10 +1647,10 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 
     // use the selection
     long selstart = 0, selend = 0;
-    // désactivé : le fait de prettyprinter que la sélection pose problème pour l'indentation
-    // il faudrait calculer l'indentation de la 1re ligne de sélection, mais l'indentation
-    // de cette ligne n'est peut-être pas correcte. On pourrait la déterminer en récupérant
-    // le path de la banche sélectionnée...
+    // dÃ©sactivÃ© : le fait de prettyprinter que la sÃ©lection pose problÃ¨me pour l'indentation
+    // il faudrait calculer l'indentation de la 1re ligne de sÃ©lection, mais l'indentation
+    // de cette ligne n'est peut-Ãªtre pas correcte. On pourrait la dÃ©terminer en rÃ©cupÃ©rant
+    // le path de la banche sÃ©lectionnÃ©e...
     selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
     selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
 
