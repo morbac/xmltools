@@ -23,7 +23,7 @@ public:
 // Dialog Data
   //{{AFX_DATA(CXSLTransformDlg)
   enum { IDD = IDD_XSLTDLG };
-  CStringW  m_sXSLTFile;
+  CStringW  m_sSelectedFile;
   CStringW  m_sXSLTOptions;
   //}}AFX_DATA
 

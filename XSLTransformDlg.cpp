@@ -23,7 +23,7 @@ static char THIS_FILE[] = __FILE__;
 CXSLTransformDlg::CXSLTransformDlg(CWnd* pParent /*=NULL*/, unsigned long flags /*= 0*/)
   : CDialog(CXSLTransformDlg::IDD, pParent) {
   //{{AFX_DATA_INIT(CXSLTransformDlg)
-  m_sXSLTFile = _T("");
+  m_sSelectedFile = _T("");
   m_sXSLTOptions = _T("");
   //}}AFX_DATA_INIT
   
@@ -34,7 +34,7 @@ CXSLTransformDlg::CXSLTransformDlg(CWnd* pParent /*=NULL*/, unsigned long flags 
 void CXSLTransformDlg::DoDataExchange(CDataExchange* pDX) {
   CDialog::DoDataExchange(pDX);
   //{{AFX_DATA_MAP(CXSLTransformDlg)
-  DDX_Text(pDX, IDC_EDIT_XSLTFILE, m_sXSLTFile);
+  DDX_Text(pDX, IDC_EDIT_XSLTFILE, m_sSelectedFile);
   DDX_Text(pDX, IDC_EDIT_XSLTOPTIONS, m_sXSLTOptions);
   //}}AFX_DATA_MAP
 }
@@ -56,7 +56,7 @@ HWND CXSLTransformDlg::getCurrentHScintilla(int which) {
 
 BOOL CXSLTransformDlg::OnInitDialog() {
   CDialog::OnInitDialog();
-  
+
   CRect myRect;
   GetWindowRect(&myRect);
 
@@ -126,17 +126,19 @@ void CXSLTransformDlg::OnBtnTransform() {
   IXMLDOMNode* pNode = NULL;
   //IXMLDOMDocument2* pDOMObject = NULL;
   IStream* pOutStream = NULL;
-  VARIANT varXML;
+  VARIANT varCurrentData;
   VARIANT varValue;
   VARIANT_BOOL varStatus;
   BSTR bstrEncoding = NULL;
+  long length;
+  bool currentDataIsXml = true;
 
   bool outputAsStream = false;
 
   this->UpdateData();
 
-  if (this->m_sXSLTFile.GetLength() <= 0) {
-    Report::_printf_err(L"XSLT File missing. Cannot continue.");
+  if (this->m_sSelectedFile.GetLength() <= 0) {
+    Report::_printf_err(L"Cannot continue, missing parameters. Please select a file.");
     return;
   }
 
@@ -153,24 +155,47 @@ void CXSLTransformDlg::OnBtnTransform() {
 
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
-  Report::char2VARIANT(data, &varXML);
+  Report::char2VARIANT(data, &varCurrentData);
+
+  // active document may either be XML or XSL; if XSL,
+  // then m_sSelectedFile refers to an XML file
+  CHK_HR(CreateAndInitDOM(&pXml));
+  CHK_HR(pXml->loadXML(_bstr_t(data), &varStatus));
+  if (varStatus == VARIANT_TRUE) {
+    CHK_HR(pXml->setProperty(L"SelectionNamespaces", variant_t(L"xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"")));
+    if (SUCCEEDED(pXml->selectNodes(L"/xsl:stylesheet", &pNodes))) {
+      CHK_HR(pNodes->get_length(&length));
+      if (length == 1) {
+        // the active document is an XSL one; let's invert both files
+        currentDataIsXml = false;
+      }
+    }
+  }
+  SAFE_RELEASE(pXml);
+  SAFE_RELEASE(pNodes);
 
   delete[] data;
   data = NULL;
 
   // load xml
   CHK_HR(CreateAndInitDOM(&pXml));
-  CHK_HR(pXml->load(varXML, &varStatus));
+  if (currentDataIsXml) {
+    CHK_HR(pXml->load(varCurrentData, &varStatus));
+  } else {
+    CHK_HR(pXml->load(_variant_t(m_sSelectedFile), &varStatus));
+  }
   if (varStatus == VARIANT_TRUE) {
     // load xsl
     CHK_HR(CreateAndInitDOM(&pXslt, (INIT_OPTION_PRESERVEWHITESPACE | INIT_OPTION_FREETHREADED)));
-    CHK_HR(pXslt->load(_variant_t(m_sXSLTFile), &varStatus));
+    if (currentDataIsXml) {
+      CHK_HR(pXslt->load(_variant_t(m_sSelectedFile), &varStatus));
+    } else {
+      CHK_HR(pXslt->load(varCurrentData, &varStatus));
+    }
     if (varStatus == VARIANT_TRUE) {
       // detect output encoding
       CHK_HR(pXslt->setProperty(L"SelectionNamespaces", variant_t(L"xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"")));
-      hr = pXslt->selectNodes(L"/xsl:stylesheet/xsl:output/@encoding", &pNodes);
-      if (SUCCEEDED(hr)) {
-        long length;
+      if (SUCCEEDED(pXslt->selectNodes(L"/xsl:stylesheet/xsl:output/@encoding", &pNodes))) {
         CHK_HR(pNodes->get_length(&length));
         if (length == 1) {
           // get encoding from output declaration
@@ -191,8 +216,7 @@ void CXSLTransformDlg::OnBtnTransform() {
 
       // build template
       CHK_HR(CreateAndInitXSLTemplate(&pTemplate));
-      hr = pTemplate->putref_stylesheet(pXslt);
-      if (SUCCEEDED(hr)) {
+      if (SUCCEEDED(pTemplate->putref_stylesheet(pXslt))) {
         CHK_HR(pTemplate->createProcessor(&pProcessor));
 
         // set startMode
@@ -241,9 +265,9 @@ void CXSLTransformDlg::OnBtnTransform() {
           if (encoding != uniEnd) Report::setEncoding(encoding, hCurrentEditView);
           ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(output));
 
-            if (outputAsStream) {
-              GlobalUnlock(hg);
-            }
+          if (outputAsStream) {
+            GlobalUnlock(hg);
+          }
         } else {
           Report::_printf_err(L"An error occurred during XSL transformation");
         }
@@ -270,7 +294,7 @@ CleanUp:
   SAFE_RELEASE(pNodes);
   SAFE_RELEASE(pNode);
   SysFreeString(bstrEncoding);
-  VariantClear(&varXML);
+  VariantClear(&varCurrentData);
   VariantClear(&varValue);
 }
 
@@ -284,6 +308,6 @@ CStringW CXSLTransformDlg::ShowOpenFileDlg(CStringW filetypes) {
 }
 
 void CXSLTransformDlg::OnBtnBrowseXSLTFile() {
-  CStringW ret = ShowOpenFileDlg("XSL Files (*.xsl)|*.xsl|XML Files (*.xml)|*.xml|All files (*.*)|*.*|");
+  CStringW ret = ShowOpenFileDlg("XML/XSL Files|*.xml;*.xsl|All files|*.*|");
   if (ret.GetLength()) GetDlgItem(IDC_EDIT_XSLTFILE)->SetWindowText(ret);
 }

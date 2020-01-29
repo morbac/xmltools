@@ -166,7 +166,7 @@ BEGIN
     EDITTEXT        IDC_EDIT_MULTILINEMSG,7,7,342,115,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL | WS_HSCROLL
 END
 
-IDD_XSLTDLG DIALOGEX 0, 0, 292, 94
+IDD_XSLTDLG DIALOGEX 0, 0, 292, 119
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "XSL Transformation settings"
@@ -174,11 +174,12 @@ FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT_XSLTFILE,7,7,255,12,ES_AUTOHSCROLL,WS_EX_ACCEPTFILES
     PUSHBUTTON      "...",IDC_BTN_BROWSEXSLTFILE,266,7,19,12
-    LTEXT           "Options:",IDC_STATIC,7,23,278,8
-    EDITTEXT        IDC_EDIT_XSLTOPTIONS,7,33,278,31,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | WS_VSCROLL
-    DEFPUSHBUTTON   "Transform",IDC_BTN_TRANSFORM,230,73,55,14
-    LTEXT           "You can enter up to 16 options using following syntax:",IDC_STATIC,7,67,223,8
-    LTEXT           "param1=123 param2='abc' param3=concat('abc','123')",IDC_STATIC,7,77,219,9
+    LTEXT           "Options:",IDC_STATIC,7,52,278,8
+    EDITTEXT        IDC_EDIT_XSLTOPTIONS,7,61,278,31,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | WS_VSCROLL
+    DEFPUSHBUTTON   "Transform",IDC_BTN_TRANSFORM,231,98,54,14
+    LTEXT           "You can enter up to 16 options using following syntax:",IDC_STATIC,7,94,223,8
+    LTEXT           "param1=123 param2='abc' param3=concat('abc','123')",IDC_STATIC,7,103,219,9
+    LTEXT           "Select either XSL or XML depending on active (if current document is XML then select the XSL Stylesheet to use for transformation; if active document is XSL then select XML you want to transform using active XSL)",IDC_STATIC,7,20,278,25
 END
 
 IDD_HOWTOUSE DIALOGEX 0, 0, 181, 112
@@ -281,7 +282,7 @@ BEGIN
         RIGHTMARGIN, 285
         VERTGUIDE, 69
         TOPMARGIN, 7
-        BOTTOMMARGIN, 87
+        BOTTOMMARGIN, 112
     END
 
     IDD_HOWTOUSE, DIALOG
@@ -360,6 +361,11 @@ BEGIN
 END
 
 IDD_SELECTFILE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_XSLTDLG AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
