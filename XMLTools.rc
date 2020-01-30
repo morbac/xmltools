@@ -179,7 +179,7 @@ BEGIN
     DEFPUSHBUTTON   "Transform",IDC_BTN_TRANSFORM,231,98,54,14
     LTEXT           "You can enter up to 16 options using following syntax:",IDC_STATIC,7,94,223,8
     LTEXT           "param1=123 param2='abc' param3=concat('abc','123')",IDC_STATIC,7,103,219,9
-    LTEXT           "Select either XSL or XML depending on active (if current document is XML then select the XSL Stylesheet to use for transformation; if active document is XSL then select XML you want to transform using active XSL)",IDC_STATIC,7,20,278,25
+    LTEXT           "Select either XSL or XML. If active document is XML then select the XSL Stylesheet to use for transformation; if active document is XSL then select XML you want to transform using active XSL.",IDC_STATIC,7,20,278,25
 END
 
 IDD_HOWTOUSE DIALOGEX 0, 0, 181, 112
@@ -280,7 +280,6 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 285
-        VERTGUIDE, 69
         TOPMARGIN, 7
         BOTTOMMARGIN, 112
     END
