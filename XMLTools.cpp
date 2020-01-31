@@ -831,11 +831,25 @@ void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDes
   CHK_HR(pXMLErr->get_filepos(&filepos));
   CHK_HR(pXMLErr->get_reason(&bstrReason));
 
+  /*
+  for (int i = 0; i < 32; ++i) {
+    ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, i, i);
+    ::SendMessage(view, SCI_ANNOTATIONSETTEXT, i, reinterpret_cast<LPARAM>(Report::str_format("annotation style %d", i).c_str()));
+  }
+  */
+
   if (filepos > 0) {
     ::SendMessage(view, SCI_GOTOPOS, filepos - 1, 0);
-  }
 
-  if (szDesc != NULL) {
+    // display error as an annotation
+    ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, line - 1, 3);
+    if (szDesc != NULL) {
+      ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::str_format("%S - line %d, pos %d: \r\n%S\0", szDesc, line, linepos, bstrReason).c_str()));
+    } else {
+      ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::str_format("XML Parsing error - line %d, pos %d: \r\n%S\0", line, linepos, bstrReason).c_str()));
+    }
+    ::SendMessage(view, SCI_ANNOTATIONSETVISIBLE, 2, NULL);
+  } else if (szDesc != NULL) {
     Report::_printf_err(L"%s - line %d, pos %d: \r\n%s", szDesc, line, linepos, bstrReason);
   } else {
     Report::_printf_err(L"XML Parsing error - line %d, pos %d: \r\n%s", line, linepos, bstrReason);
@@ -851,6 +865,8 @@ int performXMLCheck(int informIfNoError) {
   int currentEdit, currentLength, res = 0;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
+
+  ::SendMessage(hCurrentEditView, SCI_ANNOTATIONCLEARALL, NULL, NULL);
   currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
   char *data = new char[currentLength + sizeof(char)];
