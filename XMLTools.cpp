@@ -863,17 +863,16 @@ int performXMLCheck(int informIfNoError) {
   HRESULT hr = S_OK;
   IXMLDOMDocument2* pXMLDom = NULL; 
   IXMLDOMParseError* pXMLErr = NULL;
-  BSTR bstrXML = NULL;
   VARIANT_BOOL varStatus;
+  VARIANT varCurrentData;
 
-  Report::char2BSTR(data, &bstrXML);
-  CHK_ALLOC(bstrXML);
+  Report::char2VARIANT(data, &varCurrentData);
 
   delete[] data;
   data = NULL;
 
   CHK_HR(CreateAndInitDOM(&pXMLDom));
-  CHK_HR(pXMLDom->loadXML(bstrXML, &varStatus));
+  CHK_HR(pXMLDom->load(varCurrentData, &varStatus));
   if (varStatus == VARIANT_TRUE) {
     if (informIfNoError) {
       Report::_printf_inf(L"No error detected.");
@@ -884,9 +883,9 @@ int performXMLCheck(int informIfNoError) {
   }
 
 CleanUp:
-  SysFreeString(bstrXML);
   SAFE_RELEASE(pXMLDom);
   SAFE_RELEASE(pXMLErr);
+  VariantClear(&varCurrentData);
 
   return res;
 }
@@ -1997,7 +1996,7 @@ void prettyPrintAttributes() {
     HRESULT hr = S_OK;
     IXMLDOMDocument2* pXMLDom = NULL;
     VARIANT_BOOL varStatus;
-    BSTR bstrXML = NULL;
+    VARIANT varCurrentData;
     
     bool in_comment = false, in_header = false, in_attribute = false, in_nodetext = false, in_cdata = false;
     long curpos = 0, strlength = 0;
@@ -2008,13 +2007,12 @@ void prettyPrintAttributes() {
     std::string eolchar;
     int eolmode;
 
-    Report::char2BSTR(data, &bstrXML);
+    Report::char2VARIANT(data, &varCurrentData);
     std::string str = data;
     delete[] data;
 
-    CHK_ALLOC(bstrXML);
     CHK_HR(CreateAndInitDOM(&pXMLDom));
-    CHK_HR(pXMLDom->loadXML(bstrXML, &varStatus));
+    CHK_HR(pXMLDom->load(varCurrentData, &varStatus));
     if (varStatus != VARIANT_TRUE) {
       Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
       goto CleanUp;
@@ -2098,7 +2096,7 @@ void prettyPrintAttributes() {
 
   CleanUp:
     SAFE_RELEASE(pXMLDom);
-    SysFreeString(bstrXML);
+    VariantClear(&varCurrentData);
   }
 }
 
