@@ -16,6 +16,7 @@
 enum UniMode {uni8Bit=0, uniUTF8=1, uni16BE=2, uni16LE=3, uniCookie=4, uni7Bit=5, uni16BE_NoBOM=6, uni16LE_NoBOM=7, uniEnd};
 
 // edit : look at https://msdn.microsoft.com/en-us/library/ms235631(VS.80).aspx
+// https://docs.microsoft.com/en-us/cpp/text/how-to-convert-between-various-string-types?redirectedfrom=MSDN&view=vs-2019
 class Report  
 {
 public:
@@ -26,6 +27,8 @@ public:
   static void _printf_inf(const wchar_t* s, ...);
   static void _printf_inf(const std::wstring& ws);
   static void _printf_inf(const std::string& s);
+  static void _printf_err(const std::wstring& ws);
+  static void _printf_err(const std::string& s);
   
   static void _fprintf_err(void * ctx, const wchar_t* s, ...);
   static void _fprintf_inf(void * ctx, const wchar_t* s, ...);
@@ -66,6 +69,8 @@ public:
 
   static wchar_t* char2wchar(const char* s);
   static char* wchar2char(const wchar_t* ws);
+  static std::wstring s2ws(const std::string& s);
+  static std::string ws2s(const std::wstring& s);
 
   static UniMode getEncoding(HWND npp = NULL);
   static UniMode getEncoding(BSTR encoding = NULL);

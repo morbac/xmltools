@@ -103,7 +103,7 @@ bool doCheckXML = false,
      doPrettyPrintAllOpenFiles = false;
 
 struct struct_proxyoptions proxyoptions;
-struct struct_xmlfeatures xmlfeatures;
+struct struct_xmltoolsoptions xmltoolsoptions;
 
 int menuitemCheckXML = -1,
     menuitemValidation = -1,
@@ -477,7 +477,8 @@ void initializePlugin() {
   proxyoptions.port = ::GetPrivateProfileInt(sectionName, L"proxyPort", 8080, iniFilePath);
   ::GetPrivateProfileString(sectionName, L"proxyUser", L"", proxyoptions.username, 255, iniFilePath);
   ::GetPrivateProfileString(sectionName, L"proxyPass", L"", proxyoptions.password, 255, iniFilePath);
-  xmlfeatures.prohibitDTD = (::GetPrivateProfileInt(sectionName, L"prohibitDTD", 0, iniFilePath) == 1);
+  xmltoolsoptions.prohibitDTD = (::GetPrivateProfileInt(sectionName, L"prohibitDTD", 0, iniFilePath) == 1);
+  xmltoolsoptions.useAnnotations = (::GetPrivateProfileInt(sectionName, L"useAnnotations", 0, iniFilePath) == 1);
 
   updateProxyConfig();
 
@@ -582,7 +583,6 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 
         #ifdef DEBUG
           debugdlg->Create(CDebugDlg::IDD,NULL);
-          debugDlg();
         #endif
       }
     }
@@ -642,9 +642,10 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       CoUninitialize();
 
       savePluginParams();
+      break;
     }
     default: {
-      dbg("NPP Event: "); dbgln(std::to_string(notifyCode->nmhdr.code).c_str());
+      //dbg("NPP Event: "); dbgln(std::to_string(notifyCode->nmhdr.code).c_str());
     }
   }
 }
@@ -751,7 +752,8 @@ void optionsDlg() {
     ::WritePrivateProfileString(sectionName, L"proxyPort", std::to_wstring(static_cast<long long>(proxyoptions.port)).c_str(), iniFilePath);
     ::WritePrivateProfileString(sectionName, L"proxyUser", proxyoptions.username, iniFilePath);
     ::WritePrivateProfileString(sectionName, L"proxyPass", proxyoptions.password, iniFilePath);
-    ::WritePrivateProfileString(sectionName, L"prohibitDTD", xmlfeatures.prohibitDTD ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"prohibitDTD", xmltoolsoptions.prohibitDTD ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"useAnnotations", xmltoolsoptions.useAnnotations ? L"1" : L"0", iniFilePath);
 
     updateProxyConfig();
   }
@@ -825,34 +827,46 @@ void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDes
   long linepos = 0;
   long filepos = 0;
   BSTR bstrReason = NULL;
+  std::wstring wmsg;
 
   CHK_HR(pXMLErr->get_line(&line));
   CHK_HR(pXMLErr->get_linepos(&linepos));
   CHK_HR(pXMLErr->get_filepos(&filepos));
   CHK_HR(pXMLErr->get_reason(&bstrReason));
 
-  /*
-  for (int i = 0; i < 32; ++i) {
+ /*
+  for (int i = 0; i < 256; ++i) {
     ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, i, i);
     ::SendMessage(view, SCI_ANNOTATIONSETTEXT, i, reinterpret_cast<LPARAM>(Report::str_format("annotation style %d", i).c_str()));
   }
-  */
+ */
 
-  if (filepos > 0) {
+  if (szDesc != NULL) {
+    wmsg = Report::str_format(L"%s - line %d, pos %d: \r\n%s", szDesc, line, linepos, bstrReason);
+  } else {
+    wmsg = Report::str_format(L"XML Parsing error - line %d, pos %d: \r\n%s", line, linepos, bstrReason);
+  }
+
+  dbgln(Report::str_format(L"encoding: %d", Report::getEncoding(view)).c_str());
+  dbgln(wmsg.c_str());
+
+  if (filepos > 0 && xmltoolsoptions.useAnnotations) {
     ::SendMessage(view, SCI_GOTOPOS, filepos - 1, 0);
 
     // display error as an annotation
-    ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, line - 1, 3);
-    if (szDesc != NULL) {
-      ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::str_format("%S - line %d, pos %d: \r\n%S\0", szDesc, line, linepos, bstrReason).c_str()));
-    } else {
-      ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::str_format("XML Parsing error - line %d, pos %d: \r\n%S\0", line, linepos, bstrReason).c_str()));
-    }
+
+    ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, line - 1, 34);
+    // problem: annotation should be encoded in correct encoding
+    // but npp always retruns uni8Bit encoding...
+    // utf8
+    ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::ucs2ToUtf8(wmsg.c_str()).c_str()));
+    // ansi
+    ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::ws2s(wmsg).c_str()));
+
     ::SendMessage(view, SCI_ANNOTATIONSETVISIBLE, 2, NULL);
-  } else if (szDesc != NULL) {
-    Report::_printf_err(L"%s - line %d, pos %d: \r\n%s", szDesc, line, linepos, bstrReason);
+    ::SendMessage(view, SCI_SETFIRSTVISIBLELINE, line, NULL); // ensure annotation is visible
   } else {
-    Report::_printf_err(L"XML Parsing error - line %d, pos %d: \r\n%s", line, linepos, bstrReason);
+    Report::_printf_err(wmsg);
   }
 
 CleanUp:

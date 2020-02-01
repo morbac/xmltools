@@ -80,6 +80,14 @@ void Report::_printf_inf(const std::string& s) {
   ::MessageBox(nppData._nppHandle, Report::widen(s).c_str(), L"XML Tools plugin", MB_OK | MB_ICONINFORMATION);
 }
 
+void Report::_printf_err(const std::wstring& ws) {
+  ::MessageBox(nppData._nppHandle, ws.c_str(), L"XML Tools plugin", MB_OK | MB_ICONEXCLAMATION);
+}
+
+void Report::_printf_err(const std::string& s) {
+  ::MessageBox(nppData._nppHandle, Report::widen(s).c_str(), L"XML Tools plugin", MB_OK | MB_ICONEXCLAMATION);
+}
+
 void Report::_fprintf_inf(void * ctx, const wchar_t* s, ...) {
   if (!s || !wcslen(s)) return;
   
@@ -305,12 +313,34 @@ char* Report::wchar2char(const wchar_t* ws) {
   return s;
 }
 
+std::wstring Report::s2ws(const std::string& s) {
+  int len;
+  int slength = (int)s.length() + 1;
+  len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
+  wchar_t* buf = new wchar_t[len];
+  MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
+  std::wstring r(buf);
+  delete[] buf;
+  return r;
+}
+
+std::string Report::ws2s(const std::wstring& s) {
+  int len;
+  int slength = (int)s.length() + 1;
+  len = WideCharToMultiByte(CP_ACP, 0, s.c_str(), slength, 0, 0, 0, 0);
+  char* buf = new char[len];
+  WideCharToMultiByte(CP_ACP, 0, s.c_str(), slength, buf, len, 0, 0);
+  std::string r(buf);
+  delete[] buf;
+  return r;
+}
 
 
 UniMode Report::getEncoding(HWND npp) {
   HWND nppwnd = (npp == NULL ? nppData._nppHandle : npp);
   LRESULT bufferid = ::SendMessage(nppwnd, NPPM_GETCURRENTBUFFERID, 0, 0);
-  return UniMode(::SendMessage(nppwnd, NPPM_GETBUFFERENCODING, bufferid, 0));
+  int i = ::SendMessage(nppwnd, NPPM_GETBUFFERENCODING, bufferid, 0);
+  return UniMode(i);
 }
 
 UniMode Report::getEncoding(BSTR encoding) {

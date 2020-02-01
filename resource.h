@@ -46,6 +46,8 @@
 #define IDC_STATIC_XPATH                2032
 #define IDC_STATIC_NS                   2033
 #define IDC_STATIC_INFOS                2034
+#define IDC_CHECK1                      2036
+#define IDC_CHKANNOTATIONS              2036
 
 // Next default values for new objects
 // 
@@ -53,7 +55,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        2012
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2036
+#define _APS_NEXT_CONTROL_VALUE         2037
 #define _APS_NEXT_SYMED_VALUE           2000
 #endif
 #endif

@@ -45,7 +45,7 @@ HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc, int options) {
     (*ppDoc)->put_resolveExternals(options & INIT_OPTION_RESOLVEEXTERNALS ? VARIANT_TRUE : VARIANT_FALSE);
     (*ppDoc)->put_preserveWhiteSpace(options & INIT_OPTION_PRESERVEWHITESPACE ? VARIANT_TRUE : VARIANT_FALSE);
 
-    (*ppDoc)->setProperty(L"ProhibitDTD", _variant_t(xmlfeatures.prohibitDTD ? VARIANT_TRUE : VARIANT_FALSE));
+    (*ppDoc)->setProperty(L"ProhibitDTD", _variant_t(xmltoolsoptions.prohibitDTD ? VARIANT_TRUE : VARIANT_FALSE));
   }
   return hr;
 }
@@ -54,7 +54,7 @@ HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc, int options) {
 HRESULT CreateAndInitSAX(ISAXXMLReader** ppDoc) {
   HRESULT hr = CoCreateInstance(CLSID_SAXXMLReader60, NULL, CLSCTX_ALL, IID_PPV_ARGS(ppDoc));
   if (SUCCEEDED(hr)) {
-    (*ppDoc)->putFeature(L"prohibit-dtd", _variant_t(xmlfeatures.prohibitDTD ? VARIANT_TRUE : VARIANT_FALSE));
+    (*ppDoc)->putFeature(L"prohibit-dtd", _variant_t(xmltoolsoptions.prohibitDTD ? VARIANT_TRUE : VARIANT_FALSE));
   }
   return hr;
 }

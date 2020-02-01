@@ -49,7 +49,8 @@ BOOL COptionsDlg::OnInitDialog()
   GetDlgItem(IDC_EDITPROXYPORT)->SetWindowTextW(std::to_wstring(static_cast<long long>(proxyoptions.port)).c_str());
   //GetDlgItem(IDC_EDITPROXYUSERNAME)->SetWindowTextW(this->proxyoptions->username);
   //GetDlgItem(IDC_EDITPROXYPASSWORD)->SetWindowTextW(this->proxyoptions->password);
-  ((CButton*)GetDlgItem(IDC_CHKPROHIBITDTD))->SetCheck(xmlfeatures.prohibitDTD ? BST_CHECKED : BST_UNCHECKED);
+  ((CButton*)GetDlgItem(IDC_CHKPROHIBITDTD))->SetCheck(xmltoolsoptions.prohibitDTD ? BST_CHECKED : BST_UNCHECKED);
+  ((CButton*)GetDlgItem(IDC_CHKANNOTATIONS))->SetCheck(xmltoolsoptions.useAnnotations ? BST_CHECKED : BST_UNCHECKED);
 
   updateEditFieldsStatus();
 
@@ -100,7 +101,8 @@ void COptionsDlg::OnBnClickedOk() {
   //this->editProxyPassword.GetWindowText(buffer);
   //wcscpy_s(this->proxyoptions->password, (const WCHAR *)buffer);
 
-  xmlfeatures.prohibitDTD = (((CButton*)GetDlgItem(IDC_CHKPROHIBITDTD))->GetCheck() == BST_CHECKED);
+  xmltoolsoptions.prohibitDTD = (((CButton*)GetDlgItem(IDC_CHKPROHIBITDTD))->GetCheck() == BST_CHECKED);
+  xmltoolsoptions.useAnnotations = (((CButton*)GetDlgItem(IDC_CHKANNOTATIONS))->GetCheck() == BST_CHECKED);
 
   CDialogEx::OnOK();
 }
