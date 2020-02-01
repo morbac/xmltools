@@ -847,8 +847,10 @@ void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDes
     wmsg = Report::str_format(L"XML Parsing error - line %d, pos %d: \r\n%s", line, linepos, bstrReason);
   }
 
-  dbgln(Report::str_format(L"encoding: %d", Report::getEncoding(view)).c_str());
-  dbgln(wmsg.c_str());
+  int codepage = (int) ::SendMessage(view, SCI_GETCODEPAGE, NULL, NULL);
+  //dbgln(Report::str_format(L"codepage: %d", codepage).c_str());
+  //dbgln(Report::str_format(L"encoding: %d", Report::getEncoding(view)).c_str());
+  //dbgln(wmsg.c_str());
 
   if (filepos > 0 && xmltoolsoptions.useAnnotations) {
     ::SendMessage(view, SCI_GOTOPOS, filepos - 1, 0);
@@ -856,12 +858,15 @@ void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDes
     // display error as an annotation
 
     ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, line - 1, 34);
-    // problem: annotation should be encoded in correct encoding
-    // but npp always retruns uni8Bit encoding...
-    // utf8
-    ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::ucs2ToUtf8(wmsg.c_str()).c_str()));
-    // ansi
-    ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::ws2s(wmsg).c_str()));
+    // NPPM_GETBUFFERENCODING always returns value 0 whatever encoding is used
+    // we refer to codepage to choose how to encode error message for annotation
+    if (codepage == 0) {
+      // ansi
+      ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::ws2s(wmsg).c_str()));
+    } else {
+      // utf8
+      ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::ucs2ToUtf8(wmsg.c_str()).c_str()));
+    }
 
     ::SendMessage(view, SCI_ANNOTATIONSETVISIBLE, 2, NULL);
     ::SendMessage(view, SCI_SETFIRSTVISIBLELINE, line, NULL); // ensure annotation is visible
