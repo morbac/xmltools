@@ -29,4 +29,6 @@ public:
   CEdit editProxyPort;
   CEdit editProxyUsername;
   CEdit editProxyPassword;
+  CEdit editAnnotationStyle;
+  afx_msg void OnBnClickedChkannotations();
 };

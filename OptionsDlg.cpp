@@ -28,12 +28,14 @@ void COptionsDlg::DoDataExchange(CDataExchange* pDX)
   DDX_Control(pDX, IDC_EDITPROXYPORT, editProxyPort);
   DDX_Control(pDX, IDC_EDITPROXYUSERNAME, editProxyUsername);
   DDX_Control(pDX, IDC_EDITPROXYPASSWORD, editProxyPassword);
+  DDX_Control(pDX, IDC_EDITANNOTATIONSTYLE, editAnnotationStyle);
 }
 
 
 BEGIN_MESSAGE_MAP(COptionsDlg, CDialogEx)
   ON_BN_CLICKED(IDC_CHKENABLEPROXY, &COptionsDlg::OnBnClickedChkenableproxy)
   ON_BN_CLICKED(IDOK, &COptionsDlg::OnBnClickedOk)
+  ON_BN_CLICKED(IDC_CHKANNOTATIONS, &COptionsDlg::OnBnClickedChkannotations)
 END_MESSAGE_MAP()
 
 
@@ -46,11 +48,12 @@ BOOL COptionsDlg::OnInitDialog()
 
   ((CButton*) GetDlgItem(IDC_CHKENABLEPROXY))->SetCheck(proxyoptions.status ? BST_CHECKED : BST_UNCHECKED);
   GetDlgItem(IDC_EDITPROXYHOST)->SetWindowTextW(proxyoptions.host);
-  GetDlgItem(IDC_EDITPROXYPORT)->SetWindowTextW(std::to_wstring(static_cast<long long>(proxyoptions.port)).c_str());
+  GetDlgItem(IDC_EDITPROXYPORT)->SetWindowTextW(std::to_wstring(static_cast<long>(proxyoptions.port)).c_str());
   //GetDlgItem(IDC_EDITPROXYUSERNAME)->SetWindowTextW(this->proxyoptions->username);
   //GetDlgItem(IDC_EDITPROXYPASSWORD)->SetWindowTextW(this->proxyoptions->password);
   ((CButton*)GetDlgItem(IDC_CHKPROHIBITDTD))->SetCheck(xmltoolsoptions.prohibitDTD ? BST_CHECKED : BST_UNCHECKED);
   ((CButton*)GetDlgItem(IDC_CHKANNOTATIONS))->SetCheck(xmltoolsoptions.useAnnotations ? BST_CHECKED : BST_UNCHECKED);
+  GetDlgItem(IDC_EDITANNOTATIONSTYLE)->SetWindowTextW(std::to_wstring(static_cast<int>(xmltoolsoptions.annotationStyle)).c_str());
 
   updateEditFieldsStatus();
 
@@ -78,9 +81,25 @@ void COptionsDlg::updateEditFieldsStatus() {
       break;
     }
   }
+
+  switch (((CButton*)GetDlgItem(IDC_CHKANNOTATIONS))->GetCheck()) {
+    case BST_UNCHECKED: {
+      GetDlgItem(IDC_EDITANNOTATIONSTYLE)->EnableWindow(FALSE);
+      break;
+    }
+    case BST_CHECKED: {
+      GetDlgItem(IDC_EDITANNOTATIONSTYLE)->EnableWindow(TRUE);
+      break;
+    }
+  }
 }
 
 void COptionsDlg::OnBnClickedChkenableproxy() {
+  updateEditFieldsStatus();
+}
+
+
+void COptionsDlg::OnBnClickedChkannotations() {
   updateEditFieldsStatus();
 }
 
@@ -103,6 +122,9 @@ void COptionsDlg::OnBnClickedOk() {
 
   xmltoolsoptions.prohibitDTD = (((CButton*)GetDlgItem(IDC_CHKPROHIBITDTD))->GetCheck() == BST_CHECKED);
   xmltoolsoptions.useAnnotations = (((CButton*)GetDlgItem(IDC_CHKANNOTATIONS))->GetCheck() == BST_CHECKED);
+  
+  this->editAnnotationStyle.GetWindowText(buffer);
+  xmltoolsoptions.annotationStyle = _wtoi((LPCTSTR)buffer);
 
   CDialogEx::OnOK();
 }

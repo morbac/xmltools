@@ -119,6 +119,7 @@ int menuitemCheckXML = -1,
 std::wstring lastXMLSchema(L"");
 
 int nbopenfiles1, nbopenfiles2;
+bool hasAnnotations = false;
 
 // Here're the declaration my functions ///////////////////////////////////////
 void insertXMLCheckTag();
@@ -479,6 +480,7 @@ void initializePlugin() {
   ::GetPrivateProfileString(sectionName, L"proxyPass", L"", proxyoptions.password, 255, iniFilePath);
   xmltoolsoptions.prohibitDTD = (::GetPrivateProfileInt(sectionName, L"prohibitDTD", 0, iniFilePath) == 1);
   xmltoolsoptions.useAnnotations = (::GetPrivateProfileInt(sectionName, L"useAnnotations", 0, iniFilePath) == 1);
+  xmltoolsoptions.annotationStyle = ::GetPrivateProfileInt(sectionName, L"annotationStyle", 34, iniFilePath);
 
   updateProxyConfig();
 
@@ -615,6 +617,11 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
         //if (doAutoIndent && lastChar == '\n') tagAutoIndent();
         //if (doAttrAutoComplete && lastChar == '\"') attributeAutoComplete();
       }
+
+      if (hasAnnotations && xmltoolsoptions.useAnnotations) {
+        ::SendMessage(nppData._nppHandle, SCI_ANNOTATIONCLEARALL, NULL, NULL);
+        hasAnnotations = false;
+      }
       break;
     }
     case NPPN_FILEOPENED:
@@ -749,11 +756,12 @@ void optionsDlg() {
   if (dlg->DoModal() == IDOK) {
     ::WritePrivateProfileString(sectionName, L"proxyEnabled", proxyoptions.status?L"1":L"0", iniFilePath);
     ::WritePrivateProfileString(sectionName, L"proxyHost", proxyoptions.host, iniFilePath);
-    ::WritePrivateProfileString(sectionName, L"proxyPort", std::to_wstring(static_cast<long long>(proxyoptions.port)).c_str(), iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"proxyPort", std::to_wstring(static_cast<long>(proxyoptions.port)).c_str(), iniFilePath);
     ::WritePrivateProfileString(sectionName, L"proxyUser", proxyoptions.username, iniFilePath);
     ::WritePrivateProfileString(sectionName, L"proxyPass", proxyoptions.password, iniFilePath);
     ::WritePrivateProfileString(sectionName, L"prohibitDTD", xmltoolsoptions.prohibitDTD ? L"1" : L"0", iniFilePath);
     ::WritePrivateProfileString(sectionName, L"useAnnotations", xmltoolsoptions.useAnnotations ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"annotationStyle", std::to_wstring(static_cast<int>(xmltoolsoptions.annotationStyle)).c_str(), iniFilePath);
 
     updateProxyConfig();
   }
@@ -835,7 +843,7 @@ void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDes
   CHK_HR(pXMLErr->get_reason(&bstrReason));
 
  /*
-  for (int i = 0; i < 256; ++i) {
+  for (int i = 0; i < 512; ++i) {
     ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, i, i);
     ::SendMessage(view, SCI_ANNOTATIONSETTEXT, i, reinterpret_cast<LPARAM>(Report::str_format("annotation style %d", i).c_str()));
   }
@@ -857,7 +865,11 @@ void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDes
 
     // display error as an annotation
 
-    ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, line - 1, 34);
+    //char* styles = new char[wmsg.length()];
+    //memset(styles, xmltoolsoptions.annotationStyle, wmsg.length());
+    //memset(styles, 0, wmsg.find(L"\r\n")+1);
+
+
     // NPPM_GETBUFFERENCODING always returns value 0 whatever encoding is used
     // we refer to codepage to choose how to encode error message for annotation
     if (codepage == 0) {
@@ -868,8 +880,12 @@ void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDes
       ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::ucs2ToUtf8(wmsg.c_str()).c_str()));
     }
 
+    //::SendMessage(view, SCI_ANNOTATIONSETSTYLES, line - 1, reinterpret_cast<LPARAM>(styles));
+    ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, line - 1, xmltoolsoptions.annotationStyle);
     ::SendMessage(view, SCI_ANNOTATIONSETVISIBLE, 2, NULL);
-    ::SendMessage(view, SCI_SETFIRSTVISIBLELINE, line, NULL); // ensure annotation is visible
+    ::SendMessage(view, SCI_SETFIRSTVISIBLELINE, line-1, NULL); // ensure annotation is visible
+    ::SendMessage(view, SCI_SHOWLINES, line - 3, line + 2); // force surround lines visibles if folded
+    hasAnnotations = true;
   } else {
     Report::_printf_err(wmsg);
   }
@@ -885,7 +901,10 @@ int performXMLCheck(int informIfNoError) {
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
 
-  ::SendMessage(hCurrentEditView, SCI_ANNOTATIONCLEARALL, NULL, NULL);
+  if (hasAnnotations && xmltoolsoptions.useAnnotations) {
+    ::SendMessage(hCurrentEditView, SCI_ANNOTATIONCLEARALL, NULL, NULL);
+  }
+
   currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
   char *data = new char[currentLength + sizeof(char)];
