@@ -343,67 +343,21 @@ UniMode Report::getEncoding(HWND npp) {
   return UniMode(i);
 }
 
+/*
+  Npp mapping is following:
+    uni8Bit   - IDM_FORMAT_ANSI
+    uniCookie - IDM_FORMAT_AS_UTF_8
+    uniUTF8   - IDM_FORMAT_UTF_8    (utf8 with bom)
+    uni16BE   - IDM_FORMAT_UCS_2BE
+    uni16LE   - IDM_FORMAT_UCS_2LE
+*/
 UniMode Report::getEncoding(BSTR encoding) {
   CStringW cstring(encoding);
   if (0 == cstring.Left(4).CompareNoCase(L"iso-")) {
     return uni8Bit;
   }
-  return uniUTF8;
+  return uniCookie;
 }
-
-/*
-UniMode Report::getEncoding(HWND npp) {
-  return Report::getEncoding(XML_CHAR_ENCODING_NONE, npp);
-}
-
-UniMode Report::getEncoding(const xmlChar* xmlencoding, HWND npp) {
-  return Report::getEncoding(XML_CHAR_ENCODING_NONE, npp);
-}
-
-UniMode Report::getEncoding(const xmlChar* xmlencoding, HWND npp) {
-  if (xmlencoding != NULL) {
-    xmlCharEncoding enc = pXmlParseCharEncoding(reinterpret_cast<const char*>(xmlencoding));
-    return Report::getEncoding(enc, npp);
-  } else {
-    return Report::getEncoding(XML_CHAR_ENCODING_NONE, npp);
-  }
-}
-
-UniMode Report::getEncoding(xmlCharEncoding xmlencoding, HWND npp) {
-  if (xmlencoding == XML_CHAR_ENCODING_NONE) {
-    HWND nppwnd = (npp == NULL ? nppData._nppHandle : npp);
-    LRESULT bufferid = ::SendMessage(nppwnd, NPPM_GETCURRENTBUFFERID, 0, 0);
-    return UniMode(::SendMessage(nppwnd, NPPM_GETBUFFERENCODING, bufferid, 0));
-  } else {
-    // uni8Bit=0, uniUTF8=1, uni16BE=2, uni16LE=3, uniCookie=4, uni7Bit=5, uni16BE_NoBOM=6, uni16LE_NoBOM=7
-
-    switch (xmlencoding) {
-      case XML_CHAR_ENCODING_UTF8: // UTF-8
-        return uniUTF8;
-        break;
-      case XML_CHAR_ENCODING_UTF16LE: // UTF-16 little endian
-        return uni16LE;
-        break;
-      case XML_CHAR_ENCODING_UTF16BE: // UTF-16 big endian
-        return uni16BE;
-        break;
-      case XML_CHAR_ENCODING_UCS4LE: // UCS-4 little endian
-      case XML_CHAR_ENCODING_UCS4_3412: // UCS-4 unusual ordering
-        return uni16LE_NoBOM;
-        break;
-      case XML_CHAR_ENCODING_UCS4BE: // UCS-4 big endian
-      case XML_CHAR_ENCODING_UCS4_2143: // UCS-4 unusual ordering
-        return uni16BE_NoBOM;
-        break;
-      case XML_CHAR_ENCODING_ASCII:  // pure ASCII
-        return uni8Bit;
-        break;
-      default:
-        return uniUTF8;
-
-    }
-  }
-}*/
 
 void Report::setEncoding(UniMode encoding, HWND npp /* = NULL */) {
   HWND nppwnd = (npp == NULL ? nppData._nppHandle : npp);
@@ -413,10 +367,10 @@ void Report::setEncoding(UniMode encoding, HWND npp /* = NULL */) {
   // uni8Bit=0, uniUTF8=1, uni16BE=2, uni16LE=3, uniCookie=4, uni7Bit=5, uni16BE_NoBOM=6, uni16LE_NoBOM=7
   switch (encoding) {
     case uni8Bit: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_ANSI); break;
-    case uniUTF8: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_AS_UTF_8); break;
+    case uniCookie: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_AS_UTF_8); break;
+    case uniUTF8: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_UTF_8); break;
     case uni16BE: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_UCS_2BE); break;
     case uni16LE: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_UCS_2LE); break;
-    case uniCookie: 
     default: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_ANSI); break;
   }
 }
