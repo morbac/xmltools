@@ -25,8 +25,8 @@ LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,1
- PRODUCTVERSION 3,0,0,1
+ FILEVERSION 3,0,0,2
+ PRODUCTVERSION 3,0,0,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -42,12 +42,12 @@ BEGIN
         BLOCK "040004b0"
         BEGIN
             VALUE "FileDescription", "XMLTools"
-            VALUE "FileVersion", "3.0.0.1"
+            VALUE "FileVersion", "3.0.0.2"
             VALUE "InternalName", "XMLTools"
             VALUE "LegalCopyright", "Copyright (C) 2018"
             VALUE "OriginalFilename", "XMLTools.dll"
             VALUE "ProductName", "XMLTools"
-            VALUE "ProductVersion", "3.0.0.1"
+            VALUE "ProductVersion", "3.0.0.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -122,7 +122,7 @@ BEGIN
 END
 
 IDD_XPATHEVAL DIALOGEX 0, 0, 402, 221
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "XPath Expression Evaluation"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -226,7 +226,8 @@ BEGIN
     CONTROL         "Display errors as annotations",IDC_CHKANNOTATIONS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,118,107,10
     LTEXT           "Annotations style",IDC_STATIC,26,132,74,8
-    EDITTEXT        IDC_EDITANNOTATIONSTYLE,100,130,130,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDITANNOTATIONSTYLE,100,130,85,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "View",IDC_BTNVIEWANNOTATION,190,130,40,12
 END
 
 IDD_DLGDEBUG DIALOGEX 0, 0, 389, 211

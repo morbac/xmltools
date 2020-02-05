@@ -17,8 +17,7 @@ COptionsDlg::COptionsDlg(CWnd* pParent /*=NULL*/)
 {
 }
 
-COptionsDlg::~COptionsDlg()
-{
+COptionsDlg::~COptionsDlg() {
 }
 
 void COptionsDlg::DoDataExchange(CDataExchange* pDX)
@@ -36,6 +35,7 @@ BEGIN_MESSAGE_MAP(COptionsDlg, CDialogEx)
   ON_BN_CLICKED(IDC_CHKENABLEPROXY, &COptionsDlg::OnBnClickedChkenableproxy)
   ON_BN_CLICKED(IDOK, &COptionsDlg::OnBnClickedOk)
   ON_BN_CLICKED(IDC_CHKANNOTATIONS, &COptionsDlg::OnBnClickedChkannotations)
+  ON_BN_CLICKED(IDC_BTNVIEWANNOTATION, &COptionsDlg::OnBnClickedBtnviewannotation)
 END_MESSAGE_MAP()
 
 
@@ -45,6 +45,8 @@ END_MESSAGE_MAP()
 BOOL COptionsDlg::OnInitDialog()
 {
   CDialogEx::OnInitDialog();
+
+  testAnnotation = false;
 
   ((CButton*) GetDlgItem(IDC_CHKENABLEPROXY))->SetCheck(proxyoptions.status ? BST_CHECKED : BST_UNCHECKED);
   GetDlgItem(IDC_EDITPROXYHOST)->SetWindowTextW(proxyoptions.host);
@@ -127,4 +129,32 @@ void COptionsDlg::OnBnClickedOk() {
   xmltoolsoptions.annotationStyle = _wtoi((LPCTSTR)buffer);
 
   CDialogEx::OnOK();
+}
+
+
+void COptionsDlg::OnBnClickedBtnviewannotation() {
+  CStringW buffer; 
+  
+  bool prevStatus = xmltoolsoptions.useAnnotations;
+  int prevStyle = xmltoolsoptions.annotationStyle;
+
+  xmltoolsoptions.useAnnotations = true;
+  this->editAnnotationStyle.GetWindowText(buffer);
+  xmltoolsoptions.annotationStyle = _wtoi((LPCTSTR)buffer);
+
+  testAnnotation = true;
+  clearAnnotations();
+  displayXMLError(L"This is an annotation example.");
+
+  xmltoolsoptions.useAnnotations = prevStatus;
+  xmltoolsoptions.annotationStyle = prevStyle;
+}
+
+
+BOOL COptionsDlg::OnCommand(WPARAM wParam, LPARAM lParam) {
+  if (testAnnotation) {
+    clearAnnotations();
+  }
+
+  return CDialogEx::OnCommand(wParam, lParam);
 }

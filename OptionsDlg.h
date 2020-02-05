@@ -15,6 +15,8 @@ public:
   enum { IDD = IDD_OPTIONS };
 
 protected:
+  bool testAnnotation = false;
+
   virtual void DoDataExchange(CDataExchange* pDX);    // Prise en charge de DDX/DDV
 
   void updateEditFieldsStatus();
@@ -31,4 +33,6 @@ public:
   CEdit editProxyPassword;
   CEdit editAnnotationStyle;
   afx_msg void OnBnClickedChkannotations();
+  afx_msg void OnBnClickedBtnviewannotation();
+  virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 };

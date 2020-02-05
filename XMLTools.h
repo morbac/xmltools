@@ -61,6 +61,8 @@ extern struct struct_xmltoolsoptions xmltoolsoptions;
 extern void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDesc = NULL);
 extern void dbg(CStringW line);
 extern void dbgln(CStringW line);
+extern void displayXMLError(std::wstring wmsg, HWND view = NULL, int line = -1, int filepos = -1);
+extern void clearAnnotations(HWND view = NULL);
 
 /////////////////////////////////////////////////////////////////////////////
 // CXMLToolsApp

@@ -618,9 +618,12 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
         //if (doAttrAutoComplete && lastChar == '\"') attributeAutoComplete();
       }
 
-      if (hasAnnotations && xmltoolsoptions.useAnnotations) {
-        ::SendMessage(nppData._nppHandle, SCI_ANNOTATIONCLEARALL, NULL, NULL);
-        hasAnnotations = false;
+      break;
+    }
+    case SCN_MODIFIED: {
+      if (notifyCode->modificationType & (SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT)) {
+        dbgln(Report::str_format("NPP Event: SCN_MODIFIED [%d]", notifyCode->modificationType).c_str());
+        clearAnnotations();
       }
       break;
     }
@@ -829,13 +832,59 @@ void howtoUse() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void displayXMLError(std::wstring wmsg, HWND view, int line, int filepos) {
+  // clear final \r\n
+  std::string::size_type p = wmsg.find_last_not_of(L"\r\n");
+  if (p != std::string::npos && p < wmsg.length()) {
+    wmsg.erase(p+1, std::string::npos);
+  }
+
+  if (view == NULL) {
+    int currentEdit;
+    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
+    view = getCurrentHScintilla(currentEdit);
+  }
+
+  LRESULT bufferid = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
+  UniMode encoding = UniMode(::SendMessage(nppData._nppHandle, NPPM_GETBUFFERENCODING, bufferid, 0));
+
+  if (xmltoolsoptions.useAnnotations) {
+    if (filepos > 0) {
+      ::SendMessage(view, SCI_GOTOPOS, filepos - 1, 0);
+    }
+    if (line <= 0) {
+      line = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLINE, 0, 0) + 1;
+    }
+
+    // display error as an annotation
+
+    //char* styles = new char[wmsg.length()];
+    //memset(styles, xmltoolsoptions.annotationStyle, wmsg.length());
+    //memset(styles, 0, wmsg.find(L"\r\n")+1);
+
+    if (encoding == uniCookie) {  // utf-8
+      ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::ucs2ToUtf8(wmsg.c_str()).c_str()));
+    } else {    // ansi
+      ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::ws2s(wmsg).c_str()));
+    }
+
+    //::SendMessage(view, SCI_ANNOTATIONSETSTYLES, line - 1, reinterpret_cast<LPARAM>(styles));
+    ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, line - 1, xmltoolsoptions.annotationStyle);
+    ::SendMessage(view, SCI_ANNOTATIONSETVISIBLE, 2, NULL);
+    ::SendMessage(view, SCI_SETFIRSTVISIBLELINE, line - 1, NULL); // ensure annotation is visible
+    ::SendMessage(view, SCI_SHOWLINES, line - 3, line + 2); // force surround lines visibles if folded
+    hasAnnotations = true;
+  } else {
+    Report::_printf_err(wmsg);
+  }
+}
+
 void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDesc) {
   HRESULT hr = S_OK;
   long line = 0;
   long linepos = 0;
   long filepos = 0;
   BSTR bstrReason = NULL;
-  std::wstring wmsg;
 
   CHK_HR(pXMLErr->get_line(&line));
   CHK_HR(pXMLErr->get_linepos(&linepos));
@@ -850,48 +899,25 @@ void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDes
  */
 
   if (szDesc != NULL) {
-    wmsg = Report::str_format(L"%s - line %d, pos %d: \r\n%s", szDesc, line, linepos, bstrReason);
+    displayXMLError(Report::str_format(L"%s - line %d, pos %d: \r\n%s", szDesc, line, linepos, bstrReason), view, line, filepos);
   } else {
-    wmsg = Report::str_format(L"XML Parsing error - line %d, pos %d: \r\n%s", line, linepos, bstrReason);
-  }
-
-  int codepage = (int) ::SendMessage(view, SCI_GETCODEPAGE, NULL, NULL);
-  //dbgln(Report::str_format(L"codepage: %d", codepage).c_str());
-  //dbgln(Report::str_format(L"encoding: %d", Report::getEncoding(view)).c_str());
-  //dbgln(wmsg.c_str());
-
-  if (filepos > 0 && xmltoolsoptions.useAnnotations) {
-    ::SendMessage(view, SCI_GOTOPOS, filepos - 1, 0);
-
-    // display error as an annotation
-
-    //char* styles = new char[wmsg.length()];
-    //memset(styles, xmltoolsoptions.annotationStyle, wmsg.length());
-    //memset(styles, 0, wmsg.find(L"\r\n")+1);
-
-
-    // NPPM_GETBUFFERENCODING always returns value 0 whatever encoding is used
-    // we refer to codepage to choose how to encode error message for annotation
-    if (codepage == 0) {
-      // ansi
-      ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::ws2s(wmsg).c_str()));
-    } else {
-      // utf8
-      ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::ucs2ToUtf8(wmsg.c_str()).c_str()));
-    }
-
-    //::SendMessage(view, SCI_ANNOTATIONSETSTYLES, line - 1, reinterpret_cast<LPARAM>(styles));
-    ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, line - 1, xmltoolsoptions.annotationStyle);
-    ::SendMessage(view, SCI_ANNOTATIONSETVISIBLE, 2, NULL);
-    ::SendMessage(view, SCI_SETFIRSTVISIBLELINE, line-1, NULL); // ensure annotation is visible
-    ::SendMessage(view, SCI_SHOWLINES, line - 3, line + 2); // force surround lines visibles if folded
-    hasAnnotations = true;
-  } else {
-    Report::_printf_err(wmsg);
+    displayXMLError(Report::str_format(L"XML Parsing error - line %d, pos %d: \r\n%s", line, linepos, bstrReason), view, line, filepos);
   }
 
 CleanUp:
   SysFreeString(bstrReason);
+}
+
+void clearAnnotations(HWND view) {
+  if (view == NULL) {
+    int currentEdit;
+    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
+    view = getCurrentHScintilla(currentEdit);
+  }
+  if (hasAnnotations && xmltoolsoptions.useAnnotations) {
+    ::SendMessage(view, SCI_ANNOTATIONCLEARALL, NULL, NULL);
+    hasAnnotations = false;
+  }
 }
 
 int performXMLCheck(int informIfNoError) {
@@ -901,9 +927,7 @@ int performXMLCheck(int informIfNoError) {
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
 
-  if (hasAnnotations && xmltoolsoptions.useAnnotations) {
-    ::SendMessage(hCurrentEditView, SCI_ANNOTATIONCLEARALL, NULL, NULL);
-  }
+  clearAnnotations(hCurrentEditView);
 
   currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 

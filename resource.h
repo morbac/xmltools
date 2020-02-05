@@ -48,6 +48,7 @@
 #define IDC_STATIC_INFOS                2034
 #define IDC_CHKANNOTATIONS              2036
 #define IDC_EDITANNOTATIONSTYLE         2038
+#define IDC_BTNVIEWANNOTATION           2039
 
 // Next default values for new objects
 // 
@@ -55,7 +56,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        2012
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2039
+#define _APS_NEXT_CONTROL_VALUE         2040
 #define _APS_NEXT_SYMED_VALUE           2000
 #endif
 #endif
