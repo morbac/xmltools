@@ -832,7 +832,7 @@ void howtoUse() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void displayXMLError(std::wstring wmsg, HWND view, int line, int filepos) {
+void displayXMLError(std::wstring wmsg, HWND view, size_t line, int filepos) {
   // clear final \r\n
   std::string::size_type p = wmsg.find_last_not_of(L"\r\n");
   if (p != std::string::npos && p < wmsg.length()) {
@@ -853,7 +853,7 @@ void displayXMLError(std::wstring wmsg, HWND view, int line, int filepos) {
       ::SendMessage(view, SCI_GOTOPOS, filepos - 1, 0);
     }
     if (line <= 0) {
-      line = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLINE, 0, 0) + 1;
+      line = (size_t) ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLINE, 0, 0) + 1;
     }
 
     // display error as an annotation
@@ -862,10 +862,18 @@ void displayXMLError(std::wstring wmsg, HWND view, int line, int filepos) {
     //memset(styles, xmltoolsoptions.annotationStyle, wmsg.length());
     //memset(styles, 0, wmsg.find(L"\r\n")+1);
 
-    if (encoding == uniCookie) {  // utf-8
-      ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::ucs2ToUtf8(wmsg.c_str()).c_str()));
-    } else {    // ansi
-      ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::ws2s(wmsg).c_str()));
+    switch (encoding) {
+      case uniCookie:
+      case uniUTF8:
+      case uni16BE:
+      case uni16LE:
+        // utf-8
+        ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::ucs2ToUtf8(wmsg.c_str()).c_str()));
+        break;
+      default:
+        // ansi
+        ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::ws2s(wmsg).c_str()));
+        break;
     }
 
     //::SendMessage(view, SCI_ANNOTATIONSETSTYLES, line - 1, reinterpret_cast<LPARAM>(styles));
@@ -1002,7 +1010,7 @@ void XMLValidation(int informIfNoError) {
   // 0. change current folder
   TCHAR currenPath[MAX_PATH] = { '\0' };
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTDIRECTORY, MAX_PATH, (LPARAM)currenPath);
-  _chdir(Report::narrow(currenPath).data());
+  _chdir(Report::narrow(currenPath).c_str());
 
   // 1. check xml syntax
   bool abortValidation = false;
@@ -1424,8 +1432,8 @@ void tagAutoIndent() {
   struct TextRange tr = {{startPos, currentPos}, buf};
   ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 
-  int tabwidth = ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
-  int usetabs = ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
+  int tabwidth = (int) ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
+  bool usetabs = (bool) ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
   if (tabwidth <= 0) tabwidth = 4;
 
   bool ignoreIndentation = false;
@@ -1713,8 +1721,8 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     // some char value (pc = previous char, cc = current char, nc = next char, nnc = next next char)
     char pc, cc, nc, nnc;
 
-    int tabwidth = ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
-    int usetabs  = ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
+    int tabwidth = (int) ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
+    bool usetabs = (bool) ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
     if (tabwidth <= 0) tabwidth = 4;
 
     bool isclosingtag;
@@ -1725,8 +1733,8 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     // il faudrait calculer l'indentation de la 1re ligne de sélection, mais l'indentation
     // de cette ligne n'est peut-être pas correcte. On pourrait la déterminer en récupérant
     // le path de la banche sélectionnée...
-    selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-    selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
+    selstart = (long) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
+    selend = (long) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
 
     std::string str("");
     std::string eolchar;
@@ -1879,7 +1887,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     sep += eolchar;
     strlength = str.length();
     while (curpos < strlength && (curpos = str.find_first_of(sep,curpos)) != std::string::npos) {
-      if (!Report::isEOL(str, strlength, curpos, eolmode)) {
+      if (!Report::isEOL(str, strlength, (unsigned int) curpos, eolmode)) {
         if (curpos < strlength-4 && !str.compare(curpos,4,"<!--")) {
           in_comment = true;
         }
@@ -2067,8 +2075,8 @@ void prettyPrintAttributes() {
 
     ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
-    int tabwidth = ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
-    int usetabs = ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
+    int tabwidth = (int) ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
+    bool usetabs = (bool) ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
     if (tabwidth <= 0) tabwidth = 4;
 
     HRESULT hr = S_OK;
@@ -2077,7 +2085,7 @@ void prettyPrintAttributes() {
     VARIANT varCurrentData;
     
     bool in_comment = false, in_header = false, in_attribute = false, in_nodetext = false, in_cdata = false;
-    long curpos = 0, strlength = 0;
+    size_t curpos = 0, strlength = 0;
     std::string lineindent = "";
     char pc, cc, nc, nnc;
     int tagsignlevel = 0, nattrs = 0;
@@ -2098,8 +2106,8 @@ void prettyPrintAttributes() {
 
     Report::getEOLChar(hCurrentEditView, &eolmode, &eolchar);
 
-    int prevspecchar = -1;
-    while (curpos < (long)str.length() && (curpos = str.find_first_of("<>\"",curpos)) >= 0) {
+    size_t prevspecchar = -1;
+    while (curpos < str.length() && (curpos = str.find_first_of("<>\"",curpos)) >= 0) {
       strlength = str.length();
       if (curpos < strlength-3 && !str.compare(curpos,4,"<!--")) in_comment = true;
       if (curpos < strlength-8 && !str.compare(curpos,9,"<![CDATA[")) in_cdata = true;
@@ -2132,20 +2140,20 @@ void prettyPrintAttributes() {
           prevspecchar = curpos++;
         } else if (in_attribute) {
           if (++nattrs > 1) {
-            long attrpos = str.find_last_of(eolchar+"\t ", curpos-1)+1;
-            if (!Report::isEOL(str, strlength, attrpos, eolmode)) {
-              long spacpos = str.find_last_not_of(eolchar+"\t ", attrpos-1)+1;
+            size_t attrpos = str.find_last_of(eolchar+"\t ", curpos-1)+1;
+            if (!Report::isEOL(str, strlength, (unsigned int) attrpos, eolmode)) {
+              size_t spacpos = str.find_last_not_of(eolchar+"\t ", attrpos-1)+1;
               str.replace(spacpos, attrpos-spacpos, lineindent);
               curpos -= attrpos-spacpos;
               curpos += lineindent.length();
             }
           } else {
-            long attrpos = str.find_last_of(eolchar+"\t ", curpos-1)+1;
-            if (!Report::isEOL(str, strlength, attrpos, eolmode)) {
-              long linestart = str.find_last_of(eolchar, attrpos-1)+1;
+            size_t attrpos = str.find_last_of(eolchar+"\t ", curpos-1)+1;
+            if (!Report::isEOL(str, strlength, (unsigned int) attrpos, eolmode)) {
+              size_t linestart = str.find_last_of(eolchar, attrpos-1)+1;
               lineindent = str.substr(linestart, attrpos-linestart);
-              long lineindentlen = lineindent.length();
-              for (long i = 0; i < lineindentlen; ++i) {
+              size_t lineindentlen = lineindent.length();
+              for (size_t i = 0; i < lineindentlen; ++i) {
                 char lic = lineindent.at(i);
                 if (lic != '\t' && lic != ' ') {
                     lineindent.replace(i, 1, " ");
@@ -2295,9 +2303,9 @@ void convertText2XML() {
   isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
   if (isReadOnly) return;
 
-  long selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-  long selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
-  long sellength = selend-selstart;
+  size_t selstart = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
+  size_t selend = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
+  size_t sellength = selend-selstart;
 
   if (selend <= selstart) {
     Report::_printf_err(L"Please select text to transform before you call the function.");
@@ -2369,9 +2377,9 @@ void convertXML2Text() {
   isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
   if (isReadOnly) return;
 
-  long selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-  long selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
-  long sellength = selend-selstart;
+  size_t selstart = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
+  size_t selend = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
+  size_t sellength = selend-selstart;
 
   if (selend <= selstart) {
     Report::_printf_err(L"Please select text to transform before you call the function.");
@@ -2471,7 +2479,7 @@ int validateSelectionForComment(std::string str, std::string::size_type sellengt
     }
     ++curpos;
   }
-  if (!checkstack.empty()) errflag = checkstack.size();
+  if (!checkstack.empty()) errflag = -1;
 
   return errflag;
 }
@@ -2487,9 +2495,9 @@ void commentSelection() {
   isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
   if (isReadOnly) return;
 
-  long selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-  long selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
-  long sellength = selend-selstart;
+  size_t selstart = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
+  size_t selend = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
+  size_t sellength = selend-selstart;
   
   if (selend <= selstart) {
     Report::_printf_err(L"Please select text to transform before you call the function.");
@@ -2511,9 +2519,9 @@ void commentSelection() {
   data = NULL;
 
   int errflag = validateSelectionForComment(str, sellength);
-  if (errflag) {
+  if (errflag != 0) {
     wchar_t msg[512];
-    swprintf(msg, 512, L"The current selection covers part only one portion of another comment.\nUncomment process may be not applicable.\n\nDo you want to continue ? %d", errflag);
+    swprintf(msg, 512, L"The current selection covers part of another comment.\nUncomment process may be not applicable.\n\nDo you want to continue ? Error code %d", errflag);
     if (::MessageBox(nppData._nppHandle, msg, L"XML Tools plugin", MB_YESNO | MB_ICONASTERISK) == IDNO) {
       str.clear();
       return;
@@ -2523,7 +2531,7 @@ void commentSelection() {
   std::string::size_type curpos = sellength;
   while (curpos != std::string::npos && (curpos = str.rfind("<!{", curpos)) != std::string::npos) {
     if (curpos != std::string::npos) {
-      int endvalpos = str.find("}**", curpos);
+      size_t endvalpos = str.find("}**", curpos);
       int endval = atoi(str.substr(curpos+3,endvalpos).c_str());
       char tmpstr[64];
       sprintf(tmpstr, "<!{%d}**", endval+1);
@@ -2535,7 +2543,7 @@ void commentSelection() {
   curpos = sellength;
   while (curpos != std::string::npos && (curpos = str.rfind("**{", curpos)) != std::string::npos) {
     if (curpos != std::string::npos) {
-      int endvalpos = str.find("}>", curpos);
+      size_t endvalpos = str.find("}>", curpos);
       int endval = atoi(str.substr(curpos+3,endvalpos).c_str());
       char tmpstr[64];
       sprintf(tmpstr, "**{%d}>", endval+1);
@@ -2588,9 +2596,9 @@ void uncommentSelection() {
   isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
   if (isReadOnly) return;
 
-  long selstart = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-  long selend = ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
-  long sellength = selend-selstart;
+  size_t selstart = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
+  size_t selend = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
+  size_t sellength = selend-selstart;
 
   if (selend <= selstart) {
     Report::_printf_err(L"Please select text to transform before you call the function.");
@@ -2608,7 +2616,7 @@ void uncommentSelection() {
   data = NULL;
 
   int errflag = validateSelectionForComment(str, sellength);
-  if (errflag) {
+  if (errflag != 0) {
     wchar_t msg[512];
     swprintf(msg, 512, L"Unable to uncomment the current selection.\nError code is %d.", errflag);
     Report::_printf_err(msg);
@@ -2637,7 +2645,7 @@ void uncommentSelection() {
   curpos = sellength;
   while (curpos != std::string::npos && (curpos = str.rfind("<!{", curpos)) != std::string::npos) {
     if (curpos != std::string::npos) {
-      int endvalpos = str.find("}**", curpos);
+      size_t endvalpos = str.find("}**", curpos);
       int endval = atoi(str.substr(curpos+3,endvalpos).c_str());
       if (endval > 1) {
         char tmpstr[64];
@@ -2654,7 +2662,7 @@ void uncommentSelection() {
   curpos = sellength;
   while (curpos != std::string::npos && (curpos = str.rfind("**{", curpos)) != std::string::npos) {
     if (curpos != std::string::npos) {
-      int endvalpos = str.find("}>", curpos);
+      size_t endvalpos = str.find("}>", curpos);
       int endval = atoi(str.substr(curpos+3,endvalpos).c_str());
       if (endval > 1) {
         char tmpstr[64];

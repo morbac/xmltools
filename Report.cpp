@@ -219,18 +219,16 @@ void Report::registerMessage(void * ctx, const char* s, ...) {
 }
 
 void Report::strcpy(char* dest, const wchar_t* src) {
-  std::wstring s = std::wstring(src);
-  std::copy(s.c_str(), s.c_str()+s.length()+1, dest);
+  Report::strcpy(dest, std::wstring(src));
 }
 
 void Report::strcpy(char* dest, std::wstring& src) {
   //strcpy(params[nbparams], key.c_str());
-  std::copy(src.c_str(), src.c_str()+src.length()+1, dest);
+  wcstombs(dest, src.c_str(), src.length());
 }
 
 void Report::strcpy(wchar_t* dest, const wchar_t* src) {
-  std::wstring s = std::wstring(src);
-  std::copy(s.c_str(), s.c_str()+s.length()+1, dest);
+  Report::strcpy(dest, std::wstring(src));
 }
 
 void Report::strcpy(wchar_t* dest, std::wstring& src) {
@@ -239,8 +237,11 @@ void Report::strcpy(wchar_t* dest, std::wstring& src) {
 }
 
 std::string Report::narrow(const std::wstring& ws) {
-  std::string res(ws.length(), ' '); // Make room for characters
-  std::copy(ws.begin(), ws.end(), res.begin());
+  size_t l = 4 * ws.length();
+  char* tmp = new char[l];
+  wcstombs(tmp, ws.c_str(), l);
+  std::string res(tmp);
+  delete[] tmp;
   return res;
 }
 
@@ -260,7 +261,7 @@ std::wstring Report::widen(const std::string& s) {
 // TODO: Optimiser les fonctions suivantes
 std::string Report::trimleft(const std::string& s) {
   if (s.empty()) return s;
-  int i = 0, l = s.length();
+  size_t i = 0, l = s.length();
   while (i < l && isspace(s.at(i))) ++i;
   if (i >= l) return "";
   else return s.substr(i);
@@ -268,20 +269,20 @@ std::string Report::trimleft(const std::string& s) {
 
 std::string Report::trimright(const std::string& s) {
   if (s.empty()) return s;
-  int i = s.length()-1;
+  size_t i = s.length()-1;
   while (i >= 0 && isspace(s.at(i))) --i;
   if (i < 0) return "";
   else return s.substr(0, i+1);
 }
 
 std::string Report::trim(const std::string& s) {
-   return Report::trimleft(Report::trimright(s));
+  return Report::trimleft(Report::trimright(s));
 }
 
 // TODO: Optimiser les fonctions suivantes
 std::wstring Report::wtrimleft(const std::wstring& s) {
   if (s.empty()) return s;
-  int i = 0, l = s.length();
+  size_t i = 0, l = s.length();
   while (i < l && isspace(s.at(i))) ++i;
   if (i >= l) return L"";
   else return s.substr(i);
@@ -289,7 +290,7 @@ std::wstring Report::wtrimleft(const std::wstring& s) {
 
 std::wstring Report::wtrimright(const std::wstring& s) {
   if (s.empty()) return s;
-  int i = s.length()-1;
+  size_t i = s.length()-1;
   while (i >= 0 && isspace(s.at(i))) --i;
   if (i < 0) return L"";
   else return s.substr(0, i+1);
@@ -339,8 +340,7 @@ std::string Report::ws2s(const std::wstring& s) {
 UniMode Report::getEncoding(HWND npp) {
   HWND nppwnd = (npp == NULL ? nppData._nppHandle : npp);
   LRESULT bufferid = ::SendMessage(nppwnd, NPPM_GETCURRENTBUFFERID, 0, 0);
-  int i = ::SendMessage(nppwnd, NPPM_GETBUFFERENCODING, bufferid, 0);
-  return UniMode(i);
+  return UniMode(::SendMessage(nppwnd, NPPM_GETBUFFERENCODING, bufferid, 0));
 }
 
 /*
@@ -389,7 +389,7 @@ wchar_t* Report::castChar(const char* orig, UniMode encoding /*= uniEnd*/) {
            wsize = 4*(osize+1);
     wchar_t* wbuffer = new wchar_t[wsize];
     memset(wbuffer, '\0', wsize);
-    Report::UCS2FromUTF8(orig, osize+1, wbuffer, wsize);
+    Report::UCS2FromUTF8(orig, static_cast<unsigned int>(osize+1), wbuffer, static_cast<unsigned int>(wsize));
     return wbuffer;
   }
 }
@@ -408,7 +408,7 @@ char* Report::castWChar(const wchar_t* orig, UniMode encoding /*= uniEnd*/) {
            size = 4*(osize+1);
     char* buffer = new char[size];
     memset(buffer, '\0', size);
-    Report::UTF8FromUCS2(orig, osize+1, buffer, size);
+    Report::UTF8FromUCS2(orig, static_cast<unsigned int>(osize+1), buffer, static_cast<unsigned int>(size));
     return buffer;
   }
 }
@@ -554,17 +554,8 @@ int Report::utf8_to_ascii(const char * pszUTF8, unsigned int lenUTF8, char * psz
   return nbByte;
 }
 
-CStringA Report::UTF16toUTF8(const CStringW& utf16) {
-  return CW2A(utf16, CP_UTF8);
-}
-
-CStringW Report::UTF8toUTF16(const CStringA& utf8) {
-  return CA2W(utf8, CP_UTF8);
-}
-
 void Report::getEOLChar(HWND hwnd, int* eolmode, std::string* eolchar) {
-  *eolmode = ::SendMessage(hwnd, SCI_GETEOLMODE , 0, 0);
-  switch (*eolmode) {
+  switch (::SendMessage(hwnd, SCI_GETEOLMODE, 0, 0)) {
     case SC_EOL_CR:
       *eolchar = "\r";
       break;
@@ -638,7 +629,7 @@ void Report::char2VARIANT(char* inParam, VARIANT* outParam) {
   size_t len = strlen(inParam);
   SAFEARRAYBOUND rgsabound[1];
   rgsabound[0].lLbound = 0;
-  rgsabound[0].cElements = len;
+  rgsabound[0].cElements = (ULONG) len;
 
   SAFEARRAY* psa = SafeArrayCreate(VT_UI1, 1, rgsabound);
   memcpy(psa->pvData, inParam, len);

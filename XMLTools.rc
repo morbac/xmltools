@@ -44,7 +44,7 @@ BEGIN
             VALUE "FileDescription", "XMLTools"
             VALUE "FileVersion", "3.0.0.2"
             VALUE "InternalName", "XMLTools"
-            VALUE "LegalCopyright", "Copyright (C) 2018"
+            VALUE "LegalCopyright", "Copyright (C) 2020"
             VALUE "OriginalFilename", "XMLTools.dll"
             VALUE "ProductName", "XMLTools"
             VALUE "ProductVersion", "3.0.0.2"
