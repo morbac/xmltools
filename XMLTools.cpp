@@ -59,7 +59,7 @@ static char THIS_FILE[] = __FILE__;
 //
 //    It is very important that this macro appear in each
 //    function, prior to any calls into MFC.  This means that
-//    it must appear as the first statement within the 
+//    it must appear as the first statement within the
 //    function, even before any object variable declarations
 //    as their constructors may generate calls into the MFC
 //    DLL.
@@ -84,7 +84,7 @@ NppData nppData;
 CDebugDlg* debugdlg = new CDebugDlg();
 
 // PATHs
-wchar_t pluginHomePath[MAX_PATH] = { '\0' }; 
+wchar_t pluginHomePath[MAX_PATH] = { '\0' };
 wchar_t pluginConfigPath[MAX_PATH] = { '\0' };
 wchar_t iniFilePath[MAX_PATH] = { '\0' };
 const wchar_t sectionName[] = L"XML Tools";
@@ -245,7 +245,7 @@ char* getLangType(LangType lg) {
   if (lg == L_JSP         ) return "L_JSP";
   if (lg == L_COFFEESCRIPT) return "L_COFFEESCRIPT";
   if (lg == L_EXTERNAL    ) return "L_EXTERNAL";
-  
+
   return "";
 }
 
@@ -532,8 +532,8 @@ void savePluginParams() {
 
 /*
  *--------------------------------------------------
- * The 4 extern functions are mandatory 
- * They will be called by Notepad++ plugins system 
+ * The 4 extern functions are mandatory
+ * They will be called by Notepad++ plugins system
  *--------------------------------------------------
 */
 
@@ -549,7 +549,7 @@ extern "C" __declspec(dllexport) const TCHAR* getName() {
   return PLUGIN_NAME;
 }
 
-// The getFuncsArray function gives Notepad++ plugins system the pointer FuncItem Array 
+// The getFuncsArray function gives Notepad++ plugins system the pointer FuncItem Array
 // and the size of this array (the number of functions)
 extern "C" __declspec(dllexport) FuncItem * getFuncsArray(int *nbF) {
   *nbF = nbFunc;
@@ -722,7 +722,7 @@ void insertAttributeAutoComplete() {
     Report::_printf_inf(L"This function is in alpha state and might disappear in future release.");
     insertAttributeAutoCompleteWarningDisplayed = true;
   }
-  
+
   doAttrAutoComplete = !doAttrAutoComplete;
   ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemAttrAutoComplete]._cmdID, MF_BYCOMMAND | (doAttrAutoComplete?MF_CHECKED:MF_UNCHECKED));
   savePluginParams();
@@ -944,10 +944,10 @@ int performXMLCheck(int informIfNoError) {
   memset(data, '\0', currentLength + sizeof(char));
 
   ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
-  
+
   //updateProxyConfig();
   HRESULT hr = S_OK;
-  IXMLDOMDocument2* pXMLDom = NULL; 
+  IXMLDOMDocument2* pXMLDom = NULL;
   IXMLDOMParseError* pXMLErr = NULL;
   VARIANT_BOOL varStatus;
   VARIANT varCurrentData;
@@ -1019,7 +1019,7 @@ void XMLValidation(int informIfNoError) {
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
   currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
-  
+
   char *data = new char[currentLength + sizeof(char)];
   if (!data) return;  // allocation error, abort check
   memset(data, '\0', currentLength + sizeof(char));
@@ -1105,7 +1105,7 @@ void XMLValidation(int informIfNoError) {
     CHK_HR(pXMLDom->get_parseError(&pXMLErr));
     displayXMLError(pXMLErr, hCurrentEditView, L"XML Validation error");
   }
-    
+
   /*
   xmlDocPtr doc;
   xmlNodePtr rootnode;
@@ -1126,7 +1126,7 @@ void XMLValidation(int informIfNoError) {
 
   if (doc == NULL) {
     xmlErrorPtr err = pXmlGetLastError();
-    
+
     if (err != NULL) {
       if (err->line > 0) {
         ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
@@ -1173,14 +1173,14 @@ void XMLValidation(int informIfNoError) {
         } else if (dtdPtr->ExternalID) {
           dtd_filename = std::string(reinterpret_cast<const char*>((LPCTSTR)dtdPtr->ExternalID));
         }
-        
+
         if (dtdPtr->SystemID || dtdPtr->ExternalID) {
           dtdPtr = pXmlParseDTD(dtdPtr->ExternalID, dtdPtr->SystemID);
           doFreeDTDPtr = true;
         }
 
         if (dtdPtr == NULL) {
-          wchar_t* tmpmsg = Report::castChar(dtd_filename.c_str());  
+          wchar_t* tmpmsg = Report::castChar(dtd_filename.c_str());
           Report::_printf_err(L"Unable to load the DTD\r\n%s", tmpmsg);
           delete[] tmpmsg;
           abortValidation = true;
@@ -1194,7 +1194,7 @@ void XMLValidation(int informIfNoError) {
     // elements check: if we have both a DTD and a schema, we use the schema
     if (xsdValidation) dtdValidation = false;
   }
-  
+
   if (!abortValidation) {
     // 2.2. if attribute is missing, let's ask to user to provide an xsd path
     if (xml_schema.length() == 0 && !dtdValidation) {
@@ -1355,7 +1355,7 @@ void closeXMLTag() {
   char buf[512];
   int currentEdit;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-  HWND hCurrentEditView = getCurrentHScintilla(currentEdit);    
+  HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
   int currentPos = int(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
   int beginPos = currentPos - (sizeof(buf) - 1);
   int startPos = (beginPos > 0)?beginPos:0;
@@ -1384,7 +1384,7 @@ void closeXMLTag() {
         ++pCur;
         if (*pCur == '/' || *pCur == '!') return;
 
-        // search attributes of 
+        // search attributes of
         while (*pCur != '>' && *pCur != ' ' && *pCur != '\n' && *pCur != '\r') {
         //while (IsCharAlphaNumeric(*pCur) || strchr(":_-.", *pCur) != NULL) {
           if (insertStringSize == MAX_TAGNAME_LENGTH-1) return;
@@ -1423,12 +1423,12 @@ void tagAutoIndent() {
   char buf[512];
   int currentEdit;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-  HWND hCurrentEditView = getCurrentHScintilla(currentEdit);    
+  HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
   int currentPos = int(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
   int beginPos = currentPos - (sizeof(buf) - 1);
   int startPos = (beginPos > 0)?beginPos:0;
   int size = currentPos - startPos;
-  
+
   struct TextRange tr = {{startPos, currentPos}, buf};
   ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 
@@ -1440,14 +1440,14 @@ void tagAutoIndent() {
   if (size >= 1) {
     const char* pBegin = &buf[0];
     const char* pCur = &buf[size - 1];
-  
+
     for (; pCur > pBegin && *pCur != '>' ;) --pCur;
     if (pCur > pBegin) {
       if (*(pCur-1) == '/') ignoreIndentation = true;  // si on a "/>", on abandonne l'indentation
       // maintenant, on recherche le <
       while (pCur > pBegin && *pCur != '<') --pCur;
       if (*pCur == '<' && *(pCur+1) == '/') ignoreIndentation = true; // si on a "</", on abandonne aussi
-        
+
       int insertStringSize = 0;
       char insertString[516] = { '\0' };
 
@@ -1472,7 +1472,7 @@ void tagAutoIndent() {
 
       // on a trouvé le <, il reste à insérer une indentation après le curseur
       ::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, (LPARAM)insertString);
-      ::SendMessage(hCurrentEditView, SCI_SETSEL, currentPos, currentPos);  
+      ::SendMessage(hCurrentEditView, SCI_SETSEL, currentPos, currentPos);
     }
   }
 }
@@ -1520,7 +1520,7 @@ std::wstring currentXPath(bool preciseXPath) {
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
   currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
-  
+
   std::wstring nodepath(L"");
 
   char *data = new char[currentLength + sizeof(char)];
@@ -1598,7 +1598,7 @@ std::wstring currentXPath(bool preciseXPath) {
           }
         }
         Report::appendToWStdString(&nodepath, cur_node->name, encoding);
-        
+
         // count preceding siblings
         if (preciseXPath) {
           int pos = 1;
@@ -1637,14 +1637,14 @@ CleanUp:
 
 void getCurrentXPath(bool precise) {
   dbgln("getCurrentXPath()");
-  
+
   std::wstring nodepath(currentXPath(precise));
   std::wstring tmpmsg(L"Current node cannot be resolved.");
 
   if (nodepath.length() > 0) {
     tmpmsg = nodepath;
     tmpmsg += L"\n\n(Path has been copied into clipboard)";
-      
+
     ::OpenClipboard(NULL);
     ::EmptyClipboard();
     size_t size = (nodepath.length()+1) * sizeof(wchar_t);
@@ -1655,7 +1655,7 @@ void getCurrentXPath(bool precise) {
     ::SetClipboardData(CF_UNICODETEXT, hClipboardData);
     ::CloseClipboard();
   }
-  
+
   Report::_printf_inf(tmpmsg.c_str());
 }
 void getCurrentXPathStd() {
@@ -1714,10 +1714,10 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     int tagsignlevel = 0;
     // some state variables
     bool in_comment = false, in_header = false, in_attribute = false, in_nodetext = false, in_cdata = false, in_text = false;
-    
+
     // some counters
     std::string::size_type curpos = 0, strlength = 0, prevspecchar, nexwchar_t, deltapos, tagend, startprev, endnext;
-    long xmllevel = 0;
+    size_t xmllevel = 0;
     // some char value (pc = previous char, cc = current char, nc = next char, nnc = next next char)
     char pc, cc, nc, nnc;
 
@@ -1768,7 +1768,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           if (err->line > 0) {
             ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
           }
-          wchar_t* tmpmsg = Report::castChar(err->message);  
+          wchar_t* tmpmsg = Report::castChar(err->message);
           Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.\nLine %d: \r\n%s", err->line, tmpmsg);
           delete[] tmpmsg;
         } else {
@@ -1863,7 +1863,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
         // we compare previous and next tags; if they are same, we don't add line break
         startprev = str.rfind("<",curpos);
         endnext = str.find(">",curpos+1);
-      
+
         if (startprev != std::string::npos &&
             endnext != std::string::npos &&
             curpos > startprev &&
@@ -1985,10 +1985,10 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
             if (nexwchar_t < 0) {
               nexwchar_t = curpos;
             }
-            int delta = 0;
+            size_t delta = 0;
             str.erase(curpos,nexwchar_t-curpos);
             strlength = str.length();
-            
+
             if (curpos < strlength) {
               cc = str.at(curpos);
               // we set delta = 1 if we technically can + if we are in a text or inside an attribute
@@ -2000,7 +2000,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
             }
 
             if (usetabs) {
-              str.insert(curpos,(xmllevel-delta),'\t');
+              str.insert(curpos,xmllevel-delta,'\t');
             } else {
               str.insert(curpos,tabwidth*(xmllevel-delta),' ');
             }
@@ -2083,7 +2083,7 @@ void prettyPrintAttributes() {
     IXMLDOMDocument2* pXMLDom = NULL;
     VARIANT_BOOL varStatus;
     VARIANT varCurrentData;
-    
+
     bool in_comment = false, in_header = false, in_attribute = false, in_nodetext = false, in_cdata = false;
     size_t curpos = 0, strlength = 0;
     std::string lineindent = "";
@@ -2126,7 +2126,7 @@ void prettyPrintAttributes() {
 
         if (curpos < strlength-2) nnc = str.at(curpos+2);
         else nnc = ' ';
-          
+
         if (cc == '<') {
           prevspecchar = curpos++;
           ++tagsignlevel;
@@ -2299,7 +2299,7 @@ void convertText2XML() {
   int currentEdit, isReadOnly;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-  
+
   isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
   if (isReadOnly) return;
 
@@ -2491,14 +2491,14 @@ void commentSelection() {
   int isReadOnly;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-  
+
   isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
   if (isReadOnly) return;
 
   size_t selstart = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
   size_t selend = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
   size_t sellength = selend-selstart;
-  
+
   if (selend <= selstart) {
     Report::_printf_err(L"Please select text to transform before you call the function.");
     return;
@@ -2592,7 +2592,7 @@ void uncommentSelection() {
   int isReadOnly;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-  
+
   isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
   if (isReadOnly) return;
 

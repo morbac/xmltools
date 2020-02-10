@@ -44,16 +44,16 @@ void Report::_printf_err(const wchar_t* s, ...) {
 
 void Report::_fprintf_err(void * ctx, const wchar_t* s, ...) {
   if (!s || !wcslen(s)) return;
-  
+
   va_list msg;
   wchar_t buffer[MAX_BUFFER] = { '\0' };
-  
+
   va_start(msg, s);
   _vsntprintf(buffer, MAX_BUFFER - 1, s, msg);
   va_end(msg);
-  
+
   if (wcslen(buffer) <= 0) return;
-  
+
   ::MessageBox(nppData._nppHandle, buffer, L"XML Tools plugin", MB_OK | MB_ICONEXCLAMATION);
 }
 
@@ -90,16 +90,16 @@ void Report::_printf_err(const std::string& s) {
 
 void Report::_fprintf_inf(void * ctx, const wchar_t* s, ...) {
   if (!s || !wcslen(s)) return;
-  
+
   va_list msg;
   wchar_t buffer[MAX_BUFFER] = { '\0' };
-  
+
   va_start(msg, s);
   _vsntprintf(buffer, MAX_BUFFER - 1, s, msg);
   va_end(msg);
-  
+
   if (wcslen(buffer) <= 0) return;
-  
+
   ::MessageBox(nppData._nppHandle, buffer, L"XML Tools plugin", MB_OK | MB_ICONINFORMATION);
 }
 
@@ -120,7 +120,7 @@ std::wstring Report::str_format(const wchar_t* s, ...) {
 
 std::string Report::str_format(const char* s, ...) {
   if (!s || !strlen(s)) return "";
-  
+
   size_t buffersize = 2*strlen(s);
   char * buffer = (char*) malloc(buffersize*sizeof(char));
   memset(buffer, '\0', buffersize);
@@ -171,14 +171,14 @@ void Report::registerError(const char* s) {
 
 void Report::registerError(void * ctx, const char* s, ...) {
   if (!s || !strlen(s)) return;
-  
+
   va_list args;
   va_start(args, s);
   char *buffer = va_arg(args,char*);
   va_end(args);
-  
+
   if (strlen(buffer) <= 0) return;
-  
+
   Report::registerError(buffer);
 }
 
@@ -191,14 +191,14 @@ void Report::registerWarn(const char* s) {
 
 void Report::registerWarn(void * ctx, const char* s, ...) {
   if (!s || !strlen(s)) return;
-  
+
   va_list args;
   va_start(args, s);
   char *buffer = va_arg(args,char*);
   va_end(args);
-  
+
   if (strlen(buffer) <= 0) return;
-  
+
   Report::registerWarn(buffer);
 }
 
@@ -209,12 +209,12 @@ void Report::registerMessage(const char* s) {
 }
 void Report::registerMessage(void * ctx, const char* s, ...) {
   if (!s || !strlen(s)) return;
-  
+
   va_list args;
   va_start(args, s);
   char *buffer = va_arg(args,char*);
   va_end(args);
-  
+
   Report::registerMessage(buffer);
 }
 
@@ -363,7 +363,7 @@ void Report::setEncoding(UniMode encoding, HWND npp /* = NULL */) {
   HWND nppwnd = (npp == NULL ? nppData._nppHandle : npp);
   LRESULT bufferid = ::SendMessage(nppwnd, NPPM_GETCURRENTBUFFERID, 0, 0);
   UniMode(::SendMessage(nppwnd, NPPM_SETBUFFERENCODING, bufferid, encoding));
-  
+
   // uni8Bit=0, uniUTF8=1, uni16BE=2, uni16LE=3, uniCookie=4, uni7Bit=5, uni16BE_NoBOM=6, uni16LE_NoBOM=7
   switch (encoding) {
     case uni8Bit: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_ANSI); break;
@@ -441,7 +441,7 @@ unsigned int Report::UTF8Length(const wchar_t *uptr, unsigned int tlen) {
       ++len;
     else if (uch < 0x800)
       len += 2;
-    else 
+    else
       len +=3;
   }
   return len;
@@ -500,13 +500,13 @@ unsigned int Report::UCS2FromUTF8(const char *s, unsigned int len, wchar_t *tbuf
 }
 
 unsigned int Report::ascii_to_utf8(const char * pszASCII, unsigned int lenASCII, char * pszUTF8) {
-  // length of pszUTF8 must be enough; 
+  // length of pszUTF8 must be enough;
   // its maximum is (lenASCII*3 + 1)
-  
+
   if (!lenASCII || !pszASCII)
   {
     pszUTF8[0] = 0;
-    return 0;  
+    return 0;
   }
 
   unsigned int lenUCS2;
@@ -515,7 +515,7 @@ unsigned int Report::ascii_to_utf8(const char * pszASCII, unsigned int lenASCII,
   if (!pszUCS2)
   {
     pszUTF8[0] = 0;
-    return 0;  
+    return 0;
   }
 
   lenUCS2 = ::MultiByteToWideChar(CP_ACP, 0, pszASCII, lenASCII, pszUCS2, lenASCII + 1);
@@ -529,12 +529,12 @@ unsigned int Report::ascii_to_utf8(const char * pszASCII, unsigned int lenASCII,
 int Report::utf8_to_ascii(const char * pszUTF8, unsigned int lenUTF8, char * pszASCII) {
   // length of pszASCII must be enough;
   // its maximum is (lenUTF8 + 1)
-  
+
   if (!lenUTF8 || !pszUTF8)
   {
     pszASCII[0] = 0;
     return 0;
-  }  
+  }
 
   unsigned int lenUCS2;
   wchar_t*     pszUCS2;
@@ -555,7 +555,9 @@ int Report::utf8_to_ascii(const char * pszUTF8, unsigned int lenUTF8, char * psz
 }
 
 void Report::getEOLChar(HWND hwnd, int* eolmode, std::string* eolchar) {
-  switch (::SendMessage(hwnd, SCI_GETEOLMODE, 0, 0)) {
+  int eol = (int) ::SendMessage(hwnd, SCI_GETEOLMODE, 0, 0);
+  *eolmode = eol;
+  switch (eol) {
     case SC_EOL_CR:
       *eolchar = "\r";
       break;
@@ -563,7 +565,7 @@ void Report::getEOLChar(HWND hwnd, int* eolmode, std::string* eolchar) {
       *eolchar = "\n";
       break;
     case SC_EOL_CRLF:
-    default: 
+    default:
       *eolchar = "\r\n";
   }
 }
@@ -597,7 +599,7 @@ bool Report::isEOL(const char cc, const char nc, int mode) {
     break;
   }
 }
-  
+
 void Report::char2BSTR(char* inParam, BSTR * outParam) {
   std::string tmp(inParam);
   *outParam = SysAllocString((Report::utf8ToUcs2(tmp)).c_str());

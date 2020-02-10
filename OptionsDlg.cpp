@@ -124,7 +124,7 @@ void COptionsDlg::OnBnClickedOk() {
 
   xmltoolsoptions.prohibitDTD = (((CButton*)GetDlgItem(IDC_CHKPROHIBITDTD))->GetCheck() == BST_CHECKED);
   xmltoolsoptions.useAnnotations = (((CButton*)GetDlgItem(IDC_CHKANNOTATIONS))->GetCheck() == BST_CHECKED);
-  
+
   this->editAnnotationStyle.GetWindowText(buffer);
   xmltoolsoptions.annotationStyle = _wtoi((LPCTSTR)buffer);
 
@@ -133,8 +133,8 @@ void COptionsDlg::OnBnClickedOk() {
 
 
 void COptionsDlg::OnBnClickedBtnviewannotation() {
-  CStringW buffer; 
-  
+  CStringW buffer;
+
   bool prevStatus = xmltoolsoptions.useAnnotations;
   int prevStyle = xmltoolsoptions.annotationStyle;
 

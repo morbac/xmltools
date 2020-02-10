@@ -44,18 +44,18 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CInputDlg message handlers
 
-BOOL CInputDlg::OnInitDialog() 
+BOOL CInputDlg::OnInitDialog()
 {
   CDialog::OnInitDialog();
-  
+
   SetWindowText(m_sInputTitle);
   ((CEdit*)GetDlgItem(IDC_EDIT_INPUT))->SetFocus();
-  
+
   return FALSE;  // return TRUE unless you set the focus to a control
                  // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CInputDlg::OnSetfocusEditInput() 
+void CInputDlg::OnSetfocusEditInput()
 {
   CEdit *edit = (CEdit*)GetDlgItem(IDC_EDIT_INPUT);
   edit->SetSel(0, -1);

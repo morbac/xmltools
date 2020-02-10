@@ -57,7 +57,7 @@ CStringW CSelectFileDlg::ShowOpenFileDlg(CStringW filetypes)
   return "";
 }
 
-void CSelectFileDlg::OnBtnExploreXSDFile() 
+void CSelectFileDlg::OnBtnExploreXSDFile()
 {
   CStringW ret = ShowOpenFileDlg("XML Schema (*.xsd)|*.xsd|All files (*.*)|*.*|");
   if (ret.GetLength()) GetDlgItem(IDC_EDIT_FILENAME)->SetWindowText(ret);

@@ -4,7 +4,7 @@
 #include "XMLTools.h"
 #include "Report.h"
 
-// Helper function to create a VT_BSTR variant from a null terminated string. 
+// Helper function to create a VT_BSTR variant from a null terminated string.
 HRESULT VariantFromString(PCWSTR wszValue, VARIANT& Variant) {
   HRESULT hr = S_OK;
   BSTR bstr = SysAllocString(wszValue);
@@ -30,7 +30,7 @@ CleanUp:
   return hr;
 }
 
-// Helper function to create a DOM instance. 
+// Helper function to create a DOM instance.
 HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc, int options) {
   HRESULT hr;
   if (options & INIT_OPTION_FREETHREADED) {
@@ -50,7 +50,7 @@ HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc, int options) {
   return hr;
 }
 
-// Helper function to create a XSL instance. 
+// Helper function to create a XSL instance.
 HRESULT CreateAndInitSAX(ISAXXMLReader** ppDoc) {
   HRESULT hr = CoCreateInstance(CLSID_SAXXMLReader60, NULL, CLSCTX_ALL, IID_PPV_ARGS(ppDoc));
   if (SUCCEEDED(hr)) {
@@ -59,7 +59,7 @@ HRESULT CreateAndInitSAX(ISAXXMLReader** ppDoc) {
   return hr;
 }
 
-// Helper function to create a SAX instance. 
+// Helper function to create a SAX instance.
 HRESULT CreateAndInitXSLTemplate(IXSLTemplate** pIXSLTemplate) {
   HRESULT hr = CoCreateInstance(CLSID_XSLTemplate60, NULL, CLSCTX_SERVER, IID_IXSLTemplate, (LPVOID*)(pIXSLTemplate));
   if (SUCCEEDED(hr)) {
@@ -67,7 +67,7 @@ HRESULT CreateAndInitXSLTemplate(IXSLTemplate** pIXSLTemplate) {
   return hr;
 }
 
-// Helper function to create a SAX instance. 
+// Helper function to create a SAX instance.
 HRESULT CreateAndInitSchema(IXMLDOMSchemaCollection2** pISchema) {
   HRESULT hr = CoCreateInstance(CLSID_XMLSchemaCache60, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(pISchema));
   if (SUCCEEDED(hr)) {
@@ -75,7 +75,7 @@ HRESULT CreateAndInitSchema(IXMLDOMSchemaCollection2** pISchema) {
   return hr;
 }
 
-// Helper function to transform DOM to a string. 
+// Helper function to transform DOM to a string.
 HRESULT TransformDOM2Str(IXMLDOMDocument* pXMLDom, IXMLDOMDocument* pXSLDoc) {
   HRESULT hr = S_OK;
   BSTR bstrResult = NULL;

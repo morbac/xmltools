@@ -41,10 +41,10 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CHowtoUseDlg message handlers
 
-BOOL CHowtoUseDlg::OnInitDialog() 
+BOOL CHowtoUseDlg::OnInitDialog()
 {
   CDialog::OnInitDialog();
-  
+
   return TRUE;  // return TRUE unless you set the focus to a control
                 // EXCEPTION: OCX Property Pages should return FALSE
 }

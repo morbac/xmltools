@@ -7,10 +7,10 @@
 // version 2 of the License, or (at your option) any later version.
 //
 // Note that the GPL places important restrictions on "derived works", yet
-// it does not provide a detailed definition of that term.  To avoid      
-// misunderstandings, we consider an application to constitute a          
+// it does not provide a detailed definition of that term.  To avoid
+// misunderstandings, we consider an application to constitute a
 // "derivative work" for the purpose of this license if it does any of the
-// following:                                                             
+// following:
 // 1. Integrates source code from Notepad++.
 // 2. Integrates/includes/aggregates Notepad++ into a proprietary executable
 //    installer, such as those produced by InstallShield.
@@ -37,8 +37,8 @@
 #define    IDM_FILE_CLOSE                   (IDM_FILE + 3)
 #define    IDM_FILE_CLOSEALL                (IDM_FILE + 4)
 #define    IDM_FILE_CLOSEALL_BUT_CURRENT    (IDM_FILE + 5)
-#define    IDM_FILE_SAVE                    (IDM_FILE + 6) 
-#define    IDM_FILE_SAVEALL                 (IDM_FILE + 7) 
+#define    IDM_FILE_SAVE                    (IDM_FILE + 6)
+#define    IDM_FILE_SAVEALL                 (IDM_FILE + 7)
 #define    IDM_FILE_SAVEAS                  (IDM_FILE + 8)
 #define    IDM_FILE_CLOSEALL_TOLEFT         (IDM_FILE + 9)
 #define    IDM_FILE_PRINT                   (IDM_FILE + 10)
@@ -92,7 +92,7 @@
 
 
 #define    IDM_EDIT       (IDM + 2000)
-#define    IDM_EDIT_CUT                         (IDM_EDIT + 1) 
+#define    IDM_EDIT_CUT                         (IDM_EDIT + 1)
 #define    IDM_EDIT_COPY                        (IDM_EDIT + 2)
 #define    IDM_EDIT_UNDO                        (IDM_EDIT + 3)
 #define    IDM_EDIT_REDO                        (IDM_EDIT + 4)
@@ -253,15 +253,15 @@
 #define    IDM_FILESWITCHER_FILESCLOSEOTHERS      (IDM_MISC + 2)
 
 
-#define IDM_VIEW    (IDM + 4000)                
+#define IDM_VIEW    (IDM + 4000)
     //#define    IDM_VIEW_TOOLBAR_HIDE            (IDM_VIEW + 1)
-#define    IDM_VIEW_TOOLBAR_REDUCE            (IDM_VIEW + 2)    
+#define    IDM_VIEW_TOOLBAR_REDUCE            (IDM_VIEW + 2)
 #define    IDM_VIEW_TOOLBAR_ENLARGE           (IDM_VIEW + 3)
 #define    IDM_VIEW_TOOLBAR_STANDARD          (IDM_VIEW + 4)
 #define    IDM_VIEW_REDUCETABBAR              (IDM_VIEW + 5)
-#define    IDM_VIEW_LOCKTABBAR                (IDM_VIEW + 6) 
+#define    IDM_VIEW_LOCKTABBAR                (IDM_VIEW + 6)
 #define    IDM_VIEW_DRAWTABBAR_TOPBAR         (IDM_VIEW + 7)
-#define    IDM_VIEW_DRAWTABBAR_INACIVETAB     (IDM_VIEW + 8) 
+#define    IDM_VIEW_DRAWTABBAR_INACIVETAB     (IDM_VIEW + 8)
 #define    IDM_VIEW_POSTIT                    (IDM_VIEW + 9)
 #define    IDM_VIEW_TOGGLE_FOLDALL            (IDM_VIEW + 10)
 //#define    IDM_VIEW_USER_DLG                  (IDM_VIEW + 11)
@@ -445,7 +445,7 @@
 #define    IDM_LANG_PASCAL             (IDM_LANG + 11)
 #define    IDM_LANG_PYTHON             (IDM_LANG + 12)
 #define    IDM_LANG_PERL               (IDM_LANG + 13)
-#define    IDM_LANG_OBJC               (IDM_LANG + 14) 
+#define    IDM_LANG_OBJC               (IDM_LANG + 14)
 #define    IDM_LANG_ASCII              (IDM_LANG + 15)
 #define    IDM_LANG_TEXT               (IDM_LANG + 16)
 #define    IDM_LANG_RC                 (IDM_LANG + 17)

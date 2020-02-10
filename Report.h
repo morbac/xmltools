@@ -17,19 +17,19 @@ enum UniMode {uni8Bit=0, uniUTF8=1, uni16BE=2, uni16LE=3, uniCookie=4, uni7Bit=5
 
 // edit : look at https://msdn.microsoft.com/en-us/library/ms235631(VS.80).aspx
 // https://docs.microsoft.com/en-us/cpp/text/how-to-convert-between-various-string-types?redirectedfrom=MSDN&view=vs-2019
-class Report  
+class Report
 {
 public:
   Report();
   virtual ~Report();
-  
+
   static void _printf_err(const wchar_t* s, ...);
   static void _printf_inf(const wchar_t* s, ...);
   static void _printf_inf(const std::wstring& ws);
   static void _printf_inf(const std::string& s);
   static void _printf_err(const std::wstring& ws);
   static void _printf_err(const std::string& s);
-  
+
   static void _fprintf_err(void * ctx, const wchar_t* s, ...);
   static void _fprintf_inf(void * ctx, const wchar_t* s, ...);
 
@@ -87,7 +87,7 @@ public:
   static unsigned int UCS2FromUTF8(const char * s, unsigned int len, wchar_t * tbuf, unsigned int tlen);
   static unsigned int ascii_to_utf8(const char * pszASCII, unsigned int lenASCII, char * pszUTF8);
   static int utf8_to_ascii(const char * pszUTF8, unsigned int lenUTF8, char * pszASCII);
-    
+
   static void getEOLChar(HWND hwnd, int* eolmode, std::string* eolchar);
   static bool isEOL(const std::string& txt, const std::string::size_type txtlength, unsigned int pos, int mode);
   static bool isEOL(const char cc, const char nc, int mode);

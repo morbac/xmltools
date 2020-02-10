@@ -49,7 +49,7 @@ END_MESSAGE_MAP()
 
 void CDebugDlg::OnSize(UINT nType, int cx, int cy) {
   CDialog::OnSize(nType, cx, cy);
-  
+
   CWnd *txt_wnd = GetDlgItem(IDC_EDITDEBUG);
   if (txt_wnd) {
     int border = 8;

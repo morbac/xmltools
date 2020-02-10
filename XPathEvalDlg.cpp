@@ -66,7 +66,7 @@ void CXPathEvalDlg::OnBtnEvaluate() {
   if (!m_sExpression.GetLength()) {
     Report::_printf_err(L"Empty expression; evaluation aborted.");
   } else {
-    
+
     execute_xpath_expression(m_sExpression);
   }
 }
@@ -74,7 +74,7 @@ void CXPathEvalDlg::OnBtnEvaluate() {
 /**
  * execute_xpath_expression:
  * @xpathExpr:    the xpath expression for evaluation.
- * @nsList:    the optional list of known namespaces in 
+ * @nsList:    the optional list of known namespaces in
  *      "<prefix1>=<href1> <prefix2>=href2> ..." format.
  *
  * Parses input XML file, evaluates XPath expression and prints results.
@@ -89,7 +89,7 @@ int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
   VARIANT_BOOL varStatus;
   BSTR bstrXPath = NULL;
   VARIANT varXML;
-  
+
   int currentEdit, currentLength;
   ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
   HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
@@ -106,10 +106,10 @@ int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
   Report::char2VARIANT(data, &varXML);
 
   CHK_ALLOC(bstrXPath);
-  
+
   delete [] data;
   data = NULL;
-  
+
   CHK_HR(CreateAndInitDOM(&pXMLDom));
   CHK_HR(pXMLDom->load(varXML, &varStatus));
   if (varStatus == VARIANT_TRUE) {
@@ -193,7 +193,7 @@ CleanUp:
 void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
   CStringW itemtype, itemname, itemvalue;
   CListCtrl *listresults = (CListCtrl*) this->GetDlgItem(IDC_LIST_XPATHRESULTS);
-  
+
   listresults->DeleteAllItems();
 
   UniMode encoding = Report::getEncoding(this->encoding, NULL);
@@ -230,9 +230,9 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
               Report::appendToCString(&itemname, cur->ns->prefix, encoding);
               itemname += L":";
             }
-          
+
             Report::appendToCString(&itemname, cur->name, encoding);
-            
+
             // s'il y a du texte, on concatène tout le texte et on l'affiche
             if (cur->children) {
               xmlNodePtr txtnode = cur->children;
@@ -303,7 +303,7 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
               doIgnore = true;
             }
             break;
-          } 
+          }
           case XML_NAMESPACE_DECL: {
             itemtype = "NS";
             itemname = "";
@@ -332,7 +332,7 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
           case XML_XINCLUDE_START: itemtype = "XML_XINCLUDE_START"; itemname = ""; itemvalue = "(element type not supported)"; break;
           case XML_XINCLUDE_END: itemtype = "XML_XINCLUDE_END"; itemname = ""; itemvalue = "(element type not supported)"; break;
           case XML_DOCB_DOCUMENT_NODE: itemtype = "XML_DOCB_DOCUMENT_NODE"; itemname = ""; itemvalue = "(element type not supported)" ;break;
-        }          
+        }
 
         if (!doIgnore) {
           AddToList(listresults, itemtype, itemname, itemvalue);
@@ -343,7 +343,7 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
     case XPATH_BOOLEAN: {
       itemtype = "Bool";
       itemname = "";
-      
+
       if (xpathObj->boolval) itemvalue = "true";
       else itemvalue = "false";
 
@@ -375,7 +375,7 @@ void CXPathEvalDlg::print_xpath_nodes(xmlXPathObjectPtr xpathObj) {
 
 BOOL CXPathEvalDlg::OnInitDialog() {
   CDialog::OnInitDialog();
-  
+
   CListCtrl *listresults = (CListCtrl*) this->GetDlgItem(IDC_LIST_XPATHRESULTS);
 
   // Initialize the destination list control
@@ -384,7 +384,7 @@ BOOL CXPathEvalDlg::OnInitDialog() {
   listresults->InsertColumn(2, L"Value", LVCFMT_LEFT, 400);
 
   listresults->DeleteAllItems();
-  
+
   CString nfo = "If your expression requires namespaces, please declare them in \"Namespace definition\" field the same way you declare namespaces in xml, for instance:\nxmlns:npp='http://notepad-plus-plus.org' xmlns:a='another-namespace'";
   SetDlgItemTextW(IDC_STATIC_INFOS, nfo);
 
@@ -406,7 +406,7 @@ BOOL CXPathEvalDlg::OnInitDialog() {
 
 void CXPathEvalDlg::OnSize(UINT nType, int cx, int cy) {
   CDialog::OnSize(nType, cx, cy);
-  
+
   CWnd* btn_wnd = GetDlgItem(IDC_BTN_EVALUATE);
   CWnd* cpy_wnd = GetDlgItem(IDC_BTN_COPY2CLIPBOARD);
   CWnd* clr_wnd = GetDlgItem(IDC_BTN_CLEARLIST);
@@ -416,7 +416,7 @@ void CXPathEvalDlg::OnSize(UINT nType, int cx, int cy) {
   CWnd* ns_wnd = GetDlgItem(IDC_EDIT_NAMESPACE);
   CWnd* out_wnd = GetDlgItem(IDC_LIST_XPATHRESULTS);
   CWnd* nfo_wnd = GetDlgItem(IDC_STATIC_INFOS);
-  
+
 
   if (btn_wnd && xpath_wnd && out_wnd) {
     wchar_t buffer[1024];

@@ -26,7 +26,7 @@ CXSLTransformDlg::CXSLTransformDlg(CWnd* pParent /*=NULL*/, unsigned long flags 
   m_sSelectedFile = _T("");
   m_sXSLTOptions = _T("");
   //}}AFX_DATA_INIT
-  
+
   this->m_iFlags = flags;
 }
 
@@ -76,14 +76,14 @@ BOOL CXSLTransformDlg::OnInitDialog() {
 std::string::size_type getNextParam(std::wstring& str, std::string::size_type startpos, std::wstring *key, std::wstring *val) {
   std::string::size_type len = str.length();
   if (startpos < 0 || startpos >= len || !key || !val) return std::string::npos;
-  
+
   // skip spaces, tabs and carriage returns
   std::string::size_type keypos = str.find_first_not_of(L" \t\r\n", startpos);
   if (keypos == std::string::npos || keypos >= len) return std::string::npos;
-  
+
   // next char shouldn't be a '='
   if (str.at(keypos) == '=') return std::string::npos;
-  
+
   // keypos points on begin of the key; let's search for next '=' or ' '
   std::string::size_type valpos = str.find_first_of(L"=", keypos+1);
   valpos = str.find_last_not_of(L" =", valpos);  // get last char of the key
@@ -94,7 +94,7 @@ std::string::size_type getNextParam(std::wstring& str, std::string::size_type st
 
   if (str.at(valpos) == ' ') valpos = str.find_first_not_of(L" ", valpos);  // skip eventual space chars
   if (valpos < 0 || valpos >= len) return std::string::npos;
-  
+
   // here we must parse the string; if it starts with an apostroph, let's search
   // the next apostroph; otherwise let's read the next word
   std::string::size_type valendpos = valpos;
@@ -107,7 +107,7 @@ std::string::size_type getNextParam(std::wstring& str, std::string::size_type st
     if (valendpos < 0) valendpos = len;
     *val = str.substr(valpos, valendpos-valpos);
   }
-  
+
   return valendpos;
 }
 

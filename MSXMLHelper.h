@@ -36,19 +36,19 @@ HRESULT VariantFromString(PCWSTR wszValue, VARIANT& Variant);
 // Helper function packaging an object into a variant.
 HRESULT VariantFromObject(IUnknown * pUnk, VARIANT & varObject);
 
-// Helper function to create a DOM instance. 
+// Helper function to create a DOM instance.
 HRESULT CreateAndInitDOM(IXMLDOMDocument2 * *ppDoc, int options = INIT_OPTION_PRESERVEWHITESPACE);
 
-// Helper function to create a sax instance. 
+// Helper function to create a sax instance.
 HRESULT CreateAndInitSAX(ISAXXMLReader * *ppDoc);
 
-// Helper function to create a xsl instance. 
+// Helper function to create a xsl instance.
 HRESULT CreateAndInitXSLTemplate(IXSLTemplate** pIXSLTemplate);
 
 // Helper function to create a xsd schema cache.
 HRESULT CreateAndInitSchema(IXMLDOMSchemaCollection2** pISchema);
 
-// Helper function to transform DOM to a string. 
+// Helper function to transform DOM to a string.
 HRESULT TransformDOM2Str(IXMLDOMDocument * pXMLDom, IXMLDOMDocument * pXSLDoc);
 
 // Helper function to display parse error.
