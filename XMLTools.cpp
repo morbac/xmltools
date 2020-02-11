@@ -832,7 +832,7 @@ void howtoUse() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void displayXMLError(std::wstring wmsg, HWND view, size_t line, int filepos) {
+void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t filepos) {
   // clear final \r\n
   std::string::size_type p = wmsg.find_last_not_of(L"\r\n");
   if (p != std::string::npos && p < wmsg.length()) {
@@ -852,7 +852,7 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, int filepos) {
     if (filepos > 0) {
       ::SendMessage(view, SCI_GOTOPOS, filepos - 1, 0);
     }
-    if (line <= 0) {
+    if (line == NULL) {
       line = (size_t) ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLINE, 0, 0) + 1;
     }
 
@@ -898,13 +898,6 @@ void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDes
   CHK_HR(pXMLErr->get_linepos(&linepos));
   CHK_HR(pXMLErr->get_filepos(&filepos));
   CHK_HR(pXMLErr->get_reason(&bstrReason));
-
- /*
-  for (int i = 0; i < 512; ++i) {
-    ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, i, i);
-    ::SendMessage(view, SCI_ANNOTATIONSETTEXT, i, reinterpret_cast<LPARAM>(Report::str_format("annotation style %d", i).c_str()));
-  }
- */
 
   if (szDesc != NULL) {
     displayXMLError(Report::str_format(L"%s - line %d, pos %d: \r\n%s", szDesc, line, linepos, bstrReason), view, line, filepos);
