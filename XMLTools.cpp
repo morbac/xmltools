@@ -832,6 +832,34 @@ void howtoUse() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// tricky way of centering text on given line
+// we get the contol size and estimate the number of lines based on text height
+// then we force centering by going to wanted line +- nlines/2
+void centerOnLine(HWND view, size_t line, size_t ofs) {
+  try {
+    RECT rect;
+    GetClientRect(view, &rect);
+    int height = (int) ::SendMessage(view, SCI_TEXTHEIGHT, line, NULL);
+    int nlines_2 = (rect.bottom - rect.top) / (2 * height);
+    int last = (int) ::SendMessage(view, SCI_GETMAXLINESTATE, NULL, NULL);
+
+    // force uncollapse target line and ensure line is visible
+    ::SendMessage(view, SCI_ENSUREVISIBLE, line - 1, NULL);
+    ::SendMessage(view, SCI_SETFIRSTVISIBLELINE, line - 1, NULL);
+
+    // center on line
+    if (line - 1 + nlines_2 > last) {
+      // line is on the end of document
+      ::SendMessage(view, SCI_SHOWLINES, line - 1, line + ofs); // force surround lines visibles if folded
+    } else {
+     ::SendMessage(view, SCI_GOTOLINE, line - 1 - nlines_2, 0);
+     ::SendMessage(view, SCI_GOTOLINE, line - 1 + nlines_2, 0);
+    }
+
+    ::SendMessage(view, SCI_GOTOLINE, line - 1, 0);
+  } catch (...) {}
+}
+
 void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t filepos) {
   // clear final \r\n
   std::string::size_type p = wmsg.find_last_not_of(L"\r\n");
@@ -849,9 +877,6 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t filepos) 
   UniMode encoding = UniMode(::SendMessage(nppData._nppHandle, NPPM_GETBUFFERENCODING, bufferid, 0));
 
   if (xmltoolsoptions.useAnnotations) {
-    if (filepos > 0) {
-      ::SendMessage(view, SCI_GOTOPOS, filepos - 1, 0);
-    }
     if (line == NULL) {
       line = (size_t) ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLINE, 0, 0) + 1;
     }
@@ -879,9 +904,13 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t filepos) 
     //::SendMessage(view, SCI_ANNOTATIONSETSTYLES, line - 1, reinterpret_cast<LPARAM>(styles));
     ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, line - 1, xmltoolsoptions.annotationStyle);
     ::SendMessage(view, SCI_ANNOTATIONSETVISIBLE, 2, NULL);
-    ::SendMessage(view, SCI_SETFIRSTVISIBLELINE, line - 1, NULL); // ensure annotation is visible
-    ::SendMessage(view, SCI_SHOWLINES, line - 3, line + 2); // force surround lines visibles if folded
     hasAnnotations = true;
+
+    centerOnLine(view, line, std::count(wmsg.begin(), wmsg.end(), '\n'));
+
+    if (filepos > 0) {
+      ::SendMessage(view, SCI_GOTOPOS, filepos - 1, 0);
+    }
   } else {
     Report::_printf_err(wmsg);
   }
