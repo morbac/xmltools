@@ -2218,23 +2218,40 @@ void linearizeXML() {
     int currentEdit, currentLength;
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
     HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-    currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
-    char *data = new char[currentLength + sizeof(char)];
-    if (!data) return;  // allocation error, abort check
-    memset(data, '\0', currentLength + sizeof(char));
+    char* data = NULL;
 
-    int currentPos = int(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
+    // use the selection
+    long selstart = 0, selend = 0;
+    // désactivé : le fait de prettyprinter que la sélection pose problème pour l'indentation
+    // il faudrait calculer l'indentation de la 1re ligne de sélection, mais l'indentation
+    // de cette ligne n'est peut-être pas correcte. On pourrait la déterminer en récupérant
+    // le path de la banche sélectionnée...
+    selstart = (long) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
+    selend = (long) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
 
-    ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
-
-    std::string eolchar;
-    int eolmode;
-    Report::getEOLChar(hCurrentEditView, &eolmode, &eolchar);
+    if (selend > selstart) {
+      currentLength = selend - selstart;
+      data = new char[currentLength + sizeof(char)];
+      if (!data) return;  // allocation error, abort check
+      memset(data, '\0', currentLength + sizeof(char));
+      ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
+    }
+    else {
+      currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+      data = new char[currentLength + sizeof(char)];
+      if (!data) return;  // allocation error, abort check
+      memset(data, '\0', currentLength + sizeof(char));
+      ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
+    }
 
     std::string str(data);
     delete [] data;
     data = NULL;
+
+    std::string eolchar;
+    int eolmode;
+    Report::getEOLChar(hCurrentEditView, &eolmode, &eolchar);
 
     std::string::size_type curpos = 0, nexwchar_t;
     bool enableInsert = false;
@@ -2263,7 +2280,12 @@ void linearizeXML() {
     }
 
     // Send formatted string to scintilla
-    ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
+    if (selend > selstart) {
+      ::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(str.c_str()));
+    }
+    else {
+      ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
+    }
 
     str.clear();
   }
