@@ -840,15 +840,15 @@ void centerOnLine(HWND view, size_t line, size_t ofs) {
     RECT rect;
     GetClientRect(view, &rect);
     int height = (int) ::SendMessage(view, SCI_TEXTHEIGHT, line, NULL);
-    int nlines_2 = (rect.bottom - rect.top) / (2 * height);
     int last = (int) ::SendMessage(view, SCI_GETMAXLINESTATE, NULL, NULL);
+    size_t nlines_2 = (rect.bottom - rect.top) / (2 * height);
 
     // force uncollapse target line and ensure line is visible
     ::SendMessage(view, SCI_ENSUREVISIBLE, line - 1, NULL);
     ::SendMessage(view, SCI_SETFIRSTVISIBLELINE, line - 1, NULL);
 
     // center on line
-    if (line - 1 + nlines_2 > last) {
+    if (line - 1 + nlines_2 > (size_t) last) {
       // line is on the end of document
       ::SendMessage(view, SCI_SHOWLINES, line - 1, line + ofs); // force surround lines visibles if folded
     } else {
