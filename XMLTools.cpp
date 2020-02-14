@@ -1739,7 +1739,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 
     // some counters
     std::string::size_type curpos = 0, strlength = 0, prevspecchar, nexwchar_t, deltapos, tagend, startprev, endnext;
-    size_t xmllevel = 0;
+    long xmllevel = 0;
     // some char value (pc = previous char, cc = current char, nc = next char, nnc = next next char)
     char pc, cc, nc, nnc;
 
@@ -1908,7 +1908,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     char attributeQuote = '\0';
     sep += eolchar;
     strlength = str.length();
-    while (curpos < strlength && (curpos = str.find_first_of(sep,curpos)) != std::string::npos) {
+     while (curpos < strlength && (curpos = str.find_first_of(sep,curpos)) != std::string::npos) {
       if (!Report::isEOL(str, strlength, (unsigned int) curpos, eolmode)) {
         if (curpos < strlength-4 && !str.compare(curpos,4,"<!--")) {
           in_comment = true;
@@ -2189,9 +2189,9 @@ void prettyPrintAttributes() {
           ++curpos;
         }
       } else {
-        if (in_comment && curpos > 1 && !str.compare(curpos-2,3,"-->")) in_comment = false;
-        else if (in_cdata && curpos > 1 && !str.compare(curpos-2,3,"]]>")) in_cdata = false;
-        else if (in_header && curpos > 0 && !str.compare(curpos-1,2,"?>")) in_header = false;
+        if (in_comment && curpos > 1 && !str.compare(curpos - 2, 3, "-->")) in_comment = false;
+        else if (in_cdata && curpos > 1 && !str.compare(curpos - 2, 3, "]]>")) in_cdata = false;
+        else if (in_header && curpos > 0 && !str.compare(curpos - 1, 2, "?>")) in_header = false;
         ++curpos;
       }
     }
