@@ -17,7 +17,7 @@
 
 //---------------------------------------------------------------------------
 
-#define XMLTOOLS_VERSION_NUMBER L"3.0.2.1"
+#define XMLTOOLS_VERSION_NUMBER L"3.0.3.0"
 #ifdef V64BIT
 #define XMLTOOLS_VERSION_STATUS L"unicode 64bit"
 #else
@@ -54,6 +54,11 @@ struct struct_xmltoolsoptions {       // default value
   // xmltools options
   bool useAnnotations;                // False
   int annotationStyle;                // 34
+  bool convertAmp;
+  bool convertLt;
+  bool convertGt;
+  bool convertQuote;
+  bool convertApos;
 };
 
 extern struct struct_proxyoptions proxyoptions;

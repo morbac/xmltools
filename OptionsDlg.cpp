@@ -56,6 +56,11 @@ BOOL COptionsDlg::OnInitDialog()
   ((CButton*)GetDlgItem(IDC_CHKPROHIBITDTD))->SetCheck(xmltoolsoptions.prohibitDTD ? BST_CHECKED : BST_UNCHECKED);
   ((CButton*)GetDlgItem(IDC_CHKANNOTATIONS))->SetCheck(xmltoolsoptions.useAnnotations ? BST_CHECKED : BST_UNCHECKED);
   GetDlgItem(IDC_EDITANNOTATIONSTYLE)->SetWindowTextW(std::to_wstring(static_cast<int>(xmltoolsoptions.annotationStyle)).c_str());
+  ((CButton*)GetDlgItem(IDC_CHKAMP))->SetCheck(xmltoolsoptions.convertAmp ? BST_CHECKED : BST_UNCHECKED);
+  ((CButton*)GetDlgItem(IDC_CHKLT))->SetCheck(xmltoolsoptions.convertLt ? BST_CHECKED : BST_UNCHECKED);
+  ((CButton*)GetDlgItem(IDC_CHKGT))->SetCheck(xmltoolsoptions.convertGt ? BST_CHECKED : BST_UNCHECKED);
+  ((CButton*)GetDlgItem(IDC_CHKQUOTE))->SetCheck(xmltoolsoptions.convertQuote ? BST_CHECKED : BST_UNCHECKED);
+  ((CButton*)GetDlgItem(IDC_CHKAPOS))->SetCheck(xmltoolsoptions.convertApos ? BST_CHECKED : BST_UNCHECKED);
 
   updateEditFieldsStatus();
 
@@ -124,6 +129,11 @@ void COptionsDlg::OnBnClickedOk() {
 
   xmltoolsoptions.prohibitDTD = (((CButton*)GetDlgItem(IDC_CHKPROHIBITDTD))->GetCheck() == BST_CHECKED);
   xmltoolsoptions.useAnnotations = (((CButton*)GetDlgItem(IDC_CHKANNOTATIONS))->GetCheck() == BST_CHECKED);
+  xmltoolsoptions.convertAmp = (((CButton*)GetDlgItem(IDC_CHKAMP))->GetCheck() == BST_CHECKED);
+  xmltoolsoptions.convertLt = (((CButton*)GetDlgItem(IDC_CHKLT))->GetCheck() == BST_CHECKED);
+  xmltoolsoptions.convertGt = (((CButton*)GetDlgItem(IDC_CHKGT))->GetCheck() == BST_CHECKED);
+  xmltoolsoptions.convertQuote = (((CButton*)GetDlgItem(IDC_CHKQUOTE))->GetCheck() == BST_CHECKED);
+  xmltoolsoptions.convertApos = (((CButton*)GetDlgItem(IDC_CHKAPOS))->GetCheck() == BST_CHECKED);
 
   this->editAnnotationStyle.GetWindowText(buffer);
   xmltoolsoptions.annotationStyle = _wtoi((LPCTSTR)buffer);

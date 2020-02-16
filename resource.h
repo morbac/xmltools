@@ -49,14 +49,20 @@
 #define IDC_CHKANNOTATIONS              2036
 #define IDC_EDITANNOTATIONSTYLE         2038
 #define IDC_BTNVIEWANNOTATION           2039
+#define IDC_CHKLT                       2040
+#define IDC_CHKGT                       2041
+#define IDC_CHKQUOTE                    2043
+#define IDC_CHKAMP                      2044
+#define IDC_CHECK5                      2045
+#define IDC_CHKAPOS                     2045
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        2012
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2040
+#define _APS_NEXT_CONTROL_VALUE         2046
 #define _APS_NEXT_SYMED_VALUE           2000
 #endif
 #endif

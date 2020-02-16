@@ -481,6 +481,11 @@ void initializePlugin() {
   xmltoolsoptions.prohibitDTD = (::GetPrivateProfileInt(sectionName, L"prohibitDTD", 0, iniFilePath) == 1);
   xmltoolsoptions.useAnnotations = (::GetPrivateProfileInt(sectionName, L"useAnnotations", 0, iniFilePath) == 1);
   xmltoolsoptions.annotationStyle = ::GetPrivateProfileInt(sectionName, L"annotationStyle", 34, iniFilePath);
+  xmltoolsoptions.convertAmp = (::GetPrivateProfileInt(sectionName, L"convertAmp", 1, iniFilePath) == 1);
+  xmltoolsoptions.convertLt = (::GetPrivateProfileInt(sectionName, L"convertLt", 1, iniFilePath) == 1);
+  xmltoolsoptions.convertGt = (::GetPrivateProfileInt(sectionName, L"convertGt", 1, iniFilePath) == 1);
+  xmltoolsoptions.convertQuote = (::GetPrivateProfileInt(sectionName, L"convertQuote", 1, iniFilePath) == 1);
+  xmltoolsoptions.convertApos = (::GetPrivateProfileInt(sectionName, L"convertApos", 1, iniFilePath) == 1);
 
   updateProxyConfig();
 
@@ -765,6 +770,11 @@ void optionsDlg() {
     ::WritePrivateProfileString(sectionName, L"prohibitDTD", xmltoolsoptions.prohibitDTD ? L"1" : L"0", iniFilePath);
     ::WritePrivateProfileString(sectionName, L"useAnnotations", xmltoolsoptions.useAnnotations ? L"1" : L"0", iniFilePath);
     ::WritePrivateProfileString(sectionName, L"annotationStyle", std::to_wstring(static_cast<int>(xmltoolsoptions.annotationStyle)).c_str(), iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"convertAmp", xmltoolsoptions.convertAmp ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"convertLt", xmltoolsoptions.convertLt ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"convertGt", xmltoolsoptions.convertGt ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"convertQuote", xmltoolsoptions.convertQuote ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"convertApos", xmltoolsoptions.convertApos ? L"1" : L"0", iniFilePath);
 
     updateProxyConfig();
   }
@@ -2365,38 +2375,61 @@ void convertText2XML() {
   std::string str(data);
   delete [] data;
   data = NULL;
-  std::string::size_type curpos = sellength;
+  std::string::size_type curpos;
 
-  while (curpos != std::string::npos && (curpos = str.rfind("&quot;", curpos)) != std::string::npos) {
-    if (curpos != std::string::npos) {
-      str.replace(curpos, strlen("&quot;"), "\"");
-      sellength = sellength - strlen("&quot;") + strlen("\"");
+  if (xmltoolsoptions.convertApos) {
+    curpos = sellength;
+    while (curpos != std::string::npos && (curpos = str.rfind("&apos;", curpos)) != std::string::npos) {
+      if (curpos != std::string::npos) {
+        str.replace(curpos, strlen("&apos;"), "'");
+        sellength = sellength - strlen("&apos;") + strlen("'");
+      }
+      --curpos;
     }
-    --curpos;
   }
-  curpos = sellength;
-  while (curpos != std::string::npos && (curpos = str.rfind("&lt;", curpos)) != std::string::npos) {
-    if (curpos != std::string::npos) {
-      str.replace(curpos, strlen("&lt;"), "<");
-      sellength = sellength - strlen("&lt;") + strlen("<");
+
+  if (xmltoolsoptions.convertQuote) {
+    curpos = sellength;
+    while (curpos != std::string::npos && (curpos = str.rfind("&quot;", curpos)) != std::string::npos) {
+      if (curpos != std::string::npos) {
+        str.replace(curpos, strlen("&quot;"), "\"");
+        sellength = sellength - strlen("&quot;") + strlen("\"");
+      }
+      --curpos;
     }
-    --curpos;
   }
-  curpos = sellength;
-  while (curpos != std::string::npos && (curpos = str.rfind("&gt;", curpos)) != std::string::npos) {
-    if (curpos != std::string::npos) {
-      str.replace(curpos, strlen("&gt;"), ">");
-      sellength = sellength - strlen("&gt;") + strlen(">");
+
+  if (xmltoolsoptions.convertLt) {
+    curpos = sellength;
+    while (curpos != std::string::npos && (curpos = str.rfind("&lt;", curpos)) != std::string::npos) {
+      if (curpos != std::string::npos) {
+        str.replace(curpos, strlen("&lt;"), "<");
+        sellength = sellength - strlen("&lt;") + strlen("<");
+      }
+      --curpos;
     }
-    --curpos;
   }
-  curpos = sellength;
-  while (curpos != std::string::npos && (curpos = str.rfind("&amp;", curpos)) != std::string::npos) {
-    if (curpos != std::string::npos) {
-      str.replace(curpos, strlen("&amp;"), "&");
-      sellength = sellength - strlen("&amp;") + strlen("&");
+
+  if (xmltoolsoptions.convertGt) {
+    curpos = sellength;
+    while (curpos != std::string::npos && (curpos = str.rfind("&gt;", curpos)) != std::string::npos) {
+      if (curpos != std::string::npos) {
+        str.replace(curpos, strlen("&gt;"), ">");
+        sellength = sellength - strlen("&gt;") + strlen(">");
+      }
+      --curpos;
     }
-    --curpos;
+  }
+
+  if (xmltoolsoptions.convertAmp) {
+    curpos = sellength;
+    while (curpos != std::string::npos && (curpos = str.rfind("&amp;", curpos)) != std::string::npos) {
+      if (curpos != std::string::npos) {
+        str.replace(curpos, strlen("&amp;"), "&");
+        sellength = sellength - strlen("&amp;") + strlen("&");
+      }
+      --curpos;
+    }
   }
 
   // Replace the selection with new string
@@ -2439,38 +2472,61 @@ void convertXML2Text() {
   std::string str(data);
   delete [] data;
   data = NULL;
-  std::string::size_type curpos = sellength;
+  std::string::size_type curpos;
 
-  while (curpos != std::string::npos && (curpos = str.rfind("&", curpos)) != std::string::npos) {
-    if (curpos != std::string::npos) {
-      str.replace(curpos, strlen("&"), "&amp;");
-      sellength = sellength + strlen("&amp;") - strlen("&");
+  if (xmltoolsoptions.convertAmp) {
+    curpos = sellength;
+    while (curpos != std::string::npos && (curpos = str.rfind("&", curpos)) != std::string::npos) {
+      if (curpos != std::string::npos) {
+        str.replace(curpos, strlen("&"), "&amp;");
+        sellength = sellength + strlen("&amp;") - strlen("&");
+      }
+      --curpos;
     }
-    --curpos;
   }
-  curpos = sellength;
-  while (curpos != std::string::npos && (curpos = str.rfind("<", curpos)) != std::string::npos) {
-    if (curpos != std::string::npos) {
-      str.replace(curpos, strlen("<"), "&lt;");
-      sellength = sellength + strlen("&lt;") - strlen("<");
+
+  if (xmltoolsoptions.convertLt) {
+    curpos = sellength;
+    while (curpos != std::string::npos && (curpos = str.rfind("<", curpos)) != std::string::npos) {
+      if (curpos != std::string::npos) {
+        str.replace(curpos, strlen("<"), "&lt;");
+        sellength = sellength + strlen("&lt;") - strlen("<");
+      }
+      --curpos;
     }
-    --curpos;
   }
-  curpos = sellength;
-  while (curpos != std::string::npos && (curpos = str.rfind(">", curpos)) != std::string::npos) {
-    if (curpos != std::string::npos) {
-      str.replace(curpos, strlen(">"), "&gt;");
-      sellength = sellength + strlen("&gt;") - strlen(">");
+
+  if (xmltoolsoptions.convertGt) {
+    curpos = sellength;
+    while (curpos != std::string::npos && (curpos = str.rfind(">", curpos)) != std::string::npos) {
+      if (curpos != std::string::npos) {
+        str.replace(curpos, strlen(">"), "&gt;");
+        sellength = sellength + strlen("&gt;") - strlen(">");
+      }
+      --curpos;
     }
-    --curpos;
   }
-  curpos = sellength;
-  while (curpos != std::string::npos && (curpos = str.rfind("\"", curpos)) != std::string::npos) {
-    if (curpos != std::string::npos) {
-      str.replace(curpos, strlen("\""), "&quot;");
-      sellength = sellength + strlen("&quot;") - strlen("\"");
+
+  if (xmltoolsoptions.convertQuote) {
+    curpos = sellength;
+    while (curpos != std::string::npos && (curpos = str.rfind("\"", curpos)) != std::string::npos) {
+      if (curpos != std::string::npos) {
+        str.replace(curpos, strlen("\""), "&quot;");
+        sellength = sellength + strlen("&quot;") - strlen("\"");
+      }
+      --curpos;
     }
-    --curpos;
+  }
+
+  if (xmltoolsoptions.convertApos) {
+    curpos = sellength;
+    while (curpos != std::string::npos && (curpos = str.rfind("'", curpos)) != std::string::npos) {
+      if (curpos != std::string::npos) {
+        str.replace(curpos, strlen("'"), "&apos;");
+        sellength = sellength + strlen("&apos;") - strlen("'");
+      }
+      --curpos;
+    }
   }
 
   // Replace the selection with new string
