@@ -375,6 +375,24 @@ void Report::setEncoding(UniMode encoding, HWND npp /* = NULL */) {
   }
 }
 
+std::string Report::castChar(std::wstring text, UniMode encoding) {
+  switch (encoding) {
+  case uniCookie:
+  case uniUTF8:
+  case uni16BE:
+  case uni16LE:
+    // utf-8
+    return Report::ucs2ToUtf8(text.c_str());
+    break;
+  default:
+    // ansi
+    return Report::ws2s(text);
+    break;
+  }
+
+  return NULL;
+}
+
 wchar_t* Report::castChar(const char* orig, UniMode encoding /*= uniEnd*/) {
   UniMode enc = encoding;
   /* @V3

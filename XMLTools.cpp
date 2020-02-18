@@ -872,13 +872,17 @@ void howtoUse() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// tricky way of centering text on given line
-// we get the contol size and estimate the number of lines based on text height
-// then we force centering by going to wanted line +- nlines/2
-void centerOnLine(HWND view, size_t line, size_t ofs) {
+// tricky way of centering text on given vertical and horizontal position
+// for vertical position, we get the contol size and estimate the number
+// of lines based on text height then we force centering by going to wanted
+// line +- nlines/2
+// for horizontal position, we calculate the text width and check if it is
+// out of the bounding box; then scroll horizontally if required
+void centerOnPosition(HWND view, size_t line, size_t column, size_t hofs, size_t wofs, const char* text) {
   try {
     RECT rect;
     GetClientRect(view, &rect);
+    int wrapmode = (int) ::SendMessage(view, SCI_GETWRAPMODE, 0, 0);
     int height = (int) ::SendMessage(view, SCI_TEXTHEIGHT, line, NULL);
     int last = (int) ::SendMessage(view, SCI_GETMAXLINESTATE, NULL, NULL);
     size_t nlines_2 = (rect.bottom - rect.top) / (2 * height);
@@ -890,13 +894,30 @@ void centerOnLine(HWND view, size_t line, size_t ofs) {
     // center on line
     if (line - 1 + nlines_2 > (size_t) last) {
       // line is on the end of document
-      ::SendMessage(view, SCI_SHOWLINES, line - 1, line + ofs); // force surround lines visibles if folded
+      ::SendMessage(view, SCI_SHOWLINES, line - 1, line + hofs); // force surround lines visibles if folded
     } else {
      ::SendMessage(view, SCI_GOTOLINE, line - 1 - nlines_2, 0);
      ::SendMessage(view, SCI_GOTOLINE, line - 1 + nlines_2, 0);
     }
 
     ::SendMessage(view, SCI_GOTOLINE, line - 1, 0);
+
+    // center on column
+    if (wrapmode == 0 && text != NULL) {
+      int width = (int) ::SendMessage(view, SCI_TEXTWIDTH, 32, reinterpret_cast<LPARAM>(text));
+      int margins = (int) ::SendMessage(view, SCI_GETMARGINS, 0, 0);
+      int wmargin = 0;
+      for (int i = 0; i < margins; ++i) {
+        wmargin += (int)::SendMessage(view, SCI_GETMARGINWIDTHN, i, 0);
+      }
+
+      if (width + wofs > (rect.right - rect.left - wmargin)) {
+        // error message goes out of the bounding box
+        int scroll = width + wofs - (rect.right - rect.left - wmargin);
+        ::SendMessage(view, SCI_SETXOFFSET, scroll, 0);
+      }
+    }
+
   } catch (...) {}
 }
 
@@ -921,16 +942,19 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, 
       line = (size_t) ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLINE, 0, 0) + 1;
     }
 
-    if (linepos != NULL) {
+    int maxannotwidth = -1;
+    size_t linelen = (size_t) ::SendMessage(view, SCI_LINELENGTH, line - 1, 0);
+    char* buffer = new char[linelen + sizeof(char)];
+    memset(buffer, '\0', linelen + sizeof(char));
+    ::SendMessage(view, SCI_GETLINE, line - 1, reinterpret_cast<LPARAM>(buffer));
+
+    int wrapmode = (int) ::SendMessage(view, SCI_GETWRAPMODE, 0, 0);
+    if (wrapmode == 0 && linepos != NULL) {
       // add spaces before each line to align the annotation on linepos
       // @todo: scroll horizontally if necessary to make annotation visible in current view
-      size_t linelen = (size_t) ::SendMessage(view, SCI_LINELENGTH, line - 1, 0);
       if (linepos <= linelen) {
         size_t i;
         std::wstring tabs, spaces;
-        char* buffer = new char[linelen + sizeof(char)];
-        memset(buffer, '\0', linelen + sizeof(char));
-        ::SendMessage(view, SCI_GETLINE, line - 1, reinterpret_cast<LPARAM>(buffer));
 
         // calculate tabs width
         int tabwidth = (int) ::SendMessage(view, SCI_GETTABWIDTH, 0, 0);
@@ -942,17 +966,26 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, 
           if (buffer[i] == '\t') spaces += tabs;
           else spaces += ' ';
         }
+        buffer[linepos-1] = '\0'; // force buffer end (required for horizontal scrolling)
 
-        delete[] buffer;
         tabs.clear();
 
         wmsg.insert(0, spaces);
-        std::string::size_type pos = wmsg.find(L"\r\n");
+        std::string::size_type oldpos = spaces.length(), pos = wmsg.find(L"\r\n");
+        int tmpannotwidth;
         while (pos != std::string::npos) {
+          tmpannotwidth = (int) ::SendMessage(view, SCI_TEXTWIDTH, 32, reinterpret_cast<LPARAM>(Report::castChar(wmsg.substr(oldpos, pos - oldpos), encoding).c_str()));
+          if (tmpannotwidth > maxannotwidth) maxannotwidth = tmpannotwidth;
+
           pos += lstrlen(L"\r\n");
           wmsg.insert(pos, spaces);
+          oldpos = pos + spaces.length();
           pos = wmsg.find(L"\r\n", pos);
         }
+
+        // calculate last line
+        tmpannotwidth = (int) ::SendMessage(view, SCI_TEXTWIDTH, 32, reinterpret_cast<LPARAM>(Report::castChar(wmsg.substr(oldpos, wmsg.length() - oldpos), encoding).c_str()));
+        if (tmpannotwidth > maxannotwidth) maxannotwidth = tmpannotwidth;
 
         spaces.clear();
       }
@@ -964,29 +997,19 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, 
     //memset(styles, xmltoolsoptions.annotationStyle, wmsg.length());
     //memset(styles, 0, wmsg.find(L"\r\n")+1);
 
-    switch (encoding) {
-      case uniCookie:
-      case uniUTF8:
-      case uni16BE:
-      case uni16LE:
-        // utf-8
-        ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::ucs2ToUtf8(wmsg.c_str()).c_str()));
-        break;
-      default:
-        // ansi
-        ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::ws2s(wmsg).c_str()));
-        break;
-    }
+    ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::castChar(wmsg, encoding).c_str()));
 
     //::SendMessage(view, SCI_ANNOTATIONSETSTYLES, line - 1, reinterpret_cast<LPARAM>(styles));
     ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, line - 1, xmltoolsoptions.annotationStyle);
     ::SendMessage(view, SCI_ANNOTATIONSETVISIBLE, 1, NULL);
     hasAnnotations = true;
 
-    centerOnLine(view, line, std::count(wmsg.begin(), wmsg.end(), '\n'));
+    centerOnPosition(view, line, linepos, std::count(wmsg.begin(), wmsg.end(), '\n'), maxannotwidth, buffer);
 
-    if (filepos > 0) {
-      ::SendMessage(view, SCI_GOTOPOS, filepos - 1, 0);
+    delete[] buffer;
+
+    if (filepos >= 0) {
+      ::SendMessage(view, SCI_GOTOPOS, filepos, 0);
     }
   } else {
     Report::_printf_err(wmsg);

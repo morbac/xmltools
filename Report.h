@@ -76,6 +76,7 @@ public:
   static UniMode getEncoding(BSTR encoding = NULL);
   static void setEncoding(UniMode encoding, HWND npp = NULL);
 
+  static std::string castChar(std::wstring text, UniMode encoding);
   static wchar_t* castChar(const char* orig, UniMode encoding = uniEnd);
   static char* castWChar(const wchar_t* orig, UniMode encoding = uniEnd);
   static void appendToStdString(std::wstring* dest, const char* source, UniMode encoding);
