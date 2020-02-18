@@ -480,8 +480,8 @@ void initializePlugin() {
   ::GetPrivateProfileString(sectionName, L"proxyUser", L"", proxyoptions.username, 255, iniFilePath);
   ::GetPrivateProfileString(sectionName, L"proxyPass", L"", proxyoptions.password, 255, iniFilePath);
   xmltoolsoptions.prohibitDTD = (::GetPrivateProfileInt(sectionName, L"prohibitDTD", 0, iniFilePath) == 1);
-  xmltoolsoptions.useAnnotations = (::GetPrivateProfileInt(sectionName, L"useAnnotations", 0, iniFilePath) == 1);
-  xmltoolsoptions.annotationStyle = ::GetPrivateProfileInt(sectionName, L"annotationStyle", 34, iniFilePath);
+  xmltoolsoptions.useAnnotations = (::GetPrivateProfileInt(sectionName, L"useAnnotations", 1, iniFilePath) == 1);
+  xmltoolsoptions.annotationStyle = ::GetPrivateProfileInt(sectionName, L"annotationStyle", 12, iniFilePath);
   xmltoolsoptions.convertAmp = (::GetPrivateProfileInt(sectionName, L"convertAmp", 1, iniFilePath) == 1);
   xmltoolsoptions.convertLt = (::GetPrivateProfileInt(sectionName, L"convertLt", 1, iniFilePath) == 1);
   xmltoolsoptions.convertGt = (::GetPrivateProfileInt(sectionName, L"convertGt", 1, iniFilePath) == 1);
@@ -913,8 +913,8 @@ void centerOnPosition(HWND view, size_t line, size_t column, size_t hofs, size_t
 
       if (width + wofs > (rect.right - rect.left - wmargin)) {
         // error message goes out of the bounding box
-        int scroll = width + wofs - (rect.right - rect.left - wmargin);
-        ::SendMessage(view, SCI_SETXOFFSET, scroll, 0);
+        size_t scroll = width + wofs - (rect.right - rect.left - wmargin);
+        ::SendMessage(view, SCI_SETXOFFSET, (int) scroll, 0);
       }
     }
 
