@@ -900,7 +900,7 @@ void centerOnLine(HWND view, size_t line, size_t ofs) {
   } catch (...) {}
 }
 
-void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t filepos) {
+void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, size_t filepos) {
   // clear final \r\n
   std::string::size_type p = wmsg.find_last_not_of(L"\r\n");
   if (p != std::string::npos && p < wmsg.length()) {
@@ -919,6 +919,43 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t filepos) 
   if (xmltoolsoptions.useAnnotations) {
     if (line == NULL) {
       line = (size_t) ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLINE, 0, 0) + 1;
+    }
+
+    if (linepos != NULL) {
+      // add spaces before each line to align the annotation on linepos
+      // @todo: scroll horizontally if necessary to make annotation visible in current view
+      size_t linelen = (size_t) ::SendMessage(view, SCI_LINELENGTH, line - 1, 0);
+      if (linepos <= linelen) {
+        size_t i;
+        std::wstring tabs, spaces;
+        char* buffer = new char[linelen + sizeof(char)];
+        memset(buffer, '\0', linelen + sizeof(char));
+        ::SendMessage(view, SCI_GETLINE, line - 1, reinterpret_cast<LPARAM>(buffer));
+
+        // calculate tabs width
+        int tabwidth = (int) ::SendMessage(view, SCI_GETTABWIDTH, 0, 0);
+        if (tabwidth <= 0) tabwidth = 4;
+        for (i = 0; i < tabwidth; ++i) tabs += ' ';
+
+        // replace all char except tabs with space
+        for (i = 0; i < linepos-1; ++i) {
+          if (buffer[i] == '\t') spaces += tabs;
+          else spaces += ' ';
+        }
+
+        delete[] buffer;
+        tabs.clear();
+
+        wmsg.insert(0, spaces);
+        std::string::size_type pos = wmsg.find(L"\r\n");
+        while (pos != std::string::npos) {
+          pos += lstrlen(L"\r\n");
+          wmsg.insert(pos, spaces);
+          pos = wmsg.find(L"\r\n", pos);
+        }
+
+        spaces.clear();
+      }
     }
 
     // display error as an annotation
@@ -943,7 +980,7 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t filepos) 
 
     //::SendMessage(view, SCI_ANNOTATIONSETSTYLES, line - 1, reinterpret_cast<LPARAM>(styles));
     ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, line - 1, xmltoolsoptions.annotationStyle);
-    ::SendMessage(view, SCI_ANNOTATIONSETVISIBLE, 2, NULL);
+    ::SendMessage(view, SCI_ANNOTATIONSETVISIBLE, 1, NULL);
     hasAnnotations = true;
 
     centerOnLine(view, line, std::count(wmsg.begin(), wmsg.end(), '\n'));
@@ -969,9 +1006,9 @@ void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDes
   CHK_HR(pXMLErr->get_reason(&bstrReason));
 
   if (szDesc != NULL) {
-    displayXMLError(Report::str_format(L"%s - line %d, pos %d: \r\n%s", szDesc, line, linepos, bstrReason), view, line, filepos);
+    displayXMLError(Report::str_format(L"%s - line %d, pos %d: \r\n%s", szDesc, line, linepos, bstrReason), view, line, linepos, filepos);
   } else {
-    displayXMLError(Report::str_format(L"XML Parsing error - line %d, pos %d: \r\n%s", line, linepos, bstrReason), view, line, filepos);
+    displayXMLError(Report::str_format(L"XML Parsing error - line %d, pos %d: \r\n%s", line, linepos, bstrReason), view, line, linepos, filepos);
   }
 
 CleanUp:
