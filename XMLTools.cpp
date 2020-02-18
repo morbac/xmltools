@@ -82,6 +82,7 @@ int nbFunc = TOTAL_FUNCS;
 
 NppData nppData;
 CDebugDlg* debugdlg = new CDebugDlg();
+HHOOK hook = NULL;
 
 // PATHs
 wchar_t pluginHomePath[MAX_PATH] = { '\0' };
@@ -535,6 +536,25 @@ void savePluginParams() {
   ::WritePrivateProfileString(sectionName, L"doPrettyPrintAllOpenFiles", doPrettyPrintAllOpenFiles?L"1":L"0", iniFilePath);
 }
 
+
+HMODULE GetCurrentModule() {
+  HMODULE hModule = NULL;
+  GetModuleHandleEx(
+    GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+    (LPCTSTR)GetCurrentModule,
+    &hModule);
+
+  return hModule;
+}
+
+static LRESULT CALLBACK KeyboardProc(int ncode, WPARAM wparam, LPARAM lparam) {
+  if (ncode == HC_ACTION && wparam == VK_ESCAPE) {
+    clearAnnotations();
+  }
+
+  return CallNextHookEx(hook, ncode, wparam, lparam); // pass control to next hook in the hook chain
+}
+
 /*
  *--------------------------------------------------
  * The 4 extern functions are mandatory
@@ -587,6 +607,14 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
         ::CheckMenuItem(hMenu, funcItem[menuitemPreventXXE]._cmdID, MF_BYCOMMAND | (doPreventXXE?MF_CHECKED:MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemAllowHuge]._cmdID, MF_BYCOMMAND | (doAllowHuge ? MF_CHECKED : MF_UNCHECKED));
         ::CheckMenuItem(hMenu, funcItem[menuitemPrettyPrintAllFiles]._cmdID, MF_BYCOMMAND | (doPrettyPrintAllOpenFiles?MF_CHECKED:MF_UNCHECKED));
+
+        if (hook) {
+          UnhookWindowsHookEx(hook);
+          hook = NULL;
+        }
+        else {
+          hook = SetWindowsHookEx(WH_KEYBOARD, KeyboardProc, (HINSTANCE)GetCurrentModule(), ::GetCurrentThreadId());
+        }
 
         #ifdef DEBUG
           debugdlg->Create(CDebugDlg::IDD,NULL);
@@ -664,6 +692,8 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
     }
   }
 }
+
+
 
 #ifdef UNICODE
   extern "C" __declspec(dllexport) BOOL isUnicode() {
