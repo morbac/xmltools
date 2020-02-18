@@ -904,11 +904,11 @@ void centerOnPosition(HWND view, size_t line, size_t column, size_t hofs, size_t
 
     // center on column
     if (wrapmode == 0 && text != NULL) {
-      int width = (int) ::SendMessage(view, SCI_TEXTWIDTH, 32, reinterpret_cast<LPARAM>(text));
-      int margins = (int) ::SendMessage(view, SCI_GETMARGINS, 0, 0);
-      int wmargin = 0;
-      for (int i = 0; i < margins; ++i) {
-        wmargin += (int)::SendMessage(view, SCI_GETMARGINWIDTHN, i, 0);
+      size_t width = (size_t) ::SendMessage(view, SCI_TEXTWIDTH, 32, reinterpret_cast<LPARAM>(text));
+      size_t margins = (size_t) ::SendMessage(view, SCI_GETMARGINS, 0, 0);
+      size_t wmargin = 0;
+      for (size_t i = 0; i < margins; ++i) {
+        wmargin += (size_t) ::SendMessage(view, SCI_GETMARGINWIDTHN, i, 0);
       }
 
       if (width + wofs > (rect.right - rect.left - wmargin)) {
@@ -959,7 +959,7 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, 
         // calculate tabs width
         int tabwidth = (int) ::SendMessage(view, SCI_GETTABWIDTH, 0, 0);
         if (tabwidth <= 0) tabwidth = 4;
-        for (i = 0; i < tabwidth; ++i) tabs += ' ';
+        for (int i = 0; i < tabwidth; ++i) tabs += ' ';
 
         // replace all char except tabs with space
         for (i = 0; i < linepos-1; ++i) {
