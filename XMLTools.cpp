@@ -878,11 +878,10 @@ void howtoUse() {
 // line +- nlines/2
 // for horizontal position, we calculate the text width and check if it is
 // out of the bounding box; then scroll horizontally if required
-void centerOnPosition(HWND view, size_t line, size_t column, size_t hofs, size_t wofs, const char* text) {
+void centerOnPosition(HWND view, size_t line, size_t hofs, size_t wofs, const char* text) {
   try {
     RECT rect;
     GetClientRect(view, &rect);
-    int wrapmode = (int) ::SendMessage(view, SCI_GETWRAPMODE, 0, 0);
     int height = (int) ::SendMessage(view, SCI_TEXTHEIGHT, line, NULL);
     int last = (int) ::SendMessage(view, SCI_GETMAXLINESTATE, NULL, NULL);
     size_t nlines_2 = (rect.bottom - rect.top) / (2 * height);
@@ -903,7 +902,7 @@ void centerOnPosition(HWND view, size_t line, size_t column, size_t hofs, size_t
     ::SendMessage(view, SCI_GOTOLINE, line - 1, 0);
 
     // center on column
-    if (wrapmode == 0 && text != NULL) {
+    if (text != NULL) {
       size_t width = (size_t) ::SendMessage(view, SCI_TEXTWIDTH, 32, reinterpret_cast<LPARAM>(text));
       size_t margins = (size_t) ::SendMessage(view, SCI_GETMARGINS, 0, 0);
       size_t wmargin = 0;
@@ -942,52 +941,54 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, 
       line = (size_t) ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLINE, 0, 0) + 1;
     }
 
-    int maxannotwidth = -1;
-    size_t linelen = (size_t) ::SendMessage(view, SCI_LINELENGTH, line - 1, 0);
-    char* buffer = new char[linelen + sizeof(char)];
-    memset(buffer, '\0', linelen + sizeof(char));
-    ::SendMessage(view, SCI_GETLINE, line - 1, reinterpret_cast<LPARAM>(buffer));
+    int maxannotwidth = 0;
+    char* buffer = NULL;
+    if (linepos != NULL) {
+      if (SendMessage(view, SCI_GETWRAPMODE, 0, 0) == 0) {
+        size_t linelen = (size_t) ::SendMessage(view, SCI_LINELENGTH, line - 1, 0);
+        buffer = new char[linelen + sizeof(char)];
+        memset(buffer, '\0', linelen + sizeof(char));
+        ::SendMessage(view, SCI_GETLINE, line - 1, reinterpret_cast<LPARAM>(buffer));
 
-    int wrapmode = (int) ::SendMessage(view, SCI_GETWRAPMODE, 0, 0);
-    if (wrapmode == 0 && linepos != NULL) {
-      // add spaces before each line to align the annotation on linepos
-      // @todo: scroll horizontally if necessary to make annotation visible in current view
-      if (linepos <= linelen) {
-        size_t i;
-        std::wstring tabs, spaces;
+        // add spaces before each line to align the annotation on linepos
+        // @todo: scroll horizontally if necessary to make annotation visible in current view
+        if (linepos <= linelen) {
+          size_t i;
+          std::wstring tabs, spaces;
 
-        // calculate tabs width
-        int tabwidth = (int) ::SendMessage(view, SCI_GETTABWIDTH, 0, 0);
-        if (tabwidth <= 0) tabwidth = 4;
-        for (int i = 0; i < tabwidth; ++i) tabs += ' ';
+          // calculate tabs width
+          int tabwidth = (int) ::SendMessage(view, SCI_GETTABWIDTH, 0, 0);
+          if (tabwidth <= 0) tabwidth = 4;
+          for (int i = 0; i < tabwidth; ++i) tabs += ' ';
 
-        // replace all char except tabs with space
-        for (i = 0; i < linepos-1; ++i) {
-          if (buffer[i] == '\t') spaces += tabs;
-          else spaces += ' ';
-        }
-        buffer[linepos-1] = '\0'; // force buffer end (required for horizontal scrolling)
+          // replace all char except tabs with space
+          for (i = 0; i < linepos - 1; ++i) {
+            if (buffer[i] == '\t') spaces += tabs;
+            else spaces += ' ';
+          }
+          buffer[linepos - 1] = '\0'; // force buffer end (required for horizontal scrolling)
 
-        tabs.clear();
+          tabs.clear();
 
-        wmsg.insert(0, spaces);
-        std::string::size_type oldpos = spaces.length(), pos = wmsg.find(L"\r\n");
-        int tmpannotwidth;
-        while (pos != std::string::npos) {
-          tmpannotwidth = (int) ::SendMessage(view, SCI_TEXTWIDTH, 32, reinterpret_cast<LPARAM>(Report::castChar(wmsg.substr(oldpos, pos - oldpos), encoding).c_str()));
+          wmsg.insert(0, spaces);
+          std::string::size_type oldpos = spaces.length(), pos = wmsg.find(L"\r\n");
+          int tmpannotwidth;
+          while (pos != std::string::npos) {
+            tmpannotwidth = (int) ::SendMessage(view, SCI_TEXTWIDTH, 32, reinterpret_cast<LPARAM>(Report::castChar(wmsg.substr(oldpos, pos - oldpos), encoding).c_str()));
+            if (tmpannotwidth > maxannotwidth) maxannotwidth = tmpannotwidth;
+
+            pos += lstrlen(L"\r\n");
+            wmsg.insert(pos, spaces);
+            oldpos = pos + spaces.length();
+            pos = wmsg.find(L"\r\n", pos);
+          }
+
+          // calculate last line
+          tmpannotwidth = (int) ::SendMessage(view, SCI_TEXTWIDTH, 32, reinterpret_cast<LPARAM>(Report::castChar(wmsg.substr(oldpos, wmsg.length() - oldpos), encoding).c_str()));
           if (tmpannotwidth > maxannotwidth) maxannotwidth = tmpannotwidth;
 
-          pos += lstrlen(L"\r\n");
-          wmsg.insert(pos, spaces);
-          oldpos = pos + spaces.length();
-          pos = wmsg.find(L"\r\n", pos);
+          spaces.clear();
         }
-
-        // calculate last line
-        tmpannotwidth = (int) ::SendMessage(view, SCI_TEXTWIDTH, 32, reinterpret_cast<LPARAM>(Report::castChar(wmsg.substr(oldpos, wmsg.length() - oldpos), encoding).c_str()));
-        if (tmpannotwidth > maxannotwidth) maxannotwidth = tmpannotwidth;
-
-        spaces.clear();
       }
     }
 
@@ -1004,12 +1005,12 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, 
     ::SendMessage(view, SCI_ANNOTATIONSETVISIBLE, 1, NULL);
     hasAnnotations = true;
 
-    centerOnPosition(view, line, linepos, std::count(wmsg.begin(), wmsg.end(), '\n'), maxannotwidth, buffer);
+    centerOnPosition(view, line, std::count(wmsg.begin(), wmsg.end(), '\n'), maxannotwidth, buffer);
 
-    delete[] buffer;
+    if (buffer != NULL) delete[] buffer;
 
-    if (filepos >= 0) {
-      ::SendMessage(view, SCI_GOTOPOS, filepos, 0);
+    if (filepos != NULL) {
+      ::SendMessage(view, SCI_GOTOPOS, filepos - 1, 0);
     }
   } else {
     Report::_printf_err(wmsg);
@@ -1029,9 +1030,9 @@ void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDes
   CHK_HR(pXMLErr->get_reason(&bstrReason));
 
   if (szDesc != NULL) {
-    displayXMLError(Report::str_format(L"%s - line %d, pos %d: \r\n%s", szDesc, line, linepos, bstrReason), view, line, linepos, filepos);
+    displayXMLError(Report::str_format(L"%s - line %d, pos %d: \r\n%s", szDesc, line, linepos, bstrReason), view, line, linepos, filepos+1);
   } else {
-    displayXMLError(Report::str_format(L"XML Parsing error - line %d, pos %d: \r\n%s", line, linepos, bstrReason), view, line, linepos, filepos);
+    displayXMLError(Report::str_format(L"XML Parsing error - line %d, pos %d: \r\n%s", line, linepos, bstrReason), view, line, linepos, filepos+1);
   }
 
 CleanUp:
