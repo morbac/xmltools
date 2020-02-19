@@ -148,9 +148,11 @@ void CXPathEvalDlg::AddToList(CListCtrl *list, CStringW type, CStringW name, CSt
 void CXPathEvalDlg::print_xpath_nodes(IXMLDOMNodeList* pNodes) {
   HRESULT hr = S_OK;
   IXMLDOMNode* pNode = NULL;
+  DOMNodeType nodeType;
   BSTR bstrNodeName = NULL;
   BSTR bstrNodeType = NULL;
-  BSTR bstrNodeValue = NULL;
+  VARIANT varNodeValue;
+  CStringW value;
   long length;
 
   CListCtrl* listresults = (CListCtrl*)this->GetDlgItem(IDC_LIST_XPATHRESULTS);
@@ -163,15 +165,49 @@ void CXPathEvalDlg::print_xpath_nodes(IXMLDOMNodeList* pNodes) {
   } else {
     for (long i = 0; i < length; ++i) {
       CHK_HR(pNodes->get_item(i, &pNode));
+
+      CHK_HR(pNode->get_nodeType(&nodeType));
       CHK_HR(pNode->get_nodeName(&bstrNodeName));
-      CHK_HR(pNode->get_text(&bstrNodeValue));
+      CHK_HR(pNode->get_nodeValue(&varNodeValue));
       CHK_HR(pNode->get_nodeTypeString(&bstrNodeType));
 
-      AddToList(listresults, bstrNodeType, bstrNodeName, bstrNodeValue);
+      switch (nodeType) {
+        case NODE_ELEMENT: {
+          // let's concatenate all direct text children
+          // rem: pNode->get_text(&bstrNodeValue) is not appropriate
+          //      because it concatenates the node content and the
+          //      content of its descendants; in our case we only
+          //      want direct child content
+          IXMLDOMNodeList* pNodeList;
+          // @fixme: would it be better to use CComPtr<IXMLDOMNodeList> pNodeList; ?
+          long numChildren;
+          value = "";
+          CHK_HR(pNode->get_childNodes(&pNodeList));
+          CHK_HR(pNodeList->get_length(&numChildren));
+          for (long j = 0; j < numChildren; ++j) {
+            SAFE_RELEASE(pNode);
+            CHK_HR(pNodeList->get_item(j, &pNode));
+            CHK_HR(pNode->get_nodeType(&nodeType));
+            if (nodeType == NODE_TEXT) {
+              VariantClear(&varNodeValue);
+              CHK_HR(pNode->get_nodeValue(&varNodeValue));
+              value.Append(varNodeValue.bstrVal);
+            }
+            SAFE_RELEASE(pNode);
+          }
+          SAFE_RELEASE(pNodeList);
+          break;
+        }
+        default: {
+          value = varNodeValue.bstrVal;
+        }
+      }
+
+      AddToList(listresults, bstrNodeType, bstrNodeName, value);
 
       SysFreeString(bstrNodeName);
-      SysFreeString(bstrNodeValue);
       SysFreeString(bstrNodeType);
+      VariantClear(&varNodeValue);
       SAFE_RELEASE(pNode);
     }
   }
@@ -179,8 +215,8 @@ void CXPathEvalDlg::print_xpath_nodes(IXMLDOMNodeList* pNodes) {
 CleanUp:
   SAFE_RELEASE(pNode);
   SysFreeString(bstrNodeName);
-  SysFreeString(bstrNodeValue);
   SysFreeString(bstrNodeType);
+  VariantClear(&varNodeValue);
 }
 /**
  * print_xpath_nodes:
