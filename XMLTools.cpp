@@ -1697,7 +1697,7 @@ std::wstring currentXPath(bool preciseXPath) {
     pRdr->putContentHandler(&pPB);
     pRdr->parse(varXML);
 
-    nodepath = pPB.getPath();
+    nodepath = pPB.getPath(preciseXPath);
     pRdr->Release();
     /*
     //updateProxyConfig();

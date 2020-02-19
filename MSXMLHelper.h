@@ -88,12 +88,24 @@ public:
     return S_OK;
   }
 
-  std::wstring getPath() {
+  std::wstring getPath(bool withNamespaces) {
     std::wstring res(L"");
     size_t size = vPath.size();
     for (size_t i = 0; i < size; ++i) {
       res.append(L"/");
-      res.append(vPath.at(i));
+      if (withNamespaces) {
+        res.append(vPath.at(i));
+      }
+      else {
+        std::wstring tmp = vPath.at(i);
+        std::string::size_type p = tmp.find(':');
+        if (p != std::string::npos) {
+          res.append(tmp.substr(p+1));
+        }
+        else {
+          res.append(tmp);
+        }
+      }
     }
 
     return res;
