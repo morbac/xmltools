@@ -149,7 +149,6 @@ void toggleAllowHuge();
 void prettyPrintXML();
 void prettyPrintXMLBreaks();
 void prettyPrintText();
-void prettyPrintSelection();
 void prettyPrintAttributes();
 //void insertPrettyPrintTag();
 void linearizeXML();
@@ -157,7 +156,7 @@ void togglePrettyPrintAllFiles();
 int initDocIterator();
 bool hasNextDoc(int* iter);
 
-void getCurrentXPath();
+void getCurrentXPath(bool precise);
 void getCurrentXPathStd();
 void getCurrentXPathPredicate();
 void evaluateXPath();
@@ -1637,6 +1636,7 @@ std::wstring currentXPath(bool preciseXPath) {
   HRESULT hr = S_OK;
   ISAXXMLReader* pRdr = NULL;
   variant_t varXML;
+  PathBuilder pPB;
 
   int currentEdit;
   std::string::size_type currentLength, currentPos;
@@ -1690,8 +1690,6 @@ std::wstring currentXPath(bool preciseXPath) {
     str += ">";
 
     varXML.SetString(str.c_str());
-
-    PathBuilder pPB;
 
     CHK_HR(CreateAndInitSAX(&pRdr));
     pRdr->putContentHandler(&pPB);
