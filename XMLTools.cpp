@@ -1938,13 +1938,12 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           prevspecchar = str.find_last_of("<>", curpos - 1);
           if (prevspecchar != std::string::npos) {
             // let's see if our '>' is in attribute
-            std::string::size_type nextt = str.find_first_of("\"'", prevspecchar + 1);
-            if (str.at(prevspecchar) == '>' && (nextt == std::string::npos || nextt > curpos)) {
+            if (str.at(prevspecchar) == '>') {
               // current > is simple text, in text node
               ++curpos;
               continue;
             }
-            nextt = str.find_first_of("<>", curpos + 1);
+            std::string::size_type nextt = str.find_first_of("<>", curpos + 1);
             if (nextt != std::string::npos && str.at(nextt) == '>') {
               // current > is text in attribute
               ++curpos;
@@ -2009,7 +2008,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     char attributeQuote = '\0';
     sep += eolchar;
     strlength = str.length();
-     while (curpos < strlength && (curpos = str.find_first_of(sep,curpos)) != std::string::npos) {
+    while (curpos < strlength && (curpos = str.find_first_of(sep,curpos)) != std::string::npos) {
       if (!Report::isEOL(str, strlength, (unsigned int) curpos, eolmode)) {
         if (curpos < strlength-4 && !str.compare(curpos,4,"<!--")) {
           in_comment = true;
