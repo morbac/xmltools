@@ -1692,7 +1692,9 @@ std::wstring currentXPath(bool preciseXPath) {
     varXML.SetString(str.c_str());
 
     CHK_HR(CreateAndInitSAX(&pRdr));
-    pRdr->putContentHandler(&pPB);
+    CHK_HR(pRdr->putContentHandler(&pPB));
+
+    // no CHK_HR on next call because it will fail since our xml has been truncated at current cursor location
     pRdr->parse(varXML);
 
     nodepath = pPB.getPath(preciseXPath);
