@@ -120,7 +120,6 @@ int menuitemCheckXML = -1,
 std::wstring lastXMLSchema(L"");
 
 int nbopenfiles1, nbopenfiles2;
-bool hasAnnotations = false;
 
 // Here're the declaration my functions ///////////////////////////////////////
 void insertXMLCheckTag();
@@ -1002,7 +1001,6 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, 
     //::SendMessage(view, SCI_ANNOTATIONSETSTYLES, line - 1, reinterpret_cast<LPARAM>(styles));
     ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, line - 1, xmltoolsoptions.annotationStyle);
     ::SendMessage(view, SCI_ANNOTATIONSETVISIBLE, 1, NULL);
-    hasAnnotations = true;
 
     centerOnPosition(view, line, std::count(wmsg.begin(), wmsg.end(), '\n'), maxannotwidth, buffer);
 
@@ -1044,9 +1042,8 @@ void clearAnnotations(HWND view) {
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
     view = getCurrentHScintilla(currentEdit);
   }
-  if (hasAnnotations && xmltoolsoptions.useAnnotations) {
+  if (xmltoolsoptions.useAnnotations) {
     ::SendMessage(view, SCI_ANNOTATIONCLEARALL, NULL, NULL);
-    hasAnnotations = false;
   }
 }
 
