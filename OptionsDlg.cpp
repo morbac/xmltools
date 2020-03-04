@@ -23,16 +23,20 @@ COptionsDlg::~COptionsDlg() {
 void COptionsDlg::DoDataExchange(CDataExchange* pDX)
 {
   CDialogEx::DoDataExchange(pDX);
+  /*
   DDX_Control(pDX, IDC_EDITPROXYHOST, editProxyHost);
   DDX_Control(pDX, IDC_EDITPROXYPORT, editProxyPort);
   DDX_Control(pDX, IDC_EDITPROXYUSERNAME, editProxyUsername);
   DDX_Control(pDX, IDC_EDITPROXYPASSWORD, editProxyPassword);
+  */
   DDX_Control(pDX, IDC_EDITANNOTATIONSTYLE, editAnnotationStyle);
 }
 
 
 BEGIN_MESSAGE_MAP(COptionsDlg, CDialogEx)
+  /*
   ON_BN_CLICKED(IDC_CHKENABLEPROXY, &COptionsDlg::OnBnClickedChkenableproxy)
+  */
   ON_BN_CLICKED(IDOK, &COptionsDlg::OnBnClickedOk)
   ON_BN_CLICKED(IDC_CHKANNOTATIONS, &COptionsDlg::OnBnClickedChkannotations)
   ON_BN_CLICKED(IDC_BTNVIEWANNOTATION, &COptionsDlg::OnBnClickedBtnviewannotation)
@@ -48,11 +52,13 @@ BOOL COptionsDlg::OnInitDialog()
 
   testAnnotation = false;
 
+  /*
   ((CButton*) GetDlgItem(IDC_CHKENABLEPROXY))->SetCheck(proxyoptions.status ? BST_CHECKED : BST_UNCHECKED);
   GetDlgItem(IDC_EDITPROXYHOST)->SetWindowTextW(proxyoptions.host);
   GetDlgItem(IDC_EDITPROXYPORT)->SetWindowTextW(std::to_wstring(static_cast<long>(proxyoptions.port)).c_str());
   //GetDlgItem(IDC_EDITPROXYUSERNAME)->SetWindowTextW(this->proxyoptions->username);
   //GetDlgItem(IDC_EDITPROXYPASSWORD)->SetWindowTextW(this->proxyoptions->password);
+  */
   ((CButton*)GetDlgItem(IDC_CHKPROHIBITDTD))->SetCheck(xmltoolsoptions.prohibitDTD ? BST_CHECKED : BST_UNCHECKED);
   ((CButton*)GetDlgItem(IDC_CHKANNOTATIONS))->SetCheck(xmltoolsoptions.useAnnotations ? BST_CHECKED : BST_UNCHECKED);
   GetDlgItem(IDC_EDITANNOTATIONSTYLE)->SetWindowTextW(std::to_wstring(static_cast<int>(xmltoolsoptions.annotationStyle)).c_str());
@@ -61,6 +67,7 @@ BOOL COptionsDlg::OnInitDialog()
   ((CButton*)GetDlgItem(IDC_CHKGT))->SetCheck(xmltoolsoptions.convertGt ? BST_CHECKED : BST_UNCHECKED);
   ((CButton*)GetDlgItem(IDC_CHKQUOTE))->SetCheck(xmltoolsoptions.convertQuote ? BST_CHECKED : BST_UNCHECKED);
   ((CButton*)GetDlgItem(IDC_CHKAPOS))->SetCheck(xmltoolsoptions.convertApos ? BST_CHECKED : BST_UNCHECKED);
+  ((CButton*)GetDlgItem(IDC_CHKPPAUTOCLOSE))->SetCheck(xmltoolsoptions.ppAutoclose ? BST_CHECKED : BST_UNCHECKED);
 
   updateEditFieldsStatus();
 
@@ -70,6 +77,7 @@ BOOL COptionsDlg::OnInitDialog()
 
 
 void COptionsDlg::updateEditFieldsStatus() {
+  /*
   switch(((CButton*) GetDlgItem(IDC_CHKENABLEPROXY))->GetCheck()) {
     case BST_UNCHECKED: {
       GetDlgItem(IDC_EDITPROXYHOST)->EnableWindow(FALSE);
@@ -88,6 +96,7 @@ void COptionsDlg::updateEditFieldsStatus() {
       break;
     }
   }
+  */
 
   switch (((CButton*)GetDlgItem(IDC_CHKANNOTATIONS))->GetCheck()) {
     case BST_UNCHECKED: {
@@ -112,9 +121,11 @@ void COptionsDlg::OnBnClickedChkannotations() {
 
 
 void COptionsDlg::OnBnClickedOk() {
-  proxyoptions.status = (((CButton*) GetDlgItem(IDC_CHKENABLEPROXY))->GetCheck() == BST_CHECKED);
-
   CStringW buffer;
+
+  /*
+  proxyoptions.status = (((CButton*) GetDlgItem(IDC_CHKENABLEPROXY))->GetCheck() == BST_CHECKED);
+  
   this->editProxyHost.GetWindowText(buffer);
   wcscpy_s(proxyoptions.host, (const WCHAR *)buffer);
 
@@ -126,6 +137,7 @@ void COptionsDlg::OnBnClickedOk() {
 
   //this->editProxyPassword.GetWindowText(buffer);
   //wcscpy_s(this->proxyoptions->password, (const WCHAR *)buffer);
+  */
 
   xmltoolsoptions.prohibitDTD = (((CButton*)GetDlgItem(IDC_CHKPROHIBITDTD))->GetCheck() == BST_CHECKED);
   xmltoolsoptions.useAnnotations = (((CButton*)GetDlgItem(IDC_CHKANNOTATIONS))->GetCheck() == BST_CHECKED);
@@ -134,6 +146,7 @@ void COptionsDlg::OnBnClickedOk() {
   xmltoolsoptions.convertGt = (((CButton*)GetDlgItem(IDC_CHKGT))->GetCheck() == BST_CHECKED);
   xmltoolsoptions.convertQuote = (((CButton*)GetDlgItem(IDC_CHKQUOTE))->GetCheck() == BST_CHECKED);
   xmltoolsoptions.convertApos = (((CButton*)GetDlgItem(IDC_CHKAPOS))->GetCheck() == BST_CHECKED);
+  xmltoolsoptions.ppAutoclose = (((CButton*)GetDlgItem(IDC_CHKPPAUTOCLOSE))->GetCheck() == BST_CHECKED);
 
   this->editAnnotationStyle.GetWindowText(buffer);
   xmltoolsoptions.annotationStyle = _wtoi((LPCTSTR)buffer);

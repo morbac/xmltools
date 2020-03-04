@@ -59,6 +59,7 @@ struct struct_xmltoolsoptions {       // default value
   bool convertGt;
   bool convertQuote;
   bool convertApos;
+  bool ppAutoclose;
 };
 
 extern struct struct_proxyoptions proxyoptions;

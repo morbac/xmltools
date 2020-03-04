@@ -485,6 +485,7 @@ void initializePlugin() {
   xmltoolsoptions.convertGt = (::GetPrivateProfileInt(sectionName, L"convertGt", 1, iniFilePath) == 1);
   xmltoolsoptions.convertQuote = (::GetPrivateProfileInt(sectionName, L"convertQuote", 1, iniFilePath) == 1);
   xmltoolsoptions.convertApos = (::GetPrivateProfileInt(sectionName, L"convertApos", 1, iniFilePath) == 1);
+  xmltoolsoptions.ppAutoclose = (::GetPrivateProfileInt(sectionName, L"ppAutoclose", 1, iniFilePath) == 1);
 
   updateProxyConfig();
 
@@ -803,6 +804,7 @@ void optionsDlg() {
     ::WritePrivateProfileString(sectionName, L"convertGt", xmltoolsoptions.convertGt ? L"1" : L"0", iniFilePath);
     ::WritePrivateProfileString(sectionName, L"convertQuote", xmltoolsoptions.convertQuote ? L"1" : L"0", iniFilePath);
     ::WritePrivateProfileString(sectionName, L"convertApos", xmltoolsoptions.convertApos ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"ppAutoclose", xmltoolsoptions.ppAutoclose ? L"1" : L"0", iniFilePath);
 
     updateProxyConfig();
   }
@@ -1966,7 +1968,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
                 if (strcmp(tag1.c_str(), tag2.c_str()) || isclosingtag) {
                   // Case of "<data><data>..." -> add a line break between tags
                   str.insert(++curpos, eolchar);
-                } else if (str.at(nexwchar_t + 1) == '/' && !isclosingtag && nexwchar_t == curpos + 1) {
+                } else if (xmltoolsoptions.ppAutoclose && str.at(nexwchar_t + 1) == '/' && !isclosingtag && nexwchar_t == curpos + 1) {
                   // Case of "<data id="..."></data>" -> replace by "<data id="..."/>"
                   str.replace(curpos, endnext - curpos, "/");
                 }

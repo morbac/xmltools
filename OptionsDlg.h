@@ -27,10 +27,12 @@ public:
   afx_msg void OnBnClickedChkenableproxy();
   afx_msg void OnBnClickedOk();
 
+  /*
   CEdit editProxyHost;
   CEdit editProxyPort;
   CEdit editProxyUsername;
   CEdit editProxyPassword;
+  */
   CEdit editAnnotationStyle;
   afx_msg void OnBnClickedChkannotations();
   afx_msg void OnBnClickedBtnviewannotation();

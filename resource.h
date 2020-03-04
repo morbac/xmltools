@@ -26,6 +26,7 @@
 #define IDC_EDIT_MULTILINEMSG           2010
 #define IDC_EDIT_XSLTFILE               2011
 #define IDC_BTN_BROWSEXSLTFILE          2012
+#define IDD_DIALOG1                     2012
 #define IDC_EDIT_XSLTOPTIONS            2013
 #define IDC_BTN_TRANSFORM               2014
 #define IDC_LIST1                       2015
@@ -55,14 +56,16 @@
 #define IDC_CHKAMP                      2044
 #define IDC_CHECK5                      2045
 #define IDC_CHKAPOS                     2045
+#define IDC_CHECK1                      2046
+#define IDC_CHKPPAUTOCLOSE              2046
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        2012
+#define _APS_NEXT_RESOURCE_VALUE        2014
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2046
+#define _APS_NEXT_CONTROL_VALUE         2047
 #define _APS_NEXT_SYMED_VALUE           2000
 #endif
 #endif
