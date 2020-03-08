@@ -30,6 +30,7 @@
 #include <locale>
 #include <algorithm>
 #include <array>
+#include <map>
 
 #include "MSXMLHelper.h"
 
@@ -120,8 +121,11 @@ int menuitemCheckXML = -1,
 std::wstring lastXMLSchema(L"");
 
 int nbopenfiles1, nbopenfiles2;
+std::map<LRESULT,bool> hasAnnotations;
 
 // Here're the declaration my functions ///////////////////////////////////////
+bool hasCurrentDocAnnotations();
+
 void insertXMLCheckTag();
 void autoXMLCheck();
 void manualXMLCheck();
@@ -653,19 +657,20 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       break;
     }
     case SCN_MODIFIED: {
-      if (notifyCode->modificationType & (SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT)) {
+      if ((notifyCode->modificationType == SC_MOD_INSERTTEXT || notifyCode->modificationType == SC_MOD_DELETETEXT) && hasCurrentDocAnnotations()) {
         dbgln(Report::str_format("NPP Event: SCN_MODIFIED [%d]", notifyCode->modificationType).c_str());
         clearAnnotations();
       }
       break;
     }
-    case NPPN_FILEOPENED:
+    case NPPN_FILEOPENED: {
       dbgln("NPP Event: NPPN_FILEOPENED");
       TCHAR filename[MAX_PATH];
       ::SendMessage(nppData._nppHandle, NPPM_GETFULLPATHFROMBUFFERID, notifyCode->nmhdr.idFrom, reinterpret_cast<LPARAM>(filename));
       dbg("  bufferID: "); dbgln(std::to_string(static_cast<unsigned long long>(notifyCode->nmhdr.idFrom)).c_str());
       dbg("  filename: "); dbgln(filename);
       break;
+    }
     case NPPN_BUFFERACTIVATED: {
       dbgln("NPP Event: NPPN_BUFFERACTIVATED");
       if (doAutoXMLType) {
@@ -682,6 +687,8 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
     }
     case NPPN_SHUTDOWN: {
       CoUninitialize();
+
+      hasAnnotations.clear();
 
       savePluginParams();
       break;
@@ -1004,6 +1011,8 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, 
     ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, line - 1, xmltoolsoptions.annotationStyle);
     ::SendMessage(view, SCI_ANNOTATIONSETVISIBLE, 1, NULL);
 
+    hasAnnotations[::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0)] = true;
+
     centerOnPosition(view, line, std::count(wmsg.begin(), wmsg.end(), '\n'), maxannotwidth, buffer);
 
     if (buffer != NULL) delete[] buffer;
@@ -1038,14 +1047,25 @@ CleanUp:
   SysFreeString(bstrReason);
 }
 
-void clearAnnotations(HWND view) {
-  if (view == NULL) {
-    int currentEdit;
-    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-    view = getCurrentHScintilla(currentEdit);
+bool hasCurrentDocAnnotations() {
+  if (!xmltoolsoptions.useAnnotations) return false;
+  try {
+    return hasAnnotations.at(::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0));
   }
-  if (xmltoolsoptions.useAnnotations) {
+  catch (const std::out_of_range) {}
+
+  return false;
+}
+
+void clearAnnotations(HWND view) {
+  if (hasCurrentDocAnnotations()) {
+    if (view == NULL) {
+      int currentEdit;
+      ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
+      view = getCurrentHScintilla(currentEdit);
+    }
     ::SendMessage(view, SCI_ANNOTATIONCLEARALL, NULL, NULL);
+    hasAnnotations[::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0)] = false;
   }
 }
 
