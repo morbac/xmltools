@@ -1247,223 +1247,6 @@ void XMLValidation(int informIfNoError) {
     displayXMLError(pXMLErr, hCurrentEditView, L"XML Validation error");
   }
 
-  /*
-  xmlDocPtr doc;
-  xmlNodePtr rootnode;
-  xmlSchemaPtr schema;
-  xmlSchemaValidCtxtPtr vctxt;
-  xmlSchemaParserCtxtPtr pctxt;
-  xmlDtdPtr dtdPtr;
-  bool doFreeDTDPtr = false;
-  bool xsdValidation = false;
-  bool dtdValidation = false;
-
-  pXmlResetLastError();
-  //updateProxyConfig();
-  doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, getFlags());
-
-  delete [] data;
-  data = NULL;
-
-  if (doc == NULL) {
-    xmlErrorPtr err = pXmlGetLastError();
-
-    if (err != NULL) {
-      if (err->line > 0) {
-        ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
-      }
-      wchar_t* tmpmsg = Report::castChar(err->message);
-      Report::_printf_err(L"XML Parsing error at line %d: \r\n%s", err->line, tmpmsg);
-      delete[] tmpmsg;
-    } else {
-      Report::_printf_err(L"Failed to parse document");
-    }
-
-    abortValidation = true;
-  }
-
-  // 2. is xml is valid...
-  if (!abortValidation) {
-    // 2.1. try to get schema or dtd in document
-    rootnode = pXmlDocGetRootElement(doc);
-    if (rootnode == NULL) {
-      Report::_printf_err(L"Empty XML document");
-    } else {
-      // 2.1.a. search for attributes "xsi:noNamespaceSchemaLocation" or "xsi:schemaLocation" in root tag
-      // expected root tag sample:
-      //   <descript xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Descript_Shema.xsd">
-      xmlChar* propval = pXmlGetProp(rootnode, reinterpret_cast<const unsigned char*>("noNamespaceSchemaLocation"));
-      if (propval == NULL) {
-        propval = pXmlGetProp(rootnode, reinterpret_cast<const unsigned char*>("schemaLocation"));
-        if (propval != NULL) {
-          xml_schema = std::string(reinterpret_cast<const char*>(propval));
-          xml_schema = xml_schema.substr(1+xml_schema.find_last_of(' '));
-          xsdValidation = true;
-        }
-      } else {
-        xml_schema = std::string(reinterpret_cast<const char*>(propval));
-        xsdValidation = true;
-      }
-
-      // 2.1.b search for DOCTYPE before root tag
-      dtdPtr = doc->intSubset;
-      if (dtdPtr) {
-        std::string dtd_filename("");
-        if (dtdPtr->SystemID) {
-          dtd_filename = std::string(reinterpret_cast<const char*>((LPCTSTR)dtdPtr->SystemID));
-        } else if (dtdPtr->ExternalID) {
-          dtd_filename = std::string(reinterpret_cast<const char*>((LPCTSTR)dtdPtr->ExternalID));
-        }
-
-        if (dtdPtr->SystemID || dtdPtr->ExternalID) {
-          dtdPtr = pXmlParseDTD(dtdPtr->ExternalID, dtdPtr->SystemID);
-          doFreeDTDPtr = true;
-        }
-
-        if (dtdPtr == NULL) {
-          wchar_t* tmpmsg = Report::castChar(dtd_filename.c_str());
-          Report::_printf_err(L"Unable to load the DTD\r\n%s", tmpmsg);
-          delete[] tmpmsg;
-          abortValidation = true;
-        } else {
-          dtdValidation = true;
-        }
-      }
-      propval = NULL;
-    }
-
-    // elements check: if we have both a DTD and a schema, we use the schema
-    if (xsdValidation) dtdValidation = false;
-  }
-
-  if (!abortValidation) {
-    // 2.2. if attribute is missing, let's ask to user to provide an xsd path
-    if (xml_schema.length() == 0 && !dtdValidation) {
-      if (pSelectFileDlg == NULL) {
-          pSelectFileDlg = new CSelectFileDlg();
-      }
-      pSelectFileDlg->m_sSelectedFilename = Report::widen(lastXMLSchema).c_str();
-
-      CStringW rootSample = "<";
-      Report::appendToCString(&rootSample, rootnode->name, encoding);
-      rootSample += "\r\n\txmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
-      rootSample += "\r\n\txsi:noNamespaceSchemaLocation=\"XSD_FILE_PATH\">";
-
-      pSelectFileDlg->m_sRootElementSample = rootSample;
-      if (pSelectFileDlg->DoModal() == IDOK) {
-        xml_schema = Report::narrow(std::wstring(pSelectFileDlg->m_sSelectedFilename).c_str());
-      }
-    }
-
-    // 2.3.a. schema validation process
-    if (xml_schema.length() > 0 && !dtdValidation) {
-      // concat provided path wiht current path
-      wchar_t destpath[MAX_PATH] = { '\0' };
-      ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTDIRECTORY, MAX_PATH, (LPARAM)destpath);
-      std::string xml_absolute_schema = Report::narrow(destpath);
-      xml_absolute_schema.append("\\");
-      xml_absolute_schema.append(xml_schema);
-
-      // if the file exists, let's use it, otherwise let's use the initial value (for the case we get an URL)
-      if (PathFileExists(Report::widen(xml_absolute_schema).c_str()) == FALSE) {
-        xml_absolute_schema = xml_schema;
-      }
-
-      if ((pctxt = pXmlSchemaNewParserCtxt(reinterpret_cast<const char*>(xml_absolute_schema.c_str()))) == NULL) {
-        Report::_printf_err(L"Unable to initialize parser.");
-      } else {
-        // load content of xml schema
-        schema = pXmlSchemaParse(pctxt);
-
-        if (schema == NULL) {
-          xmlErrorPtr err;
-          err = pXmlGetLastError();
-
-          if (err != NULL) {
-            wchar_t* tmpmsg = Report::castChar(err->message);
-            if (err->line > 0) {
-              ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
-              Report::_printf_err(L"Unable to parse schema file. \r\nParsing error at line %d: \r\n%s", err->line, tmpmsg);
-            } else {
-              Report::_printf_err(L"Following error occurred during schema file parsing: \r\n%s", tmpmsg);
-            }
-            delete[] tmpmsg;
-          } else {
-            Report::_printf_err(L"Unable to parse schema file.");
-          }
-        } else {
-          // create validation context
-          if ((vctxt = pXmlSchemaNewValidCtxt(schema)) == NULL) {
-            Report::_printf_err(L"Unable to create validation context.");
-          } else {
-            // handle validation errors
-            Report::clearLog();
-            Report::registerMessage("Validation of current file using XML schema:\r\n\r\n");
-            pXmlSchemaSetValidErrors(vctxt, (xmlSchemaValidityErrorFunc) Report::registerError, (xmlSchemaValidityWarningFunc) Report::registerWarn, stderr);
-            //pXmlSchemaValidateSetLocator(vctxt, xmlSchemaValidateStreamLocator, pctxt);
-
-            // validation
-            if (!pXmlSchemaValidateDoc(vctxt, doc)) {
-              if (informIfNoError) Report::_printf_inf(L"XML Schema validation:\r\nXML is valid.");
-            } else {
-              CMessageDlg* msgdlg = new CMessageDlg();
-              msgdlg->m_sMessage = Report::getLog().c_str();
-              msgdlg->DoModal();
-            }
-          }
-
-          // 2.4. free parser
-          pXmlSchemaFree(schema);
-          pXmlSchemaFreeValidCtxt(vctxt);
-        }
-
-        pXmlSchemaFreeParserCtxt(pctxt);
-      }
-    }
-
-    // 2.3.b dtd validation process
-    if (dtdPtr && dtdValidation) {
-      xmlValidCtxtPtr vctxt;
-
-      // create validation context
-      if ((vctxt = pXmlNewValidCtxt())) {
-        // show validation errors
-        Report::clearLog();
-        Report::registerMessage("Validation of current file using DTD:\r\n\r\n");
-        vctxt->userData = (void *) stderr;
-        vctxt->error = (xmlValidityErrorFunc) Report::registerError;
-        vctxt->warning = (xmlValidityWarningFunc) Report::registerWarn;
-
-        // validation
-        if (pXmlValidateDtd(vctxt, doc, dtdPtr)) {
-          if (pXmlValidateDtdFinal(vctxt, doc)) {
-            if (informIfNoError) Report::_printf_inf(L"DTD validation:\r\nXML is valid.");
-          } else {
-            CMessageDlg* msgdlg = new CMessageDlg();
-            msgdlg->m_sMessage = Report::getLog().c_str();
-            msgdlg->DoModal();
-          }
-        } else {
-          CMessageDlg* msgdlg = new CMessageDlg();
-          msgdlg->m_sMessage = Report::getLog().c_str();
-          msgdlg->DoModal();
-        }
-        // free memory
-        pXmlFreeValidCtxt(vctxt);
-      }
-      if (doFreeDTDPtr) {
-        pXmlFreeDtd(dtdPtr);
-      }
-    }
-  }
-
-  // 3. clean memory
-  rootnode = NULL;
-  pXmlFreeDoc(doc);
-
-  // 4. save schema name for next call
-  lastXMLSchema = xml_schema;
-  */
 CleanUp:
   SAFE_RELEASE(pXMLDom);
   SAFE_RELEASE(pXMLErr);
@@ -1718,58 +1501,6 @@ std::wstring currentXPath(bool preciseXPath) {
 
     nodepath = pPB.getPath(preciseXPath);
     pRdr->Release();
-    /*
-    //updateProxyConfig();
-    xmlDocPtr doc = pXmlReadMemory(str.c_str(), str.length(), "noname.xml", NULL, XML_PARSE_RECOVER | getFlags());
-    str.clear();
-
-    if (doc == NULL) return nodepath;
-
-    UniMode encoding = Report::getEncoding(doc->encoding, NULL);
-    xmlNodePtr cur_node = pXmlDocGetRootElement(doc);
-    std::wstring attr(L"");
-
-    while (cur_node != NULL && cur_node->last != NULL) {
-      if (cur_node->type == XML_ELEMENT_NODE) {
-        attr = L"";
-        nodepath += L"/";
-        if (cur_node->ns) {
-          if (cur_node->ns->prefix != NULL) {
-            Report::appendToWStdString(&nodepath, cur_node->ns->prefix, encoding);
-            nodepath += L":";
-          }
-        }
-        Report::appendToWStdString(&nodepath, cur_node->name, encoding);
-
-        // count preceding siblings
-        if (preciseXPath) {
-          int pos = 1;
-          xmlNodePtr n = cur_node->prev;
-          while (n) {
-            if (n->type == XML_ELEMENT_NODE && pXmlStrEqual(n->name, cur_node->name)) ++pos;
-            n = n->prev;
-          }
-          nodepath += Report::str_format(L"[%d]", pos).c_str();
-        }
-
-        // get last attribute
-        if (cursorInAttribute) {
-          xmlAttrPtr a = cur_node->properties;
-          while (a) {
-            if (a->type == XML_ATTRIBUTE_NODE) {
-              attr = Report::widen(a->name);
-              a = a->next;
-            }
-          }
-        }
-      }
-      cur_node = cur_node->last;
-    }
-
-    if (cursorInAttribute && attr.length() > 0) {
-      nodepath += Report::str_format(L"/@%s", attr.c_str()).c_str();
-    }
-    pXmlFreeDoc(doc);*/
   }
 
 CleanUp:
@@ -1838,6 +1569,116 @@ void performXSLTransform() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+std::string& ltrim(std::string& str, const std::string& chars = "\t\n\v\f\r ") {
+  str.erase(0, str.find_first_not_of(chars));
+  return str;
+}
+
+std::string& rtrim(std::string& str, const std::string& chars = "\t\n\v\f\r ") {
+  str.erase(str.find_last_not_of(chars) + 1);
+  return str;
+}
+
+std::string& trim(std::string& str, const std::string& chars = "\t\n\v\f\r ") {
+  return ltrim(rtrim(str, chars), chars);
+}
+
+std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, const std::string& chars = "\t\n\v\f\r ") {
+  bool in_tag = false;
+  char cc;
+  std::string::size_type curpos = 0, lasteolpos = 0, tmppos;
+  size_t eolcharlen = eolchar.length();
+  size_t eolcharpos = eolchar.find('\n');
+
+  while (curpos < str.length() && (curpos = str.find_first_of("<>\"'\n", curpos)) != std::string::npos) {
+    switch (cc = str.at(curpos)) {
+      case '<': {
+        if (curpos < str.length() - 2 && !str.compare(curpos, 2, "<?")) {                   // is "<?xml ...?>" definition ?
+          // skip the comment
+          curpos = str.find("?>", curpos + 1) + 1;
+
+          // add line break
+          if (breaklines) {
+            str.insert(curpos + 1, eolchar);
+          }
+        }
+        else if (curpos < str.length() - 4 && !str.compare(curpos, 4, "<!--")) {            // is comment start ?
+          // skip the comment
+          curpos = str.find("-->", curpos + 1) + 2;
+        }
+        else if (curpos < str.length() - 9 && !str.compare(curpos, 9, "<![CDATA[")) {       // is CDATA start ?
+          // skip the CDATA
+          curpos = str.find("]]>", curpos + 1) + 2;
+        }
+        else if (curpos < str.length() - 2 && !str.compare(curpos, 2, "</")) {              // end tag (ex: "</sample>")
+          curpos = str.find(">", curpos + 1);
+
+          // add line break if next non space char is <
+          if (breaklines) {
+            tmppos = str.find_first_not_of(chars, curpos + 1);
+            if (tmppos != std::string::npos && str.at(tmppos) == '<') {
+              str.insert(curpos + 1, eolchar);
+            }
+          }
+        }
+        else {
+          in_tag = true;
+        }
+        break;
+      }
+      case '>': {
+        if (in_tag) {
+          in_tag = false;
+        }
+
+        // add line break if next non space char is <
+        if (breaklines) {
+          tmppos = str.find_first_not_of(chars, curpos + 1);
+          if (tmppos != std::string::npos && str.at(tmppos) == '<') {
+            str.insert(curpos + 1, eolchar);
+          }
+        }
+        break;
+      }
+      case '\"':
+      case '\'': {
+        if (in_tag) {
+          // skip attribute text
+          curpos = str.find(cc, curpos + 1);
+        }
+        break;
+      }
+      case '\n': {
+        // trim line
+
+        curpos -= eolcharpos;
+
+        std::string tmp = trim(str.substr(lasteolpos, curpos - lasteolpos));
+        str.replace(lasteolpos, curpos - lasteolpos, tmp);
+        curpos = lasteolpos + tmp.length();
+        lasteolpos = curpos;
+
+        while (lasteolpos >= eolcharlen && !str.compare(lasteolpos - eolcharlen, eolcharlen, eolchar)) {
+          lasteolpos -= eolcharlen;
+        }
+
+        curpos += (eolcharlen - 1);
+        lasteolpos += eolcharlen;
+
+        break;
+      }
+    }
+
+    ++curpos;
+  }
+
+  if (lasteolpos < str.length()) {
+    str.replace(lasteolpos, str.length() - lasteolpos, trim(str.substr(lasteolpos, str.length() - lasteolpos)));
+  }
+
+  return str;
+}
+
 void prettyPrint(bool autoindenttext, bool addlinebreaks) {
   dbgln("prettyPrint()");
 
@@ -1852,22 +1693,17 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 
     char *data = NULL;
 
-    // count the < and > signs; > are ignored if tagsignlevel <= 0. This prevent indent errors if text or attributes contain > sign.
-    int tagsignlevel = 0;
     // some state variables
-    bool in_comment = false, in_header = false, in_attribute = false, in_nodetext = false, in_cdata = false, in_text = false;
+    bool in_tag = false;
 
     // some counters
-    std::string::size_type curpos = 0, strlength = 0, prevspecchar, nexwchar_t, deltapos, tagend, startprev, endnext;
-    long xmllevel = 0;
+    std::string::size_type curpos = 0, tmppos, xmllevel = 0;
     // some char value (pc = previous char, cc = current char, nc = next char, nnc = next next char)
-    char pc, cc, nc, nnc;
+    char cc;
 
     int tabwidth = (int) ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
     bool usetabs = (bool) ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
     if (tabwidth <= 0) tabwidth = 4;
-
-    bool isclosingtag;
 
     // use the selection
     long selstart = 0, selend = 0;
@@ -1882,6 +1718,8 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     std::string eolchar;
     int eolmode;
     Report::getEOLChar(hCurrentEditView, &eolmode, &eolchar);
+    size_t eolcharlen = eolchar.length();
+    size_t eolcharpos = eolchar.find('\n');
 
     if (selend > selstart) {
       currentLength = selend-selstart;
@@ -1897,275 +1735,91 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
       ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
     }
 
-    // Check de la syntaxe (disabled)
-/*
-    if (FALSE) {
-      //updateProxyConfig();
-      xmlDocPtr doc = pXmlReadMemory(data, currentLength, "noname.xml", NULL, getFlags());
-      if (doc == NULL) {
-        xmlErrorPtr err;
-        err = pXmlGetLastError();
-
-        if (err != NULL) {
-          if (err->line > 0) {
-            ::SendMessage(hCurrentEditView, SCI_GOTOLINE, err->line-1, 0);
-          }
-          wchar_t* tmpmsg = Report::castChar(err->message);
-          Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.\nLine %d: \r\n%s", err->line, tmpmsg);
-          delete[] tmpmsg;
-        } else {
-          Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
-        }
-
-        delete [] data;
-        return;
-      }
-
-      pXmlFreeDoc(doc);
-    }
-*/
-
     str += data;
     delete[] data;
     data = NULL;
 
-    // Proceed to first pass if break adds are enabled
-    if (addlinebreaks) {
-      while (curpos < str.length() && (curpos = str.find_first_of("<>",curpos)) != std::string::npos) {
-        cc = str.at(curpos);
+    // first pass: trim lines
+    str = trimxml(str, eolchar, true);
 
-        if (cc == '<' && curpos < str.length()-4 && !str.compare(curpos,4,"<!--")) {
-          // Let's skip the comment
-          curpos = str.find("-->",curpos+1)+2;
-          // Adds a line break after comment if required
-          nexwchar_t = str.find_first_not_of(" \t",curpos+1);
-          if (nexwchar_t != std::string::npos && str.at(nexwchar_t) == '<') {
-            str.insert(++curpos,eolchar);
+    // second pass: indentation
+    while (curpos < str.length() && (curpos = str.find_first_of("<>\"'\n", curpos)) != std::string::npos) {
+      switch (cc = str.at(curpos)) {
+        case '<': {
+          if (curpos < str.length() - 2 && !str.compare(curpos, 2, "<?")) {                   // is "<?xml ...?>" definition ?
+            // skip the comment
+            curpos = str.find("?>", curpos + 1) + 1;
           }
-        } else if (cc == '<' && curpos < str.length()-9 && !str.compare(curpos,9,"<![CDATA[")) {
-          // Let's skip the CDATA block
-          curpos = str.find("]]>",curpos+1)+2;
-          // Adds a line break after CDATA if required
-          nexwchar_t = str.find_first_not_of(" \t",curpos+1);
-          if (nexwchar_t != std::string::npos && str.at(nexwchar_t) == '<') {
-            str.insert(++curpos,eolchar);
+          else if (curpos < str.length() - 4 && !str.compare(curpos, 4, "<!--")) {            // is comment start ?
+            // skip the comment
+            curpos = str.find("-->", curpos + 1) + 2;
           }
-        } else if (cc == '>') {
-          // Let's see if '>' is a end tag char (it might also be simple text)
-          // To perform test, we search last of "<>". If it is a '>', current '>' is
-          // simple text, if not, it is a end tag char. '>' text chars are ignored.
-          prevspecchar = str.find_last_of("<>", curpos - 1);
-          if (prevspecchar != std::string::npos) {
-            // let's see if our '>' is in attribute
-            if (str.at(prevspecchar) == '>') {
-              // current > is simple text, in text node
-              ++curpos;
-              continue;
-            }
-            std::string::size_type nextt = str.find_first_of("<>", curpos + 1);
-            if (nextt != std::string::npos && str.at(nextt) == '>') {
-              // current > is text in attribute
-              ++curpos;
-              continue;
-            }
-
-            // We have found a '>' char and we are in a tag, let's see if it's an opening or closing one
-            isclosingtag = ( (curpos > 0 && str.at(curpos - 1) == '/') || str.at(prevspecchar+1) == '/');
-
-            nexwchar_t = str.find_first_not_of(" \t", curpos + 1);
-            deltapos = nexwchar_t - curpos;
-            // Test below identifies a <x><y> case and excludes <x>abc<y> case; in second case, we won't add line break
-            if (nexwchar_t != std::string::npos && str.at(nexwchar_t) == '<' && curpos < str.length() - (deltapos + 1)) {
-              // we compare previous and next tags; if they are same, we don't add line break
-              startprev = str.rfind("<", curpos);
-              endnext = str.find(">", nexwchar_t);
-
-              if (startprev != std::string::npos && endnext != std::string::npos && curpos > startprev && endnext > nexwchar_t) {
-                tagend = str.find_first_of(" />", startprev + 1);
-                std::string tag1(str.substr(startprev + 1, tagend - startprev - 1));
-                tagend = str.find_first_of(" />", nexwchar_t + 2);
-                std::string tag2(str.substr(nexwchar_t + 2, tagend - nexwchar_t - 2));
-                if (strcmp(tag1.c_str(), tag2.c_str()) || isclosingtag) {
-                  // Case of "<data><data>..." -> add a line break between tags
-                  str.insert(++curpos, eolchar);
-                } else if (xmltoolsoptions.ppAutoclose && str.at(nexwchar_t + 1) == '/' && !isclosingtag && nexwchar_t == curpos + 1) {
-                  // Case of "<data id="..."></data>" -> replace by "<data id="..."/>"
-                  str.replace(curpos, endnext - curpos, "/");
-                }
-              }
+          else if (curpos < str.length() - 9 && !str.compare(curpos, 9, "<![CDATA[")) {       // is CDATA start ?
+            // skip the CDATA
+            curpos = str.find("]]>", curpos + 1) + 2;
+          }
+          else if (curpos < str.length() - 2 && !str.compare(curpos, 2, "</")) {              // end tag (ex: "</sample>")
+            curpos = str.find(">", curpos + 1);
+            if (xmllevel > 0) --xmllevel;
+          }
+          else {                                                                              // beg tag
+            in_tag = true;
+            ++xmllevel;
+          }
+          break;
+        }
+        case '>': {
+          if (in_tag) {
+            in_tag = false;
+            if (curpos > 0 && !str.compare(curpos - 1, 1, "/")) {                             // auto-closing tag (ex: "<sample/>")
+              --xmllevel;
             }
           }
+          break;
         }
-
-        ++curpos;           // go to next char
-      }
-/*
-      while (curpos < str.length()-2 && (curpos = str.find("><",curpos)) != std::string::npos) {
-        // we compare previous and next tags; if they are same, we don't add line break
-        startprev = str.rfind("<",curpos);
-        endnext = str.find(">",curpos+1);
-
-        if (startprev != std::string::npos &&
-            endnext != std::string::npos &&
-            curpos > startprev &&
-            endnext > curpos+1 &&
-            strcmp(str.substr(startprev+1,curpos-startprev-1).c_str(),
-                   str.substr(curpos+3,endnext-curpos-3).c_str()))
-          str.insert(++curpos,"\n");
-
-        ++curpos;// go to next char
-      }
-*/
-
-      // reinitialize cursor pos for second pass
-      curpos = 0;
-    }
-
-    // Proceed to reformatting (second pass)
-    prevspecchar = std::string::npos;
-    std::string sep("<>\"'");
-    char attributeQuote = '\0';
-    sep += eolchar;
-    strlength = str.length();
-    while (curpos < strlength && (curpos = str.find_first_of(sep,curpos)) != std::string::npos) {
-      if (!Report::isEOL(str, strlength, (unsigned int) curpos, eolmode)) {
-        if (curpos < strlength-4 && !str.compare(curpos,4,"<!--")) {
-          in_comment = true;
+        case '\"':
+        case '\'': {
+          if (in_tag) {
+            // skip attribute text
+            curpos = str.find(cc, curpos + 1);
+          }
+          break;
         }
-        if (curpos < strlength-9 && !str.compare(curpos,9,"<![CDATA[")) {
-          in_cdata = true;
-        } else if (curpos < strlength-2 && !str.compare(curpos,2,"<?")) {
-          in_header = true;
-        } else if (!in_comment && !in_cdata && !in_header &&
-                   curpos < strlength && (str.at(curpos) == '\"' || str.at(curpos) == '\'')) {
-          if (in_attribute && attributeQuote != '\0' && str.at(curpos) == attributeQuote && prevspecchar != std::string::npos && str.at(prevspecchar) == '<') {
-            // attribute end
-            in_attribute = false;
-            attributeQuote = '\0';  // store the attribute quote char to detect the end of attribute
-          } else if (!in_attribute) {
-            std::string::size_type x = str.find_last_not_of(" \t", curpos-1);
-            std::string::size_type tagbeg = str.find_last_of("<>", x-1);
-            std::string::size_type tagend = str.find_first_of("<>", curpos+1);
-            if (x != std::string::npos && tagbeg != std::string::npos && tagend != std::string::npos &&
-                str.at(x) == '=' && str.at(tagbeg) == '<' && str.at(tagend) == '>') {
-              in_attribute = true;
-              attributeQuote = str.at(curpos);  // store the attribute quote char to detect the end of attribute
-            }
-          }
-        }
-      }
+        case '\n': {
+          // fix indentation
+          curpos -= eolcharpos;   // line break may have several chars
 
-      if (!in_comment && !in_cdata && !in_header) {
-        if (curpos > 0) {
-          pc = str.at(curpos-1);
-        } else {
-          pc = ' ';
-        }
-
-        cc = str.at(curpos);
-
-        if (curpos < strlength-1) {
-          nc = str.at(curpos+1);
-        } else {
-          nc = ' ';
-        }
-
-        if (curpos < strlength-2) {
-          nnc = str.at(curpos+2);
-        } else {
-          nnc = ' ';
-        }
-
-        // managing of case where '>' char is present in text content
-        in_text = false;
-        if (cc == '>') {
-          std::string::size_type tmppos = str.find_last_of("<>\"'", curpos - 1);
-          // skip attributes which can contain > char
-          while (tmppos != std::string::npos && (str.at(tmppos) == '\"' || str.at(tmppos) == '\'')) {
-            tmppos = str.find_last_of("=", tmppos - 1);
-            tmppos = str.find_last_of("<>\"'", tmppos - 1);
-          }
-          in_text = (tmppos != std::string::npos && str.at(tmppos) == '>');
-        }
-
-        if (cc == '<') {
-          prevspecchar = curpos++;
-          ++tagsignlevel;
-          in_nodetext = false;
-          if (nc != '/' && (nc != '!' || nnc == '[')) {
-            xmllevel += 2;
-          }
-        } else if (cc == '>' && !in_attribute && !in_text) {
-          // > are ignored inside attributes
-          if (pc != '/' && pc != ']') {
-            --xmllevel;
-            in_nodetext = true;
-          } else {
-            xmllevel -= 2;
-          }
-
-          if (xmllevel < 0) {
-            xmllevel = 0;
-          }
-          --tagsignlevel;
-          prevspecchar = curpos++;
-        } else if (Report::isEOL(cc, nc, eolmode)) {
-          if (eolmode == SC_EOL_CRLF) {
-            ++curpos; // skipping \n of \r\n
-          }
-
-          // \n are ignored inside attributes
-          nexwchar_t = str.find_first_not_of(" \t",++curpos);
-
-          bool skipformat = false;
-          if (!autoindenttext && nexwchar_t != std::string::npos) {
-            cc = str.at(nexwchar_t);
-            skipformat = (cc != '<' && cc != '\r' && cc != '\n');
-          }
-          if (nexwchar_t >= curpos && xmllevel >= 0 && !skipformat) {
-            if (nexwchar_t < 0) {
-              nexwchar_t = curpos;
-            }
-            size_t delta = 0;
-            str.erase(curpos,nexwchar_t-curpos);
-            strlength = str.length();
-
-            if (curpos < strlength) {
-              cc = str.at(curpos);
-              // we set delta = 1 if we technically can + if we are in a text or inside an attribute
-              if (xmllevel > 0 && curpos < strlength-1 && ( (cc == '<' && str.at(curpos+1) == '/') || in_attribute) ) {
-                delta = 1;
-              } else if (cc == '\n' || cc == '\r') {
-                delta = xmllevel;
-              }
+          if (xmllevel > 0) {
+            // we apply a delta when next tag is a closing tag
+            long delta = 0;
+            tmppos = curpos + eolcharlen;
+            if (tmppos < str.length() - 1 && str.at(tmppos) == '<' && str.at(tmppos + 1) == '/') {
+              delta = 1;
             }
 
+            // apply indentation
             if (usetabs) {
-              str.insert(curpos,xmllevel-delta,'\t');
-            } else {
-              str.insert(curpos,tabwidth*(xmllevel-delta),' ');
+              str.insert(curpos + eolcharlen, (xmllevel - delta), '\t');
             }
-            strlength = str.length();
+            else {
+              str.insert(curpos + eolcharlen, tabwidth * (xmllevel - delta), ' ');
+            }
           }
-        } else {
-          ++curpos;
+
+          curpos += (eolcharlen - 1);
+
+          break;
         }
-      } else {
-        if (in_comment && curpos > 1 && !str.compare(curpos-2,3,"-->")) {
-          in_comment = false;
-        } else if (in_cdata && curpos > 1 && !str.compare(curpos-2,3,"]]>")) {
-          in_cdata = false;
-        } else if (in_header && curpos > 0 && !str.compare(curpos-1,2,"?>")) {
-          in_header = false;
-        }
-        ++curpos;
       }
+
+      ++curpos;
     }
 
     // Send formatted string to scintilla
     if (selend > selstart) {
       ::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(str.c_str()));
-    } else {
+    }
+    else {
       ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
     }
 
