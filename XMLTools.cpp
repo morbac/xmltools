@@ -1576,7 +1576,7 @@ std::string& trim(std::string& str, const std::string& chars = "\t\n\v\f\r ") {
 std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, bool breaktags, const std::string& chars = "\t\n\v\f\r ") {
   bool in_tag = false, in_header = false;
   char cc;
-  std::string::size_type curpos = 0, lasteolpos = 0, tmppos;
+  std::string::size_type curpos = 0, lastpos = 0, lastlen = 0, lasteolpos = 0, tmppos;
   size_t eolcharlen = eolchar.length();
   size_t eolcharpos = eolchar.find('\n');
 
@@ -1721,6 +1721,15 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
     }
 
     ++curpos;
+
+    // inifinite loop protection
+    tmppos = str.length();
+    if (curpos == lastpos && lastlen == tmppos) {
+      dbgln("TRIM: INIFINITE LOOP DETECTED");
+      break;
+    }
+    lastpos = curpos;
+    lastlen = tmppos;
   }
 
   if (lasteolpos < str.length()) {
@@ -1746,10 +1755,9 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks, bool indentattributes)
 
     // some state variables
     bool in_tag = false;
-    long tagnamelen = 0;
 
     // some counters
-    std::string::size_type curpos = 0, tmppos, xmllevel = 0;
+    std::string::size_type curpos = 0, lastpos = 0, lastlen = 0, tmppos, xmllevel = 0, tagnamelen = 0;
     // some char value (pc = previous char, cc = current char, nc = next char, nnc = next next char)
     char cc;
 
@@ -1881,6 +1889,15 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks, bool indentattributes)
       }
 
       ++curpos;
+
+      // inifinite loop protection
+      tmppos = str.length();
+      if (curpos == lastpos && lastlen == tmppos) {
+        dbgln("PRETTYPRINT: INIFINITE LOOP DETECTED");
+        break;
+      }
+      lastpos = curpos;
+      lastlen = tmppos;
     }
 
     // Send formatted string to scintilla
