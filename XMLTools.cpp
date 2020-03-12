@@ -75,9 +75,9 @@ const wchar_t localConfFile[] = L"doLocalConf.xml";
 
 // The number of functionality
 #ifdef _DEBUG
-  const int TOTAL_FUNCS = 34;
+  const int TOTAL_FUNCS = 32;
 #else
-  const int TOTAL_FUNCS = 33;
+  const int TOTAL_FUNCS = 31;
 #endif
 int nbFunc = TOTAL_FUNCS;
 
@@ -150,8 +150,6 @@ void togglePreventXXE();
 void toggleAllowHuge();
 
 void prettyPrintXML();
-void prettyPrintXMLBreaks();
-void prettyPrintText();
 void prettyPrintAttributes();
 //void insertPrettyPrintTag();
 void linearizeXML();
@@ -375,20 +373,12 @@ void initializePlugin() {
 
   funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-  Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (XML only)");
+  Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print");
+  registerShortcut(funcItem + menuentry, true, true, true, 'B');
   funcItem[menuentry]._pFunc = prettyPrintXML;
   ++menuentry;
 
-  Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (XML only - with line breaks)");
-  registerShortcut(funcItem + menuentry, true, true, true, 'B');
-  funcItem[menuentry]._pFunc = prettyPrintXMLBreaks;
-  ++menuentry;
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (Text indent)");
-  funcItem[menuentry]._pFunc = prettyPrintText;
-  ++menuentry;
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (attributes)");
+  Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (indent attributes)");
   registerShortcut(funcItem + menuentry, true, true, true, 'A');
   funcItem[menuentry]._pFunc = prettyPrintAttributes;
   ++menuentry;
@@ -1583,7 +1573,7 @@ std::string& trim(std::string& str, const std::string& chars = "\t\n\v\f\r ") {
   return ltrim(rtrim(str, chars), chars);
 }
 
-std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, const std::string& chars = "\t\n\v\f\r ") {
+std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, bool breaktags, const std::string& chars = "\t\n\v\f\r ") {
   bool in_tag = false;
   char cc;
   std::string::size_type curpos = 0, lasteolpos = 0, tmppos;
@@ -1613,7 +1603,7 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, con
         else if (curpos < str.length() - 2 && !str.compare(curpos, 2, "</")) {              // end tag (ex: "</sample>")
           curpos = str.find(">", curpos + 1);
 
-          // add line break if next non space char is <
+          // add line break if next non space char is "<"
           if (breaklines) {
             tmppos = str.find_first_not_of(chars, curpos + 1);
             if (tmppos != std::string::npos && str.at(tmppos) == '<') {
@@ -1623,6 +1613,21 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, con
         }
         else {
           in_tag = true;
+
+          // skip the tag name
+          curpos = str.find_first_of("\t\n\v\f\r />", curpos + 1);
+          if (curpos != std::string::npos) {
+            tmppos = str.find_first_not_of("\t\n\v\f\r ", curpos);
+            if (tmppos != std::string::npos) {
+              // trim space before attribute or ">" char
+              str.erase(curpos, tmppos - curpos);
+              if (str.at(curpos) != '>' && str.at(curpos) != '/') {
+                str.insert(curpos, " ");
+                ++curpos;
+              }
+            }
+            --curpos;
+          }
         }
         break;
       }
@@ -1645,6 +1650,25 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, con
         if (in_tag) {
           // skip attribute text
           curpos = str.find(cc, curpos + 1);
+
+          // trim spaces after attribute
+          tmppos = str.find_first_not_of("\t\n\v\f\r ", curpos + 1);
+          if (tmppos != std::string::npos) {
+            // add line break if not the last attribute
+            if (breaktags && str.at(tmppos) != '>' && str.at(tmppos) != '/') {
+              str.insert(curpos + 1, eolchar);
+            }
+            else if (!breaktags) {
+              str.erase(curpos + 1, tmppos - curpos - 1);
+              if (str.at(curpos + 1) != '>' && str.at(curpos + 1) != '/') {
+                str.insert(curpos + 1, " ");
+                ++curpos;
+              }
+            }
+          }
+          else {
+            
+          }
         }
         break;
       }
@@ -1653,18 +1677,31 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, con
 
         curpos -= eolcharpos;
 
-        std::string tmp = trim(str.substr(lasteolpos, curpos - lasteolpos));
-        str.replace(lasteolpos, curpos - lasteolpos, tmp);
-        curpos = lasteolpos + tmp.length();
-        lasteolpos = curpos;
+        if (in_tag && !breaktags) {
+          // we must remove line breaks
+          tmppos = str.find_first_not_of("\t\n\v\f\r ", curpos + 1);
+          if (tmppos != std::string::npos) {
+            str.erase(curpos, tmppos - curpos);
+          }
+          if (str.at(curpos - 1) == '"' || str.at(curpos - 1) == '\'') {
+            str.insert(curpos, " ");
+            ++curpos;
+          }
+        } else {  // = if (!in_tag || breaktags)
+          std::string tmp = trim(str.substr(lasteolpos, curpos - lasteolpos));
+          str.replace(lasteolpos, curpos - lasteolpos, tmp);
+          curpos = lasteolpos + tmp.length();
+          lasteolpos = curpos;
 
-        while (lasteolpos >= eolcharlen && !str.compare(lasteolpos - eolcharlen, eolcharlen, eolchar)) {
-          lasteolpos -= eolcharlen;
+          while (lasteolpos >= eolcharlen && !str.compare(lasteolpos - eolcharlen, eolcharlen, eolchar)) {
+            lasteolpos -= eolcharlen;
+          }
+
+          lasteolpos += eolcharlen;
         }
 
         curpos += (eolcharlen - 1);
-        lasteolpos += eolcharlen;
-
+        
         break;
       }
     }
@@ -1679,7 +1716,7 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, con
   return str;
 }
 
-void prettyPrint(bool autoindenttext, bool addlinebreaks) {
+void prettyPrint(bool autoindenttext, bool addlinebreaks, bool indentattributes) {
   dbgln("prettyPrint()");
 
   int docIterator = initDocIterator();
@@ -1695,6 +1732,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 
     // some state variables
     bool in_tag = false;
+    long tagnamelen = 0;
 
     // some counters
     std::string::size_type curpos = 0, tmppos, xmllevel = 0;
@@ -1740,7 +1778,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
     data = NULL;
 
     // first pass: trim lines
-    str = trimxml(str, eolchar, true);
+    str = trimxml(str, eolchar, true, indentattributes);
 
     // second pass: indentation
     while (curpos < str.length() && (curpos = str.find_first_of("<>\"'\n", curpos)) != std::string::npos) {
@@ -1765,6 +1803,15 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
           else {                                                                              // beg tag
             in_tag = true;
             ++xmllevel;
+
+            // skip the tag name
+            tmppos = str.find_first_of("\t\n\v\f\r />", curpos + 1);
+            if (tmppos != std::string::npos) {
+              // calculate tag name length
+              if (indentattributes) tagnamelen = tmppos - curpos - 1;
+
+              curpos = tmppos - 1;
+            }
           }
           break;
         }
@@ -1806,7 +1853,14 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
             }
           }
 
-          curpos += (eolcharlen - 1);
+          curpos += eolcharlen;
+
+          if (in_tag && indentattributes) {
+            // do something
+            str.insert(curpos, tagnamelen, ' ');
+          }
+
+          --curpos;
 
           break;
         }
@@ -1833,26 +1887,15 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks) {
 void prettyPrintXML() {
   dbgln("prettyPrintXML()");
 
-  prettyPrint(false, false);
-}
-
-void prettyPrintXMLBreaks() {
-  dbgln("prettyPrintXMLBreaks()");
-
-  prettyPrint(false, true);
-}
-
-void prettyPrintText() {
-  dbgln("prettyPrintText()");
-
-  prettyPrint(true, false);
+  prettyPrint(false, true, false);
 }
 
 void prettyPrintAttributes() {
-  #ifdef __XMLTOOLS_DEBUG__
-    Report::_printf_inf("prettyPrint()");
-  #endif
+  dbgln("prettyPrintAttributes()");
 
+  prettyPrint(false, true, true);
+
+  /*
   int docIterator = initDocIterator();
   while (hasNextDoc(&docIterator)) {
     int currentEdit, currentLength, isReadOnly;
@@ -1979,6 +2022,7 @@ void prettyPrintAttributes() {
     SAFE_RELEASE(pXMLDom);
     VariantClear(&varCurrentData);
   }
+  */
 }
 
 ///////////////////////////////////////////////////////////////////////////////
