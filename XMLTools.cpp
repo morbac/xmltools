@@ -1574,7 +1574,7 @@ std::string& trim(std::string& str, const std::string& chars = "\t\n\v\f\r ") {
 }
 
 std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, bool breaktags, const std::string& chars = "\t\n\v\f\r ") {
-  bool in_tag = false;
+  bool in_tag = false, in_header = false;
   char cc;
   std::string::size_type curpos = 0, lasteolpos = 0, tmppos;
   size_t eolcharlen = eolchar.length();
@@ -1583,16 +1583,7 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
   while (curpos < str.length() && (curpos = str.find_first_of("<>\"'\n", curpos)) != std::string::npos) {
     switch (cc = str.at(curpos)) {
       case '<': {
-        if (curpos < str.length() - 2 && !str.compare(curpos, 2, "<?")) {                   // is "<?xml ...?>" definition ?
-          // skip the comment
-          curpos = str.find("?>", curpos + 1) + 1;
-
-          // add line break
-          if (breaklines) {
-            str.insert(curpos + 1, eolchar);
-          }
-        }
-        else if (curpos < str.length() - 4 && !str.compare(curpos, 4, "<!--")) {            // is comment start ?
+        if (curpos < str.length() - 4 && !str.compare(curpos, 4, "<!--")) {            // is comment start ?
           // skip the comment
           curpos = str.find("-->", curpos + 1) + 2;
         }
@@ -1613,15 +1604,21 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
         }
         else {
           in_tag = true;
+          if (curpos < str.length() - 2 && !str.compare(curpos, 2, "<?")) {
+            in_header = true;
+            ++curpos;
+          }
 
           // skip the tag name
-          curpos = str.find_first_of("\t\n\v\f\r />", curpos + 1);
+          char endtag = '/';
+          if (in_header) endtag = '?';
+          curpos = str.find_first_of("\t\n\v\f\r ?/>", curpos + 1);
           if (curpos != std::string::npos) {
             tmppos = str.find_first_not_of("\t\n\v\f\r ", curpos);
             if (tmppos != std::string::npos) {
               // trim space before attribute or ">" char
               str.erase(curpos, tmppos - curpos);
-              if (str.at(curpos) != '>' && str.at(curpos) != '/') {
+              if (str.at(curpos) != '>' && str.at(curpos) != endtag) {
                 str.insert(curpos, " ");
                 ++curpos;
               }
@@ -1634,6 +1631,7 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
       case '>': {
         if (in_tag) {
           in_tag = false;
+          in_header = false;
         }
 
         // add line break if next non space char is <
@@ -1648,19 +1646,35 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
       case '\"':
       case '\'': {
         if (in_tag) {
+          // trim spaces arround "=" char
+          tmppos = str.find_last_not_of("\t\n\v\f\r ", curpos - 1);
+          if (tmppos != std::string::npos && tmppos < curpos && str.at(tmppos) == '=') {
+            // remove spaces after "="
+            str.erase(tmppos + 1, curpos - tmppos - 1);
+            curpos = tmppos + 1;
+            // remove spaces before "="
+            tmppos = str.find_last_not_of("\t\n\v\f\r ", tmppos - 1);
+            if (tmppos != std::string::npos) {
+              str.erase(tmppos + 1, curpos - tmppos - 2);
+              curpos = tmppos + 2;
+            }
+          }
           // skip attribute text
           curpos = str.find(cc, curpos + 1);
 
           // trim spaces after attribute
           tmppos = str.find_first_not_of("\t\n\v\f\r ", curpos + 1);
           if (tmppos != std::string::npos) {
+            char endtag = '/';
+            if (in_header) endtag = '?';
+
             // add line break if not the last attribute
-            if (breaktags && str.at(tmppos) != '>' && str.at(tmppos) != '/') {
+            if (breaktags && str.at(tmppos) != '>' && str.at(tmppos) != endtag) {
               str.insert(curpos + 1, eolchar);
             }
             else if (!breaktags) {
               str.erase(curpos + 1, tmppos - curpos - 1);
-              if (str.at(curpos + 1) != '>' && str.at(curpos + 1) != '/') {
+              if (str.at(curpos + 1) != '>' && str.at(curpos + 1) != endtag) {
                 str.insert(curpos + 1, " ");
                 ++curpos;
               }
