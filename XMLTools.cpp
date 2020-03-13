@@ -1669,7 +1669,7 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
             if (in_header) endtag = '?';
 
             // add line break if not the last attribute
-            if (breaktags && str.at(tmppos) != '>' && str.at(tmppos) != endtag) {
+            if (breaktags && !in_header && str.at(tmppos) != '>' && str.at(tmppos) != endtag) {
               str.insert(curpos + 1, eolchar);
             }
             else if (!breaktags) {
@@ -1766,13 +1766,10 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks, bool indentattributes)
     if (tabwidth <= 0) tabwidth = 4;
 
     // use the selection
-    long selstart = 0, selend = 0;
-    // désactivé : le fait de prettyprinter que la sélection pose problème pour l'indentation
-    // il faudrait calculer l'indentation de la 1re ligne de sélection, mais l'indentation
-    // de cette ligne n'est peut-être pas correcte. On pourrait la déterminer en récupérant
-    // le path de la banche sélectionnée...
-    selstart = (long) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-    selend = (long) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
+    long selstart = (long) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
+    long selend = (long) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
+    // TODO: when oprating on selection, we should determinate the node indentation level
+    //       we could use the XPath retrieval function to perform this
 
     std::string str("");
     std::string eolchar;
