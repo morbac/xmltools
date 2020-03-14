@@ -1632,13 +1632,13 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
         if (in_tag) {
           in_tag = false;
           in_header = false;
-        }
 
-        // add line break if next non space char is <
-        if (breaklines) {
-          tmppos = str.find_first_not_of(chars, curpos + 1);
-          if (tmppos != std::string::npos && str.at(tmppos) == '<') {
-            str.insert(curpos + 1, eolchar);
+          // add line break if next non space char is <
+          if (breaklines) {
+            tmppos = str.find_first_not_of(chars, curpos + 1);
+            if (tmppos != std::string::npos && str.at(tmppos) == '<') {
+              str.insert(curpos + 1, eolchar);
+            }
           }
         }
         break;
@@ -1798,6 +1798,14 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks, bool indentattributes)
 
     // first pass: trim lines
     str = trimxml(str, eolchar, true, indentattributes);
+
+    #ifdef _DEBUG
+      if (selend <= selstart) {
+        ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
+      }
+    #endif
+
+
 
     // second pass: indentation
     while (curpos < str.length() && (curpos = str.find_first_of("<>\"'\n", curpos)) != std::string::npos) {
