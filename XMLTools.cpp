@@ -1575,6 +1575,7 @@ std::string& trim(std::string& str, const std::string& chars = "\t\n\v\f\r ") {
 
 std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, bool breaktags, const std::string& chars = "\t\n\v\f\r ") {
   bool in_tag = false, in_header = false;
+  std::string tagname = "";
   char cc;
   std::string::size_type curpos = 0, lastpos = 0, lastlen = 0, lasteolpos = 0, tmppos;
   size_t eolcharlen = eolchar.length();
@@ -1594,6 +1595,13 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
         else if (curpos < str.length() - 2 && !str.compare(curpos, 2, "</")) {              // end tag (ex: "</sample>")
           curpos = str.find(">", curpos + 1);
 
+          // trim space chars between tagname and > char
+          tmppos = str.find_last_not_of(chars, curpos - 1);
+          if (tmppos < curpos - 1) {
+            str.erase(tmppos + 1, curpos - tmppos - 1);
+            curpos = tmppos + 1;
+          }
+
           // add line break if next non space char is "<"
           if (breaklines) {
             tmppos = str.find_first_not_of(chars, curpos + 1);
@@ -1610,10 +1618,13 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
           }
 
           // skip the tag name
-          char endtag = '/';
-          if (in_header) endtag = '?';
+          char endtag = (in_header ? '?' : '/');
+          tmppos = curpos;
           curpos = str.find_first_of("\t\n\v\f\r ?/>", curpos + 1);
           if (curpos != std::string::npos) {
+            tagname.clear();
+            tagname = str.substr(tmppos + 1, curpos - tmppos - 1);
+
             tmppos = str.find_first_not_of("\t\n\v\f\r ", curpos);
             if (tmppos != std::string::npos) {
               // trim space before attribute or ">" char
@@ -1633,10 +1644,10 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
           in_tag = false;
           in_header = false;
 
-          // add line break if next non space char is <
+          // add line break if next non space char is another opening tag
           if (breaklines) {
             tmppos = str.find_first_not_of(chars, curpos + 1);
-            if (tmppos != std::string::npos && str.at(tmppos) == '<') {
+            if (tmppos != std::string::npos && str.at(tmppos) == '<' && str.at(tmppos + 1) != '/') {
               str.insert(curpos + 1, eolchar);
             }
           }
@@ -1679,9 +1690,6 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
                 ++curpos;
               }
             }
-          }
-          else {
-            
           }
         }
         break;
@@ -1754,6 +1762,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks, bool indentattributes)
     char *data = NULL;
 
     // some state variables
+    std::string tagname = "";
     bool in_tag = false;
 
     // some counters
@@ -1801,11 +1810,10 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks, bool indentattributes)
 
     #ifdef _DEBUG
       if (selend <= selstart) {
+        // store intermediate status for debug purposes (this status can be reached with undo command in NPP)
         ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
       }
     #endif
-
-
 
     // second pass: indentation
     while (curpos < str.length() && (curpos = str.find_first_of("<>\"'\n", curpos)) != std::string::npos) {
@@ -1835,7 +1843,9 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks, bool indentattributes)
             tmppos = str.find_first_of("\t\n\v\f\r />", curpos + 1);
             if (tmppos != std::string::npos) {
               // calculate tag name length
-              if (indentattributes) tagnamelen = tmppos - curpos - 1;
+              tagnamelen = tmppos - curpos - 1;
+              tagname.clear();
+              tagname = str.substr(curpos + 1, tagnamelen);
 
               curpos = tmppos - 1;
             }
@@ -1845,6 +1855,11 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks, bool indentattributes)
         case '>': {
           if (in_tag) {
             in_tag = false;
+            if (xmltoolsoptions.ppAutoclose && !str.compare(curpos + 1, 3 + tagname.length(), "</" + tagname + ">")) {
+              // let's replace <a></a> with <a/>
+              str.insert(curpos++, "/");
+              str.erase(curpos + 1, 3 + tagname.length());
+            }
             if (curpos > 0 && !str.compare(curpos - 1, 1, "/")) {                             // auto-closing tag (ex: "<sample/>")
               --xmllevel;
             }
@@ -1883,7 +1898,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks, bool indentattributes)
           curpos += eolcharlen;
 
           if (in_tag && indentattributes) {
-            // do something
+            // add indentation for attribute
             str.insert(curpos, tagnamelen, ' ');
           }
 
