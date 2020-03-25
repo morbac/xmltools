@@ -1581,18 +1581,28 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
   size_t eolcharlen = eolchar.length();
   size_t eolcharpos = eolchar.find('\n');
 
-  while (curpos < str.length() && (curpos = str.find_first_of("<>\"'\n", curpos)) != std::string::npos) {
+  size_t strlen = str.length();
+
+  while (curpos < strlen && (curpos = str.find_first_of("<>\"'\n", curpos)) != std::string::npos) {
     switch (cc = str.at(curpos)) {
       case '<': {
-        if (curpos < str.length() - 4 && !str.compare(curpos, 4, "<!--")) {            // is comment start ?
+        if (curpos < strlen - 4 && !str.compare(curpos, 4, "<!--")) {            // is comment start ?
           // skip the comment
           curpos = str.find("-->", curpos + 1) + 2;
+
+          // add line break if next non space char is "<"
+          if (breaklines) {
+            tmppos = str.find_first_not_of(chars, curpos + 1);
+            if (tmppos != std::string::npos && str.at(tmppos) == '<' /*&& str.at(tmppos + 1) != '!'*/ && str.at(tmppos + 2) != '[') {
+              str.insert(curpos + 1, eolchar);
+            }
+          }
         }
-        else if (curpos < str.length() - 9 && !str.compare(curpos, 9, "<![CDATA[")) {       // is CDATA start ?
+        else if (curpos < strlen - 9 && !str.compare(curpos, 9, "<![CDATA[")) {       // is CDATA start ?
           // skip the CDATA
           curpos = str.find("]]>", curpos + 1) + 2;
         }
-        else if (curpos < str.length() - 2 && !str.compare(curpos, 2, "</")) {              // end tag (ex: "</sample>")
+        else if (curpos < strlen - 2 && !str.compare(curpos, 2, "</")) {              // end tag (ex: "</sample>")
           curpos = str.find(">", curpos + 1);
 
           // trim space chars between tagname and > char
@@ -1602,17 +1612,17 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
             curpos = tmppos + 1;
           }
 
-          // add line break if next non space char is "<"
+          // add line break if next non space char is "<" (but not if <![)
           if (breaklines) {
             tmppos = str.find_first_not_of(chars, curpos + 1);
-            if (tmppos != std::string::npos && str.at(tmppos) == '<') {
+            if (tmppos != std::string::npos && str.at(tmppos) == '<' /*&& str.at(tmppos + 1) != '!'*/ && str.at(tmppos + 2) != '[') {
               str.insert(curpos + 1, eolchar);
             }
           }
         }
         else {
           in_tag = true;
-          if (curpos < str.length() - 2 && !str.compare(curpos, 2, "<?")) {
+          if (curpos < strlen - 2 && !str.compare(curpos, 2, "<?")) {
             in_header = true;
             ++curpos;
           }
@@ -1644,10 +1654,10 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
           in_tag = false;
           in_header = false;
 
-          // add line break if next non space char is another opening tag
+          // add line break if next non space char is another opening tag (but not in case of <![)
           if (breaklines) {
             tmppos = str.find_first_not_of(chars, curpos + 1);
-            if (tmppos != std::string::npos && str.at(tmppos) == '<' && str.at(tmppos + 1) != '/') {
+            if (tmppos != std::string::npos && str.at(tmppos) == '<' && str.at(tmppos + 1) != '/' /*&& str.at(tmppos + 1) != '!'*/ && str.at(tmppos + 2) != '[') {
               str.insert(curpos + 1, eolchar);
             }
           }
@@ -1731,13 +1741,13 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
     ++curpos;
 
     // inifinite loop protection
-    tmppos = str.length();
-    if (curpos == lastpos && lastlen == tmppos) {
+    strlen = str.length();
+    if (curpos == lastpos && lastlen == strlen) {
       dbgln("TRIM: INIFINITE LOOP DETECTED");
       break;
     }
     lastpos = curpos;
-    lastlen = tmppos;
+    lastlen = strlen;
   }
 
   if (lasteolpos < str.length()) {
@@ -1815,23 +1825,25 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks, bool indentattributes)
       }
     #endif
 
+      size_t strlen = str.length();
+
     // second pass: indentation
-    while (curpos < str.length() && (curpos = str.find_first_of("<>\"'\n", curpos)) != std::string::npos) {
+    while (curpos < strlen && (curpos = str.find_first_of("<>\"'\n", curpos)) != std::string::npos) {
       switch (cc = str.at(curpos)) {
         case '<': {
-          if (curpos < str.length() - 2 && !str.compare(curpos, 2, "<?")) {                   // is "<?xml ...?>" definition ?
+          if (curpos < strlen - 2 && !str.compare(curpos, 2, "<?")) {                   // is "<?xml ...?>" definition ?
             // skip the comment
             curpos = str.find("?>", curpos + 1) + 1;
           }
-          else if (curpos < str.length() - 4 && !str.compare(curpos, 4, "<!--")) {            // is comment start ?
+          else if (curpos < strlen - 4 && !str.compare(curpos, 4, "<!--")) {            // is comment start ?
             // skip the comment
             curpos = str.find("-->", curpos + 1) + 2;
           }
-          else if (curpos < str.length() - 9 && !str.compare(curpos, 9, "<![CDATA[")) {       // is CDATA start ?
+          else if (curpos < strlen - 9 && !str.compare(curpos, 9, "<![CDATA[")) {       // is CDATA start ?
             // skip the CDATA
             curpos = str.find("]]>", curpos + 1) + 2;
           }
-          else if (curpos < str.length() - 2 && !str.compare(curpos, 2, "</")) {              // end tag (ex: "</sample>")
+          else if (curpos < strlen - 2 && !str.compare(curpos, 2, "</")) {              // end tag (ex: "</sample>")
             curpos = str.find(">", curpos + 1);
             if (xmllevel > 0) --xmllevel;
           }
@@ -1882,7 +1894,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks, bool indentattributes)
             // we apply a delta when next tag is a closing tag
             long delta = 0;
             tmppos = curpos + eolcharlen;
-            if (tmppos < str.length() - 1 && str.at(tmppos) == '<' && str.at(tmppos + 1) == '/') {
+            if (tmppos < strlen - 1 && str.at(tmppos) == '<' && str.at(tmppos + 1) == '/') {
               delta = 1;
             }
 
@@ -1911,13 +1923,13 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks, bool indentattributes)
       ++curpos;
 
       // inifinite loop protection
-      tmppos = str.length();
-      if (curpos == lastpos && lastlen == tmppos) {
+      strlen = str.length();
+      if (curpos == lastpos && lastlen == strlen) {
         dbgln("PRETTYPRINT: INIFINITE LOOP DETECTED");
         break;
       }
       lastpos = curpos;
-      lastlen = tmppos;
+      lastlen = strlen;
     }
 
     // Send formatted string to scintilla
