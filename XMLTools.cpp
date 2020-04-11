@@ -1655,9 +1655,14 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
           in_header = false;
 
           // add line break if next non space char is another opening tag (but not in case of <![)
+          // exceptions:  <sample></sample>  is untouched
+          //              <foo><bar/></foo>  becomes   <foo>
+          //                                             <bar/>
+          //                                           </foo>
           if (breaklines) {
+            bool is_closing = (curpos > 0 && str.at(curpos - 1) == '/');
             tmppos = str.find_first_not_of(chars, curpos + 1);
-            if (tmppos != std::string::npos && str.at(tmppos) == '<' && str.at(tmppos + 1) != '/' /*&& str.at(tmppos + 1) != '!'*/ && str.at(tmppos + 2) != '[') {
+            if (tmppos != std::string::npos && str.at(tmppos) == '<' && (str.at(tmppos + 1) != '/' || is_closing) && /*str.at(tmppos + 1) != '!' &&*/ str.at(tmppos + 2) != '[') {
               str.insert(curpos + 1, eolchar);
             }
           }
