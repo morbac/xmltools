@@ -1021,6 +1021,7 @@ void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDes
   long linepos = 0;
   long filepos = 0;
   BSTR bstrReason = NULL;
+  std::wstring wmsg = L"";
 
   CHK_HR(pXMLErr->get_line(&line));
   CHK_HR(pXMLErr->get_linepos(&linepos));
@@ -1028,10 +1029,26 @@ void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDes
   CHK_HR(pXMLErr->get_reason(&bstrReason));
 
   if (szDesc != NULL) {
-    displayXMLError(Report::str_format(L"%s - line %d, pos %d: \r\n%s", szDesc, line, linepos, bstrReason), view, line, linepos, filepos+1);
+    if (line > 0 && linepos > 0) {
+      wmsg = Report::str_format(L"%s - line %d, pos %d: \r\n%s", szDesc, line, linepos, bstrReason);
+    }
+    else {
+      wmsg = Report::str_format(L"%s: \r\n%s", szDesc, bstrReason);
+      line = 1;
+      linepos = 1;
+    }
   } else {
-    displayXMLError(Report::str_format(L"XML Parsing error - line %d, pos %d: \r\n%s", line, linepos, bstrReason), view, line, linepos, filepos+1);
+    if (line > 0 && linepos > 0) {
+      wmsg = Report::str_format(L"XML Parsing error - line %d, pos %d: \r\n%s", line, linepos, bstrReason);
+    }
+    else {
+      wmsg = Report::str_format(L"XML Parsing error: \r\n%s", bstrReason);
+      line = 1;
+      linepos = 1;
+    }
   }
+
+  displayXMLError(wmsg, view, line, linepos, filepos + 1);
 
 CleanUp:
   SysFreeString(bstrReason);
@@ -1170,66 +1187,76 @@ void XMLValidation(int informIfNoError) {
 
   CHK_HR(pXMLDom->load(varXML, &varStatus));
   if (varStatus == VARIANT_TRUE) {
-    // search for xsi:noNamespaceSchemaLocation or xsi:schemaLocation
-    CHK_HR(pXMLDom->setProperty(L"SelectionNamespaces", _variant_t("xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'")));
-    hr = pXMLDom->selectNodes(L"/*/@xsi:noNamespaceSchemaLocation", &pNodes);
-    CHK_HR(pNodes->get_length(&length));
-    SAFE_RELEASE(pNodes);
-    bool nnsl = (length > 0);
-    hr = pXMLDom->selectNodes(L"/*/@xsi:schemaLocation", &pNodes);
-    CHK_HR(pNodes->get_length(&length));
-    bool sl = (length > 0);
 
-    if (nnsl || sl) {
-      // if noNamespaceSchemaLocation or schemaLocation attribute is present,
-      // validation is supposed OK since xml is loaded with INIT_OPTION_VALIDATEONPARSE
-      // option
-      Report::_printf_inf(L"No error detected.");
-    } else {
-      // if noNamespaceSchemaLocation or schemaLocation attributes are not present,
-      // we must prompt for XSD to user and create a schema cache
-      if (pSelectFileDlg == NULL) {
-        pSelectFileDlg = new CSelectFileDlg();
+    if (pXMLDom->validate(&pXMLErr) == S_FALSE) {
+      displayXMLError(pXMLErr, hCurrentEditView, L"XML Validation error");
+    }
+    else {
+      // search for xsi:noNamespaceSchemaLocation or xsi:schemaLocation
+      CHK_HR(pXMLDom->setProperty(L"SelectionNamespaces", _variant_t("xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'")));
+      hr = pXMLDom->selectNodes(L"/*/@xsi:noNamespaceSchemaLocation", &pNodes);
+      CHK_HR(pNodes->get_length(&length));
+      SAFE_RELEASE(pNodes);
+      bool nnsl = (length > 0);
+      hr = pXMLDom->selectNodes(L"/*/@xsi:schemaLocation", &pNodes);
+      CHK_HR(pNodes->get_length(&length));
+      bool sl = (length > 0);
+
+      if (nnsl || sl) {
+        // if noNamespaceSchemaLocation or schemaLocation attribute is present,
+        // validation is supposed OK since xml is loaded with INIT_OPTION_VALIDATEONPARSE
+        // option
+        Report::_printf_inf(L"No error detected.");
       }
-      //pSelectFileDlg->m_sSelectedFilename = lastXMLSchema.c_str();
-
-      CStringW rootSample = "<";
-      CHK_HR(pXMLDom->get_documentElement(&pElement));
-      CHK_HR(pElement->get_nodeName(&bstrNodeName));
-      rootSample += bstrNodeName;
-      rootSample += "\r\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
-      rootSample += "\r\n    xsi:noNamespaceSchemaLocation=\"XSD_FILE_PATH\">";
-
-      pSelectFileDlg->m_sRootElementSample = rootSample;
-      if (pSelectFileDlg->DoModal() == IDOK) {
-        //lastXMLSchema = pSelectFileDlg->m_sSelectedFilename;
-
-        // Create a schema cache and add schema to it (currently with no namespace)
-        CHK_HR(CreateAndInitSchema(&pXS));
-        hr = pXS->add(_bstr_t(pSelectFileDlg->m_sValidationNamespace), CComVariant(pSelectFileDlg->m_sSelectedFilename));
-        if (SUCCEEDED(hr)) {
-          // Create a DOMDocument and set its properties.
-          CHK_HR(CreateAndInitDOM(&pXD, (INIT_OPTION_VALIDATEONPARSE | INIT_OPTION_RESOLVEEXTERNALS)));
-          CHK_HR(pXD->putref_schemas(CComVariant(pXS)));
-
-          /*
-          pXD->put_async(VARIANT_FALSE);
-          pXD->put_validateOnParse(VARIANT_TRUE);
-          pXD->put_resolveExternals(VARIANT_TRUE);
-          */
-
-          CHK_HR(pXD->load(varXML, &varStatus));
-          if (varStatus == VARIANT_TRUE) {
-            Report::_printf_inf(L"No error detected.");
-          } else {
-            CHK_HR(pXD->get_parseError(&pXMLErr));
-            displayXMLError(pXMLErr, hCurrentEditView, L"XML Validation error");
-          }
-        } else {
-          Report::_printf_err(L"Invalid schema or missing namespace.");
+      else {
+        // if noNamespaceSchemaLocation or schemaLocation attributes are not present,
+        // we must prompt for XSD to user and create a schema cache
+        if (pSelectFileDlg == NULL) {
+          pSelectFileDlg = new CSelectFileDlg();
         }
-      } else {
-        goto CleanUp;
+        //pSelectFileDlg->m_sSelectedFilename = lastXMLSchema.c_str();
+
+        CStringW rootSample = "<";
+        CHK_HR(pXMLDom->get_documentElement(&pElement));
+        CHK_HR(pElement->get_nodeName(&bstrNodeName));
+        rootSample += bstrNodeName;
+        rootSample += "\r\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
+        rootSample += "\r\n    xsi:noNamespaceSchemaLocation=\"XSD_FILE_PATH\">";
+
+        pSelectFileDlg->m_sRootElementSample = rootSample;
+        if (pSelectFileDlg->DoModal() == IDOK) {
+          //lastXMLSchema = pSelectFileDlg->m_sSelectedFilename;
+
+          // Create a schema cache and add schema to it (currently with no namespace)
+          CHK_HR(CreateAndInitSchema(&pXS));
+          hr = pXS->add(_bstr_t(pSelectFileDlg->m_sValidationNamespace), CComVariant(pSelectFileDlg->m_sSelectedFilename));
+          if (SUCCEEDED(hr)) {
+            // Create a DOMDocument and set its properties.
+            CHK_HR(CreateAndInitDOM(&pXD, (INIT_OPTION_VALIDATEONPARSE | INIT_OPTION_RESOLVEEXTERNALS)));
+            CHK_HR(pXD->putref_schemas(CComVariant(pXS)));
+
+            /*
+            pXD->put_async(VARIANT_FALSE);
+            pXD->put_validateOnParse(VARIANT_TRUE);
+            pXD->put_resolveExternals(VARIANT_TRUE);
+            */
+
+            CHK_HR(pXD->load(varXML, &varStatus));
+            if (varStatus == VARIANT_TRUE) {
+              Report::_printf_inf(L"No error detected.");
+            }
+            else {
+              CHK_HR(pXD->get_parseError(&pXMLErr));
+              displayXMLError(pXMLErr, hCurrentEditView, L"XML Validation error");
+            }
+          }
+          else {
+            Report::_printf_err(L"Invalid schema or missing namespace.");
+          }
+        }
+        else {
+          goto CleanUp;
+        }
       }
     }
   } else {
