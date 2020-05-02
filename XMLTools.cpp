@@ -3,6 +3,7 @@
 
 // notepad++
 #include "StdAfx.h"
+#include "MSXMLHelper.h"
 #include "XMLTools.h"
 #include "PluginInterface.h"
 #include "Scintilla.h"
@@ -31,8 +32,6 @@
 #include <algorithm>
 #include <array>
 #include <map>
-
-#include "MSXMLHelper.h"
 
 //#define __XMLTOOLS_DEBUG__
 
@@ -1054,6 +1053,24 @@ CleanUp:
   SysFreeString(bstrReason);
 }
 
+void displayXMLErrors(IXMLDOMParseError2* pXMLErr2, HWND view, const wchar_t* szDesc) {
+  HRESULT hr = S_OK; 
+  IXMLDOMParseError2* pXMLErr = NULL;
+  IXMLDOMParseErrorCollection* pAllErrors = NULL;
+  long length = 0;
+
+  CHK_HR(pXMLErr2->get_allErrors(&pAllErrors));
+  CHK_HR(pAllErrors->get_length(&length));
+  for (long i = 0; i < length; ++i) {
+    CHK_HR(pAllErrors->get_item(i, &pXMLErr));
+    displayXMLError(pXMLErr, view, szDesc);
+  }
+
+CleanUp:
+  SAFE_RELEASE(pXMLErr);
+  SAFE_RELEASE(pAllErrors);
+}
+
 bool hasCurrentDocAnnotations() {
   if (!xmltoolsoptions.useAnnotations) return false;
   try {
@@ -1145,6 +1162,7 @@ void XMLValidation(int informIfNoError) {
   HRESULT hr = S_OK;
   IXMLDOMDocument2* pXMLDom = NULL;
   IXMLDOMParseError* pXMLErr = NULL;
+  IXMLDOMParseError2* pXMLErr2 = NULL;
   IXMLDOMNodeList* pNodes = NULL;
   IXMLDOMNode* pNode = NULL;
   IXMLDOMElement* pElement = NULL;
@@ -1176,7 +1194,7 @@ void XMLValidation(int informIfNoError) {
 
   Report::char2VARIANT(data, &varXML);
 
-  CHK_HR(CreateAndInitDOM(&pXMLDom, (INIT_OPTION_VALIDATEONPARSE | INIT_OPTION_RESOLVEEXTERNALS)));
+  CHK_HR(CreateAndInitDOM(&pXMLDom, (INIT_OPTION_RESOLVEEXTERNALS)));
 
   /*
   // Configure DOM properties for namespace selection.
@@ -1187,9 +1205,8 @@ void XMLValidation(int informIfNoError) {
 
   CHK_HR(pXMLDom->load(varXML, &varStatus));
   if (varStatus == VARIANT_TRUE) {
-
-    if (pXMLDom->validate(&pXMLErr) == S_FALSE) {
-      displayXMLError(pXMLErr, hCurrentEditView, L"XML Validation error");
+    if (pXMLDom->validate((IXMLDOMParseError**) &pXMLErr2) == S_FALSE) {
+      displayXMLErrors(pXMLErr2, hCurrentEditView, L"XML Validation error");
     }
     else {
       // search for xsi:noNamespaceSchemaLocation or xsi:schemaLocation

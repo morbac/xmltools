@@ -34,13 +34,13 @@ typedef enum {
 HRESULT VariantFromString(PCWSTR wszValue, VARIANT& Variant);
 
 // Helper function packaging an object into a variant.
-HRESULT VariantFromObject(IUnknown * pUnk, VARIANT & varObject);
+HRESULT VariantFromObject(IUnknown* pUnk, VARIANT& varObject);
 
 // Helper function to create a DOM instance.
-HRESULT CreateAndInitDOM(IXMLDOMDocument2 * *ppDoc, int options = INIT_OPTION_PRESERVEWHITESPACE);
+HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc, int options = INIT_OPTION_PRESERVEWHITESPACE);
 
 // Helper function to create a sax instance.
-HRESULT CreateAndInitSAX(ISAXXMLReader * *ppDoc);
+HRESULT CreateAndInitSAX(ISAXXMLReader** ppDoc);
 
 // Helper function to create a xsl instance.
 HRESULT CreateAndInitXSLTemplate(IXSLTemplate** pIXSLTemplate);
@@ -49,11 +49,11 @@ HRESULT CreateAndInitXSLTemplate(IXSLTemplate** pIXSLTemplate);
 HRESULT CreateAndInitSchema(IXMLDOMSchemaCollection2** pISchema);
 
 // Helper function to transform DOM to a string.
-HRESULT TransformDOM2Str(IXMLDOMDocument * pXMLDom, IXMLDOMDocument * pXSLDoc);
+HRESULT TransformDOM2Str(IXMLDOMDocument* pXMLDom, IXMLDOMDocument* pXSLDoc);
 
 // Helper function to display parse error.
 // It returns error code of the parse error.
-HRESULT ReportParseError(IXMLDOMDocument * pDoc, const char* szDesc);
+HRESULT ReportParseError(IXMLDOMDocument* pDoc, const char* szDesc);
 
 
 // Overload of pure virtual class ISAXContentHandler; this
