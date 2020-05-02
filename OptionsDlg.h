@@ -1,5 +1,6 @@
 #pragma once
 #include "afxwin.h"
+#include "CMyPropertyGridCtrl.h"
 
 // Boîte de dialogue COptionsDlg
 
@@ -17,6 +18,14 @@ public:
 protected:
   bool testAnnotation = false;
 
+  std::vector<CMFCPropertyGridProperty*> vIntProperties;
+  std::vector<CMFCPropertyGridProperty*> vBoolProperties;
+  std::vector<CMFCPropertyGridProperty*> vStringProperties;
+
+
+  CMFCPropertyGridProperty* pDispAnnotations;
+  CMFCPropertyGridProperty* pTypeAnnotations;
+  bool test;
   virtual void DoDataExchange(CDataExchange* pDX);    // Prise en charge de DDX/DDV
 
   void updateEditFieldsStatus();
@@ -37,4 +46,7 @@ public:
   afx_msg void OnBnClickedChkannotations();
   afx_msg void OnBnClickedBtnviewannotation();
   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+  CListBox m_listXmlFeatures;
+  CMyPropertyGridCtrl m_wndPropList;
+  afx_msg void OnStnClickedProperties();
 };

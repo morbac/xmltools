@@ -320,6 +320,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AboutBoxDlg.cpp" />
+    <ClCompile Include="CMyPropertyGridCtrl.cpp" />
     <ClCompile Include="DebugDlg.cpp" />
     <ClCompile Include="MSXMLHelper.cpp" />
     <ClCompile Include="OptionsDlg.cpp" />
@@ -348,6 +349,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutBoxDlg.h" />
+    <ClInclude Include="CMyPropertyGridCtrl.h" />
     <ClInclude Include="DebugDlg.h" />
     <ClInclude Include="MSXMLHelper.h" />
     <ClInclude Include="Notepad_plus_msgs.h" />

@@ -57,6 +57,9 @@
     <ClCompile Include="MSXMLHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CMyPropertyGridCtrl.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="XMLTools.def">
@@ -117,6 +120,9 @@
     </ClInclude>
     <ClInclude Include="MSXMLHelper.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CMyPropertyGridCtrl.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

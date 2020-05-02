@@ -30,6 +30,7 @@ void COptionsDlg::DoDataExchange(CDataExchange* pDX)
   DDX_Control(pDX, IDC_EDITPROXYPASSWORD, editProxyPassword);
   */
   DDX_Control(pDX, IDC_EDITANNOTATIONSTYLE, editAnnotationStyle);
+  DDX_Control(pDX, IDC_PROPERTIES, m_wndPropList);
 }
 
 
@@ -40,17 +41,45 @@ BEGIN_MESSAGE_MAP(COptionsDlg, CDialogEx)
   ON_BN_CLICKED(IDOK, &COptionsDlg::OnBnClickedOk)
   ON_BN_CLICKED(IDC_CHKANNOTATIONS, &COptionsDlg::OnBnClickedChkannotations)
   ON_BN_CLICKED(IDC_BTNVIEWANNOTATION, &COptionsDlg::OnBnClickedBtnviewannotation)
+  ON_STN_CLICKED(IDC_PROPERTIES, &COptionsDlg::OnStnClickedProperties)
 END_MESSAGE_MAP()
 
 
-// Gestionnaires de messages de COptionsDlg
 
-
-BOOL COptionsDlg::OnInitDialog()
-{
+BOOL COptionsDlg::OnInitDialog() {
   CDialogEx::OnInitDialog();
 
   testAnnotation = false;
+
+  RECT r;
+  GetClientRect(&r);
+  m_wndPropList.SetLeftColumnWidth((r.right - r.left) / 2);
+  m_wndPropList.SetVSDotNetLook(TRUE);
+
+  // properties
+  //m_wndPropList.SetLeftColumnWidth(50);
+
+  CMFCPropertyGridProperty* pTmpOption = NULL;
+  CMFCPropertyGridProperty* pGrpOptions = new CMFCPropertyGridProperty(L"Options");
+  m_wndPropList.AddProperty(pGrpOptions);
+
+  pTmpOption = new CMFCPropertyGridProperty(L"Display errors as annotations", COleVariant((short) (xmltoolsoptions.useAnnotations ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"When enabled, errors are displayed as annotation directly in the XML document. When disabled, errors are displayed in dialogs.", (DWORD_PTR) &xmltoolsoptions.useAnnotations);
+  pGrpOptions->AddSubItem(pTmpOption); 
+  vBoolProperties.push_back(pTmpOption);
+  
+  pTmpOption = new CMFCPropertyGridProperty(L"Annotations style", COleVariant((long) xmltoolsoptions.annotationStyle, VT_INT), L"Error messages style when displayed as annotations.", (DWORD_PTR) &xmltoolsoptions.annotationStyle);
+  pGrpOptions->AddSubItem(pTmpOption);
+  vIntProperties.push_back(pTmpOption);
+
+
+  CMFCPropertyGridProperty* pGrpXml2Txt = new CMFCPropertyGridProperty(L"XML to Text conversion");
+  m_wndPropList.AddProperty(pGrpXml2Txt);
+
+  CMFCPropertyGridProperty* pGrpPrettyPrint = new CMFCPropertyGridProperty(L"Pretty print options");
+  m_wndPropList.AddProperty(pGrpPrettyPrint);
+
+  CMFCPropertyGridProperty* pGrpXmlFeatures = new CMFCPropertyGridProperty(L"XML Features");
+  m_wndPropList.AddProperty(pGrpXmlFeatures);
 
   /*
   ((CButton*) GetDlgItem(IDC_CHKENABLEPROXY))->SetCheck(proxyoptions.status ? BST_CHECKED : BST_UNCHECKED);
@@ -120,6 +149,15 @@ void COptionsDlg::OnBnClickedChkannotations() {
   updateEditFieldsStatus();
 }
 
+void UpdateBoolOption(CMFCPropertyGridProperty* src) {
+  (*((bool*)(src->GetData()))) = (src->GetValue().boolVal == VARIANT_TRUE);
+}
+void UpdateIntOption(CMFCPropertyGridProperty* src) {
+  (*((int*)(src->GetData()))) = (src->GetValue().iVal);
+}
+void UpdateStringOption(CMFCPropertyGridProperty* src) {
+  (*((std::wstring*)(src->GetData()))) = src->GetValue().bstrVal;
+}
 
 void COptionsDlg::OnBnClickedOk() {
   CStringW buffer;
@@ -139,10 +177,20 @@ void COptionsDlg::OnBnClickedOk() {
   //this->editProxyPassword.GetWindowText(buffer);
   //wcscpy_s(this->proxyoptions->password, (const WCHAR *)buffer);
   */
+  
+  for (std::vector<CMFCPropertyGridProperty*>::iterator it = vBoolProperties.begin(); it != vBoolProperties.end(); ++it) {
+    UpdateBoolOption(*it);
+  }
+  for (std::vector<CMFCPropertyGridProperty*>::iterator it = vIntProperties.begin(); it != vIntProperties.end(); ++it) {
+    UpdateIntOption(*it);
+  }
+  for (std::vector<CMFCPropertyGridProperty*>::iterator it = vStringProperties.begin(); it != vStringProperties.end(); ++it) {
+    UpdateStringOption(*it);
+  }
 
   xmltoolsoptions.prohibitDTD = (((CButton*)GetDlgItem(IDC_CHKPROHIBITDTD))->GetCheck() == BST_CHECKED);
   xmltoolsoptions.multipleErrorMessages = (((CButton*)GetDlgItem(IDC_CHKMULTIPLEERRORS))->GetCheck() == BST_CHECKED);
-  xmltoolsoptions.useAnnotations = (((CButton*)GetDlgItem(IDC_CHKANNOTATIONS))->GetCheck() == BST_CHECKED);
+  //xmltoolsoptions.useAnnotations = (((CButton*)GetDlgItem(IDC_CHKANNOTATIONS))->GetCheck() == BST_CHECKED);
   xmltoolsoptions.convertAmp = (((CButton*)GetDlgItem(IDC_CHKAMP))->GetCheck() == BST_CHECKED);
   xmltoolsoptions.convertLt = (((CButton*)GetDlgItem(IDC_CHKLT))->GetCheck() == BST_CHECKED);
   xmltoolsoptions.convertGt = (((CButton*)GetDlgItem(IDC_CHKGT))->GetCheck() == BST_CHECKED);
@@ -151,7 +199,7 @@ void COptionsDlg::OnBnClickedOk() {
   xmltoolsoptions.ppAutoclose = (((CButton*)GetDlgItem(IDC_CHKPPAUTOCLOSE))->GetCheck() == BST_CHECKED);
 
   this->editAnnotationStyle.GetWindowText(buffer);
-  xmltoolsoptions.annotationStyle = _wtoi((LPCTSTR)buffer);
+  //xmltoolsoptions.annotationStyle = _wtoi((LPCTSTR)buffer);
 
   CDialogEx::OnOK();
 }
@@ -182,4 +230,9 @@ BOOL COptionsDlg::OnCommand(WPARAM wParam, LPARAM lParam) {
   }
 
   return CDialogEx::OnCommand(wParam, lParam);
+}
+
+
+
+void COptionsDlg::OnStnClickedProperties() {
 }
