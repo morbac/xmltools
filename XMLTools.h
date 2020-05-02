@@ -13,11 +13,12 @@
 #endif
 
 #include "resource.h"    // main symbols
+#include "MSXMLHelper.h"
 #include <string>
 
 //---------------------------------------------------------------------------
 
-#define XMLTOOLS_VERSION_NUMBER L"3.0.4.3"
+#define XMLTOOLS_VERSION_NUMBER L"3.0.5.0"
 #ifdef V64BIT
 #define XMLTOOLS_VERSION_STATUS L"unicode 64bit"
 #else
@@ -65,7 +66,7 @@ struct struct_xmltoolsoptions {       // default value
 extern struct struct_proxyoptions proxyoptions;
 extern struct struct_xmltoolsoptions xmltoolsoptions;
 extern void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDesc = NULL);
-extern void displayXMLErrors(IXMLDOMParseError2* pXMLErr2, HWND view, const wchar_t* szDesc = NULL);
+extern void displayXMLErrors(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDesc = NULL);
 extern void dbg(CStringW line);
 extern void dbgln(CStringW line);
 extern void displayXMLError(std::wstring wmsg, HWND view = NULL, size_t line = NULL, size_t linepos = NULL, size_t filepos = NULL);

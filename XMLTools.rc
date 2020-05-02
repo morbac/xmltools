@@ -25,8 +25,8 @@ LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,4,3
- PRODUCTVERSION 3,0,4,3
+ FILEVERSION 3,0,5,0
+ PRODUCTVERSION 3,0,5,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -42,12 +42,12 @@ BEGIN
         BLOCK "040004b0"
         BEGIN
             VALUE "FileDescription", "XMLTools"
-            VALUE "FileVersion", "3.0.4.3"
+            VALUE "FileVersion", "3.0.5.0"
             VALUE "InternalName", "XMLTools"
             VALUE "LegalCopyright", "Copyright (C) 2020"
             VALUE "OriginalFilename", "XMLTools.dll"
             VALUE "ProductName", "XMLTools"
-            VALUE "ProductVersion", "3.0.4.3"
+            VALUE "ProductVersion", "3.0.5.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -211,7 +211,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,195,156,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,249,156,50,14
     GROUPBOX        "XML Features",IDC_STATIC,7,117,292,33
-    CONTROL         "Prohibit DTD",IDC_CHKPROHIBITDTD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,130,276,10
+    CONTROL         "Prohibit DTD",IDC_CHKPROHIBITDTD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,130,85,10
     GROUPBOX        "Options",IDC_STATIC,7,7,292,106
     CONTROL         "Display errors as annotations",IDC_CHKANNOTATIONS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,22,107,10
@@ -227,6 +227,7 @@ BEGIN
     LTEXT           "Pretty print options",IDC_STATIC,15,82,276,8
     CONTROL         "Enable auto-closing tags (ex: <sample></sample> -> <sample/>)",IDC_CHKPPAUTOCLOSE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,26,94,228,10
+    CONTROL         "Multiple errors",IDC_CHKMULTIPLEERRORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100,130,63,10
 END
 
 IDD_DLGDEBUG DIALOGEX 0, 0, 389, 211

@@ -60,6 +60,7 @@ BOOL COptionsDlg::OnInitDialog()
   //GetDlgItem(IDC_EDITPROXYPASSWORD)->SetWindowTextW(this->proxyoptions->password);
   */
   ((CButton*)GetDlgItem(IDC_CHKPROHIBITDTD))->SetCheck(xmltoolsoptions.prohibitDTD ? BST_CHECKED : BST_UNCHECKED);
+  ((CButton*)GetDlgItem(IDC_CHKMULTIPLEERRORS))->SetCheck(xmltoolsoptions.multipleErrorMessages ? BST_CHECKED : BST_UNCHECKED);
   ((CButton*)GetDlgItem(IDC_CHKANNOTATIONS))->SetCheck(xmltoolsoptions.useAnnotations ? BST_CHECKED : BST_UNCHECKED);
   GetDlgItem(IDC_EDITANNOTATIONSTYLE)->SetWindowTextW(std::to_wstring(static_cast<int>(xmltoolsoptions.annotationStyle)).c_str());
   ((CButton*)GetDlgItem(IDC_CHKAMP))->SetCheck(xmltoolsoptions.convertAmp ? BST_CHECKED : BST_UNCHECKED);
@@ -140,6 +141,7 @@ void COptionsDlg::OnBnClickedOk() {
   */
 
   xmltoolsoptions.prohibitDTD = (((CButton*)GetDlgItem(IDC_CHKPROHIBITDTD))->GetCheck() == BST_CHECKED);
+  xmltoolsoptions.multipleErrorMessages = (((CButton*)GetDlgItem(IDC_CHKMULTIPLEERRORS))->GetCheck() == BST_CHECKED);
   xmltoolsoptions.useAnnotations = (((CButton*)GetDlgItem(IDC_CHKANNOTATIONS))->GetCheck() == BST_CHECKED);
   xmltoolsoptions.convertAmp = (((CButton*)GetDlgItem(IDC_CHKAMP))->GetCheck() == BST_CHECKED);
   xmltoolsoptions.convertLt = (((CButton*)GetDlgItem(IDC_CHKLT))->GetCheck() == BST_CHECKED);

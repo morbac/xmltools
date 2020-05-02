@@ -3,7 +3,6 @@
 
 // notepad++
 #include "StdAfx.h"
-#include "MSXMLHelper.h"
 #include "XMLTools.h"
 #include "PluginInterface.h"
 #include "Scintilla.h"
@@ -471,6 +470,7 @@ void initializePlugin() {
   ::GetPrivateProfileString(sectionName, L"proxyUser", L"", proxyoptions.username, 255, iniFilePath);
   ::GetPrivateProfileString(sectionName, L"proxyPass", L"", proxyoptions.password, 255, iniFilePath);
   xmltoolsoptions.prohibitDTD = (::GetPrivateProfileInt(sectionName, L"prohibitDTD", 0, iniFilePath) == 1);
+  xmltoolsoptions.multipleErrorMessages = (::GetPrivateProfileInt(sectionName, L"multipleErrorMessages", 0, iniFilePath) == 1);
   xmltoolsoptions.useAnnotations = (::GetPrivateProfileInt(sectionName, L"useAnnotations", 1, iniFilePath) == 1);
   xmltoolsoptions.annotationStyle = ::GetPrivateProfileInt(sectionName, L"annotationStyle", 12, iniFilePath);
   xmltoolsoptions.convertAmp = (::GetPrivateProfileInt(sectionName, L"convertAmp", 1, iniFilePath) == 1);
@@ -793,6 +793,7 @@ void optionsDlg() {
     ::WritePrivateProfileString(sectionName, L"proxyUser", proxyoptions.username, iniFilePath);
     ::WritePrivateProfileString(sectionName, L"proxyPass", proxyoptions.password, iniFilePath);
     ::WritePrivateProfileString(sectionName, L"prohibitDTD", xmltoolsoptions.prohibitDTD ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"multipleErrorMessages", xmltoolsoptions.multipleErrorMessages ? L"1" : L"0", iniFilePath);
     ::WritePrivateProfileString(sectionName, L"useAnnotations", xmltoolsoptions.useAnnotations ? L"1" : L"0", iniFilePath);
     ::WritePrivateProfileString(sectionName, L"annotationStyle", std::to_wstring(static_cast<int>(xmltoolsoptions.annotationStyle)).c_str(), iniFilePath);
     ::WritePrivateProfileString(sectionName, L"convertAmp", xmltoolsoptions.convertAmp ? L"1" : L"0", iniFilePath);
@@ -1022,52 +1023,67 @@ void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDes
   BSTR bstrReason = NULL;
   std::wstring wmsg = L"";
 
-  CHK_HR(pXMLErr->get_line(&line));
-  CHK_HR(pXMLErr->get_linepos(&linepos));
-  CHK_HR(pXMLErr->get_filepos(&filepos));
-  CHK_HR(pXMLErr->get_reason(&bstrReason));
+  if (pXMLErr != NULL) {
+    CHK_HR(pXMLErr->get_line(&line));
+    CHK_HR(pXMLErr->get_linepos(&linepos));
+    CHK_HR(pXMLErr->get_filepos(&filepos));
+    CHK_HR(pXMLErr->get_reason(&bstrReason));
 
-  if (szDesc != NULL) {
-    if (line > 0 && linepos > 0) {
-      wmsg = Report::str_format(L"%s - line %d, pos %d: \r\n%s", szDesc, line, linepos, bstrReason);
+    if (szDesc != NULL) {
+      if (line > 0 && linepos > 0) {
+        wmsg = Report::str_format(L"%s - line %d, pos %d: \r\n%s", szDesc, line, linepos, bstrReason);
+      }
+      else {
+        wmsg = Report::str_format(L"%s: \r\n%s", szDesc, bstrReason);
+        line = 1;
+        linepos = 1;
+      }
     }
     else {
-      wmsg = Report::str_format(L"%s: \r\n%s", szDesc, bstrReason);
-      line = 1;
-      linepos = 1;
+      if (line > 0 && linepos > 0) {
+        wmsg = Report::str_format(L"XML Parsing error - line %d, pos %d: \r\n%s", line, linepos, bstrReason);
+      }
+      else {
+        wmsg = Report::str_format(L"XML Parsing error: \r\n%s", bstrReason);
+        line = 1;
+        linepos = 1;
+      }
     }
-  } else {
-    if (line > 0 && linepos > 0) {
-      wmsg = Report::str_format(L"XML Parsing error - line %d, pos %d: \r\n%s", line, linepos, bstrReason);
-    }
-    else {
-      wmsg = Report::str_format(L"XML Parsing error: \r\n%s", bstrReason);
-      line = 1;
-      linepos = 1;
-    }
+
+    displayXMLError(wmsg, view, line, linepos, filepos + 1);
   }
-
-  displayXMLError(wmsg, view, line, linepos, filepos + 1);
 
 CleanUp:
   SysFreeString(bstrReason);
 }
 
-void displayXMLErrors(IXMLDOMParseError2* pXMLErr2, HWND view, const wchar_t* szDesc) {
+void displayXMLErrors(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDesc) {
   HRESULT hr = S_OK; 
-  IXMLDOMParseError2* pXMLErr = NULL;
+  IXMLDOMParseError2* pTmpErr = NULL;
   IXMLDOMParseErrorCollection* pAllErrors = NULL;
   long length = 0;
 
-  CHK_HR(pXMLErr2->get_allErrors(&pAllErrors));
-  CHK_HR(pAllErrors->get_length(&length));
-  for (long i = 0; i < length; ++i) {
-    CHK_HR(pAllErrors->get_item(i, &pXMLErr));
+  try {
+    CHK_HR(((IXMLDOMParseError2*) pXMLErr)->get_allErrors(&pAllErrors));
+    if (pAllErrors != NULL) {
+      CHK_HR(pAllErrors->get_length(&length));
+      for (long i = 0; i < length; ++i) {
+        CHK_HR(pAllErrors->get_next(&pTmpErr));
+        CHK_HR(pAllErrors->get_item(i, &pTmpErr));
+        displayXMLError(pTmpErr, view, szDesc);
+        SAFE_RELEASE(pTmpErr);
+      }
+    }
+    else {
+      displayXMLError(pXMLErr, view, szDesc);
+    }
+  }
+  catch (...) {
     displayXMLError(pXMLErr, view, szDesc);
   }
 
 CleanUp:
-  SAFE_RELEASE(pXMLErr);
+  SAFE_RELEASE(pTmpErr);
   SAFE_RELEASE(pAllErrors);
 }
 
@@ -1130,7 +1146,7 @@ int performXMLCheck(int informIfNoError) {
     }
   } else {
     CHK_HR(pXMLDom->get_parseError(&pXMLErr));
-    displayXMLError(pXMLErr, hCurrentEditView, L"XML Parsing error");
+    displayXMLErrors(pXMLErr, hCurrentEditView, L"XML Parsing error");
   }
 
 CleanUp:
@@ -1194,7 +1210,7 @@ void XMLValidation(int informIfNoError) {
 
   Report::char2VARIANT(data, &varXML);
 
-  CHK_HR(CreateAndInitDOM(&pXMLDom, (INIT_OPTION_RESOLVEEXTERNALS)));
+  CHK_HR(CreateAndInitDOM(&pXMLDom, (INIT_OPTION_VALIDATEONPARSE | INIT_OPTION_RESOLVEEXTERNALS)));
 
   /*
   // Configure DOM properties for namespace selection.
@@ -1264,7 +1280,7 @@ void XMLValidation(int informIfNoError) {
             }
             else {
               CHK_HR(pXD->get_parseError(&pXMLErr));
-              displayXMLError(pXMLErr, hCurrentEditView, L"XML Validation error");
+              displayXMLErrors(pXMLErr, hCurrentEditView, L"XML Validation error");
             }
           }
           else {
@@ -1278,7 +1294,7 @@ void XMLValidation(int informIfNoError) {
     }
   } else {
     CHK_HR(pXMLDom->get_parseError(&pXMLErr));
-    displayXMLError(pXMLErr, hCurrentEditView, L"XML Validation error");
+    displayXMLErrors(pXMLErr, hCurrentEditView, L"XML Validation error");
   }
 
 CleanUp:

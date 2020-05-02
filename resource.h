@@ -58,6 +58,8 @@
 #define IDC_CHKAPOS                     2045
 #define IDC_CHECK1                      2046
 #define IDC_CHKPPAUTOCLOSE              2046
+#define IDC_CHECK2                      2047
+#define IDC_CHKMULTIPLEERRORS           2047
 
 // Next default values for new objects
 // 
@@ -65,7 +67,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        2014
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2047
+#define _APS_NEXT_CONTROL_VALUE         2048
 #define _APS_NEXT_SYMED_VALUE           2000
 #endif
 #endif

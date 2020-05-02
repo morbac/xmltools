@@ -1,3 +1,6 @@
+#ifndef __MSXMLHELPER_H__
+#define __MSXMLHELPER_H__
+
 #include <msxml6.h>
 #include <string>
 #include <vector>
@@ -183,3 +186,5 @@ public:
     return 0;
   }
 };
+
+#endif

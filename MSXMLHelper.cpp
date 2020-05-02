@@ -46,7 +46,7 @@ HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc, int options) {
     (*ppDoc)->put_preserveWhiteSpace(options & INIT_OPTION_PRESERVEWHITESPACE ? VARIANT_TRUE : VARIANT_FALSE);
 
     (*ppDoc)->setProperty(L"ProhibitDTD", _variant_t(xmltoolsoptions.prohibitDTD ? VARIANT_TRUE : VARIANT_FALSE));
-    (*ppDoc)->setProperty(L"MultipleErrorMessages", _variant_t(VARIANT_TRUE));
+    (*ppDoc)->setProperty(L"MultipleErrorMessages", _variant_t(xmltoolsoptions.multipleErrorMessages ? VARIANT_TRUE : VARIANT_FALSE));
   }
   return hr;
 }

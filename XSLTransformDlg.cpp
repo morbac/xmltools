@@ -276,11 +276,11 @@ void CXSLTransformDlg::OnBtnTransform() {
       }
     } else {
       CHK_HR(pXslt->get_parseError(&pXMLErr));
-      displayXMLError(pXMLErr, hCurrentEditView, L"Error: unable to parse XML");
+      displayXMLErrors(pXMLErr, hCurrentEditView, L"Error: unable to parse XML");
     }
   } else {
     CHK_HR(pXml->get_parseError(&pXMLErr));
-    displayXMLError(pXMLErr, hCurrentEditView, L"Error while loading XSL");
+    displayXMLErrors(pXMLErr, hCurrentEditView, L"Error while loading XSL");
   }
 
 CleanUp:
