@@ -551,8 +551,6 @@ void savePluginParams() {
   ::WritePrivateProfileString(sectionName, L"doAllowHuge", doAllowHuge?L"1" : L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"doPrettyPrintAllOpenFiles", doPrettyPrintAllOpenFiles?L"1":L"0", iniFilePath);
 
-
-
   ::WritePrivateProfileString(sectionName, L"proxyEnabled", proxyoptions.status ? L"1" : L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"proxyHost", proxyoptions.host, iniFilePath);
   ::WritePrivateProfileString(sectionName, L"proxyPort", std::to_wstring(static_cast<long>(proxyoptions.port)).c_str(), iniFilePath);

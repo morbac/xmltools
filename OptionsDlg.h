@@ -10,7 +10,8 @@ typedef enum {
   TYPE_INT,
   TYPE_LONG,
   TYPE_STRING,
-  TYPE_WSTRING
+  TYPE_WSTRING,
+  TYPE_WCHAR255
 } enumOptionType;
 
 class COptionsDlg : public CDialogEx {
@@ -27,9 +28,11 @@ protected:
   bool testAnnotation = false;
 
   std::vector<CMFCPropertyGridProperty*> vIntProperties;
+  std::vector<CMFCPropertyGridProperty*> vLongProperties;
   std::vector<CMFCPropertyGridProperty*> vBoolProperties;
   std::vector<CMFCPropertyGridProperty*> vTristateProperties;
-  std::vector<CMFCPropertyGridProperty*> vStringProperties;
+  std::vector<CMFCPropertyGridProperty*> vWStringProperties;
+  std::vector<CMFCPropertyGridProperty*> vWChar255Properties;
   CMFCPropertyGridProperty* pAnnotationStyleProperty;
 
   virtual void DoDataExchange(CDataExchange* pDX);    // Prise en charge de DDX/DDV
@@ -41,12 +44,6 @@ public:
   virtual BOOL OnInitDialog();
   afx_msg void OnBnClickedOk();
 
-  /*
-  CEdit editProxyHost;
-  CEdit editProxyPort;
-  CEdit editProxyUsername;
-  CEdit editProxyPassword;
-  */
   afx_msg void OnBnClickedBtnviewannotation();
   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
   CMyPropertyGridCtrl m_wndPropList;

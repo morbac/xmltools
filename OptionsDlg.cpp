@@ -59,8 +59,21 @@ void COptionsDlg::UpdateProperty(CMFCPropertyGridProperty* src, enumOptionType t
       (*((int*) obj)) = (val.intVal);
       break;
     }
+    case TYPE_LONG: {
+      (*((long*) obj)) = (val.lVal);
+      break;
+    }
     case TYPE_WSTRING: {
       (*((std::wstring*) obj)) = val.bstrVal;
+      break;
+    }
+    case TYPE_WCHAR255: {
+      rsize_t len = SysStringLen(val.bstrVal);
+      if (len > 255) len = 255;
+      memset((wchar_t*) obj, '\0', 255 * sizeof(wchar_t));
+      if (len > 0) {
+        wcscpy_s((wchar_t*) obj, len * sizeof(wchar_t), (wchar_t*) bstr_t(val.bstrVal));
+      }
       break;
     }
     default: {
@@ -81,6 +94,11 @@ BOOL COptionsDlg::OnInitDialog() {
   m_wndPropList.SetLeftColumnWidth((r.right - r.left) / 2);
   m_wndPropList.SetVSDotNetLook(TRUE);
 
+  vIntProperties.clear();
+  vLongProperties.clear();
+  vBoolProperties.clear();
+  vTristateProperties.clear();
+  vWStringProperties.clear();
 
   CMFCPropertyGridProperty* pGrpOptions = new CMFCPropertyGridProperty(L"Options");
   m_wndPropList.AddProperty(pGrpOptions);
@@ -149,9 +167,9 @@ BOOL COptionsDlg::OnInitDialog() {
   pTmpOption->AddOption(L"Default"); pTmpOption->AddOption(L"True"); pTmpOption->AddOption(L"False"); pTmpOption->AllowEdit(FALSE);
   pGrpXmlFeatures->AddSubItem(pTmpOption); vTristateProperties.push_back(pTmpOption);
   pTmpOption = new CMFCPropertyGridProperty(L"Selection language", COleVariant(xmltoolsoptions.selectionLanguage.c_str()), L"Used in MSXML 3.0 to specify whether the DOM object should use XPath language (\"XPath\") or the old XSLPattern language (default) as the query language.\r\nThis property is supported in MSXML 3.0 6.0.The default value is \"XSLPattern\" for 3.0.The default value is \"XPath\" for 6.0.", (DWORD_PTR)&xmltoolsoptions.selectionLanguage);
-  pGrpXmlFeatures->AddSubItem(pTmpOption); vStringProperties.push_back(pTmpOption);
+  pGrpXmlFeatures->AddSubItem(pTmpOption); vWStringProperties.push_back(pTmpOption);
   pTmpOption = new CMFCPropertyGridProperty(L"Selection namespaces", COleVariant(xmltoolsoptions.selectionNamespace.c_str()), L"Specifies namespaces for use in XPath expressions when it is necessary to define new namespaces externally. Namespaces are defined in the XML style, as a space-separated list of namespace declaration attributes. You can use this property to set the default namespace as well.\r\nThis property is supported in MSXML 3.0 and 6.0.The default value is \"\".", (DWORD_PTR)&xmltoolsoptions.selectionNamespace);
-  pGrpXmlFeatures->AddSubItem(pTmpOption); vStringProperties.push_back(pTmpOption);
+  pGrpXmlFeatures->AddSubItem(pTmpOption); vWStringProperties.push_back(pTmpOption);
   pTmpOption = new CMFCPropertyGridProperty(L"Server HTTP Request", (xmltoolsoptions.serverHTTPRequest > 0 ? L"True" : (xmltoolsoptions.serverHTTPRequest == 0 ? L"False" : L"Default")), L"Specifies whether to enable (true) or disable (false) the use of the ServerHTTPRequest object in a server application. Setting the property to false causes the DOM object not to use the HTTPRequest object. Setting this property to true causes DOM documents to use ServerHTTPRequest.\r\nThis property is supported in MSXML 3.0 and 6.0.The default value is false.", (DWORD_PTR)&xmltoolsoptions.serverHTTPRequest);
   pTmpOption->AddOption(L"Default"); pTmpOption->AddOption(L"True"); pTmpOption->AddOption(L"False"); pTmpOption->AllowEdit(FALSE);
   pGrpXmlFeatures->AddSubItem(pTmpOption); vTristateProperties.push_back(pTmpOption);
@@ -162,6 +180,21 @@ BOOL COptionsDlg::OnInitDialog() {
   pTmpOption->AddOption(L"Default"); pTmpOption->AddOption(L"True"); pTmpOption->AddOption(L"False"); pTmpOption->AllowEdit(FALSE);
   pGrpXmlFeatures->AddSubItem(pTmpOption); vTristateProperties.push_back(pTmpOption);
   
+
+  CMFCPropertyGridProperty* pGrpProxyOptions = new CMFCPropertyGridProperty(L"Proxy options (disabled)");
+  m_wndPropList.AddProperty(pGrpProxyOptions);
+
+  pTmpOption = new CMFCPropertyGridProperty(L"Enabled", COleVariant((short)(proxyoptions.status ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Activate proxy", (DWORD_PTR)&proxyoptions.status);
+  pGrpProxyOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption); pTmpOption->Enable(0);
+  pTmpOption = new CMFCPropertyGridProperty(L"Proxy host", proxyoptions.host, 0, (DWORD_PTR)&proxyoptions.host);
+  pGrpProxyOptions->AddSubItem(pTmpOption); vWChar255Properties.push_back(pTmpOption); pTmpOption->Enable(0);
+  pTmpOption = new CMFCPropertyGridProperty(L"Proxy port", COleVariant((long)proxyoptions.port, VT_INT), 0, (DWORD_PTR)&proxyoptions.port);
+  pGrpProxyOptions->AddSubItem(pTmpOption); vLongProperties.push_back(pTmpOption); pTmpOption->Enable(0);
+  pTmpOption = new CMFCPropertyGridProperty(L"Username", proxyoptions.username, 0, (DWORD_PTR)&proxyoptions.username);
+  pGrpProxyOptions->AddSubItem(pTmpOption); vWChar255Properties.push_back(pTmpOption); pTmpOption->Enable(0);
+  pTmpOption = new CMFCPropertyGridProperty(L"Password", proxyoptions.password, 0, (DWORD_PTR)&proxyoptions.password);
+  pGrpProxyOptions->AddSubItem(pTmpOption); vWChar255Properties.push_back(pTmpOption); pTmpOption->Enable(0);
+
   return TRUE;  // return TRUE unless you set the focus to a control
   // EXCEPTION : les pages de propriétés OCX devraient retourner FALSE
 }
@@ -194,8 +227,14 @@ void COptionsDlg::OnBnClickedOk() {
   for (std::vector<CMFCPropertyGridProperty*>::iterator it = vIntProperties.begin(); it != vIntProperties.end(); ++it) {
     UpdateProperty(*it, TYPE_INT);
   }
-  for (std::vector<CMFCPropertyGridProperty*>::iterator it = vStringProperties.begin(); it != vStringProperties.end(); ++it) {
+  for (std::vector<CMFCPropertyGridProperty*>::iterator it = vLongProperties.begin(); it != vLongProperties.end(); ++it) {
+    UpdateProperty(*it, TYPE_LONG);
+  }
+  for (std::vector<CMFCPropertyGridProperty*>::iterator it = vWStringProperties.begin(); it != vWStringProperties.end(); ++it) {
     UpdateProperty(*it, TYPE_WSTRING);
+  }
+  for (std::vector<CMFCPropertyGridProperty*>::iterator it = vWChar255Properties.begin(); it != vWChar255Properties.end(); ++it) {
+    UpdateProperty(*it, TYPE_WCHAR255);
   }
 
   CDialogEx::OnOK();
