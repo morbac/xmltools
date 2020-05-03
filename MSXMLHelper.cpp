@@ -45,8 +45,22 @@ HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc, int options) {
     (*ppDoc)->put_resolveExternals(options & INIT_OPTION_RESOLVEEXTERNALS ? VARIANT_TRUE : VARIANT_FALSE);
     (*ppDoc)->put_preserveWhiteSpace(options & INIT_OPTION_PRESERVEWHITESPACE ? VARIANT_TRUE : VARIANT_FALSE);
 
-    (*ppDoc)->setProperty(L"ProhibitDTD", _variant_t(xmltoolsoptions.prohibitDTD ? VARIANT_TRUE : VARIANT_FALSE));
+    (*ppDoc)->setProperty(L"AllowDocumentFunction", _variant_t(xmltoolsoptions.allowDocumentFunction ? VARIANT_TRUE : VARIANT_FALSE));
+    (*ppDoc)->setProperty(L"AllowXsltScript", _variant_t(xmltoolsoptions.allowXsltScript ? VARIANT_TRUE : VARIANT_FALSE));
+    (*ppDoc)->setProperty(L"ForceResync", _variant_t(xmltoolsoptions.forceResync ? VARIANT_TRUE : VARIANT_FALSE));
+    (*ppDoc)->setProperty(L"MaxElementDepth", _variant_t(xmltoolsoptions.maxElementDepth));
+    (*ppDoc)->setProperty(L"MaxXMLSize", _variant_t(xmltoolsoptions.maxXMLSize));
     (*ppDoc)->setProperty(L"MultipleErrorMessages", _variant_t(xmltoolsoptions.multipleErrorMessages ? VARIANT_TRUE : VARIANT_FALSE));
+    (*ppDoc)->setProperty(L"NewParser", _variant_t(xmltoolsoptions.newParser ? VARIANT_TRUE : VARIANT_FALSE));
+    (*ppDoc)->setProperty(L"NormalizeAttributeValues", _variant_t(xmltoolsoptions.normalizeAttributeValues ? VARIANT_TRUE : VARIANT_FALSE));
+    (*ppDoc)->setProperty(L"PopulateElementDefaultValues", _variant_t(xmltoolsoptions.populateElementDefaultValues ? VARIANT_TRUE : VARIANT_FALSE));
+    (*ppDoc)->setProperty(L"ProhibitDTD", _variant_t(xmltoolsoptions.prohibitDTD ? VARIANT_TRUE : VARIANT_FALSE));
+    (*ppDoc)->setProperty(L"ResolveExternals", _variant_t(xmltoolsoptions.resolveExternals ? VARIANT_TRUE : VARIANT_FALSE));
+    (*ppDoc)->setProperty(L"SelectionLanguage", _variant_t(xmltoolsoptions.selectionLanguage.c_str()));
+    (*ppDoc)->setProperty(L"SelectionNamespace", _variant_t(xmltoolsoptions.selectionNamespace.c_str()));
+    (*ppDoc)->setProperty(L"ServerHTTPRequest", _variant_t(xmltoolsoptions.serverHTTPRequest ? VARIANT_TRUE : VARIANT_FALSE));
+    (*ppDoc)->setProperty(L"UseInlineSchema", _variant_t(xmltoolsoptions.useInlineSchema ? VARIANT_TRUE : VARIANT_FALSE));
+    (*ppDoc)->setProperty(L"ValidateOnParse", _variant_t(xmltoolsoptions.validateOnParse ? VARIANT_TRUE : VARIANT_FALSE));
   }
   return hr;
 }

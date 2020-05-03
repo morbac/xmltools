@@ -469,8 +469,6 @@ void initializePlugin() {
   proxyoptions.port = ::GetPrivateProfileInt(sectionName, L"proxyPort", 8080, iniFilePath);
   ::GetPrivateProfileString(sectionName, L"proxyUser", L"", proxyoptions.username, 255, iniFilePath);
   ::GetPrivateProfileString(sectionName, L"proxyPass", L"", proxyoptions.password, 255, iniFilePath);
-  xmltoolsoptions.prohibitDTD = (::GetPrivateProfileInt(sectionName, L"prohibitDTD", 0, iniFilePath) == 1);
-  xmltoolsoptions.multipleErrorMessages = (::GetPrivateProfileInt(sectionName, L"multipleErrorMessages", 0, iniFilePath) == 1);
   xmltoolsoptions.useAnnotations = (::GetPrivateProfileInt(sectionName, L"useAnnotations", 1, iniFilePath) == 1);
   xmltoolsoptions.annotationStyle = ::GetPrivateProfileInt(sectionName, L"annotationStyle", 12, iniFilePath);
   xmltoolsoptions.convertAmp = (::GetPrivateProfileInt(sectionName, L"convertAmp", 1, iniFilePath) == 1);
@@ -479,6 +477,32 @@ void initializePlugin() {
   xmltoolsoptions.convertQuote = (::GetPrivateProfileInt(sectionName, L"convertQuote", 1, iniFilePath) == 1);
   xmltoolsoptions.convertApos = (::GetPrivateProfileInt(sectionName, L"convertApos", 1, iniFilePath) == 1);
   xmltoolsoptions.ppAutoclose = (::GetPrivateProfileInt(sectionName, L"ppAutoclose", 1, iniFilePath) == 1);
+
+  xmltoolsoptions.allowDocumentFunction = (::GetPrivateProfileInt(sectionName, L"allowDocumentFunction", 0, iniFilePath) == 1);
+  xmltoolsoptions.allowXsltScript = (::GetPrivateProfileInt(sectionName, L"allowXsltScript", 0, iniFilePath) == 1);
+  xmltoolsoptions.forceResync = (::GetPrivateProfileInt(sectionName, L"forceResync", 1, iniFilePath) == 1);
+  xmltoolsoptions.maxElementDepth = ::GetPrivateProfileInt(sectionName, L"maxElementDepth", 256, iniFilePath);
+  xmltoolsoptions.maxXMLSize = ::GetPrivateProfileInt(sectionName, L"maxXMLSize", 0, iniFilePath);
+  xmltoolsoptions.multipleErrorMessages = (::GetPrivateProfileInt(sectionName, L"multipleErrorMessages", 0, iniFilePath) == 1);
+  xmltoolsoptions.newParser = (::GetPrivateProfileInt(sectionName, L"newParser", 0, iniFilePath) == 1);
+  xmltoolsoptions.normalizeAttributeValues = (::GetPrivateProfileInt(sectionName, L"normalizeAttributeValues", 0, iniFilePath) == 1);
+  xmltoolsoptions.populateElementDefaultValues = (::GetPrivateProfileInt(sectionName, L"populateElementDefaultValues", 0, iniFilePath) == 1);
+  xmltoolsoptions.prohibitDTD = (::GetPrivateProfileInt(sectionName, L"prohibitDTD", 0, iniFilePath) == 1);
+  xmltoolsoptions.resolveExternals = (::GetPrivateProfileInt(sectionName, L"resolveExternals", 0, iniFilePath) == 1);
+  xmltoolsoptions.serverHTTPRequest = (::GetPrivateProfileInt(sectionName, L"serverHTTPRequest", 0, iniFilePath) == 1);
+  xmltoolsoptions.useInlineSchema = (::GetPrivateProfileInt(sectionName, L"useInlineSchema", 0, iniFilePath) == 1);
+  xmltoolsoptions.validateOnParse = (::GetPrivateProfileInt(sectionName, L"validateOnParse", 1, iniFilePath) == 1);
+
+  wchar_t* buffer = new wchar_t[256]; memset(buffer, '\0', 256);
+  ::GetPrivateProfileString(sectionName, L"selectionLanguage", L"", buffer, 255, iniFilePath); xmltoolsoptions.selectionLanguage = buffer;
+  delete[] buffer;
+  if (xmltoolsoptions.selectionLanguage.empty()) xmltoolsoptions.selectionLanguage = L"XPath";
+
+  int length = ::GetPrivateProfileInt(sectionName, L"selectionNamespaceLength", 1024, iniFilePath);
+  if (length == 0) length = 1024;
+  buffer = new wchar_t[length+1]; memset(buffer, '\0', length + 1);
+  ::GetPrivateProfileString(sectionName, L"selectionNamespace", L"", buffer, length, iniFilePath); xmltoolsoptions.selectionNamespace = buffer;
+  delete[] buffer;
 
   updateProxyConfig();
 
@@ -792,8 +816,6 @@ void optionsDlg() {
     ::WritePrivateProfileString(sectionName, L"proxyPort", std::to_wstring(static_cast<long>(proxyoptions.port)).c_str(), iniFilePath);
     ::WritePrivateProfileString(sectionName, L"proxyUser", proxyoptions.username, iniFilePath);
     ::WritePrivateProfileString(sectionName, L"proxyPass", proxyoptions.password, iniFilePath);
-    ::WritePrivateProfileString(sectionName, L"prohibitDTD", xmltoolsoptions.prohibitDTD ? L"1" : L"0", iniFilePath);
-    ::WritePrivateProfileString(sectionName, L"multipleErrorMessages", xmltoolsoptions.multipleErrorMessages ? L"1" : L"0", iniFilePath);
     ::WritePrivateProfileString(sectionName, L"useAnnotations", xmltoolsoptions.useAnnotations ? L"1" : L"0", iniFilePath);
     ::WritePrivateProfileString(sectionName, L"annotationStyle", std::to_wstring(static_cast<int>(xmltoolsoptions.annotationStyle)).c_str(), iniFilePath);
     ::WritePrivateProfileString(sectionName, L"convertAmp", xmltoolsoptions.convertAmp ? L"1" : L"0", iniFilePath);
@@ -802,6 +824,24 @@ void optionsDlg() {
     ::WritePrivateProfileString(sectionName, L"convertQuote", xmltoolsoptions.convertQuote ? L"1" : L"0", iniFilePath);
     ::WritePrivateProfileString(sectionName, L"convertApos", xmltoolsoptions.convertApos ? L"1" : L"0", iniFilePath);
     ::WritePrivateProfileString(sectionName, L"ppAutoclose", xmltoolsoptions.ppAutoclose ? L"1" : L"0", iniFilePath);
+
+    ::WritePrivateProfileString(sectionName, L"allowDocumentFunction", xmltoolsoptions.allowDocumentFunction ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"allowXsltScript", xmltoolsoptions.allowXsltScript ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"forceResync", xmltoolsoptions.forceResync ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"maxElementDepth", std::to_wstring(static_cast<int>(xmltoolsoptions.maxElementDepth)).c_str(), iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"maxXMLSize", std::to_wstring(static_cast<int>(xmltoolsoptions.maxXMLSize)).c_str(), iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"multipleErrorMessages", xmltoolsoptions.multipleErrorMessages ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"newParser", xmltoolsoptions.newParser ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"normalizeAttributeValues", xmltoolsoptions.normalizeAttributeValues ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"populateElementDefaultValues", xmltoolsoptions.populateElementDefaultValues ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"prohibitDTD", xmltoolsoptions.prohibitDTD ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"resolveExternals", xmltoolsoptions.resolveExternals ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"selectionLanguage", xmltoolsoptions.selectionLanguage.c_str(), iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"selectionNamespaceLength", std::to_wstring(static_cast<int>(xmltoolsoptions.selectionNamespace.length())).c_str(), iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"selectionNamespace", xmltoolsoptions.selectionNamespace.c_str(), iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"serverHTTPRequest", xmltoolsoptions.serverHTTPRequest ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"useInlineSchema", xmltoolsoptions.useInlineSchema ? L"1" : L"0", iniFilePath);
+    ::WritePrivateProfileString(sectionName, L"validateOnParse", xmltoolsoptions.validateOnParse ? L"1" : L"0", iniFilePath);
 
     updateProxyConfig();
   }

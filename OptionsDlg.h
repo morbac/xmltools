@@ -4,8 +4,15 @@
 
 // Boîte de dialogue COptionsDlg
 
-class COptionsDlg : public CDialogEx
-{
+typedef enum {
+  TYPE_BOOL,
+  TYPE_INT,
+  TYPE_LONG,
+  TYPE_STRING,
+  TYPE_WSTRING
+} enumOptionType;
+
+class COptionsDlg : public CDialogEx {
   DECLARE_DYNAMIC(COptionsDlg)
 
 public:
@@ -21,19 +28,15 @@ protected:
   std::vector<CMFCPropertyGridProperty*> vIntProperties;
   std::vector<CMFCPropertyGridProperty*> vBoolProperties;
   std::vector<CMFCPropertyGridProperty*> vStringProperties;
+  CMFCPropertyGridProperty* pAnnotationStyleProperty;
 
-
-  CMFCPropertyGridProperty* pDispAnnotations;
-  CMFCPropertyGridProperty* pTypeAnnotations;
-  bool test;
   virtual void DoDataExchange(CDataExchange* pDX);    // Prise en charge de DDX/DDV
 
-  void updateEditFieldsStatus();
+  void UpdateProperty(CMFCPropertyGridProperty* src, enumOptionType type);
 
   DECLARE_MESSAGE_MAP()
 public:
   virtual BOOL OnInitDialog();
-  afx_msg void OnBnClickedChkenableproxy();
   afx_msg void OnBnClickedOk();
 
   /*
@@ -42,11 +45,7 @@ public:
   CEdit editProxyUsername;
   CEdit editProxyPassword;
   */
-  CEdit editAnnotationStyle;
-  afx_msg void OnBnClickedChkannotations();
   afx_msg void OnBnClickedBtnviewannotation();
   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-  CListBox m_listXmlFeatures;
   CMyPropertyGridCtrl m_wndPropList;
-  afx_msg void OnStnClickedProperties();
 };

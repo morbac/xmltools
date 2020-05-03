@@ -36,10 +36,10 @@ struct struct_proxyoptions {
 struct struct_xmltoolsoptions {       // default value
   // msxml features
   bool allowDocumentFunction;         // True in 3.0. False in 6.0.
-  bool AllowXsltScript;               // True in 3.0. False in 6.0.
+  bool allowXsltScript;               // True in 3.0. False in 6.0.
   bool forceResync;                   // True
-  bool maxElementDepth;               // 0 in 3.0. 256 in 6.0.
-  bool maxXMLSize;                    // 0
+  int maxElementDepth;                // 0 in 3.0. 256 in 6.0.
+  int maxXMLSize;                     // 0
   bool multipleErrorMessages;         // False
   bool newParser;                     // False
   bool normalizeAttributeValues;      // False
@@ -54,7 +54,7 @@ struct struct_xmltoolsoptions {       // default value
 
   // xmltools options
   bool useAnnotations;                // False
-  int annotationStyle;                // 34
+  int annotationStyle;                // 12
   bool convertAmp;
   bool convertLt;
   bool convertGt;
