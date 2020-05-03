@@ -35,22 +35,22 @@ struct struct_proxyoptions {
 
 struct struct_xmltoolsoptions {       // default value
   // msxml features
-  bool allowDocumentFunction;         // True in 3.0. False in 6.0.
-  bool allowXsltScript;               // True in 3.0. False in 6.0.
-  bool forceResync;                   // True
+  short allowDocumentFunction;         // True in 3.0. False in 6.0.
+  short allowXsltScript;               // True in 3.0. False in 6.0.
+  short forceResync;                   // True
   int maxElementDepth;                // 0 in 3.0. 256 in 6.0.
   int maxXMLSize;                     // 0
-  bool multipleErrorMessages;         // False
-  bool newParser;                     // False
-  bool normalizeAttributeValues;      // False
-  bool populateElementDefaultValues;  // False
-  bool prohibitDTD;                   // True in 3.0. False in 6.0.
-  bool resolveExternals;              // False
+  short multipleErrorMessages;         // False
+  short newParser;                     // False
+  short normalizeAttributeValues;      // False
+  short populateElementDefaultValues;  // False
+  short prohibitDTD;                   // True in 3.0. False in 6.0.
+  short resolveExternals;              // False
   std::wstring selectionLanguage;     // "XSLPattern" in 3.0. "XPath" in 6.0
   std::wstring selectionNamespace;    // ""
-  bool serverHTTPRequest;             // False
-  bool useInlineSchema;               // False
-  bool validateOnParse;               // True
+  short serverHTTPRequest;             // False
+  short useInlineSchema;               // False
+  short validateOnParse;               // True
 
   // xmltools options
   bool useAnnotations;                // False

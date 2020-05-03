@@ -6,6 +6,7 @@
 
 typedef enum {
   TYPE_BOOL,
+  TYPE_TRISTATE,
   TYPE_INT,
   TYPE_LONG,
   TYPE_STRING,
@@ -27,6 +28,7 @@ protected:
 
   std::vector<CMFCPropertyGridProperty*> vIntProperties;
   std::vector<CMFCPropertyGridProperty*> vBoolProperties;
+  std::vector<CMFCPropertyGridProperty*> vTristateProperties;
   std::vector<CMFCPropertyGridProperty*> vStringProperties;
   CMFCPropertyGridProperty* pAnnotationStyleProperty;
 
