@@ -1264,75 +1264,75 @@ void XMLValidation(int informIfNoError) {
 
   CHK_HR(pXMLDom->load(varXML, &varStatus));
   if (varStatus == VARIANT_TRUE) {
-    if (pXMLDom->validate((IXMLDOMParseError**) &pXMLErr2) == S_FALSE) {
-      displayXMLErrors(pXMLErr2, hCurrentEditView, L"XML Validation error");
-    }
-    else {
-      // search for xsi:noNamespaceSchemaLocation or xsi:schemaLocation
-      CHK_HR(pXMLDom->setProperty(L"SelectionNamespaces", _variant_t("xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'")));
-      hr = pXMLDom->selectNodes(L"/*/@xsi:noNamespaceSchemaLocation", &pNodes);
-      CHK_HR(pNodes->get_length(&length));
-      SAFE_RELEASE(pNodes);
-      bool nnsl = (length > 0);
-      hr = pXMLDom->selectNodes(L"/*/@xsi:schemaLocation", &pNodes);
-      CHK_HR(pNodes->get_length(&length));
-      bool sl = (length > 0);
+    // search for xsi:noNamespaceSchemaLocation or xsi:schemaLocation
+    CHK_HR(pXMLDom->setProperty(L"SelectionNamespaces", _variant_t("xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'")));
+    hr = pXMLDom->selectNodes(L"/*/@xsi:noNamespaceSchemaLocation", &pNodes);
+    CHK_HR(pNodes->get_length(&length));
+    SAFE_RELEASE(pNodes);
+    bool nnsl = (length > 0);
+    hr = pXMLDom->selectNodes(L"/*/@xsi:schemaLocation", &pNodes);
+    CHK_HR(pNodes->get_length(&length));
+    bool sl = (length > 0);
 
-      if (nnsl || sl) {
-        // if noNamespaceSchemaLocation or schemaLocation attribute is present,
-        // validation is supposed OK since xml is loaded with INIT_OPTION_VALIDATEONPARSE
-        // option
-        Report::_printf_inf(L"No error detected.");
+    if (nnsl || sl) {
+      // if noNamespaceSchemaLocation or schemaLocation attribute is present,
+      // validation is supposed OK since xml is loaded with INIT_OPTION_VALIDATEONPARSE
+      // option
+      if (pXMLDom->validate((IXMLDOMParseError**)&pXMLErr2) == S_FALSE) {
+        displayXMLErrors(pXMLErr2, hCurrentEditView, L"XML Validation error");
       }
       else {
-        // if noNamespaceSchemaLocation or schemaLocation attributes are not present,
-        // we must prompt for XSD to user and create a schema cache
-        if (pSelectFileDlg == NULL) {
-          pSelectFileDlg = new CSelectFileDlg();
-        }
-        //pSelectFileDlg->m_sSelectedFilename = lastXMLSchema.c_str();
+        Report::_printf_inf(L"No error detected.");
+      }
+    }
+    else {
+      // if noNamespaceSchemaLocation or schemaLocation attributes are not present,
+      // we must prompt for XSD to user and create a schema cache
+      if (pSelectFileDlg == NULL) {
+        pSelectFileDlg = new CSelectFileDlg();
+      }
+      //pSelectFileDlg->m_sSelectedFilename = lastXMLSchema.c_str();
 
-        CStringW rootSample = "<";
-        CHK_HR(pXMLDom->get_documentElement(&pElement));
-        CHK_HR(pElement->get_nodeName(&bstrNodeName));
-        rootSample += bstrNodeName;
-        rootSample += "\r\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
-        rootSample += "\r\n    xsi:noNamespaceSchemaLocation=\"XSD_FILE_PATH\">";
+      CStringW rootSample = "<";
+      CHK_HR(pXMLDom->get_documentElement(&pElement));
+      CHK_HR(pElement->get_nodeName(&bstrNodeName));
+      rootSample += bstrNodeName;
+      rootSample += "\r\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
+      rootSample += "\r\n    xsi:noNamespaceSchemaLocation=\"XSD_FILE_PATH\">";
 
-        pSelectFileDlg->m_sRootElementSample = rootSample;
-        if (pSelectFileDlg->DoModal() == IDOK) {
-          //lastXMLSchema = pSelectFileDlg->m_sSelectedFilename;
+      pSelectFileDlg->m_sRootElementSample = rootSample;
+      if (pSelectFileDlg->DoModal() == IDOK) {
+        //lastXMLSchema = pSelectFileDlg->m_sSelectedFilename;
 
-          // Create a schema cache and add schema to it (currently with no namespace)
-          CHK_HR(CreateAndInitSchema(&pXS));
-          hr = pXS->add(_bstr_t(pSelectFileDlg->m_sValidationNamespace), CComVariant(pSelectFileDlg->m_sSelectedFilename));
-          if (SUCCEEDED(hr)) {
-            // Create a DOMDocument and set its properties.
-            CHK_HR(CreateAndInitDOM(&pXD, (INIT_OPTION_VALIDATEONPARSE | INIT_OPTION_RESOLVEEXTERNALS)));
-            CHK_HR(pXD->putref_schemas(CComVariant(pXS)));
+        // Create a schema cache and add schema to it (currently with no namespace)
+        CHK_HR(CreateAndInitSchema(&pXS));
+        hr = pXS->add(_bstr_t(pSelectFileDlg->m_sValidationNamespace), CComVariant(pSelectFileDlg->m_sSelectedFilename));
+        if (SUCCEEDED(hr)) {
+          // Create a DOMDocument and set its properties.
+          CHK_HR(CreateAndInitDOM(&pXD, (INIT_OPTION_VALIDATEONPARSE | INIT_OPTION_RESOLVEEXTERNALS)));
+          CHK_HR(pXD->putref_schemas(CComVariant(pXS)));
 
-            /*
-            pXD->put_async(VARIANT_FALSE);
-            pXD->put_validateOnParse(VARIANT_TRUE);
-            pXD->put_resolveExternals(VARIANT_TRUE);
-            */
+          /*
+          pXD->put_async(VARIANT_FALSE);
+          pXD->put_validateOnParse(VARIANT_TRUE);
+          pXD->put_resolveExternals(VARIANT_TRUE);
+          */
 
-            CHK_HR(pXD->load(varXML, &varStatus));
-            if (varStatus == VARIANT_TRUE) {
-              Report::_printf_inf(L"No error detected.");
-            }
-            else {
-              CHK_HR(pXD->get_parseError(&pXMLErr));
-              displayXMLErrors(pXMLErr, hCurrentEditView, L"XML Validation error");
-            }
+          CHK_HR(pXD->load(varXML, &varStatus));
+          if (varStatus == VARIANT_TRUE) {
+            Report::_printf_inf(L"No error detected.");
           }
           else {
-            Report::_printf_err(L"Invalid schema or missing namespace.");
+            CHK_HR(pXD->get_parseError(&pXMLErr));
+            displayXMLErrors(pXMLErr, hCurrentEditView, L"XML Validation error");
           }
         }
         else {
-          goto CleanUp;
+          Report::_printf_err(L"Invalid schema or missing namespace.");
         }
+      }
+      else {
+        goto CleanUp;
       }
     }
   } else {
