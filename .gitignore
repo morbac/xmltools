@@ -1,0 +1,11 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/XMLTools/v16
+/Debug
+/Win32/Debug
+/Release
+/Win32/Release
+/x64/Release
+/x64/Debug
