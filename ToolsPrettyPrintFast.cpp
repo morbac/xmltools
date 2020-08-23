@@ -15,6 +15,7 @@ struct PrettyPrintParms
     std::string eol;
     std::string tab;
 
+    int maxElementDepth = 255;
     bool insertIndents = false;
     bool insertNewLines = false;
     bool removeWhitespace = false;
@@ -35,7 +36,7 @@ std::stringstream *prettyPrintXml(const char* text, long textLength, PrettyPrint
 
     #define tryCloseTag { if (tagIsOpen) { outText->write(">",1); tagIsOpen = false;} }
     // maxElementDepth to protect against unclosed tags in large files
-    #define indent { tryCloseTag; if (parms.insertNewLines) {if (!indented && parms.insertIndents) for (int i = 0; i < xmllevel && i < xmltoolsoptions.maxElementDepth; i++) outText->write(parms.tab.c_str(), parms.tab.length()); indented = true;}}
+    #define indent { tryCloseTag; if (parms.insertNewLines) {if (!indented && parms.insertIndents) for (int i = 0; i < xmllevel && i < maxElementDepth; i++) outText->write(parms.tab.c_str(), parms.tab.length()); indented = true;}}
     #define newline { if (parms.insertNewLines) { outText->write(parms.eol.c_str(), parms.eol.length()); indented = false;}}
 
     while (curpos < endpos)
@@ -258,6 +259,8 @@ void sciDocPrettyPrintXML(ScintillaDoc& doc) {
     parms.insertIndents = true;
     parms.insertNewLines = true;
     parms.removeWhitespace = true;
+    if (xmltoolsoptions.maxElementDepth > 0)
+        parms.maxElementDepth = xmltoolsoptions.maxElementDepth;
 
     auto docclock_start = clock();
     std::stringstream* prettyTextStream = prettyPrintXml(inText.text, inText.length, parms);

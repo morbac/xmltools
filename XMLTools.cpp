@@ -8,14 +8,11 @@
 #include "nppHelpers.h"
 
 // dialogs
-#include "InputDlg.h"
-#include "XPathEvalDlg.h"
-#include "SelectFileDlg.h"
 #include "MessageDlg.h"
 #include "XSLTransformDlg.h"
 #include "HowtoUseDlg.h"
 #include "OptionsDlg.h"
-//#include "DebugDlg.h"
+
 #include "AboutBoxDlg.h"
 #include "Report.h"
 
