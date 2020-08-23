@@ -73,19 +73,19 @@ void nppDocumentCommand(char* debugname, void (*action)(ScintillaDoc&)) {
         action(doc);
         auto docclock_end = clock();
 
-        dbg(filename);
-        dbg(" => time taken: ");
-        dbg(std::to_string(docclock_end - docclock_start).c_str());
-        dbgln(" ms");
+        {
+            std::wstring txt;
+            txt = txt + filename + L" => time taken: " + std::to_wstring(docclock_end - docclock_start) + L" ms";
+            dbgln(txt.c_str(),DBG_LEVEL::DBG_INFO);
+        }
 
         // Put scroll at the left of the view
         doc.SetXOffset(0);
     }
 
     auto clock_end = clock();
-    dbg("- nppDocumentCommand(\"");
-    dbg(debugname);
-    dbg("\") => time taken: ");
-    dbg(std::to_string(clock_end - clock_start).c_str());
-    dbgln(" ms");
+    
+    std::string txt;
+    txt = txt + "- nppDocumentCommand(\"" + debugname + "\") => time taken: " + std::to_string(clock_end - clock_start) + " ms";
+    dbgln(txt.c_str());
 }

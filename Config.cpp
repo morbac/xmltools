@@ -77,6 +77,7 @@ void XmlToolsConfig::Read(std::wstring _configPath) {
 	ReadInt(L"serverHTTPRequest", xmltoolsoptions.serverHTTPRequest);
 	ReadInt(L"useInlineSchema", xmltoolsoptions.useInlineSchema);
 	ReadInt(L"validateOnParse", xmltoolsoptions.validateOnParse);
+	WriteInt(L"dbgLevel", (int)config.dbgLevel);
 }
 
 void XmlToolsConfig::Write() {
@@ -122,4 +123,6 @@ void XmlToolsConfig::Write() {
 	WriteInt(L"serverHTTPRequest", xmltoolsoptions.serverHTTPRequest);
 	WriteInt(L"useInlineSchema", xmltoolsoptions.useInlineSchema);
 	WriteInt(L"validateOnParse", xmltoolsoptions.validateOnParse);
+
+	WriteInt(L"dbgLevel", (int)config.dbgLevel);
 }

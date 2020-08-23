@@ -36,7 +36,7 @@ std::stringstream *prettyPrintXml(const char* text, long textLength, PrettyPrint
 
     #define tryCloseTag { if (tagIsOpen) { outText->write(">",1); tagIsOpen = false;} }
     // maxElementDepth to protect against unclosed tags in large files
-    #define indent { tryCloseTag; if (parms.insertNewLines) {if (!indented && parms.insertIndents) for (int i = 0; i < xmllevel && i < maxElementDepth; i++) outText->write(parms.tab.c_str(), parms.tab.length()); indented = true;}}
+    #define indent { tryCloseTag; if (parms.insertNewLines) {if (!indented && parms.insertIndents) for (int i = 0; i < xmllevel && i < parms.maxElementDepth; i++) outText->write(parms.tab.c_str(), parms.tab.length()); indented = true;}}
     #define newline { if (parms.insertNewLines) { outText->write(parms.eol.c_str(), parms.eol.length()); indented = false;}}
 
     while (curpos < endpos)
@@ -236,7 +236,7 @@ std::stringstream *prettyPrintXml(const char* text, long textLength, PrettyPrint
 
         // inifinite loop protection
         if (curpos == lastpos) {
-            dbgln("PRETTYPRINT: INIFINITE LOOP DETECTED");
+            dbgln("PRETTYPRINT: INIFINITE LOOP DETECTED", DBG_LEVEL::DBG_ERROR);
 
             outText->write(curpos, endpos - curpos);
             break;
@@ -267,10 +267,11 @@ void sciDocPrettyPrintXML(ScintillaDoc& doc) {
     delete inText.text;
     auto docclock_end = clock();
 
-    dbg("crunching");
-    dbg(" => time taken: ");
-    dbg(std::to_string(docclock_end - docclock_start).c_str());
-    dbgln(" ms");
+    {
+        std::string txt;
+        txt += "crunching => time taken: " + std::to_string(docclock_end - docclock_start) + " ms";
+        dbgln(txt.c_str());
+    }
 
     // Send formatted string to scintilla
     const std::string& outText = prettyTextStream->str();
@@ -292,13 +293,14 @@ void sciDocLinearizeXML(ScintillaDoc& doc) {
 
     auto docclock_start = clock();
     std::stringstream* prettyTextStream = prettyPrintXml(inText.text, inText.length, parms);
-    delete [] inText.text;
+    delete[] inText.text;
     auto docclock_end = clock();
 
-    dbg("crunching");
-    dbg(" => time taken: ");
-    dbg(std::to_string(docclock_end - docclock_start).c_str());
-    dbgln(" ms");
+    {
+        std::string txt;
+        txt += "crunching => time taken: " + std::to_string(docclock_end - docclock_start) + " ms";
+        dbgln(txt.c_str());
+    }
 
     // Send formatted string to scintilla
     const std::string& outText = prettyTextStream->str();

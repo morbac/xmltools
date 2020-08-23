@@ -148,7 +148,7 @@ void initMenu() {
         funcItem[i]._init2Check = false;
     }
 
-    dbg("Building plugin menu entries... ");
+    dbgln("Building plugin menu entries... ", DBG_LEVEL::DBG_INFO);
 
     wcscpy(funcItem[menuentry]._itemName, L"Enable XML syntax auto-check");
     funcItem[menuentry]._pFunc = insertXMLCheckTag;
@@ -313,6 +313,8 @@ void initMenu() {
     ++menuentry;
 
     assert(menuentry == nbFunc);
+
+    dbgln("done.", DBG_LEVEL::DBG_INFO);
 }
 
 void destroyMenu() {

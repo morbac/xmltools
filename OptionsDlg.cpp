@@ -106,6 +106,9 @@ BOOL COptionsDlg::OnInitDialog() {
   CMFCPropertyGridProperty* pGrpOptions = new CMFCPropertyGridProperty(L"Options");
   m_wndPropList.AddProperty(pGrpOptions);
 
+  pTmpOption = new CMFCPropertyGridProperty(L"Debug level", COleVariant((long)config.dbgLevel, VT_INT), L"0 = TRACE, 1 = INFO, 2 = WARNINGS, 3 = ERRORS", (DWORD_PTR)&config.dbgLevel);
+  pGrpOptions->AddSubItem(pTmpOption); vIntProperties.push_back(pTmpOption);
+
   pTmpOption = new CMFCPropertyGridProperty(L"Display errors as annotations", COleVariant((short) (xmltoolsoptions.useAnnotations ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"When enabled, errors are displayed as annotation directly in the XML document. When disabled, errors are displayed in dialogs.", (DWORD_PTR) &xmltoolsoptions.useAnnotations);
   pGrpOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
   

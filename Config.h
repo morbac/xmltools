@@ -1,3 +1,4 @@
+#pragma once
 #include <string>
 
 struct struct_proxyoptions {
@@ -38,6 +39,13 @@ struct struct_xmltoolsoptions {       // default value
 	bool ppAutoclose = true;
 };
 
+enum class DBG_LEVEL:int {
+	DBG_TRACE = 0,
+	DBG_INFO = 1,
+	DBG_WARNING = 2,
+	DBG_ERROR = 3
+};
+
 extern struct struct_proxyoptions proxyoptions;
 extern struct struct_xmltoolsoptions xmltoolsoptions;
 
@@ -58,6 +66,8 @@ public:
 		doPreventXXE = true,
 		doAllowHuge = false,
 		doPrettyPrintAllOpenFiles = false;
+
+	DBG_LEVEL dbgLevel = DBG_LEVEL::DBG_INFO;
 
 	XmlToolsConfig(std::wstring path) {
 		configPath = path + L"\\" + configFileName;

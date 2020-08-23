@@ -1,27 +1,27 @@
 #include "StdAfx.h"
 #include "DebugDlg.h"
-
+#include "Config.h"
 
 CDebugDlg* debugdlg = new CDebugDlg();
 
 void createDebugDlg() {
     debugdlg->Create(CDebugDlg::IDD, NULL);
+    if (debugdlg->s_valDebug.GetLength() > 0)
+        debugdlg->addLine("Debug dialog created\r\n");
 }
 
 void showDebugDlg() {
     debugdlg->ShowWindow(SW_SHOW);
 }
 
-void dbg(CStringW line) {
-    //#ifdef DEBUG
-    debugdlg->addLine(line);
-    //#endif
+void dbg(CStringW line, DBG_LEVEL level = DBG_LEVEL::DBG_TRACE) {
+    if (level >= config.dbgLevel)
+        debugdlg->addLine(line);
 }
 
-void dbgln(CStringW line) {
-    //#ifdef DEBUG
-    debugdlg->addLine(line + "\r\n");
-    //#endif
+void dbgln(CStringW line, DBG_LEVEL level = DBG_LEVEL::DBG_TRACE) {
+    if (level >= config.dbgLevel)
+        debugdlg->addLine(line + "\r\n");
 }
 
 /*

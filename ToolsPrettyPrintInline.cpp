@@ -194,7 +194,7 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
         // inifinite loop protection
         strlen = str.length();
         if (curpos == lastpos && lastlen == strlen) {
-            dbgln("TRIM: INIFINITE LOOP DETECTED");
+            dbgln("TRIM: INFINITE LOOP DETECTED", DBG_LEVEL::DBG_ERROR);
             break;
         }
         lastpos = curpos;
@@ -342,7 +342,7 @@ void prettyPrint(ScintillaDoc& doc, bool autoindenttext, bool addlinebreaks, boo
         // inifinite loop protection
         strlen = str.length();
         if (curpos == lastpos && lastlen == strlen) {
-            dbgln("PRETTYPRINT: INIFINITE LOOP DETECTED");
+            dbgln("PRETTYPRINT: INFINITE LOOP DETECTED", DBG_LEVEL::DBG_ERROR);
             break;
         }
         lastpos = curpos;
@@ -352,10 +352,9 @@ void prettyPrint(ScintillaDoc& doc, bool autoindenttext, bool addlinebreaks, boo
     // done 
     auto docclock_end = clock();
 
-    dbg("crunching");
-    dbg(" => time taken: ");
-    dbg(std::to_string(docclock_end - docclock_start).c_str());
-    dbgln(" ms");
+    std::string txt;
+    txt += "crunching => time taken: " + std::to_string(docclock_end - docclock_start) + " ms";
+    dbgln(txt.c_str());
 
     doc.SetWorkText(str.c_str());
     str.clear();
@@ -425,10 +424,9 @@ void sciDocLinearizeXMLInline(ScintillaDoc& doc) {
     // done 
     auto docclock_end = clock();
 
-    dbg("crunching");
-    dbg(" => time taken: ");
-    dbg(std::to_string(docclock_end - docclock_start).c_str());
-    dbgln(" ms");
+    std::string txt;
+    txt += "crunching => time taken: " + std::to_string(docclock_end - docclock_start) + " ms";
+    dbgln(txt.c_str());
 
     // Send formatted string to scintilla
     doc.SetWorkText(str.c_str());

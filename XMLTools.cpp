@@ -121,22 +121,19 @@ void initializePlugin() {
   ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)pluginConfigPath);
   dbgln(pluginConfigPath);
 
-  dbgln ("Reading configuration... ");
+  dbgln ("Reading configuration... ", DBG_LEVEL::DBG_INFO);
   config.Read(pluginConfigPath);
 
   initMenu();
 
   auto result = CoInitialize(NULL);
   if (result != S_OK && result != S_FALSE && result != RPC_E_CHANGED_MODE) {
-      dbgln("CoInitialize failed");
+      dbgln("CoInitialize failed", DBG_LEVEL::DBG_ERROR);
   }
-
-  dbgln("done.");
 
   updateProxyConfig();
 
-  dbgln("Initialization finished.");
-  dbgln("");
+  dbgln("Initialization finished.", DBG_LEVEL::DBG_INFO);
 }
 
 void savePluginParams() {
