@@ -350,28 +350,6 @@ void howtoUse() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/*
-void attributeAutoComplete() {
-  dbgln(L"attributeAutoComplete()");
-
-  Report::_printf_inf(L"attributeAutoComplete()");
-}
-*/
-///////////////////////////////////////////////////////////////////////////////
-
-CXSLTransformDlg *pXSLTransformDlg = NULL;
-void performXSLTransform() {
-  dbgln("performXSLTransform()");
-
-  if (pXSLTransformDlg == NULL) {
-    pXSLTransformDlg = new CXSLTransformDlg(NULL, NULL);
-    pXSLTransformDlg->Create(CXSLTransformDlg::IDD,NULL);
-  }
-  pXSLTransformDlg->ShowWindow(SW_SHOW);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 
 // The one and only CXMLToolsApp object
 

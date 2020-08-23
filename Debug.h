@@ -1,6 +1,12 @@
+#pragma once
 #include "StdAfx.h"
 
-#include "Config.h"
+enum class DBG_LEVEL :int {
+	DBG_TRACE = 0,
+	DBG_INFO = 1,
+	DBG_WARNING = 2,
+	DBG_ERROR = 3
+};
 
 void createDebugDlg();
 void showDebugDlg();

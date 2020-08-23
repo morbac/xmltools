@@ -8,6 +8,7 @@
 //
 
 #include "PluginInterface.h"
+#include "resource.h"
 
 #include <string.h>
 

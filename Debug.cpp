@@ -14,12 +14,12 @@ void showDebugDlg() {
     debugdlg->ShowWindow(SW_SHOW);
 }
 
-void dbg(CStringW line, DBG_LEVEL level = DBG_LEVEL::DBG_TRACE) {
+void dbg(CStringW line, DBG_LEVEL level) {
     if (level >= config.dbgLevel)
         debugdlg->addLine(line);
 }
 
-void dbgln(CStringW line, DBG_LEVEL level = DBG_LEVEL::DBG_TRACE) {
+void dbgln(CStringW line, DBG_LEVEL level) {
     if (level >= config.dbgLevel)
         debugdlg->addLine(line + "\r\n");
 }

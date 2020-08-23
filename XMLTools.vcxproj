@@ -342,6 +342,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="ToolsXLSTransform.cpp" />
     <ClCompile Include="ToolsXmlValidate.cpp" />
     <ClCompile Include="ToolsXPath.cpp" />
     <ClCompile Include="XMLTools.cpp" />

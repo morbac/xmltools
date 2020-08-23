@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 
+#include "Debug.h"
+
 struct struct_proxyoptions {
 	bool status;
 	std::wstring host = L"192.168.0.1";
@@ -37,13 +39,6 @@ struct struct_xmltoolsoptions {       // default value
 	bool convertQuote = true;
 	bool convertApos = true;
 	bool ppAutoclose = true;
-};
-
-enum class DBG_LEVEL:int {
-	DBG_TRACE = 0,
-	DBG_INFO = 1,
-	DBG_WARNING = 2,
-	DBG_ERROR = 3
 };
 
 extern struct struct_proxyoptions proxyoptions;
