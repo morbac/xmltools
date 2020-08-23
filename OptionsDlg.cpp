@@ -64,7 +64,10 @@ void COptionsDlg::UpdateProperty(CMFCPropertyGridProperty* src, enumOptionType t
       break;
     }
     case TYPE_WSTRING: {
-      (*((std::wstring*) obj)) = val.bstrVal;
+        if (obj == 0)
+            obj = obj;
+        else
+          *((std::wstring*) obj) = val.bstrVal;
       break;
     }
     case TYPE_WCHAR255: {
@@ -72,7 +75,7 @@ void COptionsDlg::UpdateProperty(CMFCPropertyGridProperty* src, enumOptionType t
       if (len > 255) len = 255;
       memset((wchar_t*) obj, '\0', 255 * sizeof(wchar_t));
       if (len > 0) {
-        wcscpy_s((wchar_t*) obj, len * sizeof(wchar_t), (wchar_t*) bstr_t(val.bstrVal));
+        wcscpy_s((wchar_t*) obj, len, (wchar_t*) bstr_t(val.bstrVal));
       }
       break;
     }
@@ -186,14 +189,14 @@ BOOL COptionsDlg::OnInitDialog() {
 
   pTmpOption = new CMFCPropertyGridProperty(L"Enabled", COleVariant((short)(proxyoptions.status ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Activate proxy", (DWORD_PTR)&proxyoptions.status);
   pGrpProxyOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption); pTmpOption->Enable(0);
-  pTmpOption = new CMFCPropertyGridProperty(L"Proxy host", proxyoptions.host, 0, (DWORD_PTR)&proxyoptions.host);
-  pGrpProxyOptions->AddSubItem(pTmpOption); vWChar255Properties.push_back(pTmpOption); pTmpOption->Enable(0);
+  pTmpOption = new CMFCPropertyGridProperty(L"Proxy host", proxyoptions.host.c_str(), 0, (DWORD_PTR)&proxyoptions.host);
+  pGrpProxyOptions->AddSubItem(pTmpOption); vWStringProperties.push_back(pTmpOption); pTmpOption->Enable(0);
   pTmpOption = new CMFCPropertyGridProperty(L"Proxy port", COleVariant((long)proxyoptions.port, VT_INT), 0, (DWORD_PTR)&proxyoptions.port);
   pGrpProxyOptions->AddSubItem(pTmpOption); vLongProperties.push_back(pTmpOption); pTmpOption->Enable(0);
-  pTmpOption = new CMFCPropertyGridProperty(L"Username", proxyoptions.username, 0, (DWORD_PTR)&proxyoptions.username);
-  pGrpProxyOptions->AddSubItem(pTmpOption); vWChar255Properties.push_back(pTmpOption); pTmpOption->Enable(0);
-  pTmpOption = new CMFCPropertyGridProperty(L"Password", proxyoptions.password, 0, (DWORD_PTR)&proxyoptions.password);
-  pGrpProxyOptions->AddSubItem(pTmpOption); vWChar255Properties.push_back(pTmpOption); pTmpOption->Enable(0);
+  pTmpOption = new CMFCPropertyGridProperty(L"Username", proxyoptions.username.c_str(), 0, (DWORD_PTR)&proxyoptions.username);
+  pGrpProxyOptions->AddSubItem(pTmpOption); vWStringProperties.push_back(pTmpOption); pTmpOption->Enable(0);
+  pTmpOption = new CMFCPropertyGridProperty(L"Password", proxyoptions.password.c_str(), 0, (DWORD_PTR)&proxyoptions.password);
+  pGrpProxyOptions->AddSubItem(pTmpOption); vWStringProperties.push_back(pTmpOption); pTmpOption->Enable(0);
 
   return TRUE;  // return TRUE unless you set the focus to a control
   // EXCEPTION : les pages de propriétés OCX devraient retourner FALSE

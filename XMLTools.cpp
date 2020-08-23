@@ -5,7 +5,6 @@
 #include "StdAfx.h"
 #include "XMLTools.h"
 #include "PluginInterface.h"
-#include "Scintilla.h"
 
 // dialogs
 #include "InputDlg.h"
@@ -20,12 +19,10 @@
 #include "Report.h"
 
 // other
-#include <stack>
 #include <shlwapi.h>
 #include <shlobj.h>
 #include <stdlib.h>
 #include <direct.h>
-#include <sstream>
 #include <assert.h>
 #include <locale>
 #include <algorithm>
@@ -69,128 +66,35 @@ static char THIS_FILE[] = __FILE__;
 
 // This is the name which will be displayed in Plugins Menu
 const wchar_t PLUGIN_NAME[] = L"XML Tools";
-const wchar_t localConfFile[] = L"doLocalConf.xml";
-
-// The number of functionality
-#ifdef _DEBUG
-  const int TOTAL_FUNCS = 32;
-#else
-  const int TOTAL_FUNCS = 31;
-#endif
-int nbFunc = TOTAL_FUNCS;
+//const wchar_t localConfFile[] = L"doLocalConf.xml";
 
 NppData nppData;
 CDebugDlg* debugdlg = new CDebugDlg();
 HHOOK hook = NULL;
 
-// PATHs
-wchar_t pluginHomePath[MAX_PATH] = { '\0' };
-wchar_t pluginConfigPath[MAX_PATH] = { '\0' };
-wchar_t iniFilePath[MAX_PATH] = { '\0' };
-const wchar_t sectionName[] = L"XML Tools";
-
 // Declaration of functionality (FuncItem) Array
-FuncItem funcItem[TOTAL_FUNCS];
-bool doCheckXML = false,
-     doValidation = false,
-     /*doPrettyPrint = false,*/
-     doCloseTag = false,
-     doAutoIndent = false,
-     doAttrAutoComplete = false,
-     doAutoXMLType = false,
-     doPreventXXE = true,
-     doAllowHuge = false,
-     doPrettyPrintAllOpenFiles = false;
-
-struct struct_proxyoptions proxyoptions;
-struct struct_xmltoolsoptions xmltoolsoptions;
-
-int menuitemCheckXML = -1,
-    menuitemValidation = -1,
-    /*menuitemPrettyPrint = -1,*/
-    menuitemCloseTag = -1,
-    menuitemAutoIndent = -1,
-    menuitemAttrAutoComplete = -1,
-    menuitemAutoXMLType = -1,
-    menuitemPreventXXE = -1,
-    menuitemAllowHuge = -1,
-    menuitemPrettyPrintAllFiles = -1;
-
 std::wstring lastXMLSchema(L"");
 
-int nbopenfiles1, nbopenfiles2;
 std::map<LRESULT,bool> hasAnnotations;
 
 // Here're the declaration my functions ///////////////////////////////////////
+void initMenu();
+void destroyMenu();
+
 bool hasCurrentDocAnnotations();
-
-void insertXMLCheckTag();
 void autoXMLCheck();
-void manualXMLCheck();
-
-void insertValidationTag();
 void autoValidation();
-void manualValidation();
-
-void insertXMLCloseTag();
 void closeXMLTag();
-
-void insertTagAutoIndent();
-void tagAutoIndent();
-
-void insertAttributeAutoComplete();
-void attributeAutoComplete();
-
 bool setAutoXMLType();
-void insertAutoXMLType();
-
-void togglePreventXXE();
-void toggleAllowHuge();
-
-void prettyPrintXML();
-void prettyPrintAttributes();
-//void insertPrettyPrintTag();
-void linearizeXML();
-void togglePrettyPrintAllFiles();
-int initDocIterator();
-bool hasNextDoc(int* iter);
-
-void getCurrentXPath(bool precise);
-void getCurrentXPathStd();
-void getCurrentXPathPredicate();
-void evaluateXPath();
-
-void performXSLTransform();
-
-void convertXML2Text();
-void convertText2XML();
-
-void commentSelection();
-void uncommentSelection();
-
-void aboutBox();
-void optionsDlg();
 void howtoUse();
 void updateProxyConfig();
-void dbg(CStringW line);
-void dbgln(CStringW line);
-void debugDlg();
 
 int performXMLCheck(int informIfNoError);
 void initializePlugin();
 void savePluginParams();
 
 ///////////////////////////////////////////////////////////////////////////////
-
-void registerShortcut(FuncItem *item, bool enableALT, bool enableCTRL, bool enableSHIFT, unsigned char key) {
-  if (!item) return;
-  item->_pShKey = new ShortcutKey; // no parentheses needed as it's Plain Old Data (POD) otherwise C4345
-  item->_pShKey->_isAlt = enableALT;
-  item->_pShKey->_isCtrl = enableCTRL;
-  item->_pShKey->_isShift = enableSHIFT;
-  item->_pShKey->_key = key;
-}
-
+/*
 // get given language as string (for debug purposes only)
 char* getLangType(LangType lg) {
   if (lg == L_TEXT        ) return "L_TEXT";
@@ -247,7 +151,7 @@ char* getLangType(LangType lg) {
 
   return "";
 }
-
+*/
 /////////////////////////////////////////////////////////////////////////////
 // CXMLToolsApp
 
@@ -268,259 +172,32 @@ CXMLToolsApp::CXMLToolsApp() {
 
 CXMLToolsApp::~CXMLToolsApp() {
   // Don't forget to de-allocate your shortcut here
-  for (int i = 0; i < nbFunc; ++i) {
-    if (funcItem[i]._pShKey) delete funcItem[i]._pShKey;
-  }
+    destroyMenu();
 }
 
 void initializePlugin() {
   dbgln("initializePlugin()");
-
+  /*
   dbg("Get plugin home dir... ");
   ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINHOMEPATH, MAX_PATH, (LPARAM)pluginHomePath);
   PathAppend(pluginHomePath, L"\\XMLTools");
-  //_chdir(Report::narrow(pluginHomePath).data());
   dbgln(pluginHomePath);
-
+  */
   dbg("Get plugin config dir... ");
+  wchar_t pluginConfigPath[MAX_PATH];
   ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)pluginConfigPath);
   dbgln(pluginConfigPath);
 
-  dbg("Locating XMLTools.ini... ");
-  Report::strcpy(iniFilePath, pluginConfigPath);
-  PathAppend(iniFilePath, L"\\XMLTools.ini");
-  dbgln(iniFilePath);
+  dbgln ("Reading configuration... ");
+  config.Read(pluginConfigPath);
 
-  int menuentry = 0;
-  for (int i = 0; i < nbFunc; ++i) {
-    funcItem[i]._init2Check = false;
-  }
-
-  dbg("Building plugin menu entries... ");
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Enable XML syntax auto-check");
-  funcItem[menuentry]._pFunc = insertXMLCheckTag;
-  funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, L"doCheckXML", 1, iniFilePath) != 0);
-  doCheckXML = funcItem[menuentry]._init2Check;
-  menuitemCheckXML = menuentry;
-  ++menuentry;
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Check XML syntax now");
-  funcItem[menuentry]._pFunc = manualXMLCheck;
-  ++menuentry;
-
-  funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Enable auto-validation");
-  funcItem[menuentry]._pFunc = insertValidationTag;
-  funcItem[menuentry]._init2Check = doValidation = (::GetPrivateProfileInt(sectionName, L"doValidation", 0, iniFilePath) != 0);
-  doValidation = funcItem[menuentry]._init2Check;
-  menuitemValidation = menuentry;
-  ++menuentry;
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Validate now");
-  funcItem[menuentry]._pFunc = manualValidation;
-  registerShortcut(funcItem + menuentry, true, true, true, 'M');
-  ++menuentry;
-
-  funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Tag auto-close");
-  funcItem[menuentry]._pFunc = insertXMLCloseTag;
-  funcItem[menuentry]._init2Check = doCloseTag = (::GetPrivateProfileInt(sectionName, L"doCloseTag", 1, iniFilePath) != 0);
-  doCloseTag = funcItem[menuentry]._init2Check;
-  menuitemCloseTag = menuentry;
-  ++menuentry;
-  /*
-  Report::strcpy(funcItem[menuentry]._itemName, L"Tag auto-indent");
-  funcItem[menuentry]._pFunc = insertTagAutoIndent;
-  funcItem[menuentry]._init2Check = doAutoIndent = (::GetPrivateProfileInt(sectionName, L"doAutoIndent", 0, iniFilePath) != 0);
-  doAutoIndent = funcItem[menuentry]._init2Check;
-  menuitemAutoIndent = menuentry;
-  ++menuentry;
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Auto-complete attributes");
-  funcItem[menuentry]._pFunc = insertAttributeAutoComplete;
-  funcItem[menuentry]._init2Check = doAttrAutoComplete = (::GetPrivateProfileInt(sectionName, L"doAttrAutoComplete", 0, iniFilePath) != 0);
-  doAttrAutoComplete = funcItem[menuentry]._init2Check;
-  menuitemAttrAutoComplete = menuentry;
-  ++menuentry;
-  */
-  funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Set XML type automatically");
-  funcItem[menuentry]._pFunc = insertAutoXMLType;
-  funcItem[menuentry]._init2Check = doAutoXMLType = (::GetPrivateProfileInt(sectionName, L"doAutoXMLType", 1, iniFilePath) != 0);
-  doAutoXMLType = funcItem[menuentry]._init2Check;
-  menuitemAutoXMLType = menuentry;
-  ++menuentry;
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Prevent XXE");
-  funcItem[menuentry]._pFunc = togglePreventXXE;
-  funcItem[menuentry]._init2Check = doPreventXXE = (::GetPrivateProfileInt(sectionName, L"doPreventXXE", 1, iniFilePath) != 0);
-  doPreventXXE = funcItem[menuentry]._init2Check;
-  menuitemPreventXXE = menuentry;
-  ++menuentry;
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Allow huge files");
-  funcItem[menuentry]._pFunc = toggleAllowHuge;
-  funcItem[menuentry]._init2Check = doAllowHuge = (::GetPrivateProfileInt(sectionName, L"doAllowHuge", 0, iniFilePath) != 0);
-  doAllowHuge = funcItem[menuentry]._init2Check;
-  menuitemAllowHuge = menuentry;
-  ++menuentry;
-
-  funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print");
-  registerShortcut(funcItem + menuentry, true, true, true, 'B');
-  funcItem[menuentry]._pFunc = prettyPrintXML;
-  ++menuentry;
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (indent attributes)");
-  registerShortcut(funcItem + menuentry, true, true, true, 'A');
-  funcItem[menuentry]._pFunc = prettyPrintAttributes;
-  ++menuentry;
-  /*
-  Report::strcpy(funcItem[menuentry]._itemName, L"Enable auto pretty print (libXML) [experimental]");
-  funcItem[menuentry]._pFunc = insertPrettyPrintTag;
-  funcItem[menuentry]._init2Check = doPrettyPrint = (::GetPrivateProfileInt(sectionName, L"doPrettyPrint", 0, iniFilePath) != 0);
-  doPrettyPrint = funcItem[menuentry]._init2Check;
-  menuitemPrettyPrint = menuentry;
-  ++menuentry;
-  */
-  Report::strcpy(funcItem[menuentry]._itemName, L"Linearize XML");
-  registerShortcut(funcItem + menuentry, true, true, true, 'L');
-  funcItem[menuentry]._pFunc = linearizeXML;
-  ++menuentry;
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Apply to all open files");
-  funcItem[menuentry]._pFunc = togglePrettyPrintAllFiles;
-  funcItem[menuentry]._init2Check = (::GetPrivateProfileInt(sectionName, L"doPrettyPrintAllOpenFiles", 0, iniFilePath) != 0);
-  doPrettyPrintAllOpenFiles = funcItem[menuentry]._init2Check;
-  menuitemPrettyPrintAllFiles = menuentry;
-  ++menuentry;
-
-  funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Current XML Path");
-  registerShortcut(funcItem + menuentry, true, true, true, 'P');
-  funcItem[menuentry]._pFunc = getCurrentXPathStd;
-  ++menuentry;
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Current XML Path with predicates");
-  funcItem[menuentry]._pFunc = getCurrentXPathPredicate;
-  ++menuentry;
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Evaluate XPath expression...");
-  funcItem[menuentry]._pFunc = evaluateXPath;
-  ++menuentry;
-
-  funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"XSL Transformation...");
-  funcItem[menuentry]._pFunc = performXSLTransform;
-  ++menuentry;
-
-  funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Escape characters in selection (<> → &&lt;&&gt;)");
-  funcItem[menuentry]._pFunc = convertXML2Text;
-  ++menuentry;
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Unescape characters in selection (&&lt;&&gt; → <>)");
-  funcItem[menuentry]._pFunc = convertText2XML;
-  ++menuentry;
-
-  funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Comment selection");
-  registerShortcut(funcItem + menuentry, true, true, true, 'C');
-  funcItem[menuentry]._pFunc = commentSelection;
-  ++menuentry;
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Uncomment selection");
-  registerShortcut(funcItem + menuentry, true, true, true, 'R');
-  funcItem[menuentry]._pFunc = uncommentSelection;
-  ++menuentry;
-
-  funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"Options...");
-  funcItem[menuentry]._pFunc = optionsDlg;
-  ++menuentry;
-
-#ifdef _DEBUG
-  Report::strcpy(funcItem[menuentry]._itemName, L"Debug window...");
-  funcItem[menuentry]._pFunc = debugDlg;
-  ++menuentry;
-#endif
-
-  Report::strcpy(funcItem[menuentry]._itemName, L"About XML Tools / Donate...");
-  funcItem[menuentry]._pFunc = aboutBox;
-  ++menuentry;
+  initMenu();
 
   CoInitialize(NULL);
 
   dbgln("done.");
 
-  // Load proxy settings and xml features in ini file
-  proxyoptions.status = (::GetPrivateProfileInt(sectionName, L"proxyEnabled", 0, iniFilePath) == 1);
-  ::GetPrivateProfileString(sectionName, L"proxyHost", L"192.168.0.1", proxyoptions.host, 255, iniFilePath);
-  proxyoptions.port = ::GetPrivateProfileInt(sectionName, L"proxyPort", 8080, iniFilePath);
-  ::GetPrivateProfileString(sectionName, L"proxyUser", L"", proxyoptions.username, 255, iniFilePath);
-  ::GetPrivateProfileString(sectionName, L"proxyPass", L"", proxyoptions.password, 255, iniFilePath);
-  xmltoolsoptions.useAnnotations = (::GetPrivateProfileInt(sectionName, L"useAnnotations", 1, iniFilePath) == 1);
-  xmltoolsoptions.annotationStyle = ::GetPrivateProfileInt(sectionName, L"annotationStyle", 12, iniFilePath);
-  xmltoolsoptions.convertAmp = (::GetPrivateProfileInt(sectionName, L"convertAmp", 1, iniFilePath) == 1);
-  xmltoolsoptions.convertLt = (::GetPrivateProfileInt(sectionName, L"convertLt", 1, iniFilePath) == 1);
-  xmltoolsoptions.convertGt = (::GetPrivateProfileInt(sectionName, L"convertGt", 1, iniFilePath) == 1);
-  xmltoolsoptions.convertQuote = (::GetPrivateProfileInt(sectionName, L"convertQuote", 1, iniFilePath) == 1);
-  xmltoolsoptions.convertApos = (::GetPrivateProfileInt(sectionName, L"convertApos", 1, iniFilePath) == 1);
-  xmltoolsoptions.ppAutoclose = (::GetPrivateProfileInt(sectionName, L"ppAutoclose", 1, iniFilePath) == 1);
-
-  xmltoolsoptions.allowDocumentFunction = ::GetPrivateProfileInt(sectionName, L"allowDocumentFunction", -1, iniFilePath);
-  xmltoolsoptions.allowXsltScript = ::GetPrivateProfileInt(sectionName, L"allowXsltScript", -1, iniFilePath);
-  xmltoolsoptions.forceResync = ::GetPrivateProfileInt(sectionName, L"forceResync", -1, iniFilePath);
-  xmltoolsoptions.maxElementDepth = ::GetPrivateProfileInt(sectionName, L"maxElementDepth", -1, iniFilePath);
-  xmltoolsoptions.maxXMLSize = ::GetPrivateProfileInt(sectionName, L"maxXMLSize", -1, iniFilePath);
-  xmltoolsoptions.multipleErrorMessages = ::GetPrivateProfileInt(sectionName, L"multipleErrorMessages", -1, iniFilePath);
-  xmltoolsoptions.newParser = ::GetPrivateProfileInt(sectionName, L"newParser", -1, iniFilePath);
-  xmltoolsoptions.normalizeAttributeValues = ::GetPrivateProfileInt(sectionName, L"normalizeAttributeValues", -1, iniFilePath);
-  xmltoolsoptions.populateElementDefaultValues = ::GetPrivateProfileInt(sectionName, L"populateElementDefaultValues", -1, iniFilePath);
-  xmltoolsoptions.prohibitDTD = ::GetPrivateProfileInt(sectionName, L"prohibitDTD", -1, iniFilePath);
-  xmltoolsoptions.resolveExternals = ::GetPrivateProfileInt(sectionName, L"resolveExternals", -1, iniFilePath);
-  xmltoolsoptions.serverHTTPRequest = ::GetPrivateProfileInt(sectionName, L"serverHTTPRequest", -1, iniFilePath);
-  xmltoolsoptions.useInlineSchema = ::GetPrivateProfileInt(sectionName, L"useInlineSchema", -1, iniFilePath);
-  xmltoolsoptions.validateOnParse = ::GetPrivateProfileInt(sectionName, L"validateOnParse", -1, iniFilePath);
-
-  wchar_t* buffer = new wchar_t[256]; memset(buffer, '\0', 256);
-  ::GetPrivateProfileString(sectionName, L"selectionLanguage", L"", buffer, 255, iniFilePath); xmltoolsoptions.selectionLanguage = buffer;
-  delete[] buffer;
-
-  int length = ::GetPrivateProfileInt(sectionName, L"selectionNamespaceLength", 1024, iniFilePath);
-  if (length == 0) length = 1024;
-  buffer = new wchar_t[length+1];
-  memset(buffer, '\0', sizeof(wchar_t) * (length + 1));
-  ::GetPrivateProfileString(sectionName, L"selectionNamespace", L"", buffer, length, iniFilePath); xmltoolsoptions.selectionNamespace = buffer;
-  delete[] buffer;
-
   updateProxyConfig();
-
-  assert(menuentry == nbFunc);
-
-  //Report::_printf_inf("menu entries: %d", menuentry);
-
-  /*
-  Report::_printf_inf("%s\ndoCheckXML: %d %d\ndoValidation: %d %d\ndoCloseTag: %d %d\ndoAutoXMLType: %d %d\ndoPreventXXE: %d %d\ndoAllowHuge: %d %d\nisLocal: %d",
-  iniFilePath,
-  doCheckXML, funcItem[menuitemCheckXML]._init2Check,
-  doValidation, funcItem[menuitemValidation]._init2Check,
-  doCloseTag, funcItem[menuitemCloseTag]._init2Check,
-  doAutoXMLType, funcItem[menuitemAutoXMLType]._init2Check,
-  doPreventXXE, funcItem[menuitemPreventXXE]._init2Check,
-  doAllowHuge, funcItem[menuitemAllowHuge]._init2Check,
-  isLocal);
-  */
 
   dbgln("Initialization finished.");
   dbgln("");
@@ -528,63 +205,8 @@ void initializePlugin() {
 
 void savePluginParams() {
   dbgln("savePluginParams()");
-
-  funcItem[menuitemCheckXML]._init2Check = doCheckXML;
-  funcItem[menuitemValidation]._init2Check = doValidation;
-  //funcItem[menuitemPrettyPrint]._init2Check = doPrettyPrint;
-  funcItem[menuitemCloseTag]._init2Check = doCloseTag;
-  //funcItem[menuitemAutoIndent]._init2Check = doAutoIndent;
-  //funcItem[menuitemAttrAutoComplete]._init2Check = doAttrAutoComplete;
-  funcItem[menuitemAutoXMLType]._init2Check = doAutoXMLType;
-  funcItem[menuitemPreventXXE]._init2Check = doPreventXXE;
-  funcItem[menuitemAllowHuge]._init2Check = doAllowHuge;
-  funcItem[menuitemPrettyPrintAllFiles]._init2Check = doPrettyPrintAllOpenFiles;
-
-  ::WritePrivateProfileString(sectionName, L"doCheckXML", doCheckXML?L"1":L"0", iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"doValidation", doValidation?L"1":L"0", iniFilePath);
-  //::WritePrivateProfileString(sectionName, L"doPrettyPrint", doPrettyPrint?L"1":L"0", iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"doCloseTag", doCloseTag?L"1":L"0", iniFilePath);
-  //::WritePrivateProfileString(sectionName, L"doAutoIndent", doAutoIndent?L"1":L"0", iniFilePath);
-  //::WritePrivateProfileString(sectionName, L"doAttrAutoComplete", doAttrAutoComplete?L"1":L"0", iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"doAutoXMLType", doAutoXMLType?L"1":L"0", iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"doPreventXXE", doPreventXXE?L"1":L"0", iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"doAllowHuge", doAllowHuge?L"1" : L"0", iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"doPrettyPrintAllOpenFiles", doPrettyPrintAllOpenFiles?L"1":L"0", iniFilePath);
-
-  ::WritePrivateProfileString(sectionName, L"proxyEnabled", proxyoptions.status ? L"1" : L"0", iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"proxyHost", proxyoptions.host, iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"proxyPort", std::to_wstring(static_cast<long>(proxyoptions.port)).c_str(), iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"proxyUser", proxyoptions.username, iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"proxyPass", proxyoptions.password, iniFilePath);
-
-  ::WritePrivateProfileString(sectionName, L"useAnnotations", xmltoolsoptions.useAnnotations ? L"1" : L"0", iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"annotationStyle", std::to_wstring(static_cast<int>(xmltoolsoptions.annotationStyle)).c_str(), iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"convertAmp", xmltoolsoptions.convertAmp ? L"1" : L"0", iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"convertLt", xmltoolsoptions.convertLt ? L"1" : L"0", iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"convertGt", xmltoolsoptions.convertGt ? L"1" : L"0", iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"convertQuote", xmltoolsoptions.convertQuote ? L"1" : L"0", iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"convertApos", xmltoolsoptions.convertApos ? L"1" : L"0", iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"ppAutoclose", xmltoolsoptions.ppAutoclose ? L"1" : L"0", iniFilePath);
-
-  ::WritePrivateProfileString(sectionName, L"allowDocumentFunction", std::to_wstring(static_cast<int>(xmltoolsoptions.allowDocumentFunction)).c_str(), iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"allowXsltScript", std::to_wstring(static_cast<int>(xmltoolsoptions.allowXsltScript)).c_str(), iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"forceResync", std::to_wstring(static_cast<int>(xmltoolsoptions.forceResync)).c_str(), iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"maxElementDepth", std::to_wstring(static_cast<int>(xmltoolsoptions.maxElementDepth)).c_str(), iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"maxXMLSize", std::to_wstring(static_cast<int>(xmltoolsoptions.maxXMLSize)).c_str(), iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"multipleErrorMessages", std::to_wstring(static_cast<int>(xmltoolsoptions.multipleErrorMessages)).c_str(), iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"newParser", std::to_wstring(static_cast<int>(xmltoolsoptions.newParser)).c_str(), iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"normalizeAttributeValues", std::to_wstring(static_cast<int>(xmltoolsoptions.normalizeAttributeValues)).c_str(), iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"populateElementDefaultValues", std::to_wstring(static_cast<int>(xmltoolsoptions.populateElementDefaultValues)).c_str(), iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"prohibitDTD", std::to_wstring(static_cast<int>(xmltoolsoptions.prohibitDTD)).c_str(), iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"resolveExternals", std::to_wstring(static_cast<int>(xmltoolsoptions.resolveExternals)).c_str(), iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"selectionLanguage", xmltoolsoptions.selectionLanguage.c_str(), iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"selectionNamespaceLength", std::to_wstring(static_cast<int>(xmltoolsoptions.selectionNamespace.length())).c_str(), iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"selectionNamespace", xmltoolsoptions.selectionNamespace.c_str(), iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"serverHTTPRequest", std::to_wstring(static_cast<int>(xmltoolsoptions.serverHTTPRequest)).c_str(), iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"useInlineSchema", std::to_wstring(static_cast<int>(xmltoolsoptions.useInlineSchema)).c_str(), iniFilePath);
-  ::WritePrivateProfileString(sectionName, L"validateOnParse", std::to_wstring(static_cast<int>(xmltoolsoptions.validateOnParse)).c_str(), iniFilePath);
+  config.Write();
 }
-
 
 HMODULE GetCurrentModule() {
   HMODULE hModule = NULL;
@@ -623,11 +245,14 @@ extern "C" __declspec(dllexport) const TCHAR* getName() {
   return PLUGIN_NAME;
 }
 
+extern int nbFunc;
+extern FuncItem funcItem[];
+
 // The getFuncsArray function gives Notepad++ plugins system the pointer FuncItem Array
 // and the size of this array (the number of functions)
 extern "C" __declspec(dllexport) FuncItem * getFuncsArray(int *nbF) {
-  *nbF = nbFunc;
-  return funcItem;
+    *nbF = nbFunc;
+    return funcItem;
 }
 
 // For v.3.3 compatibility
@@ -646,17 +271,18 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       dbgln("NPP Event: NPPN_READY");
       HMENU hMenu = ::GetMenu(nppData._nppHandle);
       if (hMenu) {
-        ::CheckMenuItem(hMenu, funcItem[menuitemCheckXML]._cmdID, MF_BYCOMMAND | (doCheckXML?MF_CHECKED:MF_UNCHECKED));
-        ::CheckMenuItem(hMenu, funcItem[menuitemValidation]._cmdID, MF_BYCOMMAND | (doValidation?MF_CHECKED:MF_UNCHECKED));
+          /*
+        ::CheckMenuItem(hMenu, funcItem[menuitemCheckXML]._cmdID, MF_BYCOMMAND | (config.doCheckXML?MF_CHECKED:MF_UNCHECKED));
+        ::CheckMenuItem(hMenu, funcItem[menuitemValidation]._cmdID, MF_BYCOMMAND | (config.doValidation?MF_CHECKED:MF_UNCHECKED));
 //      ::CheckMenuItem(hMenu, funcItem[menuitemPrettyPrint]._cmdID, MF_BYCOMMAND | (doPrettyPrint?MF_CHECKED:MF_UNCHECKED));
-        ::CheckMenuItem(hMenu, funcItem[menuitemCloseTag]._cmdID, MF_BYCOMMAND | (doCloseTag?MF_CHECKED:MF_UNCHECKED));
+        ::CheckMenuItem(hMenu, funcItem[menuitemCloseTag]._cmdID, MF_BYCOMMAND | (config.doCloseTag?MF_CHECKED:MF_UNCHECKED));
 //      ::CheckMenuItem(hMenu, funcItem[menuitemAutoIndent]._cmdID, MF_BYCOMMAND | (doAutoIndent?MF_CHECKED:MF_UNCHECKED));
 //      ::CheckMenuItem(hMenu, funcItem[menuitemAttrAutoComplete]._cmdID, MF_BYCOMMAND | (doAttrAutoComplete?MF_CHECKED:MF_UNCHECKED));
-        ::CheckMenuItem(hMenu, funcItem[menuitemAutoXMLType]._cmdID, MF_BYCOMMAND | (doAutoXMLType?MF_CHECKED:MF_UNCHECKED));
-        ::CheckMenuItem(hMenu, funcItem[menuitemPreventXXE]._cmdID, MF_BYCOMMAND | (doPreventXXE?MF_CHECKED:MF_UNCHECKED));
-        ::CheckMenuItem(hMenu, funcItem[menuitemAllowHuge]._cmdID, MF_BYCOMMAND | (doAllowHuge ? MF_CHECKED : MF_UNCHECKED));
-        ::CheckMenuItem(hMenu, funcItem[menuitemPrettyPrintAllFiles]._cmdID, MF_BYCOMMAND | (doPrettyPrintAllOpenFiles?MF_CHECKED:MF_UNCHECKED));
-
+        ::CheckMenuItem(hMenu, funcItem[menuitemAutoXMLType]._cmdID, MF_BYCOMMAND | (config.doAutoXMLType?MF_CHECKED:MF_UNCHECKED));
+        ::CheckMenuItem(hMenu, funcItem[menuitemPreventXXE]._cmdID, MF_BYCOMMAND | (config.doPreventXXE?MF_CHECKED:MF_UNCHECKED));
+        ::CheckMenuItem(hMenu, funcItem[menuitemAllowHuge]._cmdID, MF_BYCOMMAND | (config.doAllowHuge ? MF_CHECKED : MF_UNCHECKED));
+        ::CheckMenuItem(hMenu, funcItem[menuitemPrettyPrintAllFiles]._cmdID, MF_BYCOMMAND | (config.doPrettyPrintAllOpenFiles?MF_CHECKED:MF_UNCHECKED));
+        */
         if (hook) {
           UnhookWindowsHookEx(hook);
           hook = NULL;
@@ -665,9 +291,9 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
           hook = SetWindowsHookEx(WH_KEYBOARD, KeyboardProc, (HINSTANCE)GetCurrentModule(), ::GetCurrentThreadId());
         }
 
-        #ifdef DEBUG
+        //#ifdef DEBUG
           debugdlg->Create(CDebugDlg::IDD,NULL);
-        #endif
+        //#endif
       }
     }
     case NPPN_FILEBEFORESAVE: {
@@ -677,8 +303,8 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       if (docType == L_XML) {
         // comme la validation XSD effectue également un check de syntaxe, on n'exécute
         // le autoXMLCheck() que si doValidation est FALSE et doCheckXML est TRUE.
-        if (doValidation) autoValidation();
-        else if (doCheckXML) autoXMLCheck();
+        if (config.doValidation) autoValidation();
+        else if (config.doCheckXML) autoXMLCheck();
       }
       break;
     }
@@ -686,14 +312,14 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       dbgln("NPP Event: SCN_CHARADDED");
       LangType docType;
       ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
-      if (doAutoXMLType && docType != L_XML) {
+      if (config.doAutoXMLType && docType != L_XML) {
         if (setAutoXMLType()) {
           docType = L_XML;
         }
       }
       if (docType == L_XML) {
         // remarque: le closeXMLTag doit s'exécuter avant les autres
-        if (doCloseTag && notifyCode->ch == '>') {
+        if (config.doCloseTag && notifyCode->ch == '>') {
           closeXMLTag();
         }
         //if (doAutoIndent && lastChar == '\n') tagAutoIndent();
@@ -719,7 +345,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
     }
     case NPPN_BUFFERACTIVATED: {
       dbgln("NPP Event: NPPN_BUFFERACTIVATED");
-      if (doAutoXMLType) {
+      if (config.doAutoXMLType) {
         // si le fichier n'a pas de type défini et qu'il commence par "<?xml ", on lui attribue le type L_XML
         LangType docType = L_EXTERNAL;
         ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
@@ -753,92 +379,6 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
   }
 #endif //UNICODE
 
-void insertXMLCheckTag() {
-  dbgln("insertXMLCheckTag()");
-
-  doCheckXML = !doCheckXML;
-  ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemCheckXML]._cmdID, MF_BYCOMMAND | (doCheckXML?MF_CHECKED:MF_UNCHECKED));
-  savePluginParams();
-}
-
-void insertValidationTag() {
-  dbgln("insertValidationTag()");
-
-  doValidation = !doValidation;
-  ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemValidation]._cmdID, MF_BYCOMMAND | (doValidation?MF_CHECKED:MF_UNCHECKED));
-  savePluginParams();
-}
-
-/*
-void insertPrettyPrintTag() {
-  dbgln("insertPrettyPrintTag()");
-
-  doPrettyPrint = !doPrettyPrint;
-  ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemPrettyPrint]._cmdID, MF_BYCOMMAND | (doPrettyPrint?MF_CHECKED:MF_UNCHECKED));
-  savePluginParams();
-}
-*/
-
-void insertXMLCloseTag() {
-  dbgln("insertXMLCloseTag()");
-
-  doCloseTag = !doCloseTag;
-  ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemCloseTag]._cmdID, MF_BYCOMMAND | (doCloseTag?MF_CHECKED:MF_UNCHECKED));
-  savePluginParams();
-}
-
-bool tagAutoIndentWarningDisplayed = false;
-void insertTagAutoIndent() {
-  dbgln("insertTagAutoIndent()");
-
-  if (!tagAutoIndentWarningDisplayed) {
-    Report::_printf_inf(L"This function is in alpha state and might disappear in future release.");
-    tagAutoIndentWarningDisplayed = true;
-  }
-
-  doAutoIndent = !doAutoIndent;
-  ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemAutoIndent]._cmdID, MF_BYCOMMAND | (doAutoIndent?MF_CHECKED:MF_UNCHECKED));
-  savePluginParams();
-}
-
-bool insertAttributeAutoCompleteWarningDisplayed = false;
-void insertAttributeAutoComplete() {
-  dbgln("insertAttributeAutoComplete()");
-
-  if (!insertAttributeAutoCompleteWarningDisplayed) {
-    Report::_printf_inf(L"This function is in alpha state and might disappear in future release.");
-    insertAttributeAutoCompleteWarningDisplayed = true;
-  }
-
-  doAttrAutoComplete = !doAttrAutoComplete;
-  ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemAttrAutoComplete]._cmdID, MF_BYCOMMAND | (doAttrAutoComplete?MF_CHECKED:MF_UNCHECKED));
-  savePluginParams();
-}
-
-void insertAutoXMLType() {
-  dbgln("insertAutoXMLType()");
-
-  doAutoXMLType = !doAutoXMLType;
-  ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemAutoXMLType]._cmdID, MF_BYCOMMAND | (doAutoXMLType?MF_CHECKED:MF_UNCHECKED));
-  savePluginParams();
-}
-
-void togglePreventXXE() {
-  dbgln("togglePreventXXE()");
-
-  doPreventXXE = !doPreventXXE;
-  ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemPreventXXE]._cmdID, MF_BYCOMMAND | (doPreventXXE?MF_CHECKED:MF_UNCHECKED));
-  savePluginParams();
-}
-
-void toggleAllowHuge() {
-  dbgln("toggleAllowHuge()");
-
-  doAllowHuge = !doAllowHuge;
-  ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemAllowHuge]._cmdID, MF_BYCOMMAND | (doAllowHuge ? MF_CHECKED : MF_UNCHECKED));
-  savePluginParams();
-}
-
 void optionsDlg() {
   dbgln("optionsDlg()");
 
@@ -855,23 +395,23 @@ void debugDlg() {
 }
 
 void dbg(CStringW line) {
-  #ifdef DEBUG
+  //#ifdef DEBUG
     debugdlg->addLine(line);
-  #endif
+  //#endif
 }
 
 void dbgln(CStringW line) {
-  #ifdef DEBUG
+  //#ifdef DEBUG
     debugdlg->addLine(line+"\r\n");
-  #endif
+  //#endif
 }
 
 void updateProxyConfig() {
   dbgln("updateProxyConfig()");
 
   // proxy settings for libxml
-  if (proxyoptions.status && wcslen(proxyoptions.host) > 0) {
-    std::string proxyurl("http://");
+  if (proxyoptions.status && proxyoptions.host.length() > 0) {
+    std::wstring proxyurl(L"http://");
 /*
     if (wcslen(proxyoptions.username) > 0) {
       proxyurl += Report::wchar2char(proxyoptions.username);
@@ -884,9 +424,9 @@ void updateProxyConfig() {
     }
 */
 
-    proxyurl += Report::wchar2char(proxyoptions.host);
-    proxyurl += ":";
-    proxyurl += std::to_string(static_cast<long long>(proxyoptions.port));
+    proxyurl += proxyoptions.host;
+    proxyurl += L":";
+    proxyurl += proxyoptions.port;// std::to_string(static_cast<long long>(proxyoptions.port));
 
     // v3
     //pXmlNanoHTTPScanProxy(proxyurl.c_str());  // http://toto:admin@127.0.0.1:8080
@@ -1662,1110 +1202,7 @@ void performXSLTransform() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-std::string& ltrim(std::string& str, const std::string& chars = "\t\n\v\f\r ") {
-  str.erase(0, str.find_first_not_of(chars));
-  return str;
-}
 
-std::string& rtrim(std::string& str, const std::string& chars = "\t\n\v\f\r ") {
-  str.erase(str.find_last_not_of(chars) + 1);
-  return str;
-}
-
-std::string& trim(std::string& str, const std::string& chars = "\t\n\v\f\r ") {
-  return ltrim(rtrim(str, chars), chars);
-}
-
-std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, bool breaktags, const std::string& chars = "\t\n\v\f\r ") {
-  bool in_tag = false, in_header = false;
-  std::string tagname = "";
-  char cc;
-  std::string::size_type curpos = 0, lastpos = 0, lastlen = 0, lasteolpos = 0, tmppos;
-  size_t eolcharlen = eolchar.length();
-  size_t eolcharpos = eolchar.find('\n');
-
-  size_t strlen = str.length();
-
-  while (curpos < strlen && (curpos = str.find_first_of("<>\"'\n", curpos)) != std::string::npos) {
-    switch (cc = str.at(curpos)) {
-      case '<': {
-        if (curpos < strlen - 4 && !str.compare(curpos, 4, "<!--")) {            // is comment start ?
-          // skip the comment
-          curpos = str.find("-->", curpos + 1) + 2;
-
-          // add line break if next non space char is "<"
-          if (breaklines) {
-            tmppos = str.find_first_not_of(chars, curpos + 1);
-            if (tmppos != std::string::npos && str.at(tmppos) == '<' /*&& str.at(tmppos + 1) != '!'*/ && str.at(tmppos + 2) != '[') {
-              str.insert(curpos + 1, eolchar);
-            }
-          }
-        }
-        else if (curpos < strlen - 9 && !str.compare(curpos, 9, "<![CDATA[")) {       // is CDATA start ?
-          // skip the CDATA
-          curpos = str.find("]]>", curpos + 1) + 2;
-        }
-        else if (curpos < strlen - 2 && !str.compare(curpos, 2, "</")) {              // end tag (ex: "</sample>")
-          curpos = str.find(">", curpos + 1);
-
-          // trim space chars between tagname and > char
-          tmppos = str.find_last_not_of(chars, curpos - 1);
-          if (tmppos < curpos - 1) {
-            str.erase(tmppos + 1, curpos - tmppos - 1);
-            curpos = tmppos + 1;
-          }
-
-          // add line break if next non space char is "<" (but not if <![)
-          if (breaklines) {
-            tmppos = str.find_first_not_of(chars, curpos + 1);
-            if (tmppos != std::string::npos && str.at(tmppos) == '<' /*&& str.at(tmppos + 1) != '!'*/ && str.at(tmppos + 2) != '[') {
-              str.insert(curpos + 1, eolchar);
-            }
-          }
-        }
-        else {
-          in_tag = true;
-          if (curpos < strlen - 2 && !str.compare(curpos, 2, "<?")) {
-            in_header = true;
-            ++curpos;
-          }
-
-          // skip the tag name
-          char endtag = (in_header ? '?' : '/');
-          tmppos = curpos;
-          curpos = str.find_first_of("\t\n\v\f\r ?/>", curpos + 1);
-          if (curpos != std::string::npos) {
-            tagname.clear();
-            tagname = str.substr(tmppos + 1, curpos - tmppos - 1);
-
-            tmppos = str.find_first_not_of("\t\n\v\f\r ", curpos);
-            if (tmppos != std::string::npos) {
-              // trim space before attribute or ">" char
-              str.erase(curpos, tmppos - curpos);
-              if (str.at(curpos) != '>' && str.at(curpos) != endtag) {
-                str.insert(curpos, " ");
-                ++curpos;
-              }
-            }
-            --curpos;
-          }
-        }
-        break;
-      }
-      case '>': {
-        if (in_tag) {
-          in_tag = false;
-          in_header = false;
-
-          // add line break if next non space char is another opening tag (but not in case of <![)
-          // exceptions:  <sample></sample>  is untouched
-          //              <foo><bar/></foo>  becomes   <foo>
-          //                                             <bar/>
-          //                                           </foo>
-          if (breaklines) {
-            bool is_closing = (curpos > 0 && str.at(curpos - 1) == '/');
-            tmppos = str.find_first_not_of(chars, curpos + 1);
-            if (tmppos != std::string::npos && str.at(tmppos) == '<' && (str.at(tmppos + 1) != '/' || is_closing) && /*str.at(tmppos + 1) != '!' &&*/ str.at(tmppos + 2) != '[') {
-              str.insert(curpos + 1, eolchar);
-            }
-          }
-        }
-        break;
-      }
-      case '\"':
-      case '\'': {
-        if (in_tag) {
-          // trim spaces arround "=" char
-          tmppos = str.find_last_not_of("\t\n\v\f\r ", curpos - 1);
-          if (tmppos != std::string::npos && tmppos < curpos && str.at(tmppos) == '=') {
-            // remove spaces after "="
-            str.erase(tmppos + 1, curpos - tmppos - 1);
-            curpos = tmppos + 1;
-            // remove spaces before "="
-            tmppos = str.find_last_not_of("\t\n\v\f\r ", tmppos - 1);
-            if (tmppos != std::string::npos) {
-              str.erase(tmppos + 1, curpos - tmppos - 2);
-              curpos = tmppos + 2;
-            }
-          }
-          // skip attribute text
-          curpos = str.find(cc, curpos + 1);
-
-          // trim spaces after attribute
-          tmppos = str.find_first_not_of("\t\n\v\f\r ", curpos + 1);
-          if (tmppos != std::string::npos) {
-            char endtag = '/';
-            if (in_header) endtag = '?';
-
-            // add line break if not the last attribute
-            if (breaktags && !in_header && str.at(tmppos) != '>' && str.at(tmppos) != endtag) {
-              str.insert(curpos + 1, eolchar);
-            }
-            else if (!breaktags) {
-              str.erase(curpos + 1, tmppos - curpos - 1);
-              if (str.at(curpos + 1) != '>' && str.at(curpos + 1) != endtag) {
-                str.insert(curpos + 1, " ");
-                ++curpos;
-              }
-            }
-          }
-        }
-        break;
-      }
-      case '\n': {
-        // trim line
-
-        curpos -= eolcharpos;
-
-        if (in_tag && !breaktags) {
-          // we must remove line breaks
-          tmppos = str.find_first_not_of("\t\n\v\f\r ", curpos + 1);
-          if (tmppos != std::string::npos) {
-            str.erase(curpos, tmppos - curpos);
-          }
-          if (str.at(curpos - 1) == '"' || str.at(curpos - 1) == '\'') {
-            str.insert(curpos, " ");
-            ++curpos;
-          }
-        } else {  // = if (!in_tag || breaktags)
-          std::string tmp = trim(str.substr(lasteolpos, curpos - lasteolpos));
-          str.replace(lasteolpos, curpos - lasteolpos, tmp);
-          curpos = lasteolpos + tmp.length();
-          lasteolpos = curpos;
-
-          while (lasteolpos >= eolcharlen && !str.compare(lasteolpos - eolcharlen, eolcharlen, eolchar)) {
-            lasteolpos -= eolcharlen;
-          }
-
-          lasteolpos += eolcharlen;
-        }
-
-        curpos += (eolcharlen - 1);
-        
-        break;
-      }
-    }
-
-    ++curpos;
-
-    // inifinite loop protection
-    strlen = str.length();
-    if (curpos == lastpos && lastlen == strlen) {
-      dbgln("TRIM: INIFINITE LOOP DETECTED");
-      break;
-    }
-    lastpos = curpos;
-    lastlen = strlen;
-  }
-
-  if (lasteolpos < str.length()) {
-    str.replace(lasteolpos, str.length() - lasteolpos, trim(str.substr(lasteolpos, str.length() - lasteolpos)));
-  }
-
-  return str;
-}
-
-void prettyPrint(bool autoindenttext, bool addlinebreaks, bool indentattributes) {
-  dbgln("prettyPrint()");
-
-  int docIterator = initDocIterator();
-  while (hasNextDoc(&docIterator)) {
-    int currentEdit, currentLength, isReadOnly;
-    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-    HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-
-    isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
-    if (isReadOnly) return;
-
-    char *data = NULL;
-
-    // some state variables
-    std::string tagname = "";
-    bool in_tag = false;
-
-    // some counters
-    std::string::size_type curpos = 0, lastpos = 0, lastlen = 0, tmppos, xmllevel = 0, tagnamelen = 0;
-    // some char value (pc = previous char, cc = current char, nc = next char, nnc = next next char)
-    char cc;
-
-    int tabwidth = (int) ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
-    bool usetabs = (bool) ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
-    if (tabwidth <= 0) tabwidth = 4;
-
-    // use the selection
-    long selstart = (long) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-    long selend = (long) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
-    // TODO: when oprating on selection, we should determinate the node indentation level
-    //       we could use the XPath retrieval function to perform this
-
-    std::string str("");
-    std::string eolchar;
-    int eolmode;
-    Report::getEOLChar(hCurrentEditView, &eolmode, &eolchar);
-    size_t eolcharlen = eolchar.length();
-    size_t eolcharpos = eolchar.find('\n');
-
-    if (selend > selstart) {
-      currentLength = selend-selstart;
-      data = new char[currentLength + sizeof(char)];
-      if (!data) return;  // allocation error, abort check
-      memset(data, '\0', currentLength + sizeof(char));
-      ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
-    } else {
-      currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
-      data = new char[currentLength + sizeof(char)];
-      if (!data) return;  // allocation error, abort check
-      memset(data, '\0', currentLength + sizeof(char));
-      ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
-    }
-
-    str += data;
-    delete[] data;
-    data = NULL;
-
-    // first pass: trim lines
-    str = trimxml(str, eolchar, true, indentattributes);
-
-    #ifdef _DEBUG
-      if (selend <= selstart) {
-        // store intermediate status for debug purposes (this status can be reached with undo command in NPP)
-        ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
-      }
-    #endif
-
-      size_t strlen = str.length();
-
-    // second pass: indentation
-    while (curpos < strlen && (curpos = str.find_first_of("<>\"'\n", curpos)) != std::string::npos) {
-      switch (cc = str.at(curpos)) {
-        case '<': {
-          if (curpos < strlen - 2 && !str.compare(curpos, 2, "<?")) {                   // is "<?xml ...?>" definition ?
-            // skip the comment
-            curpos = str.find("?>", curpos + 1) + 1;
-          }
-          else if (curpos < strlen - 4 && !str.compare(curpos, 4, "<!--")) {            // is comment start ?
-            // skip the comment
-            curpos = str.find("-->", curpos + 1) + 2;
-          }
-          else if (curpos < strlen - 9 && !str.compare(curpos, 9, "<![CDATA[")) {       // is CDATA start ?
-            // skip the CDATA
-            curpos = str.find("]]>", curpos + 1) + 2;
-          }
-          else if (curpos < strlen - 2 && !str.compare(curpos, 2, "</")) {              // end tag (ex: "</sample>")
-            curpos = str.find(">", curpos + 1);
-            if (xmllevel > 0) --xmllevel;
-          }
-          else {                                                                              // beg tag
-            in_tag = true;
-            ++xmllevel;
-
-            // skip the tag name
-            tmppos = str.find_first_of("\t\n\v\f\r />", curpos + 1);
-            if (tmppos != std::string::npos) {
-              // calculate tag name length
-              tagnamelen = tmppos - curpos - 1;
-              tagname.clear();
-              tagname = str.substr(curpos + 1, tagnamelen);
-
-              curpos = tmppos - 1;
-            }
-          }
-          break;
-        }
-        case '>': {
-          if (in_tag) {
-            in_tag = false;
-            if (xmltoolsoptions.ppAutoclose && !str.compare(curpos + 1, 3 + tagname.length(), "</" + tagname + ">")) {
-              // let's replace <a></a> with <a/>
-              str.insert(curpos++, "/");
-              str.erase(curpos + 1, 3 + tagname.length());
-            }
-            if (curpos > 0 && !str.compare(curpos - 1, 1, "/")) {                             // auto-closing tag (ex: "<sample/>")
-              --xmllevel;
-            }
-          }
-          break;
-        }
-        case '\"':
-        case '\'': {
-          if (in_tag) {
-            // skip attribute text
-            curpos = str.find(cc, curpos + 1);
-          }
-          break;
-        }
-        case '\n': {
-          // fix indentation
-          curpos -= eolcharpos;   // line break may have several chars
-
-          if (xmllevel > 0) {
-            // we apply a delta when next tag is a closing tag
-            long delta = 0;
-            tmppos = curpos + eolcharlen;
-            if (tmppos < strlen - 1 && str.at(tmppos) == '<' && str.at(tmppos + 1) == '/') {
-              delta = 1;
-            }
-
-            // apply indentation
-            if (usetabs) {
-              str.insert(curpos + eolcharlen, (xmllevel - delta), '\t');
-            }
-            else {
-              str.insert(curpos + eolcharlen, tabwidth * (xmllevel - delta), ' ');
-            }
-          }
-
-          curpos += eolcharlen;
-
-          if (in_tag && indentattributes) {
-            // add indentation for attribute
-            str.insert(curpos, tagnamelen, ' ');
-          }
-
-          --curpos;
-
-          break;
-        }
-      }
-
-      ++curpos;
-
-      // inifinite loop protection
-      strlen = str.length();
-      if (curpos == lastpos && lastlen == strlen) {
-        dbgln("PRETTYPRINT: INIFINITE LOOP DETECTED");
-        break;
-      }
-      lastpos = curpos;
-      lastlen = strlen;
-    }
-
-    // Send formatted string to scintilla
-    if (selend > selstart) {
-      ::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(str.c_str()));
-    }
-    else {
-      ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
-    }
-
-    str.clear();
-
-    // Put scroll at the left of the view
-    ::SendMessage(hCurrentEditView, SCI_SETXOFFSET, 0, 0);
-  }
-}
-
-void prettyPrintXML() {
-  dbgln("prettyPrintXML()");
-
-  prettyPrint(false, true, false);
-}
-
-void prettyPrintAttributes() {
-  dbgln("prettyPrintAttributes()");
-
-  prettyPrint(false, true, true);
-
-  /*
-  int docIterator = initDocIterator();
-  while (hasNextDoc(&docIterator)) {
-    int currentEdit, currentLength, isReadOnly;
-    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-    HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-
-    isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
-    if (isReadOnly) return;
-
-    currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
-
-    char *data = new char[currentLength + sizeof(char)];
-    if (!data) return;  // allocation error, abort check
-    memset(data, '\0', currentLength + sizeof(char));
-
-    ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
-
-    int tabwidth = (int) ::SendMessage(hCurrentEditView, SCI_GETTABWIDTH, 0, 0);
-    bool usetabs = (bool) ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
-    if (tabwidth <= 0) tabwidth = 4;
-
-    HRESULT hr = S_OK;
-    IXMLDOMDocument2* pXMLDom = NULL;
-    VARIANT_BOOL varStatus;
-    VARIANT varCurrentData;
-
-    bool in_comment = false, in_header = false, in_attribute = false, in_nodetext = false, in_cdata = false;
-    size_t curpos = 0, strlength = 0;
-    std::string lineindent = "";
-    char pc, cc, nc, nnc;
-    int tagsignlevel = 0, nattrs = 0;
-
-    std::string eolchar;
-    int eolmode;
-
-    Report::char2VARIANT(data, &varCurrentData);
-    std::string str = data;
-    delete[] data;
-
-    CHK_HR(CreateAndInitDOM(&pXMLDom));
-    CHK_HR(pXMLDom->load(varCurrentData, &varStatus));
-    if (varStatus != VARIANT_TRUE) {
-      Report::_printf_err(L"Errors detected in content. Please correct them before applying pretty print.");
-      goto CleanUp;
-    }
-
-    Report::getEOLChar(hCurrentEditView, &eolmode, &eolchar);
-
-    size_t prevspecchar = -1;
-    while (curpos < str.length() && (curpos = str.find_first_of("<>\"",curpos)) >= 0) {
-      strlength = str.length();
-      if (curpos < strlength-3 && !str.compare(curpos,4,"<!--")) in_comment = true;
-      if (curpos < strlength-8 && !str.compare(curpos,9,"<![CDATA[")) in_cdata = true;
-      else if (curpos < strlength-1 && !str.compare(curpos,2,"<?")) in_header = true;
-      else if (curpos < strlength && !str.compare(curpos,1,"\"") &&
-               prevspecchar >= 0 && str.at(prevspecchar) == '<') in_attribute = !in_attribute;
-
-      if (!in_comment && !in_cdata && !in_header) {
-        if (curpos > 0) pc = str.at(curpos-1);
-        else pc = ' ';
-
-        cc = str.at(curpos);
-
-        if (curpos < strlength-1) nc = str.at(curpos+1);
-        else nc = ' ';
-
-        if (curpos < strlength-2) nnc = str.at(curpos+2);
-        else nnc = ' ';
-
-        if (cc == '<') {
-          prevspecchar = curpos++;
-          ++tagsignlevel;
-          in_nodetext = false;
-          if (nc != '/' && (nc != '!' || nnc == '[')) nattrs = 0;
-        } else if (cc == '>' && !in_attribute) {
-          // > are ignored inside attributes
-          if (pc != '/' && pc != ']') { in_nodetext = true; }
-          --tagsignlevel;
-          nattrs = 0;
-          prevspecchar = curpos++;
-        } else if (in_attribute) {
-          if (++nattrs > 1) {
-            size_t attrpos = str.find_last_of(eolchar+"\t ", curpos-1)+1;
-            if (!Report::isEOL(str, strlength, (unsigned int) attrpos, eolmode)) {
-              size_t spacpos = str.find_last_not_of(eolchar+"\t ", attrpos-1)+1;
-              str.replace(spacpos, attrpos-spacpos, lineindent);
-              curpos -= attrpos-spacpos;
-              curpos += lineindent.length();
-            }
-          } else {
-            size_t attrpos = str.find_last_of(eolchar+"\t ", curpos-1)+1;
-            if (!Report::isEOL(str, strlength, (unsigned int) attrpos, eolmode)) {
-              size_t linestart = str.find_last_of(eolchar, attrpos-1)+1;
-              lineindent = str.substr(linestart, attrpos-linestart);
-              size_t lineindentlen = lineindent.length();
-              for (size_t i = 0; i < lineindentlen; ++i) {
-                char lic = lineindent.at(i);
-                if (lic != '\t' && lic != ' ') {
-                    lineindent.replace(i, 1, " ");
-                }
-              }
-              lineindent.insert(0,eolchar);
-            }
-          }
-          ++curpos;
-        } else {
-          ++curpos;
-        }
-      } else {
-        if (in_comment && curpos > 1 && !str.compare(curpos - 2, 3, "-->")) in_comment = false;
-        else if (in_cdata && curpos > 1 && !str.compare(curpos - 2, 3, "]]>")) in_cdata = false;
-        else if (in_header && curpos > 0 && !str.compare(curpos - 1, 2, "?>")) in_header = false;
-        ++curpos;
-      }
-    }
-
-    // Send formatted string to scintilla
-    ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
-
-    // Put scroll at the left of the view
-    ::SendMessage(hCurrentEditView, SCI_SETXOFFSET, 0, 0);
-
-  CleanUp:
-    SAFE_RELEASE(pXMLDom);
-    VariantClear(&varCurrentData);
-  }
-  */
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void linearizeXML() {
-  dbgln("linearizeXML()");
-
-  int docIterator = initDocIterator();
-  while (hasNextDoc(&docIterator)) {
-    int currentEdit, currentLength;
-    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-    HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-
-    char* data = NULL;
-
-    // use the selection
-    long selstart = 0, selend = 0;
-    // désactivé : le fait de prettyprinter que la sélection pose problème pour l'indentation
-    // il faudrait calculer l'indentation de la 1re ligne de sélection, mais l'indentation
-    // de cette ligne n'est peut-être pas correcte. On pourrait la déterminer en récupérant
-    // le path de la banche sélectionnée...
-    selstart = (long) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-    selend = (long) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
-
-    if (selend > selstart) {
-      currentLength = selend - selstart;
-      data = new char[currentLength + sizeof(char)];
-      if (!data) return;  // allocation error, abort check
-      memset(data, '\0', currentLength + sizeof(char));
-      ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
-    }
-    else {
-      currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
-      data = new char[currentLength + sizeof(char)];
-      if (!data) return;  // allocation error, abort check
-      memset(data, '\0', currentLength + sizeof(char));
-      ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
-    }
-
-    std::string str(data);
-    delete [] data;
-    data = NULL;
-
-    std::string eolchar;
-    int eolmode;
-    Report::getEOLChar(hCurrentEditView, &eolmode, &eolchar);
-
-    std::string::size_type curpos = 0, nexwchar_t;
-    bool enableInsert = false;
-
-    while ((curpos = str.find_first_of(eolchar, curpos)) != std::string::npos) {
-      nexwchar_t = str.find_first_not_of(eolchar, curpos);
-      str.erase(curpos, nexwchar_t-curpos);
-
-      // Let erase leading space chars on line
-      if (curpos != std::string::npos && curpos < str.length()) {
-        nexwchar_t = str.find_first_not_of(" \t", curpos);
-        if (nexwchar_t != std::string::npos && nexwchar_t >= curpos) {
-          // And if the 1st char of next line is not '<' and last char of preceding
-          // line is not '>', then we consider we are in text content, then let put
-          // a space char
-          enableInsert = false;
-          if (curpos > 0 && str.at(nexwchar_t) != '<' && str.at(curpos-1) != '>') {
-            enableInsert = true;
-            if (nexwchar_t > curpos) --nexwchar_t;
-          }
-
-          if (nexwchar_t > curpos) str.erase(curpos, nexwchar_t-curpos);
-          else if (enableInsert) str.insert(nexwchar_t, " ");
-        }
-      }
-    }
-
-    // Send formatted string to scintilla
-    if (selend > selstart) {
-      ::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(str.c_str()));
-    }
-    else {
-      ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(str.c_str()));
-    }
-
-    str.clear();
-  }
-}
-
-void togglePrettyPrintAllFiles() {
-  dbgln("togglePrettyPrintAllFiles()");
-
-  doPrettyPrintAllOpenFiles = !doPrettyPrintAllOpenFiles;
-  ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemPrettyPrintAllFiles]._cmdID, MF_BYCOMMAND | (doPrettyPrintAllOpenFiles?MF_CHECKED:MF_UNCHECKED));
-  savePluginParams();
-}
-
-int initDocIterator() {
-  dbgln("initDocIterator()");
-
-  nbopenfiles1 = (int) ::SendMessage(nppData._nppHandle, NPPM_GETNBOPENFILES, 0, PRIMARY_VIEW);
-  nbopenfiles2 = (int) ::SendMessage(nppData._nppHandle, NPPM_GETNBOPENFILES, 0, SECOND_VIEW);
-
-  if (::SendMessage(nppData._nppHandle, NPPM_GETCURRENTDOCINDEX, 0, MAIN_VIEW) < 0) nbopenfiles1 = 0;
-  if (::SendMessage(nppData._nppHandle, NPPM_GETCURRENTDOCINDEX, 0, SUB_VIEW) < 0) nbopenfiles2 = 0;
-
-  //Report::_printf_inf(Report::str_format("%d %d",nbopenfiles1,nbopenfiles2));
-
-  return 0;
-}
-
-bool hasNextDoc(int* iter) {
-  dbgln("hasNextDoc()");
-
-  if (doPrettyPrintAllOpenFiles) {
-    if (*iter < 0 || *iter >= (nbopenfiles1+nbopenfiles2)) return false;
-
-    if (*iter < nbopenfiles1) {
-      ::SendMessage(nppData._nppHandle, NPPM_ACTIVATEDOC, MAIN_VIEW, (*iter));
-    } else if (*iter >= nbopenfiles1 && *iter < nbopenfiles1+nbopenfiles2) {
-      ::SendMessage(nppData._nppHandle, NPPM_ACTIVATEDOC, SUB_VIEW, (*iter)-nbopenfiles1);
-    } else {
-      return false;
-    }
-
-    ++(*iter);
-    return true;
-  } else {
-    ++(*iter);
-    return ((*iter) == 1);
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void convertText2XML() {
-  dbgln("convertText2XML()");
-
-  int currentEdit, isReadOnly;
-  ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-  HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-
-  isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
-  if (isReadOnly) return;
-
-  size_t selstart = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-  size_t selend = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
-  size_t sellength = selend-selstart;
-
-  if (selend <= selstart) {
-    Report::_printf_err(L"Please select text to transform before you call the function.");
-    return;
-  }
-
-  char *data = new char[sellength+1];
-  if (!data) return;  // allocation error, abort check
-  memset(data, '\0', sellength+1);
-
-  ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
-
-  std::string str(data);
-  delete [] data;
-  data = NULL;
-  std::string::size_type curpos;
-
-  if (xmltoolsoptions.convertApos) {
-    curpos = sellength;
-    while (curpos != std::string::npos && (curpos = str.rfind("&apos;", curpos)) != std::string::npos) {
-      if (curpos != std::string::npos) {
-        str.replace(curpos, strlen("&apos;"), "'");
-        sellength = sellength - strlen("&apos;") + strlen("'");
-      }
-      --curpos;
-    }
-  }
-
-  if (xmltoolsoptions.convertQuote) {
-    curpos = sellength;
-    while (curpos != std::string::npos && (curpos = str.rfind("&quot;", curpos)) != std::string::npos) {
-      if (curpos != std::string::npos) {
-        str.replace(curpos, strlen("&quot;"), "\"");
-        sellength = sellength - strlen("&quot;") + strlen("\"");
-      }
-      --curpos;
-    }
-  }
-
-  if (xmltoolsoptions.convertLt) {
-    curpos = sellength;
-    while (curpos != std::string::npos && (curpos = str.rfind("&lt;", curpos)) != std::string::npos) {
-      if (curpos != std::string::npos) {
-        str.replace(curpos, strlen("&lt;"), "<");
-        sellength = sellength - strlen("&lt;") + strlen("<");
-      }
-      --curpos;
-    }
-  }
-
-  if (xmltoolsoptions.convertGt) {
-    curpos = sellength;
-    while (curpos != std::string::npos && (curpos = str.rfind("&gt;", curpos)) != std::string::npos) {
-      if (curpos != std::string::npos) {
-        str.replace(curpos, strlen("&gt;"), ">");
-        sellength = sellength - strlen("&gt;") + strlen(">");
-      }
-      --curpos;
-    }
-  }
-
-  if (xmltoolsoptions.convertAmp) {
-    curpos = sellength;
-    while (curpos != std::string::npos && (curpos = str.rfind("&amp;", curpos)) != std::string::npos) {
-      if (curpos != std::string::npos) {
-        str.replace(curpos, strlen("&amp;"), "&");
-        sellength = sellength - strlen("&amp;") + strlen("&");
-      }
-      --curpos;
-    }
-  }
-
-  // Replace the selection with new string
-  ::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(str.c_str()));
-
-  // Defines selection without scrolling
-  ::SendMessage(hCurrentEditView, SCI_SETCURRENTPOS, selstart, 0);
-  ::SendMessage(hCurrentEditView, SCI_SETANCHOR, selstart+sellength, 0);
-
-  str.clear();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void convertXML2Text() {
-  dbgln("convertXML2Text()");
-
-  int currentEdit, isReadOnly;
-  ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-  HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-
-  isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
-  if (isReadOnly) return;
-
-  size_t selstart = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-  size_t selend = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
-  size_t sellength = selend-selstart;
-
-  if (selend <= selstart) {
-    Report::_printf_err(L"Please select text to transform before you call the function.");
-    return;
-  }
-
-  char *data = new char[sellength+1];
-  if (!data) return;  // allocation error, abort check
-  memset(data, '\0', sellength+1);
-
-  ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
-
-  std::string str(data);
-  delete [] data;
-  data = NULL;
-  std::string::size_type curpos;
-
-  if (xmltoolsoptions.convertAmp) {
-    curpos = sellength;
-    while (curpos != std::string::npos && (curpos = str.rfind("&", curpos)) != std::string::npos) {
-      if (curpos != std::string::npos) {
-        str.replace(curpos, strlen("&"), "&amp;");
-        sellength = sellength + strlen("&amp;") - strlen("&");
-      }
-      --curpos;
-    }
-  }
-
-  if (xmltoolsoptions.convertLt) {
-    curpos = sellength;
-    while (curpos != std::string::npos && (curpos = str.rfind("<", curpos)) != std::string::npos) {
-      if (curpos != std::string::npos) {
-        str.replace(curpos, strlen("<"), "&lt;");
-        sellength = sellength + strlen("&lt;") - strlen("<");
-      }
-      --curpos;
-    }
-  }
-
-  if (xmltoolsoptions.convertGt) {
-    curpos = sellength;
-    while (curpos != std::string::npos && (curpos = str.rfind(">", curpos)) != std::string::npos) {
-      if (curpos != std::string::npos) {
-        str.replace(curpos, strlen(">"), "&gt;");
-        sellength = sellength + strlen("&gt;") - strlen(">");
-      }
-      --curpos;
-    }
-  }
-
-  if (xmltoolsoptions.convertQuote) {
-    curpos = sellength;
-    while (curpos != std::string::npos && (curpos = str.rfind("\"", curpos)) != std::string::npos) {
-      if (curpos != std::string::npos) {
-        str.replace(curpos, strlen("\""), "&quot;");
-        sellength = sellength + strlen("&quot;") - strlen("\"");
-      }
-      --curpos;
-    }
-  }
-
-  if (xmltoolsoptions.convertApos) {
-    curpos = sellength;
-    while (curpos != std::string::npos && (curpos = str.rfind("'", curpos)) != std::string::npos) {
-      if (curpos != std::string::npos) {
-        str.replace(curpos, strlen("'"), "&apos;");
-        sellength = sellength + strlen("&apos;") - strlen("'");
-      }
-      --curpos;
-    }
-  }
-
-  // Replace the selection with new string
-  ::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(str.c_str()));
-
-  // Defines selection without scrolling
-  ::SendMessage(hCurrentEditView, SCI_SETCURRENTPOS, selstart, 0);
-  ::SendMessage(hCurrentEditView, SCI_SETANCHOR, selstart+sellength, 0);
-
-  str.clear();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-int validateSelectionForComment(std::string str, std::string::size_type sellength) {
-  dbgln("validateSelectionForComment()");
-
-  // Validate the selection
-  std::stack<int> checkstack;
-  std::string::size_type curpos = 0;
-  int errflag = 0;
-  while (curpos <= sellength && !errflag && (curpos = str.find_first_of("<-*", curpos)) != std::string::npos) {
-    if (curpos > sellength) break;
-
-    if (!str.compare(curpos, 4, "<!--")) {
-      checkstack.push(0);
-    }
-    if (!str.compare(curpos, 3, "-->")) {
-      if (!checkstack.empty()) {
-        if (checkstack.top() != 0) errflag = checkstack.top();
-        else checkstack.pop();
-      } else {
-        errflag = -3;
-        break;
-      }
-    }
-    if (!str.compare(curpos, 3, "<![")) {
-      std::string::size_type endvalpos = str.find("]**", curpos);
-      if (endvalpos != std::string::npos) checkstack.push(atoi(str.substr(curpos+3,endvalpos).c_str()));
-    }
-    if (!str.compare(curpos, 3, "**[")) {
-      if (!checkstack.empty()) {
-        std::string::size_type endvalpos = str.find("]>", curpos);
-        if (endvalpos != std::string::npos && atoi(str.substr(curpos+3,endvalpos).c_str()) != checkstack.top()) errflag = -2;
-        else checkstack.pop();
-      } else {
-        errflag = -4;
-        break;
-      }
-    }
-    ++curpos;
-  }
-  if (!checkstack.empty()) errflag = -1;
-
-  return errflag;
-}
-
-void commentSelection() {
-  dbgln("commentSelection()");
-
-  long currentEdit;
-  int isReadOnly;
-  ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-  HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-
-  isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
-  if (isReadOnly) return;
-
-  size_t selstart = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-  size_t selend = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
-  size_t sellength = selend-selstart;
-
-  if (selend <= selstart) {
-    Report::_printf_err(L"Please select text to transform before you call the function.");
-    return;
-  }
-
-  char *data = new char[sellength+sizeof(char)];
-  if (!data) return;  // allocation error, abort check
-  memset(data, '\0', sellength+sizeof(char));
-
-  ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
-
-  while (sellength >= 0 && (data[sellength] == '\r' || data[sellength] == '\n')) {
-    data[sellength--] = '\0';
-  }
-
-  std::string str(data);
-  delete [] data;
-  data = NULL;
-
-  int errflag = validateSelectionForComment(str, sellength);
-  if (errflag != 0) {
-    wchar_t msg[512];
-    swprintf(msg, 512, L"The current selection covers part of another comment.\nUncomment process may be not applicable.\n\nDo you want to continue ? Error code %d", errflag);
-    if (::MessageBox(nppData._nppHandle, msg, L"XML Tools plugin", MB_YESNO | MB_ICONASTERISK) == IDNO) {
-      str.clear();
-      return;
-    }
-  }
-
-  std::string::size_type curpos = sellength;
-  while (curpos != std::string::npos && (curpos = str.rfind("<!{", curpos)) != std::string::npos) {
-    if (curpos != std::string::npos) {
-      size_t endvalpos = str.find("}**", curpos);
-      int endval = atoi(str.substr(curpos+3,endvalpos).c_str());
-      char tmpstr[64];
-      sprintf(tmpstr, "<!{%d}**", endval+1);
-      str.replace(curpos,endvalpos-curpos+3,tmpstr);
-      sellength += (strlen(tmpstr)-(endvalpos-curpos+3));
-    }
-    --curpos;
-  }
-  curpos = sellength;
-  while (curpos != std::string::npos && (curpos = str.rfind("**{", curpos)) != std::string::npos) {
-    if (curpos != std::string::npos) {
-      size_t endvalpos = str.find("}>", curpos);
-      int endval = atoi(str.substr(curpos+3,endvalpos).c_str());
-      char tmpstr[64];
-      sprintf(tmpstr, "**{%d}>", endval+1);
-      str.replace(curpos,endvalpos-curpos+2,tmpstr);
-      sellength += (strlen(tmpstr)-(endvalpos-curpos+2));
-    }
-    --curpos;
-  }
-
-  curpos = sellength;
-  while (curpos != std::string::npos && (curpos = str.rfind("<!--", curpos)) != std::string::npos) {
-    if (curpos != std::string::npos) {
-      str.replace(curpos,4,"<!{1}**");
-      sellength += 3;
-    }
-    --curpos;
-  }
-  curpos = sellength;
-  while (curpos != std::string::npos && (curpos = str.rfind("-->", curpos)) != std::string::npos) {
-    if (curpos != std::string::npos) {
-      str.replace(curpos,3,"**{1}>");
-      sellength += 3;
-    }
-    --curpos;
-  }
-
-  str.insert(0,"<!--"); sellength += 4;
-  str.insert(sellength,"-->"); sellength += 3;
-
-  // Replace the selection with new string
-  ::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(str.c_str()));
-
-  // Defines selection without scrolling
-  ::SendMessage(hCurrentEditView, SCI_SETCURRENTPOS, selstart, 0);
-  ::SendMessage(hCurrentEditView, SCI_SETANCHOR, selstart+sellength, 0);
-
-  str.clear();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void uncommentSelection() {
-  dbgln("uncommentSelection()");
-
-  long currentEdit;
-  int isReadOnly;
-  ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-  HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-
-  isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
-  if (isReadOnly) return;
-
-  size_t selstart = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-  size_t selend = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
-  size_t sellength = selend-selstart;
-
-  if (selend <= selstart) {
-    Report::_printf_err(L"Please select text to transform before you call the function.");
-    return;
-  }
-
-  char *data = new char[sellength+sizeof(char)];
-  if (!data) return;  // allocation error, abort check
-  memset(data, '\0', sellength+sizeof(char));
-
-  ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
-
-  std::string str(data);
-  delete [] data;
-  data = NULL;
-
-  int errflag = validateSelectionForComment(str, sellength);
-  if (errflag != 0) {
-    wchar_t msg[512];
-    swprintf(msg, 512, L"Unable to uncomment the current selection.\nError code is %d.", errflag);
-    Report::_printf_err(msg);
-    str.clear();
-    return;
-  }
-
-  // Proceed to uncomment
-  std::string::size_type curpos = sellength;
-  while (curpos != std::string::npos && (curpos = str.rfind("-->", curpos)) != std::string::npos) {
-    if (curpos != std::string::npos) {
-      str.erase(curpos,3);
-      sellength -= 3;
-    }
-    --curpos;
-  }
-  curpos = sellength;
-  while (curpos != std::string::npos && (curpos = str.rfind("<!--", curpos)) != std::string::npos) {
-    if (curpos != std::string::npos) {
-      str.erase(curpos,4);
-      sellength -= 4;
-    }
-    --curpos;
-  }
-
-  curpos = sellength;
-  while (curpos != std::string::npos && (curpos = str.rfind("<!{", curpos)) != std::string::npos) {
-    if (curpos != std::string::npos) {
-      size_t endvalpos = str.find("}**", curpos);
-      int endval = atoi(str.substr(curpos+3,endvalpos).c_str());
-      if (endval > 1) {
-        char tmpstr[64];
-        sprintf(tmpstr, "<!{%d}**", endval-1);
-        str.replace(curpos,endvalpos-curpos+3,tmpstr);
-        sellength += (strlen(tmpstr)-(endvalpos-curpos+3));
-      } else {
-        str.replace(curpos,endvalpos-curpos+3,"<!--");
-        sellength += (4-(endvalpos-curpos+3));
-      }
-    }
-    --curpos;
-  }
-  curpos = sellength;
-  while (curpos != std::string::npos && (curpos = str.rfind("**{", curpos)) != std::string::npos) {
-    if (curpos != std::string::npos) {
-      size_t endvalpos = str.find("}>", curpos);
-      int endval = atoi(str.substr(curpos+3,endvalpos).c_str());
-      if (endval > 1) {
-        char tmpstr[64];
-        sprintf(tmpstr, "**{%d}>", endval-1);
-        str.replace(curpos,endvalpos-curpos+2,tmpstr);
-        sellength += (strlen(tmpstr)-(endvalpos-curpos+2));
-      } else {
-        str.replace(curpos,endvalpos-curpos+2,"-->");
-        sellength += (3-(endvalpos-curpos+2));
-      }
-    }
-    --curpos;
-  }
-
-  // Replace the selection with new string
-  ::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(str.c_str()));
-
-  // Defines selection without scrolling
-  ::SendMessage(hCurrentEditView, SCI_SETCURRENTPOS, selstart, 0);
-  ::SendMessage(hCurrentEditView, SCI_SETANCHOR, selstart+sellength, 0);
-
-  str.clear();
-}
-
-/////////////////////////////////////////////////////////////////////////////
 // The one and only CXMLToolsApp object
 
 CXMLToolsApp* theApp = new CXMLToolsApp();

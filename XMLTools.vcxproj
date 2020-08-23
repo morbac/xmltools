@@ -321,9 +321,16 @@
   <ItemGroup>
     <ClCompile Include="AboutBoxDlg.cpp" />
     <ClCompile Include="CMyPropertyGridCtrl.cpp" />
+    <ClCompile Include="nppMenu.cpp" />
+    <ClCompile Include="ToolsComment.cpp" />
+    <ClCompile Include="Config.cpp" />
+    <ClCompile Include="ToolsConvert.cpp" />
     <ClCompile Include="DebugDlg.cpp" />
     <ClCompile Include="MSXMLHelper.cpp" />
+    <ClCompile Include="nppHelpers.cpp" />
     <ClCompile Include="OptionsDlg.cpp" />
+    <ClCompile Include="ToolsPrettyPrintFast.cpp" />
+    <ClCompile Include="ToolsPrettyPrintInline.cpp" />
     <ClCompile Include="Report.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -350,14 +357,17 @@
   <ItemGroup>
     <ClInclude Include="AboutBoxDlg.h" />
     <ClInclude Include="CMyPropertyGridCtrl.h" />
+    <ClInclude Include="Config.h" />
     <ClInclude Include="DebugDlg.h" />
     <ClInclude Include="MSXMLHelper.h" />
     <ClInclude Include="Notepad_plus_msgs.h" />
+    <ClInclude Include="nppHelpers.h" />
     <ClInclude Include="OptionsDlg.h" />
     <ClInclude Include="PluginInterface.h" />
     <ClInclude Include="Report.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Scintilla.h" />
+    <ClInclude Include="ScintillaDoc.h" />
     <ClInclude Include="Sci_Position.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="XMLTools.h" />
