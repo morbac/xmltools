@@ -47,6 +47,8 @@ std::stringstream *prettyPrintXml(const char* text, long textLength, PrettyPrint
 
         // handle in-between data
         if (startpos != curpos) {
+            bool originalTagOpen = tagIsOpen; // these 2 variables are only used in a special case: text not directly enclosed in a tag
+            auto originalPos = outText->tellp();
             if (parms.removeWhitespace) {
                 const char* endpos = curpos;
                 bool inwhitespace = true;
@@ -83,6 +85,12 @@ std::stringstream *prettyPrintXml(const char* text, long textLength, PrettyPrint
                 auto copyLength = curpos - startpos;
                 tryCloseTag;
                 outText->write(startpos, copyLength);
+            }
+            if (originalTagOpen == false)
+            {
+                auto newPos = outText->tellp();
+                if (originalPos != newPos) // case of 'not in tag and extra data'.. make sure closing tag is on a new line
+                    newline;
             }
         }
 
@@ -150,14 +158,19 @@ std::stringstream *prettyPrintXml(const char* text, long textLength, PrettyPrint
             continue;
         }
 
-        tryCloseTag;
+        if (tagIsOpen)
+        {
+            tryCloseTag
+            newline
+        }
+        indent
 
         // find end of tag
-        bool inAttribute = false;
         bool endFound = false;
-        bool inTag = true;
-        bool inAttributeName = false;
         bool inAttributeValue = false;
+        bool inWhiteSpace = false;
+        bool selfClosing = false;
+        const char* textstart = curpos; // includes the <
 
         for (startpos = curpos; curpos < endpos; curpos++)
         {
@@ -169,36 +182,54 @@ std::stringstream *prettyPrintXml(const char* text, long textLength, PrettyPrint
             }
             else if (cc == '"') {
                 inAttributeValue = true;
+                if (textstart == NULL)
+                    textstart = curpos;
             }
             else if (cc == '>') {
                 endFound = true;
+                if (curpos[-1] == '/')
+                    selfClosing = true;
+
+                if (textstart != NULL)
+                {
+                    if (selfClosing) { // no need for extra level, as it is self-closed
+                        curpos++; // skip > BEFORE write
+                        outText->write(textstart, curpos - textstart);
+                        newline;
+                    }
+                    else {
+                        outText->write(textstart, curpos - textstart);
+                        curpos++; // skip > AFTER write
+                        tagIsOpen = true;
+                        xmllevel++;
+                    }
+                }
                 break;
+            }
+            else if (isWhitespace(cc)) {
+                if (textstart) {
+                    outText->write(textstart, curpos - textstart);
+                    textstart = NULL;
+                }
+                inWhiteSpace = true;
+            }
+            else {
+                // so its text..
+                if (inWhiteSpace) {
+                    if (cc != '=') { // exception for: attribute = "value" ... this allows for the removal of the space after 'attribute'
+                        outText->write(" ", 1);
+                    }
+                    inWhiteSpace = false;
+                    textstart = curpos;
+                }
             }
         }
 
         if (endFound) {
-
-            tryCloseTag;
-
-            if (indented)
-                newline;
-
-            indent;
-
-            if (curpos[-1] == '/') { // no need for extra level, as it is self-closed
-                curpos++; // skip > BEFORE write
-                outText->write(startpos, curpos - startpos);
-                newline;
-            }
-            else {
-                outText->write(startpos, curpos - startpos);
-                curpos++; // skip > AFTER write
-                tagIsOpen = true;
-                xmllevel++;
-            }
+            continue;
         }
         else { // not found, abort (write remaining as is)
-            outText->write(startpos, endpos - startpos);
+            outText->write(textstart, endpos - textstart);
             curpos = endpos;
         }
 
