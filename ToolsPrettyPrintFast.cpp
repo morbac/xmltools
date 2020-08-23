@@ -162,19 +162,8 @@ std::stringstream *prettyPrintXml(const char* text, long textLength, PrettyPrint
         for (startpos = curpos; curpos < endpos; curpos++)
         {
             char cc = *curpos;
-/*
-            if (inTag)
-            {
-                if (isWhitespace(cc)) {
-                    inTag = false;
-                    outText->write(startpos, curpos - startpos);
-                    startpos = curpos;
-                }
-            }
-            else if (inAttributeName) {
 
-            }
-            else */if (inAttributeValue) {
+            if (inAttributeValue) {
                 if (cc == '"')
                     inAttributeValue = false;
             }
