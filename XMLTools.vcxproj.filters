@@ -160,17 +160,17 @@
     <ClInclude Include="CMyPropertyGridCtrl.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="nppHelpers.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="ScintillaDoc.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Config.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Debug.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nppHelpers.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
