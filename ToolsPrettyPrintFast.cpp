@@ -19,6 +19,7 @@ struct PrettyPrintParms
     bool insertIndents = false;
     bool insertNewLines = false;
     bool removeWhitespace = false;
+    bool autocloseEmptyElements = true;
 
 };
 
@@ -33,6 +34,8 @@ std::stringstream *prettyPrintXml(const char* text, long textLength, PrettyPrint
     int xmllevel = 0;
     bool indented = false;
     bool tagIsOpen = false; // we keep the tags open to be able to handle <foo>   </foo> => <foo/> conversion 
+    const char* prevTag = NULL;
+    int prevTagLen = 0;
 
     #define tryCloseTag { if (tagIsOpen) { outText->write(">",1); tagIsOpen = false;} }
     // maxElementDepth to protect against unclosed tags in large files
@@ -146,8 +149,15 @@ std::stringstream *prettyPrintXml(const char* text, long textLength, PrettyPrint
             if (xmllevel > 0) xmllevel--;
 
             if (tagIsOpen) {
-                tagIsOpen = false;
-                outText->write("/>", 2);
+                int tagLen = static_cast<int>((end - 1) - (curpos + 2));
+                if (parms.autocloseEmptyElements && prevTag != NULL && prevTagLen == tagLen && strncmp(curpos+2, prevTag, prevTagLen) == 0) {
+                    tagIsOpen = false;
+                    outText->write("/>", 2);
+                }
+                else {
+                    tryCloseTag;
+                    outText->write(curpos, end - startpos);
+                }
             }
             else {
                 indent;
@@ -173,8 +183,14 @@ std::stringstream *prettyPrintXml(const char* text, long textLength, PrettyPrint
         bool selfClosing = false;
         const char* textstart = curpos; // includes the <
 
+        prevTag = NULL;
+        prevTagLen = 0;
+
         for (startpos = curpos; curpos < endpos; curpos++)
         {
+#define emitTxt if (prevTag == NULL) { prevTag = startpos + 1; prevTagLen = static_cast<int>(curpos - startpos) - 1; }\
+            outText->write(textstart, curpos - textstart);
+
             char cc = *curpos;
 
             if (inAttributeValue) {
@@ -195,11 +211,12 @@ std::stringstream *prettyPrintXml(const char* text, long textLength, PrettyPrint
                 {
                     if (selfClosing) { // no need for extra level, as it is self-closed
                         curpos++; // skip > BEFORE write
-                        outText->write(textstart, curpos - textstart);
+                        emitTxt
+                        prevTag = NULL;
                         newline;
                     }
                     else {
-                        outText->write(textstart, curpos - textstart);
+                        emitTxt
                         curpos++; // skip > AFTER write
                         tagIsOpen = true;
                         xmllevel++;
@@ -209,7 +226,7 @@ std::stringstream *prettyPrintXml(const char* text, long textLength, PrettyPrint
             }
             else if (isWhitespace(cc)) {
                 if (textstart) {
-                    outText->write(textstart, curpos - textstart);
+                    emitTxt
                     textstart = NULL;
                 }
                 inWhiteSpace = true;
@@ -259,6 +276,7 @@ void sciDocPrettyPrintXML(ScintillaDoc& doc) {
     parms.insertIndents = true;
     parms.insertNewLines = true;
     parms.removeWhitespace = true;
+    parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
     if (xmltoolsoptions.maxElementDepth > 0)
         parms.maxElementDepth = xmltoolsoptions.maxElementDepth;
 
@@ -284,12 +302,13 @@ void sciDocLinearizeXML(ScintillaDoc& doc) {
     if (inText.text == NULL)
         return;
 
-    PrettyPrintParms parms{};
+    PrettyPrintParms parms;
     parms.eol = "";
     parms.tab = "";
     parms.insertIndents = false;
     parms.insertNewLines = false;
     parms.removeWhitespace = true;
+    parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
 
     auto docclock_start = clock();
     std::stringstream* prettyTextStream = prettyPrintXml(inText.text, inText.length, parms);

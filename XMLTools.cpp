@@ -9,7 +9,6 @@
 
 // dialogs
 #include "MessageDlg.h"
-#include "XSLTransformDlg.h"
 #include "HowtoUseDlg.h"
 #include "OptionsDlg.h"
 
