@@ -135,6 +135,8 @@ void CXSLTransformDlg::OnBtnTransform() {
 
   bool outputAsStream = false;
 
+  V_VT(&varValue) = VT_UNKNOWN;
+
   this->UpdateData();
 
   if (this->m_sSelectedFile.GetLength() <= 0) {
@@ -262,7 +264,7 @@ void CXSLTransformDlg::OnBtnTransform() {
           }
 
           ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FILE_NEW);
-          if (encoding != uniEnd) Report::setEncoding(encoding, hCurrentEditView);
+          if (encoding != UniMode::uniEnd) Report::setEncoding(encoding, hCurrentEditView);
           ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(output));
 
           if (outputAsStream) {

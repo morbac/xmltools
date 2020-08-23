@@ -15,6 +15,7 @@
 #include "resource.h"    // main symbols
 #include "MSXMLHelper.h"
 #include "Config.h"
+#include "Debug.h"
 #include <string>
 
 //---------------------------------------------------------------------------

@@ -321,6 +321,7 @@
   <ItemGroup>
     <ClCompile Include="AboutBoxDlg.cpp" />
     <ClCompile Include="CMyPropertyGridCtrl.cpp" />
+    <ClCompile Include="Debug.cpp" />
     <ClCompile Include="nppMenu.cpp" />
     <ClCompile Include="ToolsComment.cpp" />
     <ClCompile Include="Config.cpp" />
@@ -329,6 +330,7 @@
     <ClCompile Include="MSXMLHelper.cpp" />
     <ClCompile Include="nppHelpers.cpp" />
     <ClCompile Include="OptionsDlg.cpp" />
+    <ClCompile Include="ToolsEditor.cpp" />
     <ClCompile Include="ToolsPrettyPrintFast.cpp" />
     <ClCompile Include="ToolsPrettyPrintInline.cpp" />
     <ClCompile Include="Report.cpp" />
@@ -340,6 +342,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="ToolsXmlValidate.cpp" />
+    <ClCompile Include="ToolsXPath.cpp" />
     <ClCompile Include="XMLTools.cpp" />
     <ClCompile Include="HowtoUseDlg.cpp" />
     <ClCompile Include="InputDlg.cpp" />
@@ -358,6 +362,7 @@
     <ClInclude Include="AboutBoxDlg.h" />
     <ClInclude Include="CMyPropertyGridCtrl.h" />
     <ClInclude Include="Config.h" />
+    <ClInclude Include="Debug.h" />
     <ClInclude Include="DebugDlg.h" />
     <ClInclude Include="MSXMLHelper.h" />
     <ClInclude Include="Notepad_plus_msgs.h" />

@@ -175,7 +175,8 @@ public:
   virtual HRESULT STDMETHODCALLTYPE QueryInterface(
     /* [in] */ REFIID riid,
     /* [iid_is][out] */ _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject) {
-    return S_OK;
+      *ppvObject = NULL;
+      return E_NOINTERFACE;
   }
 
   virtual ULONG STDMETHODCALLTYPE AddRef(void) {

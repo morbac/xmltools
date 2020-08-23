@@ -19,7 +19,7 @@ static char THIS_FILE[]=__FILE__;
 
 const int MAX_BUFFER = 4096;
 std::wstring currentLog;
-UniMode currentEncoding = uniEnd;
+UniMode currentEncoding = UniMode::uniEnd;
 
 Report::Report() {
 }
@@ -31,12 +31,14 @@ void Report::_printf_err(const wchar_t* s, ...) {
   if (!s || !wcslen(s)) return;
 
   va_list msg;
-  wchar_t buffer[MAX_BUFFER] = { '\0' };
+  wchar_t buffer[MAX_BUFFER];
+
 
   va_start(msg, s);
   _vsntprintf(buffer, MAX_BUFFER - 1, s, msg);
   va_end(msg);
 
+  buffer[MAX_BUFFER - 1] = 0;
   if (wcslen(buffer) <= 0) return;
 
   ::MessageBox(nppData._nppHandle, buffer, L"XML Tools plugin", MB_OK | MB_ICONEXCLAMATION);
@@ -46,10 +48,11 @@ void Report::_fprintf_err(void * ctx, const wchar_t* s, ...) {
   if (!s || !wcslen(s)) return;
 
   va_list msg;
-  wchar_t buffer[MAX_BUFFER] = { '\0' };
+  wchar_t buffer[MAX_BUFFER];
 
   va_start(msg, s);
   _vsntprintf(buffer, MAX_BUFFER - 1, s, msg);
+  buffer[MAX_BUFFER - 1] = 0;
   va_end(msg);
 
   if (wcslen(buffer) <= 0) return;
@@ -61,10 +64,11 @@ void Report::_printf_inf(const wchar_t* s, ...) {
   if (!s || !wcslen(s)) return;
 
   va_list msg;
-  wchar_t buffer[MAX_BUFFER] = { '\0' };
+  wchar_t buffer[MAX_BUFFER];
 
   va_start(msg, s);
   _vsntprintf(buffer, MAX_BUFFER - 1, s, msg);
+  buffer[MAX_BUFFER - 1] = 0;
   va_end(msg);
 
   if (wcslen(buffer) <= 0) return;
@@ -92,10 +96,11 @@ void Report::_fprintf_inf(void * ctx, const wchar_t* s, ...) {
   if (!s || !wcslen(s)) return;
 
   va_list msg;
-  wchar_t buffer[MAX_BUFFER] = { '\0' };
+  wchar_t buffer[MAX_BUFFER];
 
   va_start(msg, s);
   _vsntprintf(buffer, MAX_BUFFER - 1, s, msg);
+  buffer[MAX_BUFFER - 1] = 0;
   va_end(msg);
 
   if (wcslen(buffer) <= 0) return;
@@ -107,10 +112,11 @@ std::wstring Report::str_format(const wchar_t* s, ...) {
   if (!s || !wcslen(s)) return L"";
 
   va_list msg;
-  wchar_t buffer[MAX_BUFFER] = { '\0' };
+  wchar_t buffer[MAX_BUFFER];
 
   va_start(msg, s);
   _vsntprintf(buffer, MAX_BUFFER - 1, s, msg);
+  buffer[MAX_BUFFER - 1] = 0;
   va_end(msg);
 
   if (wcslen(buffer) <= 0) return L"";
@@ -121,14 +127,13 @@ std::wstring Report::str_format(const wchar_t* s, ...) {
 std::string Report::str_format(const char* s, ...) {
   if (!s || !strlen(s)) return "";
 
-  size_t buffersize = 2*strlen(s);
-  char * buffer = (char*) malloc(buffersize*sizeof(char));
-  memset(buffer, '\0', buffersize);
+  char buffer[MAX_BUFFER];
 
   va_list msg;
   va_start(msg, s);
   //vsnprintf(buffer + strlen(buffer), s, msg);
   _vsnprintf(buffer, MAX_BUFFER - 1, s, msg);
+  buffer[MAX_BUFFER - 1] = 0;
   va_end(msg);
 
   if (strlen(buffer) <= 0) return "";
@@ -140,10 +145,11 @@ CStringW Report::cstring(const wchar_t* s, ...) {
   if (!s || !wcslen(s)) return "";
 
   va_list msg;
-  wchar_t buffer[MAX_BUFFER] = { '\0' };
+  wchar_t buffer[MAX_BUFFER];
 
   va_start(msg, s);
   _vsntprintf(buffer, MAX_BUFFER - 1, s, msg);
+  buffer[MAX_BUFFER-1] = 0;
   va_end(msg);
 
   if (wcslen(buffer) <= 0) return "";
@@ -354,33 +360,33 @@ UniMode Report::getEncoding(HWND npp) {
 UniMode Report::getEncoding(BSTR encoding) {
   CStringW cstring(encoding);
   if (0 == cstring.Left(4).CompareNoCase(L"iso-")) {
-    return uni8Bit;
+    return UniMode::uni8Bit;
   }
-  return uniCookie;
+  return UniMode::uniCookie;
 }
 
 void Report::setEncoding(UniMode encoding, HWND npp /* = NULL */) {
   HWND nppwnd = (npp == NULL ? nppData._nppHandle : npp);
   LRESULT bufferid = ::SendMessage(nppwnd, NPPM_GETCURRENTBUFFERID, 0, 0);
-  UniMode(::SendMessage(nppwnd, NPPM_SETBUFFERENCODING, bufferid, encoding));
+  UniMode(::SendMessage(nppwnd, NPPM_SETBUFFERENCODING, bufferid, (int)encoding));
 
   // uni8Bit=0, uniUTF8=1, uni16BE=2, uni16LE=3, uniCookie=4, uni7Bit=5, uni16BE_NoBOM=6, uni16LE_NoBOM=7
   switch (encoding) {
-    case uni8Bit: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_ANSI); break;
-    case uniCookie: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_AS_UTF_8); break;
-    case uniUTF8: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_UTF_8); break;
-    case uni16BE: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_UCS_2BE); break;
-    case uni16LE: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_UCS_2LE); break;
+    case UniMode::uni8Bit: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_ANSI); break;
+    case UniMode::uniCookie: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_AS_UTF_8); break;
+    case UniMode::uniUTF8: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_UTF_8); break;
+    case UniMode::uni16BE: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_UCS_2BE); break;
+    case UniMode::uni16LE: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_UCS_2LE); break;
     default: ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FORMAT_ANSI); break;
   }
 }
 
 std::string Report::castChar(std::wstring text, UniMode encoding) {
   switch (encoding) {
-  case uniCookie:
-  case uniUTF8:
-  case uni16BE:
-  case uni16LE:
+  case UniMode::uniCookie:
+  case UniMode::uniUTF8:
+  case UniMode::uni16BE:
+  case UniMode::uni16LE:
     // utf-8
     return Report::ucs2ToUtf8(text.c_str());
     break;
@@ -400,7 +406,7 @@ wchar_t* Report::castChar(const char* orig, UniMode encoding /*= uniEnd*/) {
     enc = Report::getEncoding();
   }
   */
-  if (enc == uni8Bit) {
+  if (enc == UniMode::uni8Bit) {
     return Report::char2wchar(orig);
   } else {
     size_t osize = strlen(orig),
@@ -419,7 +425,7 @@ char* Report::castWChar(const wchar_t* orig, UniMode encoding /*= uniEnd*/) {
     enc = Report::getEncoding();
   }
   */
-  if (enc == uni8Bit) {
+  if (enc == UniMode::uni8Bit) {
     return Report::wchar2char(orig);
   } else {
     size_t osize = wcslen(orig),
@@ -516,7 +522,7 @@ unsigned int Report::UCS2FromUTF8(const char *s, unsigned int len, wchar_t *tbuf
   }
   return ui;
 }
-
+/*
 unsigned int Report::ascii_to_utf8(const char * pszASCII, unsigned int lenASCII, char * pszUTF8) {
   // length of pszUTF8 must be enough;
   // its maximum is (lenASCII*3 + 1)
@@ -543,7 +549,8 @@ unsigned int Report::ascii_to_utf8(const char * pszASCII, unsigned int lenASCII,
   delete [] pszUCS2;
   return lenUTF8;
 }
-
+*/
+/*
 int Report::utf8_to_ascii(const char * pszUTF8, unsigned int lenUTF8, char * pszASCII) {
   // length of pszASCII must be enough;
   // its maximum is (lenUTF8 + 1)
@@ -571,7 +578,9 @@ int Report::utf8_to_ascii(const char * pszUTF8, unsigned int lenUTF8, char * psz
   delete [] pszUCS2;
   return nbByte;
 }
+*/
 
+/*
 void Report::getEOLChar(HWND hwnd, int* eolmode, std::string* eolchar) {
   int eol = (int) ::SendMessage(hwnd, SCI_GETEOLMODE, 0, 0);
   *eolmode = eol;
@@ -587,7 +596,9 @@ void Report::getEOLChar(HWND hwnd, int* eolmode, std::string* eolchar) {
       *eolchar = "\r\n";
   }
 }
+*/
 
+/*
 bool Report::isEOL(const std::string& txt, const std::string::size_type txtlength, unsigned int pos, int mode) {
   switch (mode) {
     case SC_EOL_CR:
@@ -602,7 +613,9 @@ bool Report::isEOL(const std::string& txt, const std::string::size_type txtlengt
       break;
   }
 }
+*/
 
+/*
 bool Report::isEOL(const char cc, const char nc, int mode) {
   switch (mode) {
   case SC_EOL_CR:
@@ -617,31 +630,16 @@ bool Report::isEOL(const char cc, const char nc, int mode) {
     break;
   }
 }
+*/
 
+/*
 void Report::char2BSTR(char* inParam, BSTR * outParam) {
   std::string tmp(inParam);
   *outParam = SysAllocString((Report::utf8ToUcs2(tmp)).c_str());
   tmp.clear();
 
-  /*
-  ULONG size;
-  int retVal = -1;
-  WCHAR* tmp = NULL;
-
-  size = MultiByteToWideChar(CP_OEMCP, 0, inParam, -1, tmp, 0);
-  tmp = (WCHAR*)GlobalAlloc(GMEM_ZEROINIT, size * sizeof(WCHAR));
-
-  retVal = MultiByteToWideChar(CP_OEMCP, 0, inParam, -1, tmp, size);
-
-  if (0 != retVal) {
-    retVal = 1;
-    *outParam = SysAllocString(tmp);
-  }
-
-  GlobalFree(tmp);
-
-  return retVal;*/
 }
+*/
 
 void Report::char2VARIANT(char* inParam, VARIANT* outParam) {
   // from https://stackoverflow.com/questions/1822914/load-xml-into-c-msxml-from-byte-array?rq=1

@@ -1,6 +1,10 @@
 #include "nppHelpers.h"
 #include "XMLTools.h"
 
+HWND getCurrentHScintilla(int which) {
+    return (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
+};
+
 int nbopenfiles1, nbopenfiles2;
 
 int initDocIterator() {
@@ -27,7 +31,8 @@ bool hasNextDoc(int* iter) {
             ::SendMessage(nppData._nppHandle, NPPM_ACTIVATEDOC, MAIN_VIEW, (*iter));
         }
         else if (*iter >= nbopenfiles1 && *iter < nbopenfiles1 + nbopenfiles2) {
-            ::SendMessage(nppData._nppHandle, NPPM_ACTIVATEDOC, SUB_VIEW, (*iter) - nbopenfiles1);
+            auto idx = (*iter) - nbopenfiles1;
+            ::SendMessage(nppData._nppHandle, NPPM_ACTIVATEDOC, SUB_VIEW, idx);
         }
         else {
             return false;

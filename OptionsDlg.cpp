@@ -45,32 +45,32 @@ void COptionsDlg::UpdateProperty(CMFCPropertyGridProperty* src, enumOptionType t
   COleVariant val = src->GetValue();
   DWORD_PTR obj = src->GetData();
   switch (type) {
-    case TYPE_BOOL: {
+  case enumOptionType::TYPE_BOOL: {
       (*((bool*) obj)) = (val.boolVal == VARIANT_TRUE);
       break;
     }
-    case TYPE_TRISTATE: {
+  case enumOptionType::TYPE_TRISTATE: {
       if (!wcscmp(val.bstrVal, L"False")) (*((short*) obj)) = 0;
       else if (!wcscmp(val.bstrVal, L"True")) (*((short*) obj)) = 1;
       else (*((short*) obj)) = -1;
       break;
     }
-    case TYPE_INT: {
+  case enumOptionType::TYPE_INT: {
       (*((int*) obj)) = (val.intVal);
       break;
     }
-    case TYPE_LONG: {
+    case enumOptionType::TYPE_LONG: {
       (*((long*) obj)) = (val.lVal);
       break;
     }
-    case TYPE_WSTRING: {
+    case enumOptionType::TYPE_WSTRING: {
         if (obj == 0)
             obj = obj;
         else
           *((std::wstring*) obj) = val.bstrVal;
       break;
     }
-    case TYPE_WCHAR255: {
+    case enumOptionType::TYPE_WCHAR255: {
       rsize_t len = SysStringLen(val.bstrVal);
       if (len > 255) len = 255;
       memset((wchar_t*) obj, '\0', 255 * sizeof(wchar_t));
@@ -222,22 +222,22 @@ void COptionsDlg::OnBnClickedOk() {
   */
   
   for (std::vector<CMFCPropertyGridProperty*>::iterator it = vBoolProperties.begin(); it != vBoolProperties.end(); ++it) {
-    UpdateProperty(*it, TYPE_BOOL);
+    UpdateProperty(*it, enumOptionType::TYPE_BOOL);
   }
   for (std::vector<CMFCPropertyGridProperty*>::iterator it = vTristateProperties.begin(); it != vTristateProperties.end(); ++it) {
-    UpdateProperty(*it, TYPE_TRISTATE);
+    UpdateProperty(*it, enumOptionType::TYPE_TRISTATE);
   }
   for (std::vector<CMFCPropertyGridProperty*>::iterator it = vIntProperties.begin(); it != vIntProperties.end(); ++it) {
-    UpdateProperty(*it, TYPE_INT);
+    UpdateProperty(*it, enumOptionType::TYPE_INT);
   }
   for (std::vector<CMFCPropertyGridProperty*>::iterator it = vLongProperties.begin(); it != vLongProperties.end(); ++it) {
-    UpdateProperty(*it, TYPE_LONG);
+    UpdateProperty(*it, enumOptionType::TYPE_LONG);
   }
   for (std::vector<CMFCPropertyGridProperty*>::iterator it = vWStringProperties.begin(); it != vWStringProperties.end(); ++it) {
-    UpdateProperty(*it, TYPE_WSTRING);
+    UpdateProperty(*it, enumOptionType::TYPE_WSTRING);
   }
   for (std::vector<CMFCPropertyGridProperty*>::iterator it = vWChar255Properties.begin(); it != vWChar255Properties.end(); ++it) {
-    UpdateProperty(*it, TYPE_WCHAR255);
+    UpdateProperty(*it, enumOptionType::TYPE_WCHAR255);
   }
 
   CDialogEx::OnOK();

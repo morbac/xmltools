@@ -284,9 +284,9 @@ void sciDocLinearizeXML(ScintillaDoc& doc) {
 }
 
 void nppPrettyPrintXmlFast() {
-    nppDocumentCommand("PrettyPrint", sciDocPrettyPrintXML);
+    nppDocumentCommand("PrettyPrintFast", sciDocPrettyPrintXML);
 }
 
 void nppLinearizeXmlFast() {
-    nppDocumentCommand("Linearize", sciDocLinearizeXML);
+    nppDocumentCommand("LinearizeFast", sciDocLinearizeXML);
 }

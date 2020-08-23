@@ -51,9 +51,6 @@
     <ClCompile Include="OptionsDlg.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="DebugDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MSXMLHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -79,6 +76,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="nppMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolsXmlValidate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolsXPath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolsEditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -152,6 +164,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Config.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Debug.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

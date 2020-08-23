@@ -3,6 +3,8 @@
 #include "nppHelpers.h"
 #include "Report.h"
 
+#include <assert.h>
+
 // The number of functionality
 //#ifdef _DEBUG
 const int TOTAL_FUNCS = 32 + 2;
@@ -137,7 +139,7 @@ void performXSLTransform();
 
 void aboutBox();
 void optionsDlg();
-void debugDlg();
+//void debugDlg();
 
 void initMenu() {
 
@@ -148,32 +150,32 @@ void initMenu() {
 
     dbg("Building plugin menu entries... ");
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Enable XML syntax auto-check");
+    wcscpy(funcItem[menuentry]._itemName, L"Enable XML syntax auto-check");
     funcItem[menuentry]._pFunc = insertXMLCheckTag;
     funcItem[menuentry]._init2Check = config.doCheckXML;
     menuitemCheckXML = menuentry;
     ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Check XML syntax now");
+    wcscpy(funcItem[menuentry]._itemName, L"Check XML syntax now");
     funcItem[menuentry]._pFunc = manualXMLCheck;
     ++menuentry;
 
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Enable auto-validation");
+    wcscpy(funcItem[menuentry]._itemName, L"Enable auto-validation");
     funcItem[menuentry]._pFunc = insertValidationTag;
     funcItem[menuentry]._init2Check = config.doValidation;
     menuitemValidation = menuentry;
     ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Validate now");
+    wcscpy(funcItem[menuentry]._itemName, L"Validate now");
     funcItem[menuentry]._pFunc = manualValidation;
     registerShortcut(funcItem + menuentry, true, true, true, 'M');
     ++menuentry;
 
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Tag auto-close");
+    wcscpy(funcItem[menuentry]._itemName, L"Tag auto-close");
     funcItem[menuentry]._pFunc = insertXMLCloseTag;
     funcItem[menuentry]._init2Check = config.doCloseTag;
     menuitemCloseTag = menuentry;
@@ -195,19 +197,19 @@ void initMenu() {
     */
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Set XML type automatically");
+    wcscpy(funcItem[menuentry]._itemName, L"Set XML type automatically");
     funcItem[menuentry]._pFunc = insertAutoXMLType;
     funcItem[menuentry]._init2Check = config.doAutoXMLType;
     menuitemAutoXMLType = menuentry;
     ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Prevent XXE");
+    wcscpy(funcItem[menuentry]._itemName, L"Prevent XXE");
     funcItem[menuentry]._pFunc = togglePreventXXE;
     funcItem[menuentry]._init2Check = config.doPreventXXE;
     menuitemPreventXXE = menuentry;
     ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Allow huge files");
+    wcscpy(funcItem[menuentry]._itemName, L"Allow huge files");
     funcItem[menuentry]._pFunc = toggleAllowHuge;
     funcItem[menuentry]._init2Check = config.doAllowHuge;
     menuitemAllowHuge = menuentry;
@@ -215,12 +217,12 @@ void initMenu() {
 
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print");
+    wcscpy(funcItem[menuentry]._itemName, L"Pretty print");
     registerShortcut(funcItem + menuentry, true, true, true, 'B');
     funcItem[menuentry]._pFunc = nppPrettyPrintXML;
     ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (indent attributes)");
+    wcscpy(funcItem[menuentry]._itemName, L"Pretty print (indent attributes)");
     registerShortcut(funcItem + menuentry, true, true, true, 'A');
     funcItem[menuentry]._pFunc = nppPrettyPrintAttributes;
     ++menuentry;
@@ -232,81 +234,81 @@ void initMenu() {
     menuitemPrettyPrint = menuentry;
     ++menuentry;
     */
-    Report::strcpy(funcItem[menuentry]._itemName, L"Linearize XML");
+    wcscpy(funcItem[menuentry]._itemName, L"Linearize XML");
     registerShortcut(funcItem + menuentry, true, true, true, 'L');
     funcItem[menuentry]._pFunc = nppLinearizeXML;
     ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Apply to all open files");
+    wcscpy(funcItem[menuentry]._itemName, L"Apply to all open files");
     funcItem[menuentry]._pFunc = togglePrettyPrintAllFiles;
     funcItem[menuentry]._init2Check = config.doPrettyPrintAllOpenFiles;
     menuitemPrettyPrintAllFiles = menuentry;
     ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Pretty print (fast)");
+    wcscpy(funcItem[menuentry]._itemName, L"Pretty print (fast)");
     funcItem[menuentry]._pFunc = nppPrettyPrintXmlFast;
     ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Linearize (fast)");
+    wcscpy(funcItem[menuentry]._itemName, L"Linearize (fast)");
     funcItem[menuentry]._pFunc = nppLinearizeXmlFast;
     ++menuentry;
 
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Current XML Path");
+    wcscpy(funcItem[menuentry]._itemName, L"Current XML Path");
     registerShortcut(funcItem + menuentry, true, true, true, 'P');
     funcItem[menuentry]._pFunc = getCurrentXPathStd;
     ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Current XML Path with predicates");
+    wcscpy(funcItem[menuentry]._itemName, L"Current XML Path with predicates");
     funcItem[menuentry]._pFunc = getCurrentXPathPredicate;
     ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Evaluate XPath expression...");
+    wcscpy(funcItem[menuentry]._itemName, L"Evaluate XPath expression...");
     funcItem[menuentry]._pFunc = evaluateXPath;
     ++menuentry;
 
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"XSL Transformation...");
+    wcscpy(funcItem[menuentry]._itemName, L"XSL Transformation...");
     funcItem[menuentry]._pFunc = performXSLTransform;
     ++menuentry;
 
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Escape characters in selection (<> → &&lt;&&gt;)");
+    wcscpy(funcItem[menuentry]._itemName, L"Escape characters in selection (<> → &&lt;&&gt;)");
     funcItem[menuentry]._pFunc = convertXML2Text;
     ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Unescape characters in selection (&&lt;&&gt; → <>)");
+    wcscpy(funcItem[menuentry]._itemName, L"Unescape characters in selection (&&lt;&&gt; → <>)");
     funcItem[menuentry]._pFunc = convertText2XML;
     ++menuentry;
 
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Comment selection");
+    wcscpy(funcItem[menuentry]._itemName, L"Comment selection");
     registerShortcut(funcItem + menuentry, true, true, true, 'C');
     funcItem[menuentry]._pFunc = commentSelection;
     ++menuentry;
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Uncomment selection");
+    wcscpy(funcItem[menuentry]._itemName, L"Uncomment selection");
     registerShortcut(funcItem + menuentry, true, true, true, 'R');
     funcItem[menuentry]._pFunc = uncommentSelection;
     ++menuentry;
 
     funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"Options...");
+    wcscpy(funcItem[menuentry]._itemName, L"Options...");
     funcItem[menuentry]._pFunc = optionsDlg;
     ++menuentry;
 
     //#ifdef _DEBUG
-    Report::strcpy(funcItem[menuentry]._itemName, L"Debug window...");
-    funcItem[menuentry]._pFunc = debugDlg;
+    wcscpy(funcItem[menuentry]._itemName, L"Debug window...");
+    funcItem[menuentry]._pFunc = showDebugDlg;
     ++menuentry;
     //#endif
 
-    Report::strcpy(funcItem[menuentry]._itemName, L"About XML Tools / Donate...");
+    wcscpy(funcItem[menuentry]._itemName, L"About XML Tools / Donate...");
     funcItem[menuentry]._pFunc = aboutBox;
     ++menuentry;
 
