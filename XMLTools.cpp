@@ -326,7 +326,7 @@ void updateProxyConfig() {
 
     proxyurl += proxyoptions.host;
     proxyurl += L":";
-    proxyurl += proxyoptions.port;// std::to_string(static_cast<long long>(proxyoptions.port));
+    proxyurl += std::to_wstring(proxyoptions.port);// std::to_string(static_cast<long long>(proxyoptions.port));
 
     // v3
     //pXmlNanoHTTPScanProxy(proxyurl.c_str());  // http://toto:admin@127.0.0.1:8080

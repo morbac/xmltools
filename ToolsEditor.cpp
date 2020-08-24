@@ -15,7 +15,7 @@ void closeXMLTag() {
     int beginPos = currentPos - (sizeof(buf) - 1);
     int startPos = (beginPos > 0) ? beginPos : 0;
     int size = currentPos - startPos;
-    int insertStringSize = 2;
+    //int insertStringSize = 2;
 
 #define MAX_TAGNAME_LENGTH 516
     char insertString[MAX_TAGNAME_LENGTH] = "</";

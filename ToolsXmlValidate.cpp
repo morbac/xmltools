@@ -105,7 +105,7 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, 
                     // calculate tabs width
                     int tabwidth = (int) ::SendMessage(view, SCI_GETTABWIDTH, 0, 0);
                     if (tabwidth <= 0) tabwidth = 4;
-                    for (int i = 0; i < tabwidth; ++i) tabs += ' ';
+                    for (i = 0; i < tabwidth; ++i) tabs += ' ';
 
                     // replace all char except tabs with space
                     for (i = 0; i < linepos - 1; ++i) {
@@ -349,7 +349,7 @@ void XMLValidation(int informIfNoError) {
     }
 
     // 1. check xml syntax
-    bool abortValidation = false;
+    //bool abortValidation = false;
     std::string xml_schema("");
     int currentEdit, currentLength;
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);

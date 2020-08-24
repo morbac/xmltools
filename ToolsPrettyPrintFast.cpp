@@ -54,7 +54,7 @@ std::stringstream *prettyPrintXml(const char* text, long textLength, PrettyPrint
             bool originalTagOpen = tagIsOpen; // these 2 variables are only used in a special case: text not directly enclosed in a tag
             auto originalPos = outText->tellp();
             if (parms.removeWhitespace) {
-                const char* endpos = curpos;
+                const char* end = curpos;
                 bool inwhitespace = true;
                 bool dirty = false;
                 const char* textstart = NULL;
@@ -66,7 +66,7 @@ std::stringstream *prettyPrintXml(const char* text, long textLength, PrettyPrint
                 }\
                 textstart=NULL;} }
 
-                for (curpos = startpos; curpos < endpos; curpos++) {
+                for (curpos = startpos; curpos < end; curpos++) {
                     if (isWhitespace(*curpos)) {
                         if (!inwhitespace) {
                             flush;
