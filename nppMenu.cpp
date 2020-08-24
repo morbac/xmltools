@@ -5,15 +5,7 @@
 
 #include <assert.h>
 
-// The number of functionality
-//#ifdef _DEBUG
-const int TOTAL_FUNCS = 32 + 2;
-//#else
-//  const int TOTAL_FUNCS = 31+2;
-//#endif
-int nbFunc = TOTAL_FUNCS;
-
-FuncItem funcItem[TOTAL_FUNCS];
+std::vector<FuncItem> nppMenu;
 
 int menuitemCheckXML = -1,
     menuitemValidation = -1,
@@ -28,8 +20,8 @@ int menuitemCheckXML = -1,
 
 void ToggleMenuItem(int idx, bool& value) {
     value = !value;
-    ::CheckMenuItem(::GetMenu(nppData._nppHandle), funcItem[menuitemPrettyPrintAllFiles]._cmdID, MF_BYCOMMAND | (value ? MF_CHECKED : MF_UNCHECKED));
-    funcItem[idx]._init2Check = value;
+    ::CheckMenuItem(::GetMenu(nppData._nppHandle), nppMenu[idx]._cmdID, MF_BYCOMMAND | (value ? MF_CHECKED : MF_UNCHECKED));
+    nppMenu[idx]._init2Check = value;
     savePluginParams();
 }
 
@@ -101,15 +93,6 @@ void togglePrettyPrintAllFiles() {
     ToggleMenuItem(menuitemPrettyPrintAllFiles, config.doPrettyPrintAllOpenFiles);
 }
 
-void registerShortcut(FuncItem* item, bool enableALT, bool enableCTRL, bool enableSHIFT, unsigned char key) {
-    if (!item) return;
-    item->_pShKey = new ShortcutKey; // no parentheses needed as it's Plain Old Data (POD) otherwise C4345
-    item->_pShKey->_isAlt = enableALT;
-    item->_pShKey->_isCtrl = enableCTRL;
-    item->_pShKey->_isShift = enableSHIFT;
-    item->_pShKey->_key = key;
-}
-
 void manualXMLCheck();
 void manualValidation();
 void insertXMLCheckTag();
@@ -141,45 +124,53 @@ void aboutBox();
 void optionsDlg();
 //void debugDlg();
 
-void initMenu() {
+int addMenuItem(const wchar_t* title, PFUNCPLUGINCMD action, bool checked = false, ShortcutKey *shortcut = NULL) {
+    FuncItem item;
+    
+    wcscpy(item._itemName, title);
+    item._pFunc = action;
+    item._init2Check = checked;
+    item._pShKey = shortcut;
 
-    int menuentry = 0;
-    for (int i = 0; i < nbFunc; ++i) {
-        funcItem[i]._init2Check = false;
-    }
+    nppMenu.push_back(item);
+    return static_cast<int>(nppMenu.size() - 1);
+}
+
+void addMenuSeparator() {
+    FuncItem item;
+
+    item._itemName[0] = 0;
+    item._pFunc = NULL;
+
+    nppMenu.push_back(item);
+}
+
+ShortcutKey *createShortcut(unsigned char key, bool enableALT = true, bool enableCTRL = true, bool enableSHIFT = true) {
+    auto shortcut = new ShortcutKey(); // no parentheses needed as it's Plain Old Data (POD) otherwise C4345
+    shortcut->_isAlt = enableALT;
+    shortcut->_isCtrl = enableCTRL;
+    shortcut->_isShift = enableSHIFT;
+    shortcut->_key = key;
+    
+    return shortcut;
+}
+
+void initMenu() {
 
     dbgln("Building plugin menu entries... ", DBG_LEVEL::DBG_INFO);
 
-    wcscpy(funcItem[menuentry]._itemName, L"Enable XML syntax auto-check");
-    funcItem[menuentry]._pFunc = insertXMLCheckTag;
-    funcItem[menuentry]._init2Check = config.doCheckXML;
-    menuitemCheckXML = menuentry;
-    ++menuentry;
+    menuitemCheckXML = addMenuItem(L"Enable XML syntax auto-check", insertXMLCheckTag, config.doCheckXML);
+    addMenuItem(L"Check XML syntax now", manualXMLCheck);
 
-    wcscpy(funcItem[menuentry]._itemName, L"Check XML syntax now");
-    funcItem[menuentry]._pFunc = manualXMLCheck;
-    ++menuentry;
-
-    funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-
-    wcscpy(funcItem[menuentry]._itemName, L"Enable auto-validation");
-    funcItem[menuentry]._pFunc = insertValidationTag;
-    funcItem[menuentry]._init2Check = config.doValidation;
-    menuitemValidation = menuentry;
-    ++menuentry;
-
-    wcscpy(funcItem[menuentry]._itemName, L"Validate now");
-    funcItem[menuentry]._pFunc = manualValidation;
-    registerShortcut(funcItem + menuentry, true, true, true, 'M');
-    ++menuentry;
-
-    funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-
-    wcscpy(funcItem[menuentry]._itemName, L"Tag auto-close");
-    funcItem[menuentry]._pFunc = insertXMLCloseTag;
-    funcItem[menuentry]._init2Check = config.doCloseTag;
-    menuitemCloseTag = menuentry;
-    ++menuentry;
+    addMenuSeparator();
+    
+    menuitemValidation = addMenuItem(L"Enable auto-validation", insertValidationTag, config.doValidation);
+    addMenuItem(L"Validate now", manualValidation, false, createShortcut('M'));
+    
+    addMenuSeparator();
+    
+    menuitemCloseTag = addMenuItem(L"Tag auto-close", insertXMLCloseTag, config.doCloseTag);
+    
     /*
     Report::strcpy(funcItem[menuentry]._itemName, L"Tag auto-indent");
     funcItem[menuentry]._pFunc = insertTagAutoIndent;
@@ -195,37 +186,17 @@ void initMenu() {
     menuitemAttrAutoComplete = menuentry;
     ++menuentry;
     */
-    funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
+    addMenuSeparator();
 
-    wcscpy(funcItem[menuentry]._itemName, L"Set XML type automatically");
-    funcItem[menuentry]._pFunc = insertAutoXMLType;
-    funcItem[menuentry]._init2Check = config.doAutoXMLType;
-    menuitemAutoXMLType = menuentry;
-    ++menuentry;
+    menuitemAutoXMLType = addMenuItem(L"Set XML type automatically", insertAutoXMLType, config.doAutoXMLType);
+    menuitemPreventXXE = addMenuItem(L"Prevent XXE", togglePreventXXE, config.doPreventXXE);
+    menuitemAllowHuge = addMenuItem(L"Allow huge files", toggleAllowHuge, config.doAllowHuge);
 
-    wcscpy(funcItem[menuentry]._itemName, L"Prevent XXE");
-    funcItem[menuentry]._pFunc = togglePreventXXE;
-    funcItem[menuentry]._init2Check = config.doPreventXXE;
-    menuitemPreventXXE = menuentry;
-    ++menuentry;
+    addMenuSeparator();
 
-    wcscpy(funcItem[menuentry]._itemName, L"Allow huge files");
-    funcItem[menuentry]._pFunc = toggleAllowHuge;
-    funcItem[menuentry]._init2Check = config.doAllowHuge;
-    menuitemAllowHuge = menuentry;
-    ++menuentry;
+    addMenuItem(L"Pretty print", nppPrettyPrintXML, false, createShortcut('B'));
+    addMenuItem(L"Pretty print (indent attributes)", nppPrettyPrintAttributes, false, createShortcut('A'));
 
-    funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-
-    wcscpy(funcItem[menuentry]._itemName, L"Pretty print");
-    registerShortcut(funcItem + menuentry, true, true, true, 'B');
-    funcItem[menuentry]._pFunc = nppPrettyPrintXML;
-    ++menuentry;
-
-    wcscpy(funcItem[menuentry]._itemName, L"Pretty print (indent attributes)");
-    registerShortcut(funcItem + menuentry, true, true, true, 'A');
-    funcItem[menuentry]._pFunc = nppPrettyPrintAttributes;
-    ++menuentry;
     /*
     Report::strcpy(funcItem[menuentry]._itemName, L"Enable auto pretty print (libXML) [experimental]");
     funcItem[menuentry]._pFunc = insertPrettyPrintTag;
@@ -234,91 +205,43 @@ void initMenu() {
     menuitemPrettyPrint = menuentry;
     ++menuentry;
     */
-    wcscpy(funcItem[menuentry]._itemName, L"Linearize XML");
-    registerShortcut(funcItem + menuentry, true, true, true, 'L');
-    funcItem[menuentry]._pFunc = nppLinearizeXML;
-    ++menuentry;
 
-    wcscpy(funcItem[menuentry]._itemName, L"Apply to all open files");
-    funcItem[menuentry]._pFunc = togglePrettyPrintAllFiles;
-    funcItem[menuentry]._init2Check = config.doPrettyPrintAllOpenFiles;
-    menuitemPrettyPrintAllFiles = menuentry;
-    ++menuentry;
+    addMenuItem(L"Linearize XML", nppLinearizeXML, false, createShortcut('L'));
+    menuitemPrettyPrintAllFiles = addMenuItem(L"Apply to all open files", togglePrettyPrintAllFiles, config.doPrettyPrintAllOpenFiles);
+    addMenuItem(L"Pretty print (fast)", nppPrettyPrintXmlFast);
+    addMenuItem(L"Linearize (fast)", nppLinearizeXmlFast);
 
-    wcscpy(funcItem[menuentry]._itemName, L"Pretty print (fast)");
-    funcItem[menuentry]._pFunc = nppPrettyPrintXmlFast;
-    ++menuentry;
+    addMenuSeparator();
 
-    wcscpy(funcItem[menuentry]._itemName, L"Linearize (fast)");
-    funcItem[menuentry]._pFunc = nppLinearizeXmlFast;
-    ++menuentry;
+    addMenuItem(L"Current XML Path", getCurrentXPathStd, false, createShortcut('P'));
+    addMenuItem(L"Current XML Path with predicates", getCurrentXPathPredicate);
+    addMenuItem(L"Evaluate XPath expression...", evaluateXPath);
 
-    funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
+    addMenuSeparator();
 
-    wcscpy(funcItem[menuentry]._itemName, L"Current XML Path");
-    registerShortcut(funcItem + menuentry, true, true, true, 'P');
-    funcItem[menuentry]._pFunc = getCurrentXPathStd;
-    ++menuentry;
+    addMenuItem(L"XSL Transformation...", performXSLTransform);
 
-    wcscpy(funcItem[menuentry]._itemName, L"Current XML Path with predicates");
-    funcItem[menuentry]._pFunc = getCurrentXPathPredicate;
-    ++menuentry;
+    addMenuSeparator();
 
-    wcscpy(funcItem[menuentry]._itemName, L"Evaluate XPath expression...");
-    funcItem[menuentry]._pFunc = evaluateXPath;
-    ++menuentry;
+    addMenuItem(L"Escape characters in selection (<> → &&lt;&&gt;)", convertXML2Text);
+    addMenuItem(L"Unescape characters in selection (&&lt;&&gt; → <>)", convertText2XML);
 
-    funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
+    addMenuSeparator();
 
-    wcscpy(funcItem[menuentry]._itemName, L"XSL Transformation...");
-    funcItem[menuentry]._pFunc = performXSLTransform;
-    ++menuentry;
+    addMenuItem(L"Comment selection", commentSelection, false, createShortcut('C'));
+    addMenuItem(L"Uncomment selection", uncommentSelection, false, createShortcut('R'));
 
-    funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
+    addMenuSeparator();
 
-    wcscpy(funcItem[menuentry]._itemName, L"Escape characters in selection (<> → &&lt;&&gt;)");
-    funcItem[menuentry]._pFunc = convertXML2Text;
-    ++menuentry;
-
-    wcscpy(funcItem[menuentry]._itemName, L"Unescape characters in selection (&&lt;&&gt; → <>)");
-    funcItem[menuentry]._pFunc = convertText2XML;
-    ++menuentry;
-
-    funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-
-    wcscpy(funcItem[menuentry]._itemName, L"Comment selection");
-    registerShortcut(funcItem + menuentry, true, true, true, 'C');
-    funcItem[menuentry]._pFunc = commentSelection;
-    ++menuentry;
-
-    wcscpy(funcItem[menuentry]._itemName, L"Uncomment selection");
-    registerShortcut(funcItem + menuentry, true, true, true, 'R');
-    funcItem[menuentry]._pFunc = uncommentSelection;
-    ++menuentry;
-
-    funcItem[menuentry++]._pFunc = NULL;  //----------------------------------------
-
-    wcscpy(funcItem[menuentry]._itemName, L"Options...");
-    funcItem[menuentry]._pFunc = optionsDlg;
-    ++menuentry;
-
-    //#ifdef _DEBUG
-    wcscpy(funcItem[menuentry]._itemName, L"Debug window...");
-    funcItem[menuentry]._pFunc = showDebugDlg;
-    ++menuentry;
-    //#endif
-
-    wcscpy(funcItem[menuentry]._itemName, L"About XML Tools / Donate...");
-    funcItem[menuentry]._pFunc = aboutBox;
-    ++menuentry;
-
-    assert(menuentry == nbFunc);
+    addMenuItem(L"Options...", optionsDlg);
+    addMenuItem(L"Debug window...", showDebugDlg);
+    addMenuItem(L"About XML Tools / Donate...", aboutBox);
 
     dbgln("done.", DBG_LEVEL::DBG_INFO);
 }
 
 void destroyMenu() {
-    for (int i = 0; i < nbFunc; ++i) {
-        if (funcItem[i]._pShKey) delete funcItem[i]._pShKey;
+    for (int i = 0; i < nppMenu.size(); ++i) {
+        if (nppMenu[i]._pShKey) delete nppMenu[i]._pShKey;
     }
 }

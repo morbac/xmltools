@@ -188,7 +188,8 @@ std::stringstream *prettyPrintXml(const char* text, long textLength, PrettyPrint
 
         for (startpos = curpos; curpos < endpos; curpos++)
         {
-#define emitTxt if (prevTag == NULL) { prevTag = startpos + 1; prevTagLen = static_cast<int>(curpos - startpos) - 1; }\
+#define emitTxt\
+            if (prevTag == NULL) { prevTag = startpos + 1; prevTagLen = static_cast<int>(curpos - startpos) - 1; }\
             outText->write(textstart, curpos - textstart);
 
             char cc = *curpos;

@@ -177,14 +177,16 @@ extern "C" __declspec(dllexport) const TCHAR* getName() {
   return PLUGIN_NAME;
 }
 
-extern int nbFunc;
-extern FuncItem funcItem[];
+//extern int nbFunc;
+//extern FuncItem funcItem[];
+extern std::vector<FuncItem> nppMenu;
 
 // The getFuncsArray function gives Notepad++ plugins system the pointer FuncItem Array
 // and the size of this array (the number of functions)
 extern "C" __declspec(dllexport) FuncItem * getFuncsArray(int *nbF) {
-    *nbF = nbFunc;
-    return funcItem;
+    
+    *nbF = static_cast<int>(nppMenu.size());
+    return &nppMenu[0];
 }
 
 // For v.3.3 compatibility
