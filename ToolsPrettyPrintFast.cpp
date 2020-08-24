@@ -99,46 +99,7 @@ std::stringstream *prettyPrintXml(const char* text, long textLength, PrettyPrint
         }
 
         startpos = curpos;
-        // check data tags
-
-        if (curpos[1] == '!') {
-            tryCloseTag;
-
-            if (curpos[2] == '-' && curpos[3] == '-') { // <!--
-
-                const char* end = strstr(curpos + 4, "-->");
-                if (end != NULL)
-                    end += 3;
-                else
-                    end = endpos; // not found.. copy rest
-
-                indent;
-                outText->write(curpos, end - startpos);
-                newline;
-                curpos = end;
-            }
-            else if (0 == strncmp(curpos, "<![CDATA[", 9)) {
-                const char* end = strstr(curpos + 9, "]]>");
-                if (end != NULL)
-                    end += 3;
-                else
-                    end = endpos; // not found.. copy rest
-
-                indent;
-                outText->write(curpos, end - startpos);
-                newline;
-                curpos = end;
-            }
-            else { // well... dont know... copy as is
-                outText->write(curpos, 1);
-                curpos++;
-            }
-            continue;
-        }
-
-        if (curpos[1] == '?')
-            xmllevel--; // make sure we stay at 0
-
+        
         if (curpos[1] == '/') { // </tag>
             const char* end = strchr(curpos + 2, '>');
             if (end == NULL)
@@ -175,6 +136,42 @@ std::stringstream *prettyPrintXml(const char* text, long textLength, PrettyPrint
             newline
         }
         indent
+
+            // check data tags
+        if (curpos[1] == '!') {
+            if (curpos[2] == '-' && curpos[3] == '-') { // <!--
+                const char* end = strstr(curpos + 4, "-->");
+                if (end != NULL)
+                    end += 3;
+                else
+                    end = endpos; // not found.. copy rest
+
+                indent;
+                outText->write(curpos, end - startpos);
+                newline;
+                curpos = end;
+            }
+            else if (0 == strncmp(curpos, "<![CDATA[", 9)) {
+                const char* end = strstr(curpos + 9, "]]>");
+                if (end != NULL)
+                    end += 3;
+                else
+                    end = endpos; // not found.. copy rest
+
+                indent;
+                outText->write(curpos, end - startpos);
+                newline;
+                curpos = end;
+            }
+            else { // well... dont know... copy as is
+                outText->write(curpos, 1);
+                curpos++;
+            }
+            continue;
+        }
+
+        if (curpos[1] == '?')
+            xmllevel--; // make sure we stay at 0
 
         // find end of tag
         bool endFound = false;

@@ -376,7 +376,7 @@ void nppPrettyPrintXML() {
 
 void nppPrettyPrintAttributes() {
     dbgln("prettyPrintAttributes()");
-    nppDocumentCommand("nppPrettyPrintAttributesInline", nppPrettyPrintXMLInline);
+    nppDocumentCommand("nppPrettyPrintAttributesInline", nppPrettyPrintAttributesInline);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
