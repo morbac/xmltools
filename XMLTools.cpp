@@ -73,9 +73,9 @@ const wchar_t localConfFile[] = L"doLocalConf.xml";
 
 // The number of functionality
 #ifdef _DEBUG
-  const int TOTAL_FUNCS = 32;
+  const int TOTAL_FUNCS = 33;
 #else
-  const int TOTAL_FUNCS = 31;
+  const int TOTAL_FUNCS = 32;
 #endif
 int nbFunc = TOTAL_FUNCS;
 
@@ -149,6 +149,7 @@ void toggleAllowHuge();
 
 void prettyPrintXML();
 void prettyPrintAttributes();
+void prettyPrintIndentOnly();
 //void insertPrettyPrintTag();
 void linearizeXML();
 void togglePrettyPrintAllFiles();
@@ -388,6 +389,11 @@ void initializePlugin() {
   menuitemPrettyPrint = menuentry;
   ++menuentry;
   */
+
+  Report::strcpy(funcItem[menuentry]._itemName, L"Fix indentation (beta)");
+  funcItem[menuentry]._pFunc = prettyPrintIndentOnly;
+  ++menuentry;
+
   Report::strcpy(funcItem[menuentry]._itemName, L"Linearize XML");
   registerShortcut(funcItem + menuentry, true, true, true, 'L');
   funcItem[menuentry]._pFunc = linearizeXML;
@@ -565,7 +571,7 @@ void savePluginParams() {
   ::WritePrivateProfileString(sectionName, L"convertQuote", xmltoolsoptions.convertQuote ? L"1" : L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"convertApos", xmltoolsoptions.convertApos ? L"1" : L"0", iniFilePath);
   ::WritePrivateProfileString(sectionName, L"ppAutoclose", xmltoolsoptions.ppAutoclose ? L"1" : L"0", iniFilePath);
-
+  
   ::WritePrivateProfileString(sectionName, L"allowDocumentFunction", std::to_wstring(static_cast<int>(xmltoolsoptions.allowDocumentFunction)).c_str(), iniFilePath);
   ::WritePrivateProfileString(sectionName, L"allowXsltScript", std::to_wstring(static_cast<int>(xmltoolsoptions.allowXsltScript)).c_str(), iniFilePath);
   ::WritePrivateProfileString(sectionName, L"forceResync", std::to_wstring(static_cast<int>(xmltoolsoptions.forceResync)).c_str(), iniFilePath);
@@ -1676,7 +1682,7 @@ std::string& trim(std::string& str, const std::string& chars = "\t\n\v\f\r ") {
   return ltrim(rtrim(str, chars), chars);
 }
 
-std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, bool breaktags, const std::string& chars = "\t\n\v\f\r ") {
+std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, bool breaktags, bool indentOnly = false, const std::string& chars = "\t\n\v\f\r ") {
   bool in_tag = false, in_header = false;
   std::string tagname = "";
   char cc;
@@ -1696,7 +1702,7 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
           // add line break if next non space char is "<"
           if (breaklines) {
             tmppos = str.find_first_not_of(chars, curpos + 1);
-            if (tmppos != std::string::npos && str.at(tmppos) == '<' /*&& str.at(tmppos + 1) != '!'*/ && str.at(tmppos + 2) != '[') {
+            if (!indentOnly && tmppos != std::string::npos && str.at(tmppos) == '<' /*&& str.at(tmppos + 1) != '!'*/ && str.at(tmppos + 2) != '[') {
               str.insert(curpos + 1, eolchar);
             }
           }
@@ -1718,7 +1724,7 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
           // add line break if next non space char is "<" (but not if <![)
           if (breaklines) {
             tmppos = str.find_first_not_of(chars, curpos + 1);
-            if (tmppos != std::string::npos && str.at(tmppos) == '<' /*&& str.at(tmppos + 1) != '!'*/ && str.at(tmppos + 2) != '[') {
+            if (!indentOnly && tmppos != std::string::npos && str.at(tmppos) == '<' /*&& str.at(tmppos + 1) != '!'*/ && str.at(tmppos + 2) != '[') {
               str.insert(curpos + 1, eolchar);
             }
           }
@@ -1765,7 +1771,7 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
           if (breaklines) {
             bool is_closing = (curpos > 0 && str.at(curpos - 1) == '/');
             tmppos = str.find_first_not_of(chars, curpos + 1);
-            if (tmppos != std::string::npos && str.at(tmppos) == '<' && (str.at(tmppos + 1) != '/' || is_closing) && /*str.at(tmppos + 1) != '!' &&*/ str.at(tmppos + 2) != '[') {
+            if (!indentOnly && tmppos != std::string::npos && str.at(tmppos) == '<' && (str.at(tmppos + 1) != '/' || is_closing) && /*str.at(tmppos + 1) != '!' &&*/ str.at(tmppos + 2) != '[') {
               str.insert(curpos + 1, eolchar);
             }
           }
@@ -1798,7 +1804,7 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
             if (in_header) endtag = '?';
 
             // add line break if not the last attribute
-            if (breaktags && !in_header && str.at(tmppos) != '>' && str.at(tmppos) != endtag) {
+            if (!indentOnly && breaktags && !in_header && str.at(tmppos) != '>' && str.at(tmppos) != endtag) {
               str.insert(curpos + 1, eolchar);
             }
             else if (!breaktags) {
@@ -1833,8 +1839,10 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
           curpos = lasteolpos + tmp.length();
           lasteolpos = curpos;
 
-          while (lasteolpos >= eolcharlen && !str.compare(lasteolpos - eolcharlen, eolcharlen, eolchar)) {
-            lasteolpos -= eolcharlen;
+          if (!indentOnly) {
+            while (lasteolpos >= eolcharlen && !str.compare(lasteolpos - eolcharlen, eolcharlen, eolchar)) {
+              lasteolpos -= eolcharlen;
+            }
           }
 
           lasteolpos += eolcharlen;
@@ -1865,7 +1873,7 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
   return str;
 }
 
-void prettyPrint(bool autoindenttext, bool addlinebreaks, bool indentattributes) {
+void prettyPrint(bool autoindenttext, bool addlinebreaks, bool indentattributes, bool indentonly = false) {
   dbgln("prettyPrint()");
 
   int docIterator = initDocIterator();
@@ -1924,7 +1932,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks, bool indentattributes)
     data = NULL;
 
     // first pass: trim lines
-    str = trimxml(str, eolchar, true, indentattributes);
+    str = trimxml(str, eolchar, true, indentattributes, indentonly);
 
     #ifdef _DEBUG
       if (selend <= selstart) {
@@ -1933,7 +1941,7 @@ void prettyPrint(bool autoindenttext, bool addlinebreaks, bool indentattributes)
       }
     #endif
 
-      size_t strlen = str.length();
+    size_t strlen = str.length();
 
     // second pass: indentation
     while (curpos < strlen && (curpos = str.find_first_of("<>\"'\n", curpos)) != std::string::npos) {
@@ -2194,6 +2202,12 @@ void prettyPrintAttributes() {
     VariantClear(&varCurrentData);
   }
   */
+}
+
+void prettyPrintIndentOnly() {
+  dbgln("prettyPrintIndentOnly");
+
+  prettyPrint(false, true, false, true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
