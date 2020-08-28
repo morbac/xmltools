@@ -321,9 +321,19 @@
   <ItemGroup>
     <ClCompile Include="AboutBoxDlg.cpp" />
     <ClCompile Include="CMyPropertyGridCtrl.cpp" />
+    <ClCompile Include="Debug.cpp" />
+    <ClCompile Include="nppMenu.cpp" />
+    <ClCompile Include="SimpleXmlLexer.cpp" />
+    <ClCompile Include="ToolsComment.cpp" />
+    <ClCompile Include="Config.cpp" />
+    <ClCompile Include="ToolsConvert.cpp" />
     <ClCompile Include="DebugDlg.cpp" />
     <ClCompile Include="MSXMLHelper.cpp" />
+    <ClCompile Include="nppHelpers.cpp" />
     <ClCompile Include="OptionsDlg.cpp" />
+    <ClCompile Include="ToolsEditor.cpp" />
+    <ClCompile Include="ToolsPrettyPrintFast.cpp" />
+    <ClCompile Include="ToolsPrettyPrintInline.cpp" />
     <ClCompile Include="Report.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -333,6 +343,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="ToolsXLSTransform.cpp" />
+    <ClCompile Include="ToolsXmlValidate.cpp" />
+    <ClCompile Include="ToolsXPath.cpp" />
+    <ClCompile Include="XmlPrettyPrinter.cpp" />
     <ClCompile Include="XMLTools.cpp" />
     <ClCompile Include="HowtoUseDlg.cpp" />
     <ClCompile Include="InputDlg.cpp" />
@@ -350,16 +364,21 @@
   <ItemGroup>
     <ClInclude Include="AboutBoxDlg.h" />
     <ClInclude Include="CMyPropertyGridCtrl.h" />
+    <ClInclude Include="Config.h" />
+    <ClInclude Include="Debug.h" />
     <ClInclude Include="DebugDlg.h" />
     <ClInclude Include="MSXMLHelper.h" />
     <ClInclude Include="Notepad_plus_msgs.h" />
+    <ClInclude Include="nppHelpers.h" />
     <ClInclude Include="OptionsDlg.h" />
     <ClInclude Include="PluginInterface.h" />
     <ClInclude Include="Report.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Scintilla.h" />
+    <ClInclude Include="ScintillaDoc.h" />
     <ClInclude Include="Sci_Position.h" />
     <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="XmlPrettyPrinter.h" />
     <ClInclude Include="XMLTools.h" />
     <ClInclude Include="HowtoUseDlg.h" />
     <ClInclude Include="InputDlg.h" />
@@ -370,6 +389,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="Changes.log" />
+    <Text Include="LICENSE" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

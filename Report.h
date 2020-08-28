@@ -13,7 +13,7 @@
 #include <atlstr.h>
 
 // from NPP source "Parameters.h"
-enum UniMode {uni8Bit=0, uniUTF8=1, uni16BE=2, uni16LE=3, uniCookie=4, uni7Bit=5, uni16BE_NoBOM=6, uni16LE_NoBOM=7, uniEnd};
+enum class UniMode {uni8Bit=0, uniUTF8=1, uni16BE=2, uni16LE=3, uniCookie=4, uni7Bit=5, uni16BE_NoBOM=6, uni16LE_NoBOM=7, uniEnd};
 
 // edit : look at https://msdn.microsoft.com/en-us/library/ms235631(VS.80).aspx
 // https://docs.microsoft.com/en-us/cpp/text/how-to-convert-between-various-string-types?redirectedfrom=MSDN&view=vs-2019
@@ -77,8 +77,8 @@ public:
   static void setEncoding(UniMode encoding, HWND npp = NULL);
 
   static std::string castChar(std::wstring text, UniMode encoding);
-  static wchar_t* castChar(const char* orig, UniMode encoding = uniEnd);
-  static char* castWChar(const wchar_t* orig, UniMode encoding = uniEnd);
+  static wchar_t* castChar(const char* orig, UniMode encoding = UniMode::uniEnd);
+  static char* castWChar(const wchar_t* orig, UniMode encoding = UniMode::uniEnd);
   static void appendToStdString(std::wstring* dest, const char* source, UniMode encoding);
   static void appendToCString(CStringW* dest, const char* source, UniMode encoding);
 

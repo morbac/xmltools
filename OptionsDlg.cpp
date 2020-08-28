@@ -45,34 +45,37 @@ void COptionsDlg::UpdateProperty(CMFCPropertyGridProperty* src, enumOptionType t
   COleVariant val = src->GetValue();
   DWORD_PTR obj = src->GetData();
   switch (type) {
-    case TYPE_BOOL: {
+  case enumOptionType::TYPE_BOOL: {
       (*((bool*) obj)) = (val.boolVal == VARIANT_TRUE);
       break;
     }
-    case TYPE_TRISTATE: {
+  case enumOptionType::TYPE_TRISTATE: {
       if (!wcscmp(val.bstrVal, L"False")) (*((short*) obj)) = 0;
       else if (!wcscmp(val.bstrVal, L"True")) (*((short*) obj)) = 1;
       else (*((short*) obj)) = -1;
       break;
     }
-    case TYPE_INT: {
+  case enumOptionType::TYPE_INT: {
       (*((int*) obj)) = (val.intVal);
       break;
     }
-    case TYPE_LONG: {
+    case enumOptionType::TYPE_LONG: {
       (*((long*) obj)) = (val.lVal);
       break;
     }
-    case TYPE_WSTRING: {
-      (*((std::wstring*) obj)) = val.bstrVal;
+    case enumOptionType::TYPE_WSTRING: {
+        if (obj == 0)
+            obj = obj;
+        else
+          *((std::wstring*) obj) = val.bstrVal;
       break;
     }
-    case TYPE_WCHAR255: {
+    case enumOptionType::TYPE_WCHAR255: {
       rsize_t len = SysStringLen(val.bstrVal);
       if (len > 255) len = 255;
       memset((wchar_t*) obj, '\0', 255 * sizeof(wchar_t));
       if (len > 0) {
-        wcscpy_s((wchar_t*) obj, len * sizeof(wchar_t), (wchar_t*) bstr_t(val.bstrVal));
+        wcscpy_s((wchar_t*) obj, len, (wchar_t*) bstr_t(val.bstrVal));
       }
       break;
     }
@@ -102,6 +105,9 @@ BOOL COptionsDlg::OnInitDialog() {
 
   CMFCPropertyGridProperty* pGrpOptions = new CMFCPropertyGridProperty(L"Options");
   m_wndPropList.AddProperty(pGrpOptions);
+
+  pTmpOption = new CMFCPropertyGridProperty(L"Debug level", COleVariant((long)config.dbgLevel, VT_INT), L"0 = TRACE, 1 = INFO, 2 = WARNINGS, 3 = ERRORS", (DWORD_PTR)&config.dbgLevel);
+  pGrpOptions->AddSubItem(pTmpOption); vIntProperties.push_back(pTmpOption);
 
   pTmpOption = new CMFCPropertyGridProperty(L"Display errors as annotations", COleVariant((short) (xmltoolsoptions.useAnnotations ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"When enabled, errors are displayed as annotation directly in the XML document. When disabled, errors are displayed in dialogs.", (DWORD_PTR) &xmltoolsoptions.useAnnotations);
   pGrpOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
@@ -186,14 +192,14 @@ BOOL COptionsDlg::OnInitDialog() {
 
   pTmpOption = new CMFCPropertyGridProperty(L"Enabled", COleVariant((short)(proxyoptions.status ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Activate proxy", (DWORD_PTR)&proxyoptions.status);
   pGrpProxyOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption); pTmpOption->Enable(0);
-  pTmpOption = new CMFCPropertyGridProperty(L"Proxy host", proxyoptions.host, 0, (DWORD_PTR)&proxyoptions.host);
-  pGrpProxyOptions->AddSubItem(pTmpOption); vWChar255Properties.push_back(pTmpOption); pTmpOption->Enable(0);
+  pTmpOption = new CMFCPropertyGridProperty(L"Proxy host", proxyoptions.host.c_str(), 0, (DWORD_PTR)&proxyoptions.host);
+  pGrpProxyOptions->AddSubItem(pTmpOption); vWStringProperties.push_back(pTmpOption); pTmpOption->Enable(0);
   pTmpOption = new CMFCPropertyGridProperty(L"Proxy port", COleVariant((long)proxyoptions.port, VT_INT), 0, (DWORD_PTR)&proxyoptions.port);
   pGrpProxyOptions->AddSubItem(pTmpOption); vLongProperties.push_back(pTmpOption); pTmpOption->Enable(0);
-  pTmpOption = new CMFCPropertyGridProperty(L"Username", proxyoptions.username, 0, (DWORD_PTR)&proxyoptions.username);
-  pGrpProxyOptions->AddSubItem(pTmpOption); vWChar255Properties.push_back(pTmpOption); pTmpOption->Enable(0);
-  pTmpOption = new CMFCPropertyGridProperty(L"Password", proxyoptions.password, 0, (DWORD_PTR)&proxyoptions.password);
-  pGrpProxyOptions->AddSubItem(pTmpOption); vWChar255Properties.push_back(pTmpOption); pTmpOption->Enable(0);
+  pTmpOption = new CMFCPropertyGridProperty(L"Username", proxyoptions.username.c_str(), 0, (DWORD_PTR)&proxyoptions.username);
+  pGrpProxyOptions->AddSubItem(pTmpOption); vWStringProperties.push_back(pTmpOption); pTmpOption->Enable(0);
+  pTmpOption = new CMFCPropertyGridProperty(L"Password", proxyoptions.password.c_str(), 0, (DWORD_PTR)&proxyoptions.password);
+  pGrpProxyOptions->AddSubItem(pTmpOption); vWStringProperties.push_back(pTmpOption); pTmpOption->Enable(0);
 
   return TRUE;  // return TRUE unless you set the focus to a control
   // EXCEPTION : les pages de propriétés OCX devraient retourner FALSE
@@ -219,22 +225,22 @@ void COptionsDlg::OnBnClickedOk() {
   */
   
   for (std::vector<CMFCPropertyGridProperty*>::iterator it = vBoolProperties.begin(); it != vBoolProperties.end(); ++it) {
-    UpdateProperty(*it, TYPE_BOOL);
+    UpdateProperty(*it, enumOptionType::TYPE_BOOL);
   }
   for (std::vector<CMFCPropertyGridProperty*>::iterator it = vTristateProperties.begin(); it != vTristateProperties.end(); ++it) {
-    UpdateProperty(*it, TYPE_TRISTATE);
+    UpdateProperty(*it, enumOptionType::TYPE_TRISTATE);
   }
   for (std::vector<CMFCPropertyGridProperty*>::iterator it = vIntProperties.begin(); it != vIntProperties.end(); ++it) {
-    UpdateProperty(*it, TYPE_INT);
+    UpdateProperty(*it, enumOptionType::TYPE_INT);
   }
   for (std::vector<CMFCPropertyGridProperty*>::iterator it = vLongProperties.begin(); it != vLongProperties.end(); ++it) {
-    UpdateProperty(*it, TYPE_LONG);
+    UpdateProperty(*it, enumOptionType::TYPE_LONG);
   }
   for (std::vector<CMFCPropertyGridProperty*>::iterator it = vWStringProperties.begin(); it != vWStringProperties.end(); ++it) {
-    UpdateProperty(*it, TYPE_WSTRING);
+    UpdateProperty(*it, enumOptionType::TYPE_WSTRING);
   }
   for (std::vector<CMFCPropertyGridProperty*>::iterator it = vWChar255Properties.begin(); it != vWChar255Properties.end(); ++it) {
-    UpdateProperty(*it, TYPE_WCHAR255);
+    UpdateProperty(*it, enumOptionType::TYPE_WCHAR255);
   }
 
   CDialogEx::OnOK();

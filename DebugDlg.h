@@ -1,6 +1,6 @@
 #pragma once
 
-
+#include "resource.h"
 // Boîte de dialogue CDebugDlg
 
 class CDebugDlg : public CDialog
