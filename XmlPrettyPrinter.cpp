@@ -90,6 +90,8 @@ void XmlPrettyPrinter::Parse() {
             lexer.EatToken();
             break;
         case Token::ClosingTag: {
+            if (tagIsOpen && !parms.autocloseEmptyElements)
+                TryCloseTag();
             indentlevel--;
             lexer.EatToken();
             if (lexer.TryGetName() != Token::Name) {
