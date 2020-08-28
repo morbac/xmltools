@@ -143,7 +143,7 @@ void CXPathEvalDlg::AddToList(CListCtrl *list, CStringW type, CStringW name, CSt
   list->SetItemText(idx, 1, name);
   list->SetItemText(idx, 2, value);
 
-  this->m_sResult.AppendFormat(L"%s\t%s\t%s\n", type, name, value);
+  this->m_sResult.AppendFormat(L"%s\t%s\t%s\n", type.GetString(), name.GetString(), value.GetString());
 }
 
 void CXPathEvalDlg::print_xpath_nodes(IXMLDOMNodeList* pNodes) {
@@ -155,6 +155,8 @@ void CXPathEvalDlg::print_xpath_nodes(IXMLDOMNodeList* pNodes) {
   VARIANT varNodeValue;
   CStringW value;
   long length;
+
+  V_VT(&varNodeValue) = VT_UNKNOWN;
 
   CListCtrl* listresults = (CListCtrl*)this->GetDlgItem(IDC_LIST_XPATHRESULTS);
   listresults->DeleteAllItems();
@@ -339,11 +341,16 @@ void CXPathEvalDlg::OnBnClickedBtnCopy2clipboard() {
     ::OpenClipboard(NULL);
     ::EmptyClipboard();
     HGLOBAL hClipboardData;
-    hClipboardData = GlobalAlloc(GMEM_DDESHARE, (this->m_sResult.GetLength()+1) * sizeof(wchar_t));
-    wchar_t * pchData = (wchar_t*)GlobalLock(hClipboardData);
-    wcscpy(pchData, this->m_sResult.GetBuffer());
-    ::GlobalUnlock(hClipboardData);
-    ::SetClipboardData(CF_UNICODETEXT, pchData);
+    int bytelen = (this->m_sResult.GetLength() + 1) * sizeof(wchar_t);
+    hClipboardData = GlobalAlloc(GMEM_DDESHARE, bytelen);
+    if (hClipboardData != NULL) {
+        wchar_t* pchData = (wchar_t*)GlobalLock(hClipboardData);
+        if (pchData != NULL) {
+            wcscpy(pchData, this->m_sResult.GetBuffer());
+            ::GlobalUnlock(hClipboardData);
+            ::SetClipboardData(CF_UNICODETEXT, pchData);
+        }
+    }
     ::CloseClipboard();
 
     MessageBox(L"Result has been copied into clipboard.");
