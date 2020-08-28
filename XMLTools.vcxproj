@@ -390,6 +390,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="Changes.log" />
+    <Text Include="LICENSE" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

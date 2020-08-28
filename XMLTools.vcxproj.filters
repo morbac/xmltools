@@ -187,6 +187,9 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="Changes.log" />
+    <Text Include="LICENSE">
+      <Filter>Source Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="XMLTools.rc">

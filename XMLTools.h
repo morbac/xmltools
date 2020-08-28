@@ -26,48 +26,7 @@
 #else
 #define XMLTOOLS_VERSION_STATUS L"unicode Win32"
 #endif
-/*
-struct struct_proxyoptions {
-  bool status;
-  std::wstring host;
-  int port;
-  std::wstring username;
-  std::wstring password;
-};
 
-struct struct_xmltoolsoptions {       // default value
-  // msxml features
-  int allowDocumentFunction;         // True in 3.0. False in 6.0.
-  int allowXsltScript;               // True in 3.0. False in 6.0.
-  int forceResync;                   // True
-  int maxElementDepth;                // 0 in 3.0. 256 in 6.0.
-  int maxXMLSize;                     // 0
-  int multipleErrorMessages;         // False
-  int newParser;                     // False
-  int normalizeAttributeValues;      // False
-  int populateElementDefaultValues;  // False
-  int prohibitDTD;                   // True in 3.0. False in 6.0.
-  int resolveExternals;              // False
-  std::wstring selectionLanguage;     // "XSLPattern" in 3.0. "XPath" in 6.0
-  std::wstring selectionNamespace;    // ""
-  int serverHTTPRequest;             // False
-  int useInlineSchema;               // False
-  int validateOnParse;               // True
-
-  // xmltools options
-  bool useAnnotations;                // False
-  int annotationStyle;                // 12
-  bool convertAmp;
-  bool convertLt;
-  bool convertGt;
-  bool convertQuote;
-  bool convertApos;
-  bool ppAutoclose;
-};
-
-extern struct struct_proxyoptions proxyoptions;
-extern struct struct_xmltoolsoptions xmltoolsoptions;
-*/
 extern void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDesc = NULL);
 extern void displayXMLErrors(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDesc = NULL);
 extern void displayXMLError(std::wstring wmsg, HWND view = NULL, size_t line = NULL, size_t linepos = NULL, size_t filepos = NULL);
