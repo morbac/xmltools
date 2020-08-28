@@ -4,7 +4,7 @@
 
 // Boîte de dialogue COptionsDlg
 
-typedef enum {
+enum class enumOptionType {
   TYPE_BOOL,
   TYPE_TRISTATE,
   TYPE_INT,
@@ -12,7 +12,7 @@ typedef enum {
   TYPE_STRING,
   TYPE_WSTRING,
   TYPE_WCHAR255
-} enumOptionType;
+};
 
 class COptionsDlg : public CDialogEx {
   DECLARE_DYNAMIC(COptionsDlg)
@@ -33,7 +33,7 @@ protected:
   std::vector<CMFCPropertyGridProperty*> vTristateProperties;
   std::vector<CMFCPropertyGridProperty*> vWStringProperties;
   std::vector<CMFCPropertyGridProperty*> vWChar255Properties;
-  CMFCPropertyGridProperty* pAnnotationStyleProperty;
+  CMFCPropertyGridProperty* pAnnotationStyleProperty = NULL;
 
   virtual void DoDataExchange(CDataExchange* pDX);    // Prise en charge de DDX/DDV
 
