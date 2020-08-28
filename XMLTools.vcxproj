@@ -347,7 +347,6 @@
     <ClCompile Include="ToolsXmlValidate.cpp" />
     <ClCompile Include="ToolsXPath.cpp" />
     <ClCompile Include="XmlPrettyPrinter.cpp" />
-    <ClCompile Include="XmlPrettyPrinterOld.cpp" />
     <ClCompile Include="XMLTools.cpp" />
     <ClCompile Include="HowtoUseDlg.cpp" />
     <ClCompile Include="InputDlg.cpp" />
