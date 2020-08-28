@@ -108,6 +108,9 @@ CXMLToolsApp::~CXMLToolsApp() {
 }
 
 void initializePlugin() {
+
+  createDebugDlg();
+
   dbgln("initializePlugin()");
   /*
   dbg("Get plugin home dir... ");
@@ -208,8 +211,6 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
         else {
           hook = SetWindowsHookEx(WH_KEYBOARD, KeyboardProc, (HINSTANCE)GetCurrentModule(), ::GetCurrentThreadId());
         }
-
-        createDebugDlg();
       }
     }
     case NPPN_FILEBEFORESAVE: {

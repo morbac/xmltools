@@ -18,7 +18,7 @@ std::string& trim(std::string& str, const std::string& chars = "\t\n\v\f\r ") {
     return ltrim(rtrim(str, chars), chars);
 }
 
-std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, bool breaktags, const std::string& chars = "\t\n\v\f\r ") {
+std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, bool breaktags, bool indentOnly = false, const std::string& chars = "\t\n\v\f\r ") {
     bool in_tag = false, in_header = false;
     std::string tagname = "";
     char cc;
@@ -38,7 +38,7 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
                 // add line break if next non space char is "<"
                 if (breaklines) {
                     tmppos = str.find_first_not_of(chars, curpos + 1);
-                    if (tmppos != std::string::npos && str.at(tmppos) == '<' /*&& str.at(tmppos + 1) != '!'*/ && str.at(tmppos + 2) != '[') {
+                    if (!indentOnly && tmppos != std::string::npos && str.at(tmppos) == '<' /*&& str.at(tmppos + 1) != '!'*/ && str.at(tmppos + 2) != '[') {
                         str.insert(curpos + 1, eolchar);
                     }
                 }
@@ -60,7 +60,7 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
                 // add line break if next non space char is "<" (but not if <![)
                 if (breaklines) {
                     tmppos = str.find_first_not_of(chars, curpos + 1);
-                    if (tmppos != std::string::npos && str.at(tmppos) == '<' /*&& str.at(tmppos + 1) != '!'*/ && str.at(tmppos + 2) != '[') {
+                    if (!indentOnly && tmppos != std::string::npos && str.at(tmppos) == '<' /*&& str.at(tmppos + 1) != '!'*/ && str.at(tmppos + 2) != '[') {
                         str.insert(curpos + 1, eolchar);
                     }
                 }
@@ -107,7 +107,7 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
                 if (breaklines) {
                     bool is_closing = (curpos > 0 && str.at(curpos - 1) == '/');
                     tmppos = str.find_first_not_of(chars, curpos + 1);
-                    if (tmppos != std::string::npos && str.at(tmppos) == '<' && (str.at(tmppos + 1) != '/' || is_closing) && /*str.at(tmppos + 1) != '!' &&*/ str.at(tmppos + 2) != '[') {
+                    if (!indentOnly && tmppos != std::string::npos && str.at(tmppos) == '<' && (str.at(tmppos + 1) != '/' || is_closing) && /*str.at(tmppos + 1) != '!' &&*/ str.at(tmppos + 2) != '[') {
                         str.insert(curpos + 1, eolchar);
                     }
                 }
@@ -140,7 +140,7 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
                     if (in_header) endtag = '?';
 
                     // add line break if not the last attribute
-                    if (breaktags && !in_header && str.at(tmppos) != '>' && str.at(tmppos) != endtag) {
+                    if (!indentOnly && breaktags && !in_header && str.at(tmppos) != '>' && str.at(tmppos) != endtag) {
                         str.insert(curpos + 1, eolchar);
                     }
                     else if (!breaktags) {
@@ -176,8 +176,10 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
                 curpos = lasteolpos + tmp.length();
                 lasteolpos = curpos;
 
-                while (lasteolpos >= eolcharlen && !str.compare(lasteolpos - eolcharlen, eolcharlen, eolchar)) {
-                    lasteolpos -= eolcharlen;
+                if (!indentOnly) {
+                    while (lasteolpos >= eolcharlen && !str.compare(lasteolpos - eolcharlen, eolcharlen, eolchar)) {
+                        lasteolpos -= eolcharlen;
+                    }
                 }
 
                 lasteolpos += eolcharlen;
@@ -194,7 +196,7 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
         // inifinite loop protection
         strlen = str.length();
         if (curpos == lastpos && lastlen == strlen) {
-            dbgln("TRIM: INFINITE LOOP DETECTED", DBG_LEVEL::DBG_ERROR);
+            dbgln("TRIM: INIFINITE LOOP DETECTED");
             break;
         }
         lastpos = curpos;
@@ -208,7 +210,7 @@ std::string& trimxml(std::string& str, std::string eolchar, bool breaklines, boo
     return str;
 }
 
-void prettyPrint(ScintillaDoc& doc, bool autoindenttext, bool addlinebreaks, bool indentattributes) {
+void prettyPrint(ScintillaDoc& doc, bool autoindenttext, bool addlinebreaks, bool indentattributes, bool indentonly = false) {
 
     auto tabchar = doc.Tab();
     auto usetabs = doc.UseTabs();
@@ -240,7 +242,7 @@ void prettyPrint(ScintillaDoc& doc, bool autoindenttext, bool addlinebreaks, boo
     char cc;
 
     // first pass: trim lines
-    str = trimxml(str, eolchar, true, indentattributes);
+    str = trimxml(str, eolchar, true, indentattributes,indentonly);
 
     size_t strlen = str.length();
 
@@ -360,6 +362,10 @@ void prettyPrint(ScintillaDoc& doc, bool autoindenttext, bool addlinebreaks, boo
     str.clear();
 }
 
+void nppPrettyPrintInlineIndentOnly(ScintillaDoc& doc) {
+    prettyPrint(doc, false, true, false, true);
+}
+
 
 void nppPrettyPrintXMLInline(ScintillaDoc& doc) {
     prettyPrint(doc, false, true, false);
@@ -377,6 +383,11 @@ void nppPrettyPrintXML() {
 void nppPrettyPrintAttributes() {
     dbgln("prettyPrintAttributes()");
     nppDocumentCommand("nppPrettyPrintAttributesInline", nppPrettyPrintAttributesInline);
+}
+
+void nppPrettyPrintIndentOnly() {
+    dbgln("prettyPrintIndentOnly()");
+    nppDocumentCommand("nppPrettyPrintInlineIndentOnly", nppPrettyPrintXMLInline);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

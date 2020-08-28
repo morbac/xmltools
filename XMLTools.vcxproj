@@ -323,6 +323,7 @@
     <ClCompile Include="CMyPropertyGridCtrl.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="nppMenu.cpp" />
+    <ClCompile Include="SimpleXmlLexer.cpp" />
     <ClCompile Include="ToolsComment.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="ToolsConvert.cpp" />
@@ -345,6 +346,8 @@
     <ClCompile Include="ToolsXLSTransform.cpp" />
     <ClCompile Include="ToolsXmlValidate.cpp" />
     <ClCompile Include="ToolsXPath.cpp" />
+    <ClCompile Include="XmlPrettyPrinter.cpp" />
+    <ClCompile Include="XmlPrettyPrinterOld.cpp" />
     <ClCompile Include="XMLTools.cpp" />
     <ClCompile Include="HowtoUseDlg.cpp" />
     <ClCompile Include="InputDlg.cpp" />
@@ -376,6 +379,7 @@
     <ClInclude Include="ScintillaDoc.h" />
     <ClInclude Include="Sci_Position.h" />
     <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="XmlPrettyPrinter.h" />
     <ClInclude Include="XMLTools.h" />
     <ClInclude Include="HowtoUseDlg.h" />
     <ClInclude Include="InputDlg.h" />

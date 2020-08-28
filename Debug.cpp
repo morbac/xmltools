@@ -6,8 +6,7 @@ CDebugDlg* debugdlg = new CDebugDlg();
 
 void createDebugDlg() {
     debugdlg->Create(CDebugDlg::IDD, NULL);
-    if (debugdlg->s_valDebug.GetLength() > 0)
-        debugdlg->addLine("Debug dialog created\r\n");
+    dbgln("Debug dialog created", DBG_LEVEL::DBG_TRACE);
 }
 
 void showDebugDlg() {

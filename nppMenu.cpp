@@ -104,6 +104,7 @@ void nppPrettyPrintXML();
 void nppPrettyPrintXmlFast();
 void nppLinearizeXmlFast();
 void nppPrettyPrintAttributes();
+void nppPrettyPrintIndentOnly();
 //void insertPrettyPrintTag();
 void nppLinearizeXML();
 void togglePrettyPrintAllFiles();
@@ -122,7 +123,6 @@ void performXSLTransform();
 
 void aboutBox();
 void optionsDlg();
-//void debugDlg();
 
 int addMenuItem(const wchar_t* title, PFUNCPLUGINCMD action, bool checked = false, ShortcutKey *shortcut = NULL) {
     FuncItem item;
@@ -196,6 +196,7 @@ void initMenu() {
 
     addMenuItem(L"Pretty print", nppPrettyPrintXML, false, createShortcut('B'));
     addMenuItem(L"Pretty print (indent attributes)", nppPrettyPrintAttributes, false, createShortcut('A'));
+    addMenuItem(L"Fix indentation (beta)", nppPrettyPrintIndentOnly);
 
     /*
     Report::strcpy(funcItem[menuentry]._itemName, L"Enable auto pretty print (libXML) [experimental]");
