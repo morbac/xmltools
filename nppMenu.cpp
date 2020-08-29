@@ -141,6 +141,7 @@ void addMenuSeparator() {
 
     item._itemName[0] = 0;
     item._pFunc = NULL;
+    item._pShKey = NULL;
 
     nppMenu.push_back(item);
 }

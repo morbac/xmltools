@@ -4,6 +4,11 @@
 
 CDebugDlg* debugdlg = new CDebugDlg();
 
+void detroyDebugDlg() {
+    delete debugdlg;
+    debugdlg = NULL;
+}
+
 void createDebugDlg() {
     debugdlg->Create(CDebugDlg::IDD, NULL);
     dbgln("Debug dialog created", DBG_LEVEL::DBG_TRACE);

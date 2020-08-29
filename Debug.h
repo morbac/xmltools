@@ -12,6 +12,7 @@ enum class DBG_LEVEL :int {
 
 void createDebugDlg();
 void showDebugDlg();
+void detroyDebugDlg();
 void dbg(const CStringW line, DBG_LEVEL level = DBG_LEVEL::DBG_TRACE);
 void dbgln(const CStringW line, DBG_LEVEL level = DBG_LEVEL::DBG_TRACE);
 void dbgln(const std::wstring &line, DBG_LEVEL level = DBG_LEVEL::DBG_TRACE);
