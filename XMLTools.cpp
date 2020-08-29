@@ -63,6 +63,12 @@ static char THIS_FILE[] = __FILE__;
 // This is the name which will be displayed in Plugins Menu
 const wchar_t PLUGIN_NAME[] = L"XML Tools";
 
+///////////////////////////////////////////////////////////////////////////////
+
+// The one and only CXMLToolsApp object
+
+CXMLToolsApp* theApp = new CXMLToolsApp();
+
 NppData nppData;
 HHOOK hook = NULL;
 
@@ -280,6 +286,8 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       deleteAnnotations();
 
       savePluginParams();
+      detroyDebugDlg();
+      delete theApp;
       break;
     }
     default: {
@@ -350,9 +358,3 @@ void howtoUse() {
   CHowtoUseDlg* dlg = new CHowtoUseDlg();
   dlg->DoModal();
 }
-
-///////////////////////////////////////////////////////////////////////////////
-
-// The one and only CXMLToolsApp object
-
-CXMLToolsApp* theApp = new CXMLToolsApp();
