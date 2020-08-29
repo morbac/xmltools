@@ -1,6 +1,8 @@
 #pragma once
 #include "StdAfx.h"
 
+#include <string>
+
 enum class DBG_LEVEL :int {
 	DBG_TRACE = 0,
 	DBG_INFO = 1,
@@ -10,5 +12,7 @@ enum class DBG_LEVEL :int {
 
 void createDebugDlg();
 void showDebugDlg();
-void dbg(CStringW line, DBG_LEVEL level = DBG_LEVEL::DBG_TRACE);
-void dbgln(CStringW line, DBG_LEVEL level = DBG_LEVEL::DBG_TRACE);
+void dbg(const CStringW line, DBG_LEVEL level = DBG_LEVEL::DBG_TRACE);
+void dbgln(const CStringW line, DBG_LEVEL level = DBG_LEVEL::DBG_TRACE);
+void dbgln(const std::wstring &line, DBG_LEVEL level = DBG_LEVEL::DBG_TRACE);
+void dbgln(const TCHAR *line, DBG_LEVEL level = DBG_LEVEL::DBG_TRACE);

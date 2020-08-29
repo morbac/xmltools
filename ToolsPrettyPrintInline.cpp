@@ -229,7 +229,7 @@ void prettyPrint(ScintillaDoc& doc, bool autoindenttext, bool addlinebreaks, boo
 
     std::string str("");
     str += inText.text;
-    delete[] inText.text;
+    inText.FreeMemory();
 
 
     // some state variables
@@ -377,17 +377,17 @@ void nppPrettyPrintAttributesInline(ScintillaDoc& doc) {
 
 void nppPrettyPrintXML() {
     dbgln("prettyPrintXML()");
-    nppDocumentCommand("nppPrettyPrintXMLInline", nppPrettyPrintXMLInline);
+    nppMultiDocumentCommand(L"nppPrettyPrintXMLInline", nppPrettyPrintXMLInline);
 }
 
 void nppPrettyPrintAttributes() {
     dbgln("prettyPrintAttributes()");
-    nppDocumentCommand("nppPrettyPrintAttributesInline", nppPrettyPrintAttributesInline);
+    nppMultiDocumentCommand(L"nppPrettyPrintAttributesInline", nppPrettyPrintAttributesInline);
 }
 
 void nppPrettyPrintIndentOnly() {
     dbgln("prettyPrintIndentOnly()");
-    nppDocumentCommand("nppPrettyPrintInlineIndentOnly", nppPrettyPrintXMLInline);
+    nppMultiDocumentCommand(L"nppPrettyPrintInlineIndentOnly", nppPrettyPrintXMLInline);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -403,8 +403,7 @@ void sciDocLinearizeXMLInline(ScintillaDoc& doc) {
     auto docclock_start = clock();
     // process
     std::string str(inText.text);
-    delete[] inText.text;
-    inText.text = NULL;
+    inText.FreeMemory();
 
     std::string::size_type curpos = 0, nexwchar_t;
     bool enableInsert = false;
@@ -445,5 +444,5 @@ void sciDocLinearizeXMLInline(ScintillaDoc& doc) {
 }
 
 void nppLinearizeXML() {
-    nppDocumentCommand("linearizeXMLInline", sciDocLinearizeXMLInline);
+    nppMultiDocumentCommand(L"linearizeXMLInline", sciDocLinearizeXMLInline);
 }

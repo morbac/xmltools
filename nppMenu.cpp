@@ -109,8 +109,8 @@ void nppPrettyPrintIndentOnly();
 void nppLinearizeXML();
 void togglePrettyPrintAllFiles();
 
-void convertXML2Text();
-void convertText2XML();
+void nppConvertXML2Text();
+void nppConvertText2XML();
 
 void commentSelection();
 void uncommentSelection();
@@ -224,8 +224,8 @@ void initMenu() {
 
     addMenuSeparator();
 
-    addMenuItem(L"Escape characters in selection (<> → &&lt;&&gt;)", convertXML2Text);
-    addMenuItem(L"Unescape characters in selection (&&lt;&&gt; → <>)", convertText2XML);
+    addMenuItem(L"Escape characters in selection (<> → &&lt;&&gt;)", nppConvertXML2Text);
+    addMenuItem(L"Unescape characters in selection (&&lt;&&gt; → <>)", nppConvertText2XML);
 
     addMenuSeparator();
 

@@ -26,17 +26,28 @@ void CDebugDlg::DoDataExchange(CDataExchange* pDX)
   CDialog::DoDataExchange(pDX);
 }
 
-void CDebugDlg::addLine(CStringW line) {
+void CDebugDlg::Add(CStringW line) {
+    TRACE(line);
+    this->s_valDebug += line;
+    this->s_valDebug += L"\r\n";
+    UpdateWindowText();
+}
+
+void CDebugDlg::AddLine(CStringW line) {
   TRACE(line);
   this->s_valDebug += line;
-  if (this->m_hWnd) {
-    CEdit* edit = (CEdit*) GetDlgItem(IDC_EDITDEBUG);
-    if (edit) {
-      edit->SetWindowText(this->s_valDebug);
-      edit->SetSel(0,-1); // select all text and move cursor at the end
-      edit->SetSel(-1);
+  UpdateWindowText();
+}
+
+void CDebugDlg::UpdateWindowText() {
+    if (this->m_hWnd) {
+        CEdit* edit = (CEdit*) GetDlgItem(IDC_EDITDEBUG);
+        if (edit) {
+            edit->SetWindowText(this->s_valDebug);
+            edit->SetSel(0, -1); // select all text and move cursor at the end
+            edit->SetSel(-1);
+        }
     }
-  }
 }
 
 BEGIN_MESSAGE_MAP(CDebugDlg, CDialog)

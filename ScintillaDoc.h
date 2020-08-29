@@ -9,6 +9,24 @@ struct ScintillaDoc
 
 	bool inSelection;
 
+	struct sciWorkText
+	{
+		char* text;
+		long length;
+		long selstart;
+
+		operator bool() {
+			return text != NULL;
+		}
+
+		void FreeMemory() {
+			if (text) {
+				delete[] text;
+				text = NULL;
+			}
+		}
+	};
+
 	ScintillaDoc(HWND scHandle) {
 		hCurrentEditView = scHandle;
 		inSelection = false;
@@ -64,6 +82,14 @@ struct ScintillaDoc
 		return (long) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
 	}
 
+	void SetCurrentPosition(size_t selstart) {
+		::SendMessage(hCurrentEditView, SCI_SETCURRENTPOS, selstart, 0);
+	}
+
+	void SetAnchor(size_t selend) {
+		::SendMessage(hCurrentEditView, SCI_SETANCHOR, selend, 0);
+	}
+
 	void SetText(const char* text) {
 		::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(text));
 	}
@@ -84,6 +110,17 @@ struct ScintillaDoc
 		return text;
 	}
 
+	sciWorkText GetSelectedText() {
+		auto selstart = SelectionStart();
+		auto selend = SelectionEnd();
+		if (selend > selstart)
+		{
+			auto len = selend - selstart;
+			return { GetSelectedText(len), len, selstart };
+		}
+		return { NULL,0,0 };
+	}
+
 	char *GetText(long length) {
 		char *text = new char[length + sizeof(char)];
 		if (text == NULL) return false;  // allocation error, abort check
@@ -92,30 +129,26 @@ struct ScintillaDoc
 		return text;
 	}
 
-	struct sciWorkText
-	{
-		char* text;
-		long length;
-	};
-
 	sciWorkText GetWorkText() {
 		auto selstart = this->SelectionStart();
 		auto selend = this->SelectionEnd();
-		char* text;
-		long textLength;
+
+		sciWorkText ret;
 
 		if (selend > selstart) { // selection
-			textLength = selend - selstart;
+			ret.length = selend - selstart;
 			inSelection = true;
-			text = this->GetSelectedText(textLength);
+			ret.text = this->GetSelectedText(ret.length);
+			ret.selstart = selstart;
 		}
 		else {
-			textLength = this->GetTextLength();
+			ret.length = this->GetTextLength();
 			inSelection = false;
-			text = this->GetText(textLength);
+			ret.text = this->GetText(ret.length);
+			ret.selstart = -1;
 		}
 
-		return sciWorkText{ text, textLength };
+		return ret;
 	}
 
 	void SetWorkText(const char* text) {

@@ -8,4 +8,5 @@ extern NppData nppData;
 extern HWND getCurrentHScintilla(int which);
 
 #include "ScintillaDoc.h"
-void nppDocumentCommand(char* debugname, void (*action)(ScintillaDoc&));
+void nppMultiDocumentCommand(const std::wstring &debugname, void (*action)(ScintillaDoc&));
+void nppDocumentCommand(const std::wstring& debugname, void (*action)(ScintillaDoc&));
