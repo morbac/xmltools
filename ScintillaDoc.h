@@ -82,7 +82,7 @@ struct ScintillaDoc
 		return (long) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
 	}
 
-	void SetSelectionPos(size_t selstart) {
+	void SetCurrentPosition(size_t selstart) {
 		::SendMessage(hCurrentEditView, SCI_SETCURRENTPOS, selstart, 0);
 	}
 

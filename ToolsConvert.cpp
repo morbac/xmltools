@@ -50,7 +50,7 @@ void sciConvertText2XML(ScintillaDoc &doc) {
     doc.ReplaceSelection(str.c_str());
 
     // Defines selection without scrolling
-    doc.SetSelectionPos(seltext.selstart);
+    doc.SetCurrentPosition(seltext.selstart);
     doc.SetAnchor(seltext.selstart + str.length());
 }
 
@@ -96,7 +96,7 @@ void sciConvertXML2Text(ScintillaDoc &doc) {
     doc.ReplaceSelection(str.c_str());
 
     // Defines selection without scrolling
-    doc.SetSelectionPos(seltext.selstart);
+    doc.SetCurrentPosition(seltext.selstart);
     doc.SetAnchor(seltext.selstart + str.length());
 }
 
