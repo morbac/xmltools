@@ -26,7 +26,8 @@ void sciDocPrettyPrintXML(ScintillaDoc& doc) {
     auto docclock_start = clock();
 
     XmlPrettyPrinter prettyPrinter = XmlPrettyPrinter(inText.text, inText.length, parms);
-    prettyPrinter.Convert();   
+    prettyPrinter.Convert();
+    inText.FreeMemory();
     auto prettyTextStream = prettyPrinter.Stream();
     auto docclock_end = clock();
 
@@ -93,6 +94,7 @@ void sciDocLinearizeXML(ScintillaDoc& doc) {
 
     XmlPrettyPrinter prettyPrinter = XmlPrettyPrinter(inText.text, inText.length, parms);
     prettyPrinter.Convert();
+    inText.FreeMemory();
     auto prettyTextStream = prettyPrinter.Stream();
     auto docclock_end = clock();
 
