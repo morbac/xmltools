@@ -4,6 +4,7 @@
 enum class Token {
     InputEnd,
     Whitespace,
+    Linebreak,
     ClosingTag,
     ProcessingInstructionStart,
     TagStart,
@@ -33,11 +34,10 @@ public:
     bool Done() { return curpos >= endpos; }
 
     inline static bool IsWhitespace(char x) {
-        return ((x) == 0x20 ||
-            (x) == 0x9 ||
-            (x) == 0xD ||
-            (x) == 0x0A
-            ); // XML Standard paragraph 2.3 whitespace
+        return ((x) == 0x20 || (x) == 0x9);
+    }
+    inline static bool IsLinebreak(char x) {
+        return ((x) == 0xD || (x) == 0x0A);
     }
 
     Token FindNext();

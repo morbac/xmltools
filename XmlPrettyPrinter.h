@@ -12,6 +12,7 @@ struct PrettyPrintParms
     bool insertNewLines = false;
     bool removeWhitespace = false;
     bool autocloseEmptyElements = true;
+    bool keepExistingBreaks = false;
 };
 
 class XmlPrettyPrinter {

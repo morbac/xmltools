@@ -17,10 +17,11 @@ void sciDocPrettyPrintXML(ScintillaDoc& doc) {
     parms.tab = doc.Tab();
     parms.insertIndents = true;
     parms.insertNewLines = true;
-    parms.removeWhitespace = true;
+    parms.removeWhitespace = false;
     parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
     if (xmltoolsoptions.maxElementDepth > 0)
         parms.maxElementDepth = xmltoolsoptions.maxElementDepth;
+    parms.keepExistingBreaks = true;
 
     auto docclock_start = clock();
     //std::stringstream* prettyTextStream = prettyPrintXml(inText.text, inText.length, parms);

@@ -5,11 +5,8 @@
 #include "SimpleXmlLexer.h"
 
 
-#define isWhitespace(x) ((x) == 0x20 || \
-                          (x) == 0x9 || \
-                          (x) == 0xD || \
-                          (x) == 0x0A \
-                    ) // XML Standard paragraph 2.3 whitespace
+#define isWhitespace(x) ((x) == 0x20 || (x) == 0x9)
+#define isLinebreak(x) ((x) == 0xD || (x) == 0x0A)
 
 #define isTagStart(x) ((x=='<'))
 #define isTagEnd(x) ((x=='>'))
@@ -59,8 +56,9 @@ SimpleXmlLexer::SimpleXmlLexer(const char* start, size_t len) {
 
 
 Token SimpleXmlLexer::FindNext() {
-    if (curpos == endpos)
+    if (curpos == endpos) {
         return Token::InputEnd;
+    }
 
     tokenStart = curpos;
 
@@ -108,17 +106,23 @@ Token SimpleXmlLexer::FindNext() {
     // has to be data
 
     auto pos = curpos;
-    bool whitespace = true;
+    auto token = Token::None;
+    auto lasttoken = Token::None;
     for (; pos < endpos && !isTagStart(*pos); pos++) {
-        if (!IsWhitespace(*pos)) {
-            whitespace = false;
+        if (IsWhitespace(*pos)) token = Token::Whitespace;
+        else if (IsLinebreak(*pos)) token = Token::Linebreak;
+        else token = Token::Text;
+
+        if (lasttoken == Token::None) {
+            lasttoken = token;
+        }
+        else if (token != lasttoken) {
+            break;
         }
     }
+
     tokenEnd = pos;
-    if (whitespace)
-        return Token::Whitespace;
-    else
-        return Token::Text;
+    return lasttoken;
 }
 
 Token SimpleXmlLexer::TryGetName() {
