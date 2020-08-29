@@ -24,7 +24,7 @@ inline void XmlPrettyPrinter::TryIndent() {
 }
 
 inline void XmlPrettyPrinter::AddNewline() {
-    if (parms.insertNewLines) {
+    if (parms.insertNewLines && !parms.keepExistingBreaks) {
         outText.write(parms.eol.c_str(), parms.eol.length());
         indented = false;
     }
@@ -89,14 +89,20 @@ void XmlPrettyPrinter::Parse() {
               }
               else {
                   WriteToken();
+                  indented = true;
               }
 
               lexer.EatToken();
               break;
           }
           case Token::Linebreak: {
+              TryCloseTag();
               if (!parms.insertNewLines) {
                   AddNewline();
+              }
+              else if (parms.keepExistingBreaks) {
+                  WriteToken();
+                  indented = false;
               }
               lexer.EatToken();
               break;

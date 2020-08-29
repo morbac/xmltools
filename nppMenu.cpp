@@ -102,6 +102,7 @@ void togglePreventXXE();
 void toggleAllowHuge();
 void nppPrettyPrintXML();
 void nppPrettyPrintXmlFast();
+void nppPrettyPrintXmlIndentOnlyFast();
 void nppLinearizeXmlFast();
 void nppPrettyPrintAttributes();
 void nppPrettyPrintIndentOnly();
@@ -210,6 +211,7 @@ void initMenu() {
     addMenuItem(L"Linearize XML", nppLinearizeXML, false, createShortcut('L'));
     menuitemPrettyPrintAllFiles = addMenuItem(L"Apply to all open files", togglePrettyPrintAllFiles, config.doPrettyPrintAllOpenFiles);
     addMenuItem(L"Pretty print (fast)", nppPrettyPrintXmlFast);
+    addMenuItem(L"Pretty print - indent only (fast)", nppPrettyPrintXmlIndentOnlyFast);
     addMenuItem(L"Linearize (fast)", nppLinearizeXmlFast);
 
     addMenuSeparator();

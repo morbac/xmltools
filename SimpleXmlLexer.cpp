@@ -72,8 +72,9 @@ Token SimpleXmlLexer::FindNext() {
 
             if (0 == strncmp(curpos, "<![CDATA[", 9)) {
                 tokenEnd = strstr(curpos + 9, "]]>");
-                if (tokenEnd == NULL)
+                if (tokenEnd == NULL) {
                     tokenEnd = endpos; // not found.. copy rest
+                }
 
                 return Token::CData;
             }
