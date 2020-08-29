@@ -49,10 +49,8 @@ bool hasNextDoc(int* iter) {
 }
 
 
-void nppDocumentCommand(char* debugname, void (*action)(ScintillaDoc&)) {
-    dbg("+ nppDocumentCommand(\"");
-    dbg(debugname);
-    dbgln("\")");
+void nppMultiDocumentCommand(const std::wstring &debugname, void (*action)(ScintillaDoc&)) {
+    dbgln(L"+ nppMultiDocumentCommand(\"" + debugname + L"\")");
 
     auto clock_start = clock();
 
@@ -77,7 +75,7 @@ void nppDocumentCommand(char* debugname, void (*action)(ScintillaDoc&)) {
         {
             std::wstring txt;
             txt = txt + filename + L" => time taken: " + std::to_wstring(docclock_end - docclock_start) + L" ms";
-            dbgln(txt.c_str(),DBG_LEVEL::DBG_INFO);
+            dbgln(txt,DBG_LEVEL::DBG_INFO);
         }
 
         // Put scroll at the left of the view
@@ -86,7 +84,34 @@ void nppDocumentCommand(char* debugname, void (*action)(ScintillaDoc&)) {
 
     auto clock_end = clock();
     
-    std::string txt;
-    txt = txt + "- nppDocumentCommand(\"" + debugname + "\") => time taken: " + std::to_string(clock_end - clock_start) + " ms";
-    dbgln(txt.c_str());
+    std::wstring txt;
+    txt = txt + L"- nppMultiDocumentCommand(\"" + debugname + L"\") => time taken: " + std::to_wstring(clock_end - clock_start) + L" ms";
+    dbgln(txt);
+}
+
+void nppDocumentCommand(const std::wstring& debugname, void (*action)(ScintillaDoc&)) {
+    dbgln(L"+ nppDocumentCommand(\"" + debugname + L"\")");
+
+    int currentEdit;
+    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
+
+    ScintillaDoc doc = ScintillaDoc(getCurrentHScintilla(currentEdit));
+
+    if (doc.IsReadOnly()) {
+        dbgln(L"Operation aborted, read online document");
+        return;
+    }
+
+    auto clock_start = clock();
+
+    wchar_t filename[MAX_PATH]{ 0 };
+    ::SendMessage(nppData._nppHandle, NPPM_GETFILENAME, MAX_PATH, (LPARAM)filename);
+
+    action(doc);
+
+    auto clock_end = clock();
+
+    std::wstring txt;
+    txt = txt + L"- nppDocumentCommand(\"" + debugname + L"\") on file '"+filename+L"' => time taken: " + std::to_wstring(clock_end - clock_start) + L" ms";
+    dbgln(txt, DBG_LEVEL::DBG_INFO);
 }

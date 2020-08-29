@@ -24,13 +24,10 @@ void sciDocPrettyPrintXML(ScintillaDoc& doc) {
     parms.keepExistingBreaks = true;
 
     auto docclock_start = clock();
-    //std::stringstream* prettyTextStream = prettyPrintXml(inText.text, inText.length, parms);
 
     XmlPrettyPrinter prettyPrinter = XmlPrettyPrinter(inText.text, inText.length, parms);
     prettyPrinter.Convert();   
     auto prettyTextStream = prettyPrinter.Stream();
-
-    delete inText.text;
     auto docclock_end = clock();
 
     {
@@ -42,7 +39,6 @@ void sciDocPrettyPrintXML(ScintillaDoc& doc) {
     // Send formatted string to scintilla
     const std::string& outText = prettyTextStream->str();
     doc.SetWorkText(outText.c_str());
-    //delete prettyTextStream;
 }
 
 void sciDocLinearizeXML(ScintillaDoc& doc) {
@@ -59,13 +55,10 @@ void sciDocLinearizeXML(ScintillaDoc& doc) {
     parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
 
     auto docclock_start = clock();
-    //std::stringstream* prettyTextStream = prettyPrintXml(inText.text, inText.length, parms);
 
     XmlPrettyPrinter prettyPrinter = XmlPrettyPrinter(inText.text, inText.length, parms);
     prettyPrinter.Convert();
     auto prettyTextStream = prettyPrinter.Stream();
-
-    delete[] inText.text;
     auto docclock_end = clock();
 
     {
@@ -77,13 +70,12 @@ void sciDocLinearizeXML(ScintillaDoc& doc) {
     // Send formatted string to scintilla
     const std::string& outText = prettyTextStream->str();
     doc.SetWorkText(outText.c_str());
-    //delete prettyTextStream;
 }
 
 void nppPrettyPrintXmlFast() {
-    nppDocumentCommand("PrettyPrintFast", sciDocPrettyPrintXML);
+    nppMultiDocumentCommand(L"PrettyPrintFast", sciDocPrettyPrintXML);
 }
 
 void nppLinearizeXmlFast() {
-    nppDocumentCommand("LinearizeFast", sciDocLinearizeXML);
+    nppMultiDocumentCommand(L"LinearizeFast", sciDocLinearizeXML);
 }

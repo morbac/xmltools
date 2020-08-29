@@ -3,194 +3,103 @@
 #include "nppHelpers.h"
 #include "Report.h"
 
-void convertText2XML() {
-    dbgln("convertText2XML()");
+void strreplaceall(std::string& str, const char* find, const char* replacement) {
+    auto curpos = str.size();
+    auto findSize = strlen(find);
+    while (curpos != std::string::npos && (curpos = str.rfind(find, curpos)) != std::string::npos) {
+        if (curpos != std::string::npos) {
+            str.replace(curpos, findSize, replacement);
+        }
+        --curpos;
+    }
+}
 
-    int currentEdit, isReadOnly;
-    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-    HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
+void sciConvertText2XML(ScintillaDoc &doc) {
+    auto seltext = doc.GetSelectedText();
 
-    isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
-    if (isReadOnly) return;
-
-    size_t selstart = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-    size_t selend = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
-    size_t sellength = selend - selstart;
-
-    if (selend <= selstart) {
+    if (!seltext) {
         Report::_printf_err(L"Please select text to transform before you call the function.");
         return;
     }
 
-    char* data = new char[sellength + 1];
-    if (!data) return;  // allocation error, abort check
-    memset(data, '\0', sellength + 1);
-
-    ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
-
-    std::string str(data);
-    delete[] data;
-    data = NULL;
-    std::string::size_type curpos;
+    std::string str(seltext.text);
+    seltext.FreeMemory();
 
     if (xmltoolsoptions.convertApos) {
-        curpos = sellength;
-        while (curpos != std::string::npos && (curpos = str.rfind("&apos;", curpos)) != std::string::npos) {
-            if (curpos != std::string::npos) {
-                str.replace(curpos, strlen("&apos;"), "'");
-                sellength = sellength - strlen("&apos;") + strlen("'");
-            }
-            --curpos;
-        }
+        strreplaceall(str, "&apos;", "'");
     }
 
     if (xmltoolsoptions.convertQuote) {
-        curpos = sellength;
-        while (curpos != std::string::npos && (curpos = str.rfind("&quot;", curpos)) != std::string::npos) {
-            if (curpos != std::string::npos) {
-                str.replace(curpos, strlen("&quot;"), "\"");
-                sellength = sellength - strlen("&quot;") + strlen("\"");
-            }
-            --curpos;
-        }
+        strreplaceall(str, "&quot;", "\"");
     }
 
     if (xmltoolsoptions.convertLt) {
-        curpos = sellength;
-        while (curpos != std::string::npos && (curpos = str.rfind("&lt;", curpos)) != std::string::npos) {
-            if (curpos != std::string::npos) {
-                str.replace(curpos, strlen("&lt;"), "<");
-                sellength = sellength - strlen("&lt;") + strlen("<");
-            }
-            --curpos;
-        }
+        strreplaceall(str, "&lt;", "<");
     }
 
     if (xmltoolsoptions.convertGt) {
-        curpos = sellength;
-        while (curpos != std::string::npos && (curpos = str.rfind("&gt;", curpos)) != std::string::npos) {
-            if (curpos != std::string::npos) {
-                str.replace(curpos, strlen("&gt;"), ">");
-                sellength = sellength - strlen("&gt;") + strlen(">");
-            }
-            --curpos;
-        }
+        strreplaceall(str, "&gt;", ">");
     }
 
+    // &amp needs to be the last one
     if (xmltoolsoptions.convertAmp) {
-        curpos = sellength;
-        while (curpos != std::string::npos && (curpos = str.rfind("&amp;", curpos)) != std::string::npos) {
-            if (curpos != std::string::npos) {
-                str.replace(curpos, strlen("&amp;"), "&");
-                sellength = sellength - strlen("&amp;") + strlen("&");
-            }
-            --curpos;
-        }
+        strreplaceall(str, "&amp;", "&");
     }
 
     // Replace the selection with new string
-    ::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(str.c_str()));
+    doc.ReplaceSelection(str.c_str());
 
     // Defines selection without scrolling
-    ::SendMessage(hCurrentEditView, SCI_SETCURRENTPOS, selstart, 0);
-    ::SendMessage(hCurrentEditView, SCI_SETANCHOR, selstart + sellength, 0);
+    doc.SetCurrentPosition(seltext.selstart);
+    doc.SetAnchor(seltext.selstart + str.length());
+}
 
-    str.clear();
+void nppConvertText2XML() {
+    nppDocumentCommand(L"convertText2XML", sciConvertText2XML);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void convertXML2Text() {
-    dbgln("convertXML2Text()");
+void sciConvertXML2Text(ScintillaDoc &doc) {
+    auto seltext = doc.GetSelectedText();
 
-    int currentEdit, isReadOnly;
-    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-    HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-
-    isReadOnly = (int) ::SendMessage(hCurrentEditView, SCI_GETREADONLY, 0, 0);
-    if (isReadOnly) return;
-
-    size_t selstart = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
-    size_t selend = (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
-    size_t sellength = selend - selstart;
-
-    if (selend <= selstart) {
+    if (!seltext) {
         Report::_printf_err(L"Please select text to transform before you call the function.");
         return;
     }
 
-    char* data = new char[sellength + 1];
-    if (!data) return;  // allocation error, abort check
-    memset(data, '\0', sellength + 1);
+    std::string str(seltext.text);
+    seltext.FreeMemory();
 
-    ::SendMessage(hCurrentEditView, SCI_GETSELTEXT, 0, reinterpret_cast<LPARAM>(data));
-
-    std::string str(data);
-    delete[] data;
-    data = NULL;
-    std::string::size_type curpos;
-
+    // &amp needs to be the first one
     if (xmltoolsoptions.convertAmp) {
-        curpos = sellength;
-        while (curpos != std::string::npos && (curpos = str.rfind("&", curpos)) != std::string::npos) {
-            if (curpos != std::string::npos) {
-                str.replace(curpos, strlen("&"), "&amp;");
-                sellength = sellength + strlen("&amp;") - strlen("&");
-            }
-            --curpos;
-        }
-    }
-
-    if (xmltoolsoptions.convertLt) {
-        curpos = sellength;
-        while (curpos != std::string::npos && (curpos = str.rfind("<", curpos)) != std::string::npos) {
-            if (curpos != std::string::npos) {
-                str.replace(curpos, strlen("<"), "&lt;");
-                sellength = sellength + strlen("&lt;") - strlen("<");
-            }
-            --curpos;
-        }
-    }
-
-    if (xmltoolsoptions.convertGt) {
-        curpos = sellength;
-        while (curpos != std::string::npos && (curpos = str.rfind(">", curpos)) != std::string::npos) {
-            if (curpos != std::string::npos) {
-                str.replace(curpos, strlen(">"), "&gt;");
-                sellength = sellength + strlen("&gt;") - strlen(">");
-            }
-            --curpos;
-        }
-    }
-
-    if (xmltoolsoptions.convertQuote) {
-        curpos = sellength;
-        while (curpos != std::string::npos && (curpos = str.rfind("\"", curpos)) != std::string::npos) {
-            if (curpos != std::string::npos) {
-                str.replace(curpos, strlen("\""), "&quot;");
-                sellength = sellength + strlen("&quot;") - strlen("\"");
-            }
-            --curpos;
-        }
+        strreplaceall(str, "&", "&amp;");
     }
 
     if (xmltoolsoptions.convertApos) {
-        curpos = sellength;
-        while (curpos != std::string::npos && (curpos = str.rfind("'", curpos)) != std::string::npos) {
-            if (curpos != std::string::npos) {
-                str.replace(curpos, strlen("'"), "&apos;");
-                sellength = sellength + strlen("&apos;") - strlen("'");
-            }
-            --curpos;
-        }
+        strreplaceall(str, "'", "&apos;");
+    }
+
+    if (xmltoolsoptions.convertQuote) {
+        strreplaceall(str, "\"", "&quot;");
+    }
+
+    if (xmltoolsoptions.convertLt) {
+        strreplaceall(str, "<", "&lt;");
+    }
+
+    if (xmltoolsoptions.convertGt) {
+        strreplaceall(str, ">", "&gt;");
     }
 
     // Replace the selection with new string
-    ::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(str.c_str()));
+    doc.ReplaceSelection(str.c_str());
 
     // Defines selection without scrolling
-    ::SendMessage(hCurrentEditView, SCI_SETCURRENTPOS, selstart, 0);
-    ::SendMessage(hCurrentEditView, SCI_SETANCHOR, selstart + sellength, 0);
+    doc.SetCurrentPosition(seltext.selstart);
+    doc.SetAnchor(seltext.selstart + str.length());
+}
 
-    str.clear();
+void nppConvertXML2Text() {
+    nppDocumentCommand(L"convertXML2Text", sciConvertXML2Text);
 }

@@ -13,14 +13,24 @@ void showDebugDlg() {
     debugdlg->ShowWindow(SW_SHOW);
 }
 
-void dbg(CStringW line, DBG_LEVEL level) {
+void dbg(const CStringW line, DBG_LEVEL level) {
     if (level >= config.dbgLevel)
-        debugdlg->addLine(line);
+        debugdlg->Add(line);
 }
 
-void dbgln(CStringW line, DBG_LEVEL level) {
+void dbgln(const CStringW line, DBG_LEVEL level) {
     if (level >= config.dbgLevel)
-        debugdlg->addLine(line + "\r\n");
+        debugdlg->AddLine(line);
+}
+
+void dbgln(const std::wstring &line, DBG_LEVEL level) {
+    if (level >= config.dbgLevel)
+        debugdlg->AddLine(line.c_str());
+}
+
+void dbgln(const TCHAR *line, DBG_LEVEL level) {
+    if (level >= config.dbgLevel)
+        debugdlg->AddLine(line);
 }
 
 /*

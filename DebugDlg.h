@@ -7,11 +7,14 @@ class CDebugDlg : public CDialog
 {
   DECLARE_DYNAMIC(CDebugDlg)
 
+  void UpdateWindowText();
+
 public:
   CDebugDlg(CWnd* pParent = NULL);   // constructeur standard
   virtual ~CDebugDlg();
 
-  void addLine(CStringW line);
+  void AddLine(CStringW line);
+  void Add(CStringW line);
 
 // Données de boîte de dialogue
   enum { IDD = IDD_DLGDEBUG };
