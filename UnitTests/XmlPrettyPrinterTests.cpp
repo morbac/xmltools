@@ -88,6 +88,27 @@ bool testPrettyPrint(const char* input, const char* expectedOutput) {
     return 0 == strcmp(expectedOutput, output.c_str());
 }
 
-TEST(PrettyPrint, XmlPretttyPrinterTests) {
-    iterateFolder(L"PrettyPrintFiles", testPrettyPrint);
+TEST(PrettyPrint, Default) {
+    iterateFolder(L"PrettyPrint", testPrettyPrint);
+}
+
+bool testPrettyPrintIndentOnly(const char* input, const char* expectedOutput) {
+
+    PrettyPrintParms parms;
+    parms.eol = "\r\n";
+    parms.tab = "\t";
+    parms.insertIndents = true;
+    parms.insertNewLines = true;
+    parms.removeWhitespace = true;
+    parms.autocloseEmptyElements = true;
+    parms.keepExistingBreaks = true;
+
+    auto prettyPrinter = XmlPrettyPrinter(input, strlen(input), parms);
+    prettyPrinter.Convert();
+    const std::string& output = prettyPrinter.Stream()->str();
+    return 0 == strcmp(expectedOutput, output.c_str());
+}
+
+TEST(PrettyPrint, IndentOnly) {
+    iterateFolder(L"PrettyPrintIndentOnly", testPrettyPrintIndentOnly);
 }
