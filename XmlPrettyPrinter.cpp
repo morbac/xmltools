@@ -39,6 +39,9 @@ inline void XmlPrettyPrinter::StartNewElement() {
         TryCloseTag();
         AddNewline();
     }
+    else if (indented) {
+        AddNewline();
+    }
 }
 
 inline void XmlPrettyPrinter::WriteToken() {
