@@ -29,12 +29,14 @@ class XmlPrettyPrinter {
     size_t prevTagLen = 0;
 
     inline void TryCloseTag();
+    inline void Indent();
     inline void TryIndent();
     inline void AddNewline();
     inline void StartNewElement();
     inline void WriteToken();
     inline void WriteEatToken();
     void Parse();
+    void ParseAttributes();
 
 public:
     XmlPrettyPrinter(const char* txt, size_t textlen, PrettyPrintParms parms) :lexer(txt, textlen), parms(parms) {

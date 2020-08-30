@@ -11,15 +11,19 @@ inline void XmlPrettyPrinter::TryCloseTag() {
     }
 }
 
+inline void XmlPrettyPrinter::Indent() {
+    if (!indented && parms.insertIndents) {
+        for (int i = 0; i < indentlevel && i < parms.maxElementDepth; i++) {
+            outText.write(parms.tab.c_str(), parms.tab.length());
+        }
+    }
+    indented = true;
+}
+
 inline void XmlPrettyPrinter::TryIndent() {
     TryCloseTag();
     if (parms.insertNewLines) {
-        if (!indented && parms.insertIndents) {
-            for (int i = 0; i < indentlevel && i < parms.maxElementDepth; i++) {
-                outText.write(parms.tab.c_str(), parms.tab.length());
-            }
-        }
-        indented = true;
+        Indent();
     }
 }
 
@@ -46,6 +50,56 @@ inline void XmlPrettyPrinter::WriteEatToken() {
     lexer.EatToken();
 }
 
+void XmlPrettyPrinter::ParseAttributes() {
+    bool insertWhitespaceBeforeAttribute = false;
+    for (auto token = lexer.TryGetAttribute(); token != Token::InputEnd; token = lexer.TryGetAttribute()) {
+        if (token == Token::Text) {
+            if (insertWhitespaceBeforeAttribute) {
+                if (!indented && indentlevel > 0 && parms.insertIndents)
+                    Indent();
+                else
+                    outText.write(" ", 1);
+
+                insertWhitespaceBeforeAttribute = false;
+            }
+
+            WriteEatToken();
+        }
+        else if (token == Token::Whitespace) {
+            if (!parms.removeWhitespace) {
+                WriteToken();
+                insertWhitespaceBeforeAttribute = false;
+            }
+            else {
+                insertWhitespaceBeforeAttribute = true;
+            }
+            lexer.EatToken();
+        }
+        else if (token == Token::Linebreak) {
+            insertWhitespaceBeforeAttribute = true;
+            if (parms.keepExistingBreaks) {
+                WriteToken();
+                indented = false;
+            }
+
+            lexer.EatToken();
+        }
+        else if (token == Token::SelfClosingTagEnd) {
+            WriteEatToken();
+            inTag = false;
+            tagIsOpen = false;
+            AddNewline();
+            break;
+        }
+        else if (token == Token::TagEnd) {
+            inTag = false;
+            lexer.EatToken();
+            break;
+        }
+        else break;
+    }
+}
+
 void XmlPrettyPrinter::Parse() {
     while (!lexer.Done()) {
         auto token = lexer.FindNext();
@@ -62,11 +116,11 @@ void XmlPrettyPrinter::Parse() {
               if (parms.removeWhitespace) {
                   auto start = lexer.TokenText();
                   auto len = lexer.TokenSize();
-                  while (len > 0 && lexer.IsWhitespace(*start)) {
+                  while (len > 0 && lexer.IsWhitespace(*start) || (!parms.keepExistingBreaks && lexer.IsLinebreak(*start))) {
                       len--;
                       start++;
                   }
-                  while (len > 0 && lexer.IsWhitespace(start[len - 1])) {
+                  while (len > 0 && lexer.IsWhitespace(start[len - 1] || (!parms.keepExistingBreaks && lexer.IsLinebreak(start[len - 1])))) {
                       len--;
                   }
                   if (len > 0) {
@@ -171,6 +225,8 @@ void XmlPrettyPrinter::Parse() {
               }
               TryIndent();
               WriteEatToken();
+              tagIsOpen = true;
+              inTag = true;
 
               if (lexer.TryGetName() == Token::Name) {
                   WriteEatToken();
@@ -180,26 +236,13 @@ void XmlPrettyPrinter::Parse() {
                   break;
               }
 
-              for (auto token = lexer.TryGetAttribute(); token != Token::InputEnd; token = lexer.TryGetAttribute()) {
-                  if (token == Token::Text) {
-                      if (parms.removeWhitespace) {
-                          outText.write(" ", 1);
-                      }
-
-                      WriteEatToken();
-                  }
-                  else if (token == Token::Whitespace) {
-                      if (!parms.removeWhitespace) {
-                          WriteToken();
-                      }
-                      lexer.EatToken();
-                  }
-                  else if (token == Token::SelfClosingTagEnd || token == Token::TagEnd) {
-                      WriteEatToken();
-                      AddNewline();
-                      break;
-                  }
-                  else break;
+              indentlevel++; // indent attributes
+              ParseAttributes();
+              indentlevel--; // indent attributes
+              if (tagIsOpen) { // the % would be eaten as 'text'
+                  outText.write(">", 1);
+                  inTag = false;
+                  tagIsOpen = false;
               }
 
               break;
@@ -213,7 +256,6 @@ void XmlPrettyPrinter::Parse() {
               WriteEatToken();
               tagIsOpen = true;
               inTag = true;
-
               if (lexer.TryGetName() == Token::Name) {
                   prevTag = lexer.TokenText();
                   prevTagLen = lexer.TokenSize();
@@ -223,35 +265,9 @@ void XmlPrettyPrinter::Parse() {
                   // ill-formed XML.. dump as is until next >
                   break;
               }
-
-              for (auto token = lexer.TryGetAttribute(); token != Token::InputEnd; token = lexer.TryGetAttribute()) {
-                  if (token == Token::Text) {
-                      if (parms.removeWhitespace) {
-                          outText.write(" ", 1);
-                      }
-
-                      WriteEatToken();
-                  }
-                  else if (token == Token::Whitespace) {
-                      if (!parms.removeWhitespace) {
-                          WriteToken();
-                      }
-                      lexer.EatToken();
-                  }
-                  else if (token == Token::SelfClosingTagEnd) {
-                      WriteEatToken();
-                      inTag = false;
-                      tagIsOpen = false;
-                      AddNewline();
-                      break;
-                  }
-                  else if (token == Token::TagEnd) {
-                      inTag = false;
-                      lexer.EatToken();
-                      break;
-                  }
-                  else break;
-              }
+              indentlevel++; // indent attributes
+              ParseAttributes();
+              indentlevel--; // indent attributes
               break;
           }
           case Token::TagEnd: {

@@ -153,6 +153,12 @@ Token SimpleXmlLexer::TryGetAttribute() {
         return Token::Whitespace;
     }
 
+    if (IsLinebreak(*pos)) {
+        for (pos++; pos < endpos && IsLinebreak(*pos); pos++);
+        tokenEnd = pos;
+        return Token::Linebreak;
+    }
+
     for (; pos < endpos; pos++) {
         if (inAttrVal) {
             if (*pos == attrBoundary) {
@@ -163,7 +169,7 @@ Token SimpleXmlLexer::TryGetAttribute() {
             inAttrVal = true;
             attrBoundary = *pos;
         }
-        else if (IsWhitespace(*pos))
+        else if (IsWhitespace(*pos) || IsLinebreak(*pos))
             break;
         else if (*pos == '/' || *pos == '>')
             break;
