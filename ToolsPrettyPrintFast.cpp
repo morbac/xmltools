@@ -40,6 +40,7 @@ void sciDocPrettyPrintXML(ScintillaDoc& doc) {
     // Send formatted string to scintilla
     const std::string& outText = prettyTextStream->str();
     doc.SetWorkText(outText.c_str());
+    doc.SetScrollWidth(80); // 80 is arbitrary
 }
 
 void sciDocPrettyPrintXML_IndentOnly(ScintillaDoc& doc) {

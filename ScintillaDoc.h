@@ -163,4 +163,8 @@ struct ScintillaDoc
 	void SetXOffset(int offset = 0) {
 		::SendMessage(hCurrentEditView, SCI_SETXOFFSET, offset, 0);
 	}
+
+	void SetScrollWidth(int width) {
+		::SendMessage(hCurrentEditView, SCI_SETSCROLLWIDTH, width, 0);
+	}
 };

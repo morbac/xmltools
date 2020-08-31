@@ -29,13 +29,13 @@ void CDebugDlg::DoDataExchange(CDataExchange* pDX)
 void CDebugDlg::Add(CStringW line) {
     TRACE(line);
     this->s_valDebug += line;
-    this->s_valDebug += L"\r\n";
     UpdateWindowText();
 }
 
 void CDebugDlg::AddLine(CStringW line) {
   TRACE(line);
   this->s_valDebug += line;
+  this->s_valDebug += L"\r\n";
   UpdateWindowText();
 }
 
