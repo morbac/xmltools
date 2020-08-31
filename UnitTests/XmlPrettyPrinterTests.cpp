@@ -20,7 +20,11 @@ static std::string replace(std::string& s, const std::string& find, const char *
 }
 
 char* readFile(const fs::directory_entry& entry) {
-    auto size = entry.file_size();
+    auto fsize = entry.file_size();
+    if (fsize > INT_MAX - 1)
+        return NULL;
+    int size = static_cast<int>(fsize);
+
     std::ifstream inputStream(entry.path().string(), std::ios_base::binary | std::ios_base::in);
     if (!inputStream.is_open()) {
         return NULL;

@@ -53,9 +53,10 @@ inline void XmlPrettyPrinter::WriteEatToken() {
     lexer.EatToken();
 }
 
-void XmlPrettyPrinter::ParseAttributes() {
+bool XmlPrettyPrinter::ParseAttributes() {
     bool insertWhitespaceBeforeAttribute = false;
-    for (auto token = lexer.TryGetAttribute(); token != Token::InputEnd; token = lexer.TryGetAttribute()) {
+    Token token;
+    for (token = lexer.TryGetAttribute(); token != Token::InputEnd; token = lexer.TryGetAttribute()) {
         if (token == Token::Text) {
             if (insertWhitespaceBeforeAttribute) {
                 if (!indented && indentlevel > 0 && parms.insertIndents)
@@ -99,194 +100,199 @@ void XmlPrettyPrinter::ParseAttributes() {
             lexer.EatToken();
             break;
         }
-        else break;
+        else {
+            inTag = false;
+            tagIsOpen = false;
+            return false; // something unexpected happened but we definately were not able to eat/close the end >
+        }
     }
+    return token != Token::InputEnd;
 }
 
 void XmlPrettyPrinter::Parse() {
     while (!lexer.Done()) {
         auto token = lexer.FindNext();
         switch (token) {
-          case Token::CData:
-          case Token::Comment: {
-              StartNewElement();
-              TryIndent();
-              WriteEatToken();
-              break;
-          }
-          case Token::Text: {
-              TryCloseTag();
-              if (parms.removeWhitespace) {
-                  auto start = lexer.TokenText();
-                  auto len = lexer.TokenSize();
-                  while (len > 0 && lexer.IsWhitespace(*start) || (!parms.keepExistingBreaks && lexer.IsLinebreak(*start))) {
-                      len--;
-                      start++;
-                  }
-                  while (len > 0 && lexer.IsWhitespace(start[len - 1] || (!parms.keepExistingBreaks && lexer.IsLinebreak(start[len - 1])))) {
-                      len--;
-                  }
-                  if (len > 0) {
-                      TryIndent();
-                      outText.write(start, len);
-                  }
-              }
-              else {
-                  TryIndent();
-                  WriteToken();
-              }
-              lexer.EatToken();
-              break;
-          }
-          case Token::Whitespace: {
-              if (parms.removeWhitespace) {
-                  if (inTag) { // attributes need to be separated
-                      outText.write(" ", 1);
-                  }
-              }
-              else {
-                  WriteToken();
-                  indented = true;
-              }
+        case Token::CData:
+        case Token::Comment: {
+            StartNewElement();
+            TryIndent();
+            WriteEatToken();
+            break;
+        }
+        case Token::Text: {
+            TryCloseTag();
+            if (parms.removeWhitespace) {
+                auto start = lexer.TokenText();
+                auto len = lexer.TokenSize();
+                while (len > 0 && lexer.IsWhitespace(*start) || (!parms.keepExistingBreaks && lexer.IsLinebreak(*start))) {
+                    len--;
+                    start++;
+                }
+                while (len > 0 && lexer.IsWhitespace(start[len - 1] || (!parms.keepExistingBreaks && lexer.IsLinebreak(start[len - 1])))) {
+                    len--;
+                }
+                if (len > 0) {
+                    TryIndent();
+                    outText.write(start, len);
+                }
+            }
+            else {
+                TryIndent();
+                WriteToken();
+            }
+            lexer.EatToken();
+            break;
+        }
+        case Token::Whitespace: {
+            if (parms.removeWhitespace) {
+                if (inTag) { // attributes need to be separated
+                    outText.write(" ", 1);
+                }
+            }
+            else {
+                WriteToken();
+                indented = true;
+            }
 
-              lexer.EatToken();
-              break;
-          }
-          case Token::Linebreak: {
-              TryCloseTag();
-              if (!parms.insertNewLines) {
-                  AddNewline();
-              }
-              else if (parms.keepExistingBreaks) {
-                  WriteToken();
-                  indented = false;
-              }
-              lexer.EatToken();
-              break;
-          }
-          case Token::ClosingTag: {
-              if (tagIsOpen && !parms.autocloseEmptyElements) {
-                  TryCloseTag();
-              }
-              indentlevel--;
-              lexer.EatToken();
-              if (lexer.TryGetName() != Token::Name) {
-                  TryCloseTag();
-                  outText.write("</", 2);
-                  break; // back to default processing
-              }
+            lexer.EatToken();
+            break;
+        }
+        case Token::Linebreak: {
+            TryCloseTag();
+            if (!parms.insertNewLines) {
+                AddNewline();
+            }
+            else if (parms.keepExistingBreaks) {
+                WriteToken();
+                indented = false;
+            }
+            lexer.EatToken();
+            break;
+        }
+        case Token::ClosingTag: {
+            if (tagIsOpen && !parms.autocloseEmptyElements) {
+                TryCloseTag();
+            }
+            indentlevel--;
+            lexer.EatToken();
+            if (lexer.TryGetName() != Token::Name) {
+                TryCloseTag();
+                outText.write("</", 2);
+                break; // back to default processing
+            }
 
-              bool matchesPrevTag = prevTag != NULL && lexer.TokenSize() == prevTagLen && 0 == strncmp(prevTag, lexer.TokenText(), prevTagLen);
-              if (tagIsOpen) {
-                  if (parms.autocloseEmptyElements) {
-                      if (matchesPrevTag) {
-                          outText.write("/>", 2);
-                          lexer.EatToken();
-                          AddNewline();
-                          prevTag = NULL;
-                          break;
-                      }
-                  }
-              }
-              else if (!matchesPrevTag) { // needs a new line
-                  StartNewElement();
-                  if (indented) {
-                      AddNewline();
-                  }
-                  TryIndent();
-              }
+            bool matchesPrevTag = prevTag != NULL && lexer.TokenSize() == prevTagLen && 0 == strncmp(prevTag, lexer.TokenText(), prevTagLen);
+            if (tagIsOpen) {
+                if (parms.autocloseEmptyElements) {
+                    if (matchesPrevTag) {
+                        outText.write("/>", 2);
+                        lexer.EatToken();
+                        AddNewline();
+                        prevTag = NULL;
+                        break;
+                    }
+                }
+            }
+            else if (!matchesPrevTag) { // needs a new line
+                StartNewElement();
+                if (indented) {
+                    AddNewline();
+                }
+                TryIndent();
+            }
 
-              outText.write("</", 2);
-              WriteEatToken();
+            outText.write("</", 2);
+            WriteEatToken();
 
-              bool ateWhitespace = false;
-              for (auto token = lexer.TryGetAttribute(); token != Token::InputEnd; token = lexer.TryGetAttribute()) {
-                  if (token == Token::Whitespace) {
-                      lexer.EatToken();
-                      ateWhitespace = true;
-                  }
-                  else if (token == Token::TagEnd) {
-                      WriteEatToken();
-                      break;
-                  }
-                  else {
-                      if (ateWhitespace) {
-                          outText.write(" ", 1); // put it back
-                      }
-                      // unexpected ... whatever
-                      break;
-                  }
-              }
-              inTag = false;
-              AddNewline();
-              break;
-          }
-          case Token::ProcessingInstructionStart: {
-              StartNewElement();
-              if (indented) {
-                  AddNewline();
-              }
-              TryIndent();
-              WriteEatToken();
-              tagIsOpen = true;
-              inTag = true;
+            bool ateWhitespace = false;
+            for (auto token = lexer.TryGetAttribute(); token != Token::InputEnd; token = lexer.TryGetAttribute()) {
+                if (token == Token::Whitespace) {
+                    lexer.EatToken();
+                    ateWhitespace = true;
+                }
+                else if (token == Token::TagEnd) {
+                    WriteEatToken();
+                    break;
+                }
+                else {
+                    if (ateWhitespace) {
+                        outText.write(" ", 1); // put it back
+                    }
+                    // unexpected ... whatever
+                    break;
+                }
+            }
+            inTag = false;
+            AddNewline();
+            break;
+        }
+        case Token::ProcessingInstructionStart: {
+            StartNewElement();
+            if (indented) {
+                AddNewline();
+            }
+            TryIndent();
+            WriteEatToken();
+            tagIsOpen = true;
+            inTag = true;
 
-              if (lexer.TryGetName() == Token::Name) {
-                  WriteEatToken();
-              }
-              else {
-                  // ill-formed XML.. dump as is until next >
-                  break;
-              }
+            if (lexer.TryGetName() == Token::Name) {
+                WriteEatToken();
+            }
+            else {
+                // ill-formed XML.. dump as is until next >
+                break;
+            }
 
-              indentlevel++; // indent attributes
-              ParseAttributes();
-              indentlevel--; // indent attributes
-              if (tagIsOpen) { // the % would be eaten as 'text'
-                  outText.write(">", 1);
-                  inTag = false;
-                  tagIsOpen = false;
-              }
+            indentlevel++; // indent attributes
+            bool parseOk = ParseAttributes();
+            indentlevel--; // indent attributes
+            if (parseOk && tagIsOpen) { // the ? would be eaten as 'text'
+                outText.write(">", 1);
+                inTag = false;
+                tagIsOpen = false;
+            }
 
-              break;
-          }
-          case Token::TagStart: {
-              StartNewElement();
-              if (indented) {
-                  AddNewline();
-              }
-              TryIndent();
-              WriteEatToken();
-              tagIsOpen = true;
-              inTag = true;
-              if (lexer.TryGetName() == Token::Name) {
-                  prevTag = lexer.TokenText();
-                  prevTagLen = lexer.TokenSize();
-                  WriteEatToken();
-              }
-              else {
-                  // ill-formed XML.. dump as is until next >
-                  break;
-              }
-              indentlevel++; // indent attributes
-              ParseAttributes();
-              indentlevel--; // indent attributes
-              break;
-          }
-          case Token::TagEnd: {
-              lexer.EatToken();
-              tagIsOpen = true;
-              break;
-          }
-          case Token::SelfClosingTagEnd: {
-              WriteEatToken();
-              prevTag = NULL;
-              AddNewline();
-              break;
-          }
-          default: {
-              throw 0;
-          }
+            break;
+        }
+        case Token::TagStart: {
+            StartNewElement();
+            if (indented) {
+                AddNewline();
+            }
+            TryIndent();
+            WriteEatToken();
+            tagIsOpen = true;
+            inTag = true;
+            if (lexer.TryGetName() == Token::Name) {
+                prevTag = lexer.TokenText();
+                prevTagLen = lexer.TokenSize();
+                WriteEatToken();
+            }
+            else {
+                // ill-formed XML.. dump as is until next >
+                break;
+            }
+            indentlevel++; // indent attributes
+            ParseAttributes();
+            indentlevel--; // indent attributes
+            break;
+        }
+        case Token::TagEnd: {
+            lexer.EatToken();
+            tagIsOpen = true;
+            break;
+        }
+        case Token::SelfClosingTagEnd: {
+            WriteEatToken();
+            prevTag = NULL;
+            AddNewline();
+            break;
+        }
+        default: {
+            throw "This should not happen.. please get in touch with the developers @ https://github.com/morbac/XMLTools";
+        }
         }
     }
 }

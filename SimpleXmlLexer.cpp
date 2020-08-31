@@ -171,13 +171,13 @@ Token SimpleXmlLexer::TryGetAttribute() {
         }
         else if (IsWhitespace(*pos) || IsLinebreak(*pos))
             break;
-        else if (*pos == '/' || *pos == '>')
+        else if (*pos == '/' || *pos == '>' || *pos == '<')
             break;
         lastChar = *pos;
     }
     tokenEnd = pos;
     if (TokenSize() == 0) {
-        if (pos[0] == '/' && pos[1] == '>') {
+        if (pos[0] == '/' && pos[1] == '>' ) {
             tokenEnd = pos + 2;
             return Token::SelfClosingTagEnd;
         }

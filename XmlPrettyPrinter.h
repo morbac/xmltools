@@ -36,7 +36,7 @@ class XmlPrettyPrinter {
     inline void WriteToken();
     inline void WriteEatToken();
     void Parse();
-    void ParseAttributes();
+    bool ParseAttributes();
 
 public:
     XmlPrettyPrinter(const char* txt, size_t textlen, PrettyPrintParms parms) :lexer(txt, textlen), parms(parms) {
