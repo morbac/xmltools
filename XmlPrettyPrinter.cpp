@@ -3,11 +3,16 @@
 
 #include "XmlPrettyPrinter.h"
 
+inline void XmlPrettyPrinter::WriteCloseTag() {
+    outText.write(">", 1);
+    tagIsOpen = false;
+    inTag = false;
+}
+
 inline void XmlPrettyPrinter::TryCloseTag() {
     if (tagIsOpen) {
-        outText.write(">", 1);
+        WriteCloseTag();
         indentlevel++;
-        tagIsOpen = false;
     }
 }
 
@@ -249,9 +254,7 @@ void XmlPrettyPrinter::Parse() {
             bool parseOk = ParseAttributes();
             indentlevel--; // indent attributes
             if (parseOk && tagIsOpen) { // the ? would be eaten as 'text'
-                outText.write(">", 1);
-                inTag = false;
-                tagIsOpen = false;
+                WriteCloseTag();
             }
 
             break;
@@ -295,6 +298,8 @@ void XmlPrettyPrinter::Parse() {
         }
         }
     }
+
+    TryCloseTag();
 }
 
 bool XmlPrettyPrinter::Convert() {

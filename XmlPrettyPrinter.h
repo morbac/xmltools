@@ -28,6 +28,7 @@ class XmlPrettyPrinter {
     const char* prevTag = NULL;
     size_t prevTagLen = 0;
 
+    inline void WriteCloseTag();
     inline void TryCloseTag();
     inline void Indent();
     inline void TryIndent();

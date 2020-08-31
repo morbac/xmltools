@@ -79,7 +79,9 @@ Token SimpleXmlLexer::FindNext() {
                 return Token::CData;
             }
 
-            // resolve unknown ! tag.. just accept that it is a regular tag... and hope for the best
+            //<!SOMENAME is also valid
+            tokenEnd = curpos + 2;
+            return Token::TagStart;
         }
 
         if (curpos[1] == '/') { // closing 

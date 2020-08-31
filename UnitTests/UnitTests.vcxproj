@@ -72,8 +72,9 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>ROBOCOPY  /E "$(ProjectDir)TestFiles" "$(TargetDir)TestFiles"
-if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
+      <Command>if NOT EXIST "$(TargetDir)TestFiles" ( mkdir "$(TargetDir)TestFiles" )
+ROBOCOPY  /E /PURGE /MIR "$(ProjectDir)TestFiles" "$(TargetDir)TestFiles"
+if %errorlevel% leq 8 exit 0 else exit %errorlevel%</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -92,8 +93,9 @@ if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>ROBOCOPY  /E "$(ProjectDir)TestFiles" "$(TargetDir)TestFiles"
-if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
+      <Command>if NOT EXIST "$(TargetDir)TestFiles" ( mkdir "$(TargetDir)TestFiles" )
+ROBOCOPY  /E /PURGE /MIR "$(ProjectDir)TestFiles" "$(TargetDir)TestFiles"
+if %errorlevel% leq 8 exit 0 else exit %errorlevel%</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -113,8 +115,9 @@ if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
     <PostBuildEvent>
-      <Command>ROBOCOPY  /E "$(ProjectDir)TestFiles" "$(TargetDir)TestFiles"
-if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
+      <Command>if NOT EXIST "$(TargetDir)TestFiles" ( mkdir "$(TargetDir)TestFiles" )
+ROBOCOPY  /E /PURGE /MIR "$(ProjectDir)TestFiles" "$(TargetDir)TestFiles"
+if %errorlevel% leq 8 exit 0 else exit %errorlevel%</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -134,8 +137,9 @@ if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
     <PostBuildEvent>
-      <Command>ROBOCOPY  /E "$(ProjectDir)TestFiles" "$(TargetDir)TestFiles"
-if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
+      <Command>if NOT EXIST "$(TargetDir)TestFiles" ( mkdir "$(TargetDir)TestFiles" )
+ROBOCOPY  /E /PURGE /MIR "$(ProjectDir)TestFiles" "$(TargetDir)TestFiles"
+if %errorlevel% leq 8 exit 0 else exit %errorlevel%</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
