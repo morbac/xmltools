@@ -62,6 +62,7 @@ void sciDocPrettyPrintXML_IndentOnly(ScintillaDoc& doc) {
 
     XmlPrettyPrinter prettyPrinter = XmlPrettyPrinter(inText.text, inText.length, parms);
     prettyPrinter.Convert();
+    inText.FreeMemory();
     auto prettyTextStream = prettyPrinter.Stream();
     auto docclock_end = clock();
 
