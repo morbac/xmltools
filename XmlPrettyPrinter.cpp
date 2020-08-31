@@ -192,9 +192,17 @@ void XmlPrettyPrinter::Parse() {
                 if (parms.autocloseEmptyElements) {
                     if (matchesPrevTag) {
                         outText.write("/>", 2);
-                        lexer.EatToken();
+                        lexer.EatToken(); // TAG NAME
+                        Token nextToken;
+                        do {// not really charming but at least we will end up with valid XML.. in valid XML cases the first token would be a tag end
+                            nextToken = lexer.FindNext();
+                            lexer.EatToken(); 
+                        } while (nextToken != Token::TagEnd && !lexer.Done());
+
                         AddNewline();
                         prevTag = NULL;
+                        tagIsOpen = false;
+                        inTag = false;
                         break;
                     }
                 }
