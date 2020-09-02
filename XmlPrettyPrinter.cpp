@@ -137,7 +137,7 @@ void XmlPrettyPrinter::Parse() {
                     len--;
                     start++;
                 }
-                while (len > 0 && lexer.IsWhitespace(start[len - 1] || (!parms.keepExistingBreaks && lexer.IsLinebreak(start[len - 1])))) {
+                while (len > 0 && lexer.IsWhitespace(start[len - 1]) || (!parms.keepExistingBreaks && lexer.IsLinebreak(start[len - 1]))) {
                     len--;
                 }
                 if (len > 0) {
