@@ -63,34 +63,36 @@ Token SimpleXmlLexer::FindNext() {
     tokenStart = curpos;
 
     if (isTagStart(*curpos)) {
-        // check for comment, CDATA, 
-        if (curpos[1] == '!') {
-            if (curpos[2] == '-' && curpos[3] == '-') { // <!--
-                tokenEnd = strstr(curpos + 4, "-->");
-                return Token::Comment;
-            }
-
-            if (0 == strncmp(curpos, "<![CDATA[", 9)) {
-                tokenEnd = strstr(curpos + 9, "]]>");
-                if (tokenEnd == NULL) {
-                    tokenEnd = endpos; // not found.. copy rest
+        if (endpos - curpos > 1) {  // prevent that curpos[1] reads out of the string space
+            // check for comment, CDATA, 
+            if (curpos[1] == '!') {
+                if (endpos - curpos > 3 && curpos[2] == '-' && curpos[3] == '-') { // <!--
+                    tokenEnd = strstr(curpos + 4, "-->");
+                    return Token::Comment;
                 }
 
-                return Token::CData;
+                if (0 == strncmp(curpos, "<![CDATA[", 9)) {
+                    tokenEnd = strstr(curpos + 9, "]]>");
+                    if (tokenEnd == NULL) {
+                        tokenEnd = endpos; // not found.. copy rest
+                    }
+
+                    return Token::CData;
+                }
+
+                //<!SOMENAME is also valid
+                tokenEnd = curpos + 2;
+                return Token::TagStart;
             }
 
-            //<!SOMENAME is also valid
-            tokenEnd = curpos + 2;
-            return Token::TagStart;
-        }
-
-        if (curpos[1] == '/') { // closing 
-            tokenEnd = curpos + 2;
-            return Token::ClosingTag;
-        }
-        if (curpos[1] == '?') {
-            tokenEnd = curpos + 2;
-            return Token::ProcessingInstructionStart;
+            if (curpos[1] == '/') { // closing 
+                tokenEnd = curpos + 2;
+                return Token::ClosingTag;
+            }
+            if (curpos[1] == '?') {
+                tokenEnd = curpos + 2;
+                return Token::ProcessingInstructionStart;
+            }
         }
 
         tokenEnd = curpos + 1;
