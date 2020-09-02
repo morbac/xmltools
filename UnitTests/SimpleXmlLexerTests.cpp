@@ -7,7 +7,7 @@ using namespace SimpleXml;
 
 namespace {
 
-	void TestLex(std::vector<Lexeme>& expectedLexemes) {
+	void TestLex(std::vector<Lexeme>& expectedLexemes, bool registerLinebreaks = true) {
 		std::string txt;
 
 		for (auto l : expectedLexemes) {
@@ -15,6 +15,7 @@ namespace {
 		}
 
 		Lexer lexer = Lexer(txt.c_str());
+		lexer.RegisterLinebreaks = registerLinebreaks;
 		Lexeme lexeme;
 		int i = 0;
 		for (lexeme = lexer.get();
@@ -76,6 +77,42 @@ namespace {
 		TestSingleLex(Lexeme(Token::Text, "This is the end    "));
 	}
 
+	TEST(Lexer, TEXTRegisterLinebreaks) {
+		auto lex = std::vector<Lexeme>{
+			Lexeme(Token::Whitespace, "  "),
+			Lexeme(Token::Linebreak, "\r\n")
+		};
+
+		TestLex(lex);
+	}
+
+	TEST(Lexer, TEXTRegisterLinebreaksInTag) {
+		auto lex = std::vector<Lexeme>{
+			Lexeme(Token::TagStart, "<"),
+			Lexeme(Token::Whitespace, "  "),
+			Lexeme(Token::Linebreak, "\r\n")
+		};
+
+		TestLex(lex);
+	}
+
+	TEST(Lexer, TEXTDontRegisterLinebreaksInTag) {
+		auto lex = std::vector<Lexeme>{
+			Lexeme(Token::TagStart, "<"),
+			Lexeme(Token::Whitespace, "  \r\n")
+		};
+
+		TestLex(lex,false);
+	}
+
+	TEST(Lexer, TEXTDontRegisterLinebreaks) {
+		auto lex = std::vector<Lexeme>{
+			Lexeme(Token::Whitespace, "  \r\n  ")
+		};
+
+		TestLex(lex,false);
+	}
+
 	TEST(Lexer, TagStart) {
 		TestSingleLex(Lexeme(Token::TagStart, "<"));
 	}
@@ -115,6 +152,36 @@ namespace {
 
 		TestLex(lex);
 	}
+
+	TEST(Lexer, SystemLiteralSingleQuote) {
+		auto lex = std::vector<Lexeme>{
+			Lexeme(Token::TagStart,"<"),
+			Lexeme(Token::SystemLiteral,"'some'"),
+		};
+
+		TestLex(lex);
+	}
+
+	TEST(Lexer, SystemLiteralDoubleQuote) {
+		auto lex = std::vector<Lexeme>{
+			Lexeme(Token::TagStart,"<"),
+			Lexeme(Token::SystemLiteral,"\"some\""),
+			Lexeme(Token::TagEnd,">"),
+		};
+
+		TestLex(lex);
+	}
+
+	TEST(Lexer, SystemLiteralUnrecommendedChars) {
+		auto lex = std::vector<Lexeme>{
+			Lexeme(Token::TagStart,"<"),
+			Lexeme(Token::SystemLiteral,"\"<>&\""),
+			Lexeme(Token::TagEnd,">"),
+		};
+
+		TestLex(lex);
+	}
+
 
 	TEST(Lexer, CheckInTagAfterTagStart) {
 		auto lex = Lexer("<");

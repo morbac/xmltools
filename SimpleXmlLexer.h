@@ -60,6 +60,8 @@ namespace SimpleXml {
         const char *CDEnd = "]]>";
 
     public:
+        bool RegisterLinebreaks = true;
+
         const char* Lexer::TokenText() { return lexeme.text; }
         size_t Lexer::TokenSize() { return lexeme.size();}
 

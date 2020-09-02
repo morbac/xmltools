@@ -121,20 +121,46 @@ namespace SimpleXml {
                 return Token::TagEnd;
             }
 
-            if (IsWhitespace(*curpos)) {
-                for (curpos++; IsWhitespace(*curpos); curpos++);
-                lexeme.end = curpos;
-                return Token::Whitespace;
+            if (RegisterLinebreaks) {
+                if (IsWhitespace(*curpos)) {
+                    for (curpos++; IsWhitespace(*curpos); curpos++);
+                    lexeme.end = curpos;
+                    return Token::Whitespace;
+                }
+                if (IsLinebreak(*curpos)) {
+                    for (curpos++; IsLinebreak(*curpos); curpos++);
+                    lexeme.end = curpos;
+                    return Token::Linebreak;
+                }
             }
-            if (IsLinebreak(*curpos)) {
-                for (curpos++; IsLinebreak(*curpos); curpos++);
-                lexeme.end = curpos;
-                return Token::Linebreak;
+            else {
+                if (IsWhitespace(*curpos) || IsLinebreak(*curpos)) {
+                    for (curpos++; IsWhitespace(*curpos) || IsLinebreak(*curpos); curpos++);
+                    lexeme.end = curpos;
+                    return Token::Whitespace;
+                }
             }
 
             if (*curpos == '=') {
                 lexeme.end = curpos + 1;
                 return Token::Eq;
+            }
+
+            if (*curpos == '\'' || *curpos == '"') {
+                auto attrBoundary = *curpos;
+                bool ok = false;
+                for (curpos++; curpos < __endpos; curpos++) {
+                    if (*curpos == attrBoundary) {
+                        curpos++;
+                        ok = true;
+                        break;
+                    }
+                }
+                if (ok == true) {
+                    lexeme.end = curpos;
+                    return Token::SystemLiteral;
+                }
+                curpos = __curpos; // reset and fall through
             }
 
             //if (isNameChar(*curpos)) {
@@ -154,6 +180,44 @@ namespace SimpleXml {
 
         // has to be text since we are outside tags
 
+        bool hasText = false;
+        bool hasWhitespace = false;
+        bool hasLineBreak = false;
+        for (; curpos < __endpos; curpos++) {
+            if (isTagStart(*curpos))
+                break;
+
+            if (IsWhitespace(*curpos))
+                hasWhitespace = true;
+            else if (IsLinebreak(*curpos))
+                hasLineBreak = true;
+            else 
+                hasText = true;
+        }
+        if (hasText) {
+            lexeme.end = curpos;
+            return lexeme.token = Token::Text;
+        }
+
+        if (!RegisterLinebreaks || (hasWhitespace && !hasLineBreak)) {
+            lexeme.end = curpos;
+            return lexeme.token = Token::Whitespace;
+        }
+        if (hasLineBreak && !hasWhitespace) {
+            lexeme.end = curpos;
+            return lexeme.token = Token::Linebreak;
+        }
+        // mixed stuff
+
+        curpos = __curpos;
+        bool ws = IsWhitespace(*curpos);
+        for (curpos++; curpos < __endpos; curpos++) {
+            if (ws && !IsWhitespace(*curpos))
+                break;
+            if (!ws && !IsLinebreak(*curpos))
+                break;
+        }
+        /*
         auto pos = curpos;
         auto token = Token::None;
         auto lasttoken = Token::None;
@@ -169,9 +233,9 @@ namespace SimpleXml {
                 break;
             }
         }
-
-        lexeme.end = pos;
-        return lexeme.token = lasttoken;
+        */
+        lexeme.end = curpos;
+        return lexeme.token = ws ? Token::Whitespace : Token::Linebreak;
     }
     /*
     Token Lexer::TryGetName() {
