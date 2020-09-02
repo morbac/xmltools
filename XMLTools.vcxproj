@@ -377,6 +377,7 @@
     <ClInclude Include="Scintilla.h" />
     <ClInclude Include="ScintillaDoc.h" />
     <ClInclude Include="Sci_Position.h" />
+    <ClInclude Include="SimpleXmlLexer.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="XmlPrettyPrinter.h" />
     <ClInclude Include="XMLTools.h" />

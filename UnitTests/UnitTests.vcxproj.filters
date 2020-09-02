@@ -14,6 +14,7 @@
     </ClCompile>
     <ClCompile Include="StdAfx.cpp" />
     <ClCompile Include="XmlPrettyPrinterTests.cpp" />
+    <ClCompile Include="SimpleXmlLexerTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\SimpleXmlLexer.h">
