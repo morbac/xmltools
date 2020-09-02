@@ -5,21 +5,24 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLTools", "XMLTools.vcxproj", "{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests", "UnitTests\UnitTests.vcxproj", "{8B318363-5296-424F-956F-3DC409CF020E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC} = {3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
-		Release|Win32 = Release|Win32
 		Debug|x64 = Debug|x64
+		Release|Win32 = Release|Win32
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}.Debug|Win32.ActiveCfg = Debug|Win32
 		{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}.Debug|Win32.Build.0 = Debug|Win32
-		{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}.Release|Win32.ActiveCfg = Release|Win32
-		{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}.Release|Win32.Build.0 = Release|Win32
 		{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}.Debug|x64.ActiveCfg = Debug|x64
 		{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}.Debug|x64.Build.0 = Debug|x64
+		{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}.Release|Win32.ActiveCfg = Release|Win32
+		{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}.Release|Win32.Build.0 = Release|Win32
 		{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}.Release|x64.ActiveCfg = Release|x64
 		{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}.Release|x64.Build.0 = Release|x64
 		{8B318363-5296-424F-956F-3DC409CF020E}.Debug|Win32.ActiveCfg = Debug|Win32
