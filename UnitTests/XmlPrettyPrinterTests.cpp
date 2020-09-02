@@ -29,7 +29,7 @@ char* readFile(const fs::directory_entry& entry) {
     if (!inputStream.is_open()) {
         return NULL;
     }
-    char* input = new char[size + 1];
+    char* input = new char[(size + 1)];
     input[size] = 0;
     inputStream.read(input, size);
     if (inputStream.fail()) {

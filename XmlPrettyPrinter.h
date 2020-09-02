@@ -17,7 +17,7 @@ struct PrettyPrintParms
 
 class XmlPrettyPrinter {
     std::stringstream outText;
-    SimpleXmlLexer lexer;
+    SimpleXml::Lexer lexer;
     PrettyPrintParms parms;
 
     bool inTag = false;

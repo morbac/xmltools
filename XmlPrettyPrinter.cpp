@@ -3,6 +3,8 @@
 
 #include "XmlPrettyPrinter.h"
 
+using namespace SimpleXml;
+
 inline void XmlPrettyPrinter::WriteCloseTag() {
     outText.write(">", 1);
     tagIsOpen = false;
@@ -116,13 +118,14 @@ bool XmlPrettyPrinter::ParseAttributes() {
 
 void XmlPrettyPrinter::Parse() {
     while (!lexer.Done()) {
-        auto token = lexer.FindNext();
+        auto token = lexer.peek_token();
         switch (token) {
-        case Token::CData:
+        case Token::CDSect:
         case Token::Comment: {
             StartNewElement();
             TryIndent();
             WriteEatToken();
+            //indentlevel++; // correct
             break;
         }
         case Token::Text: {
@@ -181,7 +184,7 @@ void XmlPrettyPrinter::Parse() {
             }
             indentlevel--;
             lexer.EatToken();
-            if (lexer.TryGetName() != Token::Name) {
+            if (!lexer.IsIdentifier(lexer.peek_token())) {
                 TryCloseTag();
                 outText.write("</", 2);
                 break; // back to default processing
@@ -195,7 +198,7 @@ void XmlPrettyPrinter::Parse() {
                         lexer.EatToken(); // TAG NAME
                         Token nextToken;
                         do {// not really charming but at least we will end up with valid XML.. in valid XML cases the first token would be a tag end
-                            nextToken = lexer.FindNext();
+                            nextToken = lexer.peek_token();
                             lexer.EatToken(); 
                         } while (nextToken != Token::TagEnd && !lexer.Done());
 
@@ -250,7 +253,7 @@ void XmlPrettyPrinter::Parse() {
             tagIsOpen = true;
             inTag = true;
 
-            if (lexer.TryGetName() == Token::Name) {
+            if (lexer.IsIdentifier(lexer.peek_token())) {
                 WriteEatToken();
             }
             else {
@@ -276,7 +279,8 @@ void XmlPrettyPrinter::Parse() {
             WriteEatToken();
             tagIsOpen = true;
             inTag = true;
-            if (lexer.TryGetName() == Token::Name) {
+
+            if (lexer.IsIdentifier(lexer.peek_token())) {
                 prevTag = lexer.TokenText();
                 prevTagLen = lexer.TokenSize();
                 WriteEatToken();
@@ -302,7 +306,8 @@ void XmlPrettyPrinter::Parse() {
             break;
         }
         default: {
-            throw "This should not happen.. please get in touch with the developers @ https://github.com/morbac/XMLTools";
+            //WriteEatToken();
+            throw std::exception("This should not happen.. please get in touch with the developers @ https://github.com/morbac/XMLTools");
         }
         }
     }
