@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ns:a-b.c xmlns:ns="http://some.namespace?a=1&amp;b=2" ns:d-e.f=' g&quot;&apos;>h&amp;i ' ns:j=" k&quot;&apos;>l&amp;m ">
+	<!-- 1<2
+2>1 -->
+	<n><![CDATA[ m "x < y" & 'z > y' 
+a <b> c ]]></n>
+	<ns:色>К<ф/>
+		<世>咹</世>水</ns:色>
+	<p>a$</p>
+</ns:a-b.c>
