@@ -7,6 +7,7 @@ namespace SimpleXml {
         Whitespace,
         Linebreak,
         ProcessingInstructionStart,
+        ProcessingInstructionEnd,
         TagStart,
         TagEnd,
         SelfClosingTagEnd,
@@ -27,11 +28,6 @@ namespace SimpleXml {
         const char* text;
         const char* end;
 
-        Lexeme(Token type, const char* text, const char *textend) {
-            this->token = type;
-            this->text = text;
-            this->end = textend;
-        }
         Lexeme(Token type, const char* text) { // used for testing
             this->token = type;
             this->text = text;
@@ -42,8 +38,26 @@ namespace SimpleXml {
             text = end = NULL;
         }
 
-        inline size_t size() {
+        inline size_t size() const {
             return end - text;
+        }
+
+        bool operator ==(const char* right) const {
+            if (strlen(right) != size())
+                return false;
+
+            return strncmp(text, right, size()) == 0;
+        }
+
+        bool operator ==(const Lexeme& right) const {
+            
+            if (token != right.token)
+                return false;
+
+            if (size() != right.size())
+                return false;
+
+            return strncmp(text, right.text, size()) == 0;
         }
     };
 
@@ -59,14 +73,30 @@ namespace SimpleXml {
         const char *CDStart = "<![CDATA[";
         const char *CDEnd = "]]>";
 
+        void handleTagStart();
+        void handleInTag();
+        void handleOutsideTag();
+
+        bool readUntil(int start, const char* end);
+
+        void findNext();
+
     public:
-        bool RegisterLinebreaks = true;
-
-        const char* Lexer::TokenText() { return lexeme.text; }
-        size_t Lexer::TokenSize() { return lexeme.size();}
-
         Lexer(const char* start, size_t len);
         Lexer(const char* start) :Lexer(start, strlen(start)) {}
+
+        bool RegisterLinebreaks = true;
+
+        bool readUntil(const char* end) {
+            lexeme.token = Token::Unknown;
+            return readUntil(0,end);
+        }
+
+        // Get text of last Lexeme peek-ed
+        const char* Lexer::TokenText() { return lexeme.text; }
+
+        // Get size of last lexeme peek-ed
+        size_t Lexer::TokenSize() { return lexeme.size();}
 
         bool Done() { return __curpos >= __endpos; }
 
@@ -85,21 +115,18 @@ namespace SimpleXml {
         }
 
         Lexeme get() {
-            lexeme.token = FindNext();
+            findNext();
             EatToken();
             return lexeme;
         }
 
         Lexeme peek() {
-            auto token = FindNext();
-
-            lexeme.token = token;
-
+            findNext();
             return lexeme;
         }
 
         Token peek_token() {
-            lexeme.token = FindNext();
+            findNext();
             return lexeme.token;
         }
 
@@ -108,13 +135,12 @@ namespace SimpleXml {
         }
 
         inline bool IsTagEnd(Token token) {
-            return token == Token::TagEnd || token == Token::SelfClosingTagEnd;
+            return token == Token::TagEnd 
+                || token == Token::SelfClosingTagEnd
+                || token == Token::ProcessingInstructionEnd;
         }
 
-    private:
-        Token FindNext();
     public:
-        Token TryGetName();
         Token TryGetAttribute();
         inline void EatToken() { 
             __curpos = lexeme.end;

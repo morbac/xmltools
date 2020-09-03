@@ -4,15 +4,9 @@
 
 #include "SimpleXmlLexer.h"
 
-/*
-#define isWhitespace(x) ((x) == 0x20 || (x) == 0x9)
-#define isLinebreak(x) ((x) == 0xD || (x) == 0x0A)
-*/
 #define isTagStart(x) ((x=='<'))
 #define isTagEnd(x) ((x=='>'))
-//#define isValueStart(x) ((x=='"'))
-//#define isValueEnd(x) ((x=='"'))
-//#define isKeyValueSeparator(x) ((x=='='))
+
 
 #define isNameStartChar(x) (isNameStartCharSimple(x) || isNameStartCharExtended(x))
 
@@ -57,132 +51,72 @@ namespace SimpleXml {
         isInTag = false;
     }
 
-
-    Token Lexer::FindNext() {
-        if (__curpos == __endpos) {
-            return Token::InputEnd;
-        }
-
+    bool Lexer::readUntil(int startpos, const char* end) {
+        lexeme.token = Token::Unknown;
         lexeme.text = __curpos;
-        lexeme.end = __curpos;
+
+        auto pos = strstr(__curpos+startpos, end);
+        if (pos != NULL) {
+            lexeme.end = pos + strlen(end);
+            return true;
+        }
+        else {
+            lexeme.end = __endpos;
+            return false;
+        }
+    }
+
+    void Lexer::handleTagStart() {
         auto curpos = __curpos;
 
-        if (isTagStart(*curpos)) {
-            // check for comment, CDATA, 
-            if (curpos[1] == '!') {
-                if (curpos[2] == '-' && curpos[3] == '-') { // <!--
-                    lexeme.end = strstr(curpos + 4, "-->");
-                    if (lexeme.end == NULL) {
-                        lexeme.end = __endpos; // not found.. copy rest
-                    }
-                    else {
-                        lexeme.end += 3;
-                    }
-                    return Token::Comment;
-                }
-
-                if (0 == strncmp(curpos, CDStart, 9)) {
-                    lexeme.end = strstr(curpos + 9, CDEnd);
-                    if (lexeme.end == NULL) {
-                        lexeme.end = __endpos; // not found.. copy rest
-                    }
-                    else {
-                        lexeme.end += strlen(CDEnd);
-                    }
-
-                    return Token::CDSect;
-                }
-
-                //<!SOMENAME is also valid
-                lexeme.end = curpos + 2;
-                return Token::TagStart;
+        // check for comment, CDATA, 
+        if (curpos[1] == '!') {
+            if (curpos[2] == '-' && curpos[3] == '-') { // <!--
+                curpos += 4;
+               
+                readUntil(4,"-->");
+                lexeme.token = Token::Comment;
+                return;
             }
 
-            if (curpos[1] == '/') { // closing 
-                lexeme.end = curpos + 2;
-                return Token::ClosingTag;
-            }
-            if (curpos[1] == '?') {
-                lexeme.end = curpos + 2;
-                return Token::ProcessingInstructionStart;
+            if (0 == strncmp(curpos, CDStart, 9)) {
+                readUntil(9, CDEnd);
+                lexeme.token = Token::CDSect;
+                return;
             }
 
-            lexeme.end = curpos + 1;
-            return Token::TagStart;
-        }
-        if (isInTag) {
-            if (*curpos == '/' && isTagEnd(curpos[1])) {
-                lexeme.end = curpos + 2;
-                return Token::SelfClosingTagEnd;
-            }
-
-            if (isTagEnd(*curpos)) {
-                lexeme.end = curpos + 1;
-                return Token::TagEnd;
-            }
-
-            if (RegisterLinebreaks) {
-                if (IsWhitespace(*curpos)) {
-                    for (curpos++; IsWhitespace(*curpos); curpos++);
-                    lexeme.end = curpos;
-                    return Token::Whitespace;
-                }
-                if (IsLinebreak(*curpos)) {
-                    for (curpos++; IsLinebreak(*curpos); curpos++);
-                    lexeme.end = curpos;
-                    return Token::Linebreak;
-                }
-            }
-            else {
-                if (IsWhitespace(*curpos) || IsLinebreak(*curpos)) {
-                    for (curpos++; IsWhitespace(*curpos) || IsLinebreak(*curpos); curpos++);
-                    lexeme.end = curpos;
-                    return Token::Whitespace;
-                }
-            }
-
-            if (*curpos == '=') {
-                lexeme.end = curpos + 1;
-                return Token::Eq;
-            }
-
-            if (*curpos == '\'' || *curpos == '"') {
-                auto attrBoundary = *curpos;
-                bool ok = false;
-                for (curpos++; curpos < __endpos; curpos++) {
-                    if (*curpos == attrBoundary) {
-                        curpos++;
-                        ok = true;
-                        break;
-                    }
-                }
-                if (ok == true) {
-                    lexeme.end = curpos;
-                    return Token::SystemLiteral;
-                }
-                curpos = __curpos; // reset and fall through
-            }
-
-            //if (isNameChar(*curpos)) {
-                // should be isNameCharStart BUT we are not validating.... and we dont have unicode chars anyway
-                for (curpos++; 
-                    curpos < __endpos && (isNameChar(*curpos) || ((unsigned char)*curpos)>127); // utf-8 highbit
-                    curpos++);
-                lexeme.end = curpos;
-                if (isNameStartChar(*lexeme.text))
-                    return Token::Name;
-                return Token::Nmtoken;
-            //}
-
-            //lexeme.end = curpos + 1;
-            //return Token::Unknown;
+            //<!SOMENAME is also valid
+            lexeme.end = curpos + 2;
+            lexeme.token = Token::TagStart;
+            return;
         }
 
-        // has to be text since we are outside tags
+        if (curpos[1] == '/') { // closing 
+            lexeme.end = curpos + 2;
+            lexeme.token = Token::ClosingTag;
+            return;
+        }
+        if (curpos[1] == '?') {
+            lexeme.end = curpos + 2;
+            lexeme.token = Token::ProcessingInstructionStart;
+            return;
+        }
 
+        lexeme.end = curpos + 1;
+        lexeme.token = Token::TagStart;
+    }
+
+    void Lexer::handleOutsideTag() {
         bool hasText = false;
         bool hasWhitespace = false;
         bool hasLineBreak = false;
+        auto curpos = __curpos;
+
+        if (isTagStart(*curpos)) {
+            handleTagStart();
+            return;
+        }
+
         for (; curpos < __endpos; curpos++) {
             if (isTagStart(*curpos))
                 break;
@@ -191,21 +125,24 @@ namespace SimpleXml {
                 hasWhitespace = true;
             else if (IsLinebreak(*curpos))
                 hasLineBreak = true;
-            else 
+            else
                 hasText = true;
         }
         if (hasText) {
             lexeme.end = curpos;
-            return lexeme.token = Token::Text;
+            lexeme.token = Token::Text;
+            return;
         }
 
         if (!RegisterLinebreaks || (hasWhitespace && !hasLineBreak)) {
             lexeme.end = curpos;
-            return lexeme.token = Token::Whitespace;
+            lexeme.token = Token::Whitespace;
+            return;
         }
         if (hasLineBreak && !hasWhitespace) {
             lexeme.end = curpos;
-            return lexeme.token = Token::Linebreak;
+            lexeme.token = Token::Linebreak;
+            return;
         }
         // mixed stuff
 
@@ -235,8 +172,114 @@ namespace SimpleXml {
         }
         */
         lexeme.end = curpos;
-        return lexeme.token = ws ? Token::Whitespace : Token::Linebreak;
+        lexeme.token = ws ? Token::Whitespace : Token::Linebreak;
     }
+
+    void Lexer::handleInTag() {
+        auto curpos = __curpos;
+
+        if (isTagStart(*curpos)) {
+            handleTagStart();
+            return;
+        }
+
+        if (isTagEnd(*curpos)) {
+            lexeme.end = curpos + 1;
+            lexeme.token = Token::TagEnd;
+            return;
+        }
+
+        if (*curpos == '/' && isTagEnd(curpos[1])) {
+            lexeme.end = curpos + 2;
+            lexeme.token = Token::SelfClosingTagEnd;
+            return;
+        }
+
+        if (*curpos == '?' && isTagEnd(curpos[1])) {
+            lexeme.end = curpos + 2;
+            lexeme.token = Token::ProcessingInstructionEnd;
+            return;
+        }
+
+        if (RegisterLinebreaks) {
+            if (IsWhitespace(*curpos)) {
+                for (curpos++; IsWhitespace(*curpos); curpos++);
+                lexeme.end = curpos;
+                lexeme.token = Token::Whitespace;
+                return;
+            }
+            if (IsLinebreak(*curpos)) {
+                for (curpos++; IsLinebreak(*curpos); curpos++);
+                lexeme.end = curpos;
+                lexeme.token = Token::Linebreak;
+                return;
+            }
+        }
+        else {
+            if (IsWhitespace(*curpos) || IsLinebreak(*curpos)) {
+                for (curpos++; IsWhitespace(*curpos) || IsLinebreak(*curpos); curpos++);
+                lexeme.end = curpos;
+                lexeme.token = Token::Whitespace;
+                return;
+            }
+        }
+
+        if (*curpos == '=') {
+            lexeme.end = curpos + 1;
+            lexeme.token = Token::Eq;
+            return;
+        }
+
+        if (*curpos == '\'' || *curpos == '"') {
+            auto attrBoundary = *curpos;
+            bool ok = false;
+            for (curpos++; curpos < __endpos; curpos++) {
+                if (*curpos == attrBoundary) {
+                    curpos++;
+                    ok = true;
+                    break;
+                }
+            }
+            if (ok == true) {
+                lexeme.end = curpos;
+                lexeme.token = Token::SystemLiteral;
+                return;
+            }
+            curpos = __curpos; // reset and fall through
+        }
+
+        //if (isNameChar(*curpos)) {
+            // should be isNameCharStart BUT we are not validating.... and we dont have unicode chars anyway
+        for (curpos++;
+            curpos < __endpos && (isNameChar(*curpos) || ((unsigned char)*curpos) > 127); // utf-8 highbit
+            curpos++);
+        lexeme.end = curpos;
+        if (isNameStartChar(*lexeme.text)) {
+            lexeme.token = Token::Name;
+        }
+        else {
+            lexeme.token = Token::Nmtoken;
+        }
+    }
+
+
+    void Lexer::findNext() {
+        lexeme.text = __curpos;
+        lexeme.end = __curpos;
+        lexeme.token = Token::None;
+
+        if (__curpos == __endpos) {
+            lexeme.token = Token::InputEnd;
+        }
+        else 
+        if (isInTag) {
+            handleInTag();
+        }
+        else {
+            handleOutsideTag();
+        }
+    }
+
     /*
     Token Lexer::TryGetName() {
         auto curpos = __curpos;
