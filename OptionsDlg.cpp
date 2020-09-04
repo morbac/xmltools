@@ -50,9 +50,9 @@ void COptionsDlg::UpdateProperty(CMFCPropertyGridProperty* src, enumOptionType t
       break;
     }
   case enumOptionType::TYPE_TRISTATE: {
-      if (!wcscmp(val.bstrVal, L"False")) (*((short*) obj)) = 0;
-      else if (!wcscmp(val.bstrVal, L"True")) (*((short*) obj)) = 1;
-      else (*((short*) obj)) = -1;
+      if (!wcscmp(val.bstrVal, L"False")) (*((int*) obj)) = 0;
+      else if (!wcscmp(val.bstrVal, L"True")) (*((int*) obj)) = 1;
+      else (*((int*) obj)) = -1;
       break;
     }
   case enumOptionType::TYPE_INT: {
