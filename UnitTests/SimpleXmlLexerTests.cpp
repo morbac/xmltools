@@ -2,16 +2,19 @@
 
 #include "../SimpleXmlLexer.h"
 #include <vector>
+#include <string>
 
 using namespace SimpleXml;
 
 namespace {
 
+	inline Lexeme CLexeme(Token token, const char* text) { return Lexeme(token, text, text + strlen(text)); }
+
 	void TestLex(std::vector<Lexeme>& expectedLexemes, bool registerLinebreaks = true) {
 		std::string txt;
 
 		for (auto l : expectedLexemes) {
-			txt.append(l.text);
+			txt.append(l.text(),l.size());
 		}
 
 		Lexer lexer = Lexer(txt.c_str());
@@ -40,14 +43,14 @@ namespace {
 
 	// InputEnd
 	TEST(Lexer, InputEnd) {
-		TestSingleLex(Lexeme(Token::InputEnd, ""));
+		TestSingleLex(CLexeme(Token::InputEnd, ""));
 	}
 
 	//Whitespace
 	TEST(Lexer, Whitespace_tag_space) {
 		auto lex = std::vector{
-			Lexeme(Token::TagStart, "<") ,
-			Lexeme(Token::Whitespace, " ")
+			CLexeme(Token::TagStart, "<") ,
+			CLexeme(Token::Whitespace, " ")
 		};
 
 		TestLex(lex);
@@ -55,8 +58,8 @@ namespace {
 
 	TEST(Lexer, Whitespace_tag_doublespace) {
 		auto lex = std::vector{
-			Lexeme(Token::TagStart, "<") ,
-			Lexeme(Token::Whitespace, " \t")
+			CLexeme(Token::TagStart, "<") ,
+			CLexeme(Token::Whitespace, " \t")
 		};
 
 		TestLex(lex);
@@ -64,7 +67,7 @@ namespace {
 
 	TEST(Lexer, Whitespace_linebreak) {
 		auto lex = std::vector<Lexeme>{
-			Lexeme(Token::Whitespace, "  \r\n  ")
+			CLexeme(Token::Whitespace, "  \r\n  ")
 		};
 
 		TestLex(lex, false);
@@ -72,8 +75,8 @@ namespace {
 
 	TEST(Lexer, Whitespace_tag_linebreak) {
 		auto lex = std::vector<Lexeme>{
-			Lexeme(Token::TagStart, "<"),
-			Lexeme(Token::Whitespace, "  \r\n")
+			CLexeme(Token::TagStart, "<"),
+			CLexeme(Token::Whitespace, "  \r\n")
 		};
 
 		TestLex(lex, false);
@@ -81,7 +84,7 @@ namespace {
 
 	TEST(Lexer, Linebreak) {
 		auto lex = std::vector<Lexeme>{
-			Lexeme(Token::Linebreak, "\r\n")
+			CLexeme(Token::Linebreak, "\r\n")
 		};
 
 		TestLex(lex);
@@ -89,9 +92,9 @@ namespace {
 
 	TEST(Lexer, Linebreak_spacebreak) {
 		auto lex = std::vector<Lexeme>{
-			Lexeme(Token::Whitespace, "  "),
-			Lexeme(Token::Linebreak, "\r\n"),
-			Lexeme(Token::Whitespace, "  ")
+			CLexeme(Token::Whitespace, "  "),
+			CLexeme(Token::Linebreak, "\r\n"),
+			CLexeme(Token::Whitespace, "  ")
 		};
 
 		TestLex(lex);
@@ -99,10 +102,10 @@ namespace {
 
 	TEST(Lexer, Linebreak_tag_spacebreak) {
 		auto lex = std::vector<Lexeme>{
-			Lexeme(Token::TagStart, "<"),
-			Lexeme(Token::Whitespace, "  "),
-			Lexeme(Token::Linebreak, "\r\n"),
-			Lexeme(Token::Whitespace, "  "),
+			CLexeme(Token::TagStart, "<"),
+			CLexeme(Token::Whitespace, "  "),
+			CLexeme(Token::Linebreak, "\r\n"),
+			CLexeme(Token::Whitespace, "  "),
 		};
 
 		TestLex(lex);
@@ -112,26 +115,26 @@ namespace {
 	// ProcessingInstruction
 
 	TEST(Lexer, ProcessingInstructionStart) {
-		TestSingleLex(Lexeme(Token::ProcessingInstructionStart, "<?"));
+		TestSingleLex(CLexeme(Token::ProcessingInstructionStart, "<?"));
 	}
 
 	TEST(Lexer, ProcessingInstructionEnd) {
 		auto lex = std::vector{
-			Lexeme(Token::ProcessingInstructionStart, "<?") ,
-			Lexeme(Token::ProcessingInstructionEnd, "?>")
+			CLexeme(Token::ProcessingInstructionStart, "<?") ,
+			CLexeme(Token::ProcessingInstructionEnd, "?>")
 		};
 
 		TestLex(lex);
 	}
 
 	TEST(Lexer, CDSpec) {
-		TestSingleLex(Lexeme(Token::CDSect, "<![CDATA[ some < > text ]]>"));
+		TestSingleLex(CLexeme(Token::CDSect, "<![CDATA[ some < > text ]]>"));
 	}
 
 	TEST(Lexer, TagStart_Name) {
 		auto lex = std::vector{
-			Lexeme(Token::TagStart, "<") ,
-			Lexeme(Token::Name, "TEXT")
+			CLexeme(Token::TagStart, "<") ,
+			CLexeme(Token::Name, "TEXT")
 		};
 
 		TestLex(lex);
@@ -139,8 +142,8 @@ namespace {
 
 	TEST(Lexer, TagStart_Ntoken) {
 		auto lex = std::vector<Lexeme>{
-			Lexeme(Token::TagStart, "<"),
-			Lexeme(Token::Nmtoken, "0TEXT")
+			CLexeme(Token::TagStart, "<"),
+			CLexeme(Token::Nmtoken, "0TEXT")
 		};
 
 		TestLex(lex);
@@ -149,35 +152,35 @@ namespace {
 	// Text
 
 	TEST(Lexer, Text) {
-		TestSingleLex(Lexeme(Token::Text, "This is the end"));
+		TestSingleLex(CLexeme(Token::Text, "This is the end"));
 	}
 
 	TEST(Lexer, Text_WhitespaceAtStart) {
-		TestSingleLex(Lexeme(Token::Text, "    This is the end"));
+		TestSingleLex(CLexeme(Token::Text, "    This is the end"));
 	}
 
 	TEST(Lexer, Text_WhitespaceAtEnd) {
-		TestSingleLex(Lexeme(Token::Text, "This is the end    "));
+		TestSingleLex(CLexeme(Token::Text, "This is the end    "));
 	}
 
 	// TagStart
 
 	TEST(Lexer, TagStart) {
-		TestSingleLex(Lexeme(Token::TagStart, "<"));
+		TestSingleLex(CLexeme(Token::TagStart, "<"));
 	}
 
 	// Comment
 
 	TEST(Lexer, Comment) {
-		TestSingleLex(Lexeme(Token::Comment, "<!-- Comment <> -->"));
+		TestSingleLex(CLexeme(Token::Comment, "<!-- Comment <> -->"));
 	}
 
 	// Eq
 
 	TEST(Lexer, Eq) {
 		auto lex = std::vector<Lexeme>{
-			Lexeme(Token::TagStart,"<"),
-			Lexeme(Token::Eq, "="),
+			CLexeme(Token::TagStart,"<"),
+			CLexeme(Token::Eq, "="),
 		};
 
 		TestLex(lex);
@@ -187,8 +190,8 @@ namespace {
 
 	TEST(Lexer, TagEnd) {
 		auto lex = std::vector<Lexeme>{
-			Lexeme(Token::TagStart,"<"),
-			Lexeme(Token::TagEnd, ">"),
+			CLexeme(Token::TagStart,"<"),
+			CLexeme(Token::TagEnd, ">"),
 		};
 
 		TestLex(lex);
@@ -197,27 +200,27 @@ namespace {
 	// ClosingTagEnd
 
 	TEST(Lexer, ClosingTagEnd) {
-		TestSingleLex(Lexeme(Token::ClosingTag, "</"));
+		TestSingleLex(CLexeme(Token::ClosingTag, "</"));
 	}
 
 	// SelfClosingTagEnd
 
 	TEST(Lexer, SelfClosingTagEnd) {
 		auto lex = std::vector<Lexeme>{
-			Lexeme(Token::TagStart,"<"),
-			Lexeme(Token::Name,"tagname"),
-			Lexeme(Token::SelfClosingTagEnd, "/>"),
+			CLexeme(Token::TagStart,"<"),
+			CLexeme(Token::Name,"tagname"),
+			CLexeme(Token::SelfClosingTagEnd, "/>"),
 		};
 
-		TestLex(lex);
+TestLex(lex);
 	}
 
 	// SystemLiteral
 
 	TEST(Lexer, SystemLiteral_SingleQuote) {
 		auto lex = std::vector<Lexeme>{
-			Lexeme(Token::TagStart,"<"),
-			Lexeme(Token::SystemLiteral,"'some'"),
+			CLexeme(Token::TagStart,"<"),
+			CLexeme(Token::SystemLiteral,"'some'"),
 		};
 
 		TestLex(lex);
@@ -225,9 +228,9 @@ namespace {
 
 	TEST(Lexer, SystemLiteral_DoubleQuote) {
 		auto lex = std::vector<Lexeme>{
-			Lexeme(Token::TagStart,"<"),
-			Lexeme(Token::SystemLiteral,"\"some\""),
-			Lexeme(Token::TagEnd,">"),
+			CLexeme(Token::TagStart,"<"),
+			CLexeme(Token::SystemLiteral,"\"some\""),
+			CLexeme(Token::TagEnd,">"),
 		};
 
 		TestLex(lex);
@@ -235,9 +238,9 @@ namespace {
 
 	TEST(Lexer, SystemLiteral_UnrecommendedChars) {
 		auto lex = std::vector<Lexeme>{
-			Lexeme(Token::TagStart,"<"),
-			Lexeme(Token::SystemLiteral,"\"<>&\""),
-			Lexeme(Token::TagEnd,">"),
+			CLexeme(Token::TagStart,"<"),
+			CLexeme(Token::SystemLiteral,"\"<>&\""),
+			CLexeme(Token::TagEnd,">"),
 		};
 
 		TestLex(lex);
@@ -249,7 +252,7 @@ namespace {
 	TEST(Lexer, InTag_AfterTagStart) {
 		auto lex = Lexer("<");
 		lex.get();
-		
+
 		ASSERT_TRUE(lex.InTag());
 	}
 
@@ -304,8 +307,22 @@ namespace {
 	TEST(Lexer, readUntil_EndOfFile) {
 		const char* txt = "<ATTR/>";
 		auto lex = Lexer(txt);
-		
+
 		ASSERT_FALSE(lex.readUntil("g"));
-		ASSERT_TRUE(0 == strncmp(lex.TokenText(),txt,strlen(txt)) );
+		ASSERT_TRUE(0 == strncmp(lex.TokenText(), txt, strlen(txt)));
+	}
+
+	TEST(Lexer, Element_Text) {
+		auto lex = std::vector<Lexeme>{
+				CLexeme(Token::TagStart,"<"),
+				CLexeme(Token::Name,"test"),
+				CLexeme(Token::TagEnd,">"),
+				CLexeme(Token::Text,"."),
+				CLexeme(Token::ClosingTag,"</"),
+				CLexeme(Token::Name,"test"),
+				CLexeme(Token::TagEnd,">")
+		};
+
+		TestLex(lex);
 	}
 }

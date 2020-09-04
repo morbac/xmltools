@@ -1,6 +1,7 @@
 #include <cstddef>
 #include <string.h>
 
+#include "SimpleXmlInlineString.h"
 namespace SimpleXml {
     enum class Token {
         InputEnd,
@@ -23,30 +24,15 @@ namespace SimpleXml {
         None
     };
 
-    struct Lexeme {
+    struct Lexeme:InlineString {
         Token token;
-        const char* text;
-        const char* end;
 
-        Lexeme(Token type, const char* text) { // used for testing
+        Lexeme(Token type, const char* text, const char *end):InlineString(text,end - text) {
             this->token = type;
-            this->text = text;
-            this->end = text + strlen(text);
         }
+
         Lexeme() {
             token = Token::None;
-            text = end = NULL;
-        }
-
-        inline size_t size() const {
-            return end - text;
-        }
-
-        bool operator ==(const char* right) const {
-            if (strlen(right) != size())
-                return false;
-
-            return strncmp(text, right, size()) == 0;
         }
 
         bool operator ==(const Lexeme& right) const {
@@ -54,11 +40,9 @@ namespace SimpleXml {
             if (token != right.token)
                 return false;
 
-            if (size() != right.size())
-                return false;
-
-            return strncmp(text, right.text, size()) == 0;
+            return (InlineString)*this == (InlineString)right;
         }
+
     };
 
     class Lexer {
@@ -93,7 +77,7 @@ namespace SimpleXml {
         }
 
         // Get text of last Lexeme peek-ed
-        const char* Lexer::TokenText() { return lexeme.text; }
+        const char* Lexer::TokenText() { return lexeme.text(); }
 
         // Get size of last lexeme peek-ed
         size_t Lexer::TokenSize() { return lexeme.size();}
@@ -143,13 +127,15 @@ namespace SimpleXml {
     public:
         Token TryGetAttribute();
         inline void EatToken() { 
-            __curpos = lexeme.end;
+            if (lexeme.text() != NULL) {
+                __curpos = lexeme.end();
 
-            if (IsTagStart(lexeme.token))
-                isInTag = true;
+                if (IsTagStart(lexeme.token))
+                    isInTag = true;
 
-            else if (IsTagEnd(lexeme.token))
-                isInTag = false;
+                else if (IsTagEnd(lexeme.token))
+                    isInTag = false;
+            }
         }
     };
 }

@@ -52,16 +52,13 @@ namespace SimpleXml {
     }
 
     bool Lexer::readUntil(int startpos, const char* end) {
-        lexeme.token = Token::Unknown;
-        lexeme.text = __curpos;
-
         auto pos = strstr(__curpos+startpos, end);
         if (pos != NULL) {
-            lexeme.end = pos + strlen(end);
+            lexeme = Lexeme(Token::Unknown, __curpos, pos + strlen(end));
             return true;
         }
         else {
-            lexeme.end = __endpos;
+            lexeme = Lexeme(Token::Unknown,__curpos,__endpos);
             return false;
         }
     }
@@ -86,24 +83,21 @@ namespace SimpleXml {
             }
 
             //<!SOMENAME is also valid
-            lexeme.end = curpos + 2;
-            lexeme.token = Token::TagStart;
+            lexeme = Lexeme(Token::TagStart, __curpos, curpos + 2);
             return;
         }
 
         if (curpos[1] == '/') { // closing 
-            lexeme.end = curpos + 2;
-            lexeme.token = Token::ClosingTag;
+            lexeme = Lexeme(Token::ClosingTag, __curpos, curpos + 2);
             return;
         }
         if (curpos[1] == '?') {
-            lexeme.end = curpos + 2;
-            lexeme.token = Token::ProcessingInstructionStart;
+            lexeme = Lexeme(Token::ProcessingInstructionStart, __curpos, curpos + 2);
             return;
         }
 
-        lexeme.end = curpos + 1;
-        lexeme.token = Token::TagStart;
+
+        lexeme = Lexeme(Token::TagStart, __curpos, curpos + 1);
     }
 
     void Lexer::handleOutsideTag() {
@@ -129,19 +123,16 @@ namespace SimpleXml {
                 hasText = true;
         }
         if (hasText) {
-            lexeme.end = curpos;
-            lexeme.token = Token::Text;
+            lexeme = Lexeme(Token::Text, __curpos, curpos);
             return;
         }
 
         if (!RegisterLinebreaks || (hasWhitespace && !hasLineBreak)) {
-            lexeme.end = curpos;
-            lexeme.token = Token::Whitespace;
+            lexeme = Lexeme(Token::Whitespace, __curpos, curpos);
             return;
         }
         if (hasLineBreak && !hasWhitespace) {
-            lexeme.end = curpos;
-            lexeme.token = Token::Linebreak;
+            lexeme = Lexeme(Token::Linebreak, __curpos, curpos);
             return;
         }
         // mixed stuff
@@ -171,8 +162,7 @@ namespace SimpleXml {
             }
         }
         */
-        lexeme.end = curpos;
-        lexeme.token = ws ? Token::Whitespace : Token::Linebreak;
+        lexeme = Lexeme(ws ? Token::Whitespace : Token::Linebreak, __curpos, curpos);
     }
 
     void Lexer::handleInTag() {
@@ -184,49 +174,42 @@ namespace SimpleXml {
         }
 
         if (isTagEnd(*curpos)) {
-            lexeme.end = curpos + 1;
-            lexeme.token = Token::TagEnd;
+            lexeme = Lexeme(Token::TagEnd,__curpos, curpos+1);
             return;
         }
 
         if (*curpos == '/' && isTagEnd(curpos[1])) {
-            lexeme.end = curpos + 2;
-            lexeme.token = Token::SelfClosingTagEnd;
+            lexeme = Lexeme(Token::SelfClosingTagEnd, __curpos, curpos + 2);
             return;
         }
 
         if (*curpos == '?' && isTagEnd(curpos[1])) {
-            lexeme.end = curpos + 2;
-            lexeme.token = Token::ProcessingInstructionEnd;
+            lexeme = Lexeme(Token::ProcessingInstructionEnd, __curpos, curpos + 2);
             return;
         }
 
         if (RegisterLinebreaks) {
             if (IsWhitespace(*curpos)) {
                 for (curpos++; IsWhitespace(*curpos); curpos++);
-                lexeme.end = curpos;
-                lexeme.token = Token::Whitespace;
+                lexeme = Lexeme(Token::Whitespace, __curpos, curpos);
                 return;
             }
             if (IsLinebreak(*curpos)) {
                 for (curpos++; IsLinebreak(*curpos); curpos++);
-                lexeme.end = curpos;
-                lexeme.token = Token::Linebreak;
+                lexeme = Lexeme(Token::Linebreak, __curpos, curpos);
                 return;
             }
         }
         else {
             if (IsWhitespace(*curpos) || IsLinebreak(*curpos)) {
                 for (curpos++; IsWhitespace(*curpos) || IsLinebreak(*curpos); curpos++);
-                lexeme.end = curpos;
-                lexeme.token = Token::Whitespace;
+                lexeme = Lexeme(Token::Whitespace, __curpos, curpos);
                 return;
             }
         }
 
         if (*curpos == '=') {
-            lexeme.end = curpos + 1;
-            lexeme.token = Token::Eq;
+            lexeme = Lexeme(Token::Eq, __curpos, curpos+1);
             return;
         }
 
@@ -241,8 +224,7 @@ namespace SimpleXml {
                 }
             }
             if (ok == true) {
-                lexeme.end = curpos;
-                lexeme.token = Token::SystemLiteral;
+                lexeme = Lexeme(Token::SystemLiteral, __curpos, curpos);
                 return;
             }
             curpos = __curpos; // reset and fall through
@@ -253,19 +235,18 @@ namespace SimpleXml {
         for (curpos++;
             curpos < __endpos && (isNameChar(*curpos) || ((unsigned char)*curpos) > 127); // utf-8 highbit
             curpos++);
-        lexeme.end = curpos;
-        if (isNameStartChar(*lexeme.text)) {
-            lexeme.token = Token::Name;
+
+        if (isNameStartChar(*__curpos)) {
+            lexeme = Lexeme(Token::Name, __curpos, curpos);
         }
         else {
-            lexeme.token = Token::Nmtoken;
+            lexeme = Lexeme(Token::Nmtoken, __curpos, curpos);
         }
     }
 
 
     void Lexer::findNext() {
-        lexeme.text = __curpos;
-        lexeme.end = __curpos;
+        lexeme.clear();
         lexeme.token = Token::None;
 
         if (__curpos == __endpos) {
@@ -283,7 +264,7 @@ namespace SimpleXml {
     /*
     Token Lexer::TryGetName() {
         auto curpos = __curpos;
-        lexeme.end = curpos;
+        lexeme.setEnd(curpos;
         if (!isNameStartChar(*curpos))
             return lexeme.token = Token::None;
 
@@ -291,7 +272,7 @@ namespace SimpleXml {
 
         auto pos = curpos + 1;
         for (; pos < __endpos && isNameChar(*pos); pos++);
-        lexeme.end = pos;
+        lexeme.setEnd(pos;
 
         return lexeme.token = Token::Name;
     }
@@ -300,21 +281,19 @@ namespace SimpleXml {
         auto pos = __curpos;
         char lastChar;
 
-        lexeme.text = pos;
-        lexeme.end = pos;
         bool inAttrVal = false;
         char attrBoundary;
 
         if (IsWhitespace(*pos)) {
             for (pos++; pos < __endpos && IsWhitespace(*pos); pos++);
-            lexeme.end = pos;
-            return lexeme.token = Token::Whitespace;
+            lexeme = Lexeme(Token::Whitespace, __curpos, pos);
+            return lexeme.token;
         }
 
         if (IsLinebreak(*pos)) {
             for (pos++; pos < __endpos && IsLinebreak(*pos); pos++);
-            lexeme.end = pos;
-            return lexeme.token = Token::Linebreak;
+            lexeme = Lexeme(Token::Linebreak, __curpos, pos);
+            return lexeme.token;
         }
 
         for (; pos < __endpos; pos++) {
@@ -333,19 +312,20 @@ namespace SimpleXml {
                 break;
             lastChar = *pos;
         }
-        lexeme.end = pos;
-        if (TokenSize() == 0) {
+        if (pos == __curpos) {
             if (pos[0] == '/' && pos[1] == '>') {
-                lexeme.end = pos + 2;
-                return lexeme.token = Token::SelfClosingTagEnd;
+                lexeme = Lexeme(Token::SelfClosingTagEnd, __curpos, pos+2);
+                return lexeme.token;
             }
             if (pos[0] == '>') {
-                lexeme.end = pos + 1;
+                lexeme = Lexeme(Token::TagEnd, __curpos, pos + 1);
                 return lexeme.token = Token::TagEnd;
             }
-            return lexeme.token = Token::None; // TODO get rid of it
+            lexeme = Lexeme(Token::Unknown, __curpos, __curpos);
+            return lexeme.token; // TODO get rid of it
         }
 
-        return lexeme.token = Token::Text;
+        lexeme = Lexeme(Token::Text, __curpos, pos);
+        return lexeme.token;
     }
 }
