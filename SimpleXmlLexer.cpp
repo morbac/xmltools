@@ -282,7 +282,7 @@ namespace SimpleXml {
         char lastChar;
 
         bool inAttrVal = false;
-        char attrBoundary;
+        char attrBoundary=0;
 
         if (IsWhitespace(*pos)) {
             for (pos++; pos < __endpos && IsWhitespace(*pos); pos++);

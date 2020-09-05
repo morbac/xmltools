@@ -222,7 +222,7 @@ void XmlPrettyPrinter::Parse() {
             WriteEatToken();
 
             bool ateWhitespace = false;
-            for (auto token = lexer.TryGetAttribute(); token != Token::InputEnd; token = lexer.TryGetAttribute()) {
+            for (token = lexer.TryGetAttribute(); token != Token::InputEnd; token = lexer.TryGetAttribute()) {
                 if (token == Token::Whitespace) {
                     lexer.EatToken();
                     ateWhitespace = true;

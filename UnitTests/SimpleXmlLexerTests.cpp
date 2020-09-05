@@ -10,10 +10,10 @@ namespace {
 
 	inline Lexeme CLexeme(Token token, const char* text) { return Lexeme(token, text, text + strlen(text)); }
 
-	void TestLex(std::vector<Lexeme>& expectedLexemes, bool registerLinebreaks = true) {
+	void TestLex(const std::vector<Lexeme>& expectedLexemes, bool registerLinebreaks = true) {
 		std::string txt;
 
-		for (auto l : expectedLexemes) {
+		for (const auto &l : expectedLexemes) {
 			txt.append(l.text(),l.size());
 		}
 
@@ -35,7 +35,7 @@ namespace {
 		ASSERT_TRUE(lexer.Done());
 	}
 
-	void TestSingleLex(Lexeme& l) {
+	void TestSingleLex(const Lexeme& l) {
 		auto lex = std::vector<Lexeme>{ l };
 		TestLex(lex);
 	}

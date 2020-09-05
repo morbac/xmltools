@@ -23,7 +23,7 @@ char* readFile(const fs::directory_entry& entry) {
     auto fsize = entry.file_size();
     if (fsize > INT_MAX - 1)
         return NULL;
-    int size = static_cast<int>(fsize);
+    size_t size = fsize;
 
     std::ifstream inputStream(entry.path().string(), std::ios_base::binary | std::ios_base::in);
     if (!inputStream.is_open()) {
@@ -42,7 +42,9 @@ char* readFile(const fs::directory_entry& entry) {
 
 void iterateFolder(const wchar_t * path, bool (*action)(const char* input, const char* expectedOutput)) {
     wchar_t CURPATH[_MAX_PATH];
-    auto _ = _wgetcwd(CURPATH, _MAX_PATH);
+    if (NULL == _wgetcwd(CURPATH, _MAX_PATH)) {
+        FAIL() << L"Unable to get current working directory";
+    }
     wcscat_s(CURPATH, L"\\TestFiles\\");
     wcscat_s(CURPATH, path);
 
