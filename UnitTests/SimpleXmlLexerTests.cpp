@@ -14,11 +14,11 @@ namespace {
 		std::string txt;
 
 		for (const auto &l : expectedLexemes) {
-			txt.append(l.text(),l.size());
+			txt.append(l.value.text(),l.value.size());
 		}
 
 		Lexer lexer = Lexer(txt.c_str());
-		lexer.RegisterLinebreaks = registerLinebreaks;
+		lexer.registerLinebreaks = registerLinebreaks;
 		Lexeme lexeme;
 		int i = 0;
 		for (lexeme = lexer.get();
@@ -82,6 +82,37 @@ namespace {
 		TestLex(lex, false);
 	}
 
+	TEST(Lexer,Whitespace_eat) {
+		auto lex = Lexer("   \r\n");
+		auto l = lex.tryReadWhitespace();
+
+		ASSERT_EQ(l.token, Token::Whitespace);
+		ASSERT_TRUE(l.value == "   ");
+
+		lex.eatToken();
+		ASSERT_EQ(lex.peekChar(), '\r'); // make sure it is really eaten
+	}
+
+	TEST(Lexer, Whitespace_eat_linebreak) {
+		char* txt = "   \r\n";
+		auto lex = Lexer(txt);
+		lex.registerLinebreaks = false;
+		auto l = lex.tryReadWhitespace();
+
+		ASSERT_EQ(l.token, Token::Whitespace);
+		ASSERT_EQ(l.value, txt);
+
+		lex.eatToken();
+		ASSERT_TRUE(lex.Done()); // make sure it is really eaten
+	}
+
+	TEST(Lexer, Whitespace_eat_fail) {
+		auto lex = Lexer("A");
+		auto l = lex.tryReadWhitespace();
+
+		ASSERT_EQ(l.token, Token::Unknown);
+	}
+
 	TEST(Lexer, Linebreak) {
 		auto lex = std::vector<Lexeme>{
 			CLexeme(Token::Linebreak, "\r\n")
@@ -129,6 +160,10 @@ namespace {
 
 	TEST(Lexer, CDSpec) {
 		TestSingleLex(CLexeme(Token::CDSect, "<![CDATA[ some < > text ]]>"));
+	}
+
+	TEST(Lexer, DeclStart) {
+		TestSingleLex(CLexeme(Token::DeclStart, "<!"));
 	}
 
 	TEST(Lexer, TagStart_Name) {
@@ -247,34 +282,34 @@ TestLex(lex);
 	}
 
 
-	// InTag
+	// inTag
 
 	TEST(Lexer, InTag_AfterTagStart) {
 		auto lex = Lexer("<");
 		lex.get();
 
-		ASSERT_TRUE(lex.InTag());
+		ASSERT_TRUE(lex.inTag());
 	}
 
 	TEST(Lexer, InTag_AfterATTR) {
 		auto lex = Lexer("<!ATTR");
 		lex.get();
 
-		ASSERT_TRUE(lex.InTag());
+		ASSERT_TRUE(lex.inTag());
 	}
 
 	TEST(Lexer, InTag_AfterPI) {
 		auto lex = Lexer("<?");
 		lex.get();
 
-		ASSERT_TRUE(lex.InTag());
+		ASSERT_TRUE(lex.inTag());
 	}
 
 	TEST(Lexer, InTag_AfterTagCloseStart) {
 		auto lex = Lexer("</ATTR");
 		lex.get();
 
-		ASSERT_TRUE(lex.InTag());
+		ASSERT_TRUE(lex.inTag());
 	}
 
 	TEST(Lexer, InTag_false_AfterTagEnd) {
@@ -282,7 +317,7 @@ TestLex(lex);
 		lex.get();
 		lex.get();
 
-		ASSERT_FALSE(lex.InTag());
+		ASSERT_FALSE(lex.inTag());
 	}
 
 	TEST(Lexer, InTag_false_AfterSelfClosingTagEnd) {
@@ -291,7 +326,7 @@ TestLex(lex);
 		lex.get();
 		lex.get();
 
-		ASSERT_FALSE(lex.InTag());
+		ASSERT_FALSE(lex.inTag());
 	}
 
 	// ReadUntil
@@ -300,16 +335,49 @@ TestLex(lex);
 		const char* txt = "abcd";
 		auto lex = Lexer(txt);
 
-		ASSERT_TRUE(lex.readUntil("d"));
-		ASSERT_TRUE(0 == strncmp(lex.TokenText(), txt, strlen(txt)));
+		auto l = lex.readUntil("d", true);
+		ASSERT_TRUE(l == Token::Unknown);
+		ASSERT_TRUE(l == txt);
+	}
+
+	TEST(Lexer, readUntilExcludeEnd) {
+		const char* txt = "abcd";
+		auto lex = Lexer(txt);
+
+		auto l = lex.readUntil("d", false);
+		ASSERT_TRUE(l == Token::Unknown);
+		ASSERT_TRUE(l == "abc");
 	}
 
 	TEST(Lexer, readUntil_EndOfFile) {
 		const char* txt = "<ATTR/>";
 		auto lex = Lexer(txt);
 
-		ASSERT_FALSE(lex.readUntil("g"));
-		ASSERT_TRUE(0 == strncmp(lex.TokenText(), txt, strlen(txt)));
+		auto l = lex.readUntil("g", true);
+		ASSERT_TRUE(l == Token::Unknown);
+		ASSERT_TRUE(l == txt);
+	}
+
+	TEST(Lexer, readChar) {
+		const char* txt = "<ATTR/>";
+		auto lex = Lexer(txt);
+
+		auto c = lex.readChar();
+		ASSERT_EQ(c, '<');
+		
+		c = lex.readChar();
+		ASSERT_EQ(c, 'A');
+	}
+
+	TEST(Lexer, peekChar) {
+		const char* txt = "<ATTR/>";
+		auto lex = Lexer(txt);
+
+		auto c = lex.peekChar();
+		ASSERT_EQ(c, '<');
+
+		c = lex.peekChar();
+		ASSERT_EQ(c, '<');
 	}
 
 	TEST(Lexer, Element_Text) {

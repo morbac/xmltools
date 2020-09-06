@@ -37,6 +37,13 @@ namespace SimpleXml {
 			return strncmp(__text, right, __size) == 0;
 		}
 
+		bool operator !=(const char* right) const {
+			if (strlen(right) != __size)
+				return true;
+
+			return strncmp(__text, right, __size) != 0;
+		}
+
 		bool operator ==(const InlineString& right) const {
 			return __size == right.__size && strncmp(__text, right.__text, __size) == 0;
 		}
@@ -46,6 +53,10 @@ namespace SimpleXml {
 		}
 
 		operator std::string() const {
+			return string();
+		}
+
+		std::string string() const {
 			return std::string(__text, __size);
 		}
 
