@@ -56,6 +56,21 @@ namespace SimpleXml {
         _isInTag = false;
     }
 
+    bool Lexer::readUntilTagEndOrStart() {
+        if (Done()) {
+            _lexeme = Lexeme(Token::InputEnd, __curpos, __curpos);
+            return false;
+        }
+
+        auto pos = __curpos;
+        while (pos < __endpos && !ISTAGSTART(*pos) && !ISTAGEND(*pos)) {
+            pos++;
+        }
+
+        _lexeme = Lexeme(Token::Unknown, __curpos, pos);
+        return pos < __endpos;
+    }
+
     bool Lexer::readUntil(int startpos, const char* end, bool includeEnd) {
         auto pos = strstr(__curpos+startpos, end);
         if (pos != NULL) {

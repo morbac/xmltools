@@ -116,6 +116,21 @@ bool XmlPrettyPrinter::ParseAttributes() {
     return token != Token::InputEnd;
 }
 
+void trimText(InlineString& is, Lexer& lexer, bool keepBreaks){
+    auto len = is.size();
+    auto start = is.text();
+
+    while (len > 0 && lexer.IsWhitespace(*start) || (!keepBreaks && lexer.IsLinebreak(*start))) {
+        len--;
+        start++;
+    }
+    while (len > 0 && lexer.IsWhitespace(start[len - 1]) || (!keepBreaks && lexer.IsLinebreak(start[len - 1]))) {
+        len--;
+    }
+    is.__text = start;
+    is.__size = len;
+}
+
 void XmlPrettyPrinter::Parse() {
     while (!lexer.Done()) {
         auto token = lexer.peek_token();
@@ -131,18 +146,11 @@ void XmlPrettyPrinter::Parse() {
         case Token::Text: {
             TryCloseTag();
             if (parms.removeWhitespace) {
-                auto start = lexer.TokenText();
-                auto len = lexer.TokenSize();
-                while (len > 0 && lexer.IsWhitespace(*start) || (!parms.keepExistingBreaks && lexer.IsLinebreak(*start))) {
-                    len--;
-                    start++;
-                }
-                while (len > 0 && lexer.IsWhitespace(start[len - 1]) || (!parms.keepExistingBreaks && lexer.IsLinebreak(start[len - 1]))) {
-                    len--;
-                }
-                if (len > 0) {
+                auto s = lexer.currentLexeme().value;
+                trimText(s, lexer, parms.keepExistingBreaks);
+                if (s) {
                     TryIndent();
-                    outText.write(start, len);
+                    outText.write(s.text(), s.size());
                 }
             }
             else {
@@ -303,6 +311,39 @@ void XmlPrettyPrinter::Parse() {
             WriteEatToken();
             prevTag = NULL;
             AddNewline();
+            break;
+        }
+        case Token::DeclStart: {
+            StartNewElement();
+            if (indented) {
+                AddNewline();
+            }
+            WriteEatToken();
+            auto res = lexer.readUntilTagEndOrStart();
+            if (parms.removeWhitespace) {
+                auto s = lexer.currentLexeme().value;
+                trimText(s, lexer, parms.keepExistingBreaks);
+                if (s) {
+                    TryIndent();
+                    outText.write(s.text(), s.size());
+                }
+            }
+            else {
+                TryIndent();
+                WriteToken();
+            }
+            lexer.eatToken();
+            if (res) {
+                if (lexer.peekChar() == '<') {
+                }
+                else {
+                    lexer.readChar();
+                    outText.write(">", 1);
+                }
+                lexer.cancelInTag(); // always self-closing
+                inTag = false;
+            }
+
             break;
         }
         default: {

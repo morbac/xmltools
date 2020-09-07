@@ -107,6 +107,9 @@ namespace SimpleXml {
             return _lexeme;
         }
 
+        // can be used for error recovery. 
+        bool readUntilTagEndOrStart();
+
         Lexeme tryReadWhitespace() {
             if (isWhitespace(*__curpos) || (!registerLinebreaks && isLinebreak(*__curpos))) {
                 auto pos = __curpos+1;
