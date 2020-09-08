@@ -5,9 +5,6 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLTools", "XMLTools.vcxproj", "{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests", "UnitTests\UnitTests.vcxproj", "{8B318363-5296-424F-956F-3DC409CF020E}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC} = {3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

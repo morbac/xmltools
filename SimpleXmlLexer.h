@@ -207,9 +207,6 @@ namespace SimpleXml {
             }
             return 0;
         }
-        
-        [[deprecated("Lexer keeps track of in/out tag, there is no need for this function. Use Lexer::peek() or Lexer::get()")]]
-        Token TryGetAttribute();
 
         [[deprecated("please use eatToken")]]
         void EatToken();

@@ -11,6 +11,7 @@ struct PrettyPrintParms
     bool insertIndents = false;
     bool insertNewLines = false;
     bool removeWhitespace = false;
+    bool keepStartEndWhitespace = false;
     bool autocloseEmptyElements = true;
     bool keepExistingBreaks = false;
 };
@@ -39,6 +40,7 @@ class XmlPrettyPrinter {
     void Parse();
     bool ParseAttributes();
 
+    void trimTextAndOutput(const SimpleXml::InlineString& is);
 public:
     XmlPrettyPrinter(const char* txt, size_t textlen, PrettyPrintParms parms) :lexer(txt, textlen), parms(parms) {
     }

@@ -295,58 +295,6 @@ namespace SimpleXml {
         }
     }
 
-    Token Lexer::TryGetAttribute() {
-        auto pos = __curpos;
-        char lastChar;
-
-        bool inAttrVal = false;
-        char attrBoundary=0;
-
-        if (isWhitespace(*pos)) {
-            for (pos++; pos < __endpos && isWhitespace(*pos); pos++);
-            _lexeme = Lexeme(Token::Whitespace, __curpos, pos);
-            return _lexeme.token;
-        }
-
-        if (isLinebreak(*pos)) {
-            for (pos++; pos < __endpos && isLinebreak(*pos); pos++);
-            _lexeme = Lexeme(Token::Linebreak, __curpos, pos);
-            return _lexeme.token;
-        }
-
-        for (; pos < __endpos; pos++) {
-            if (inAttrVal) {
-                if (*pos == attrBoundary) {
-                    inAttrVal = false;
-                }
-            }
-            else if (*pos == '"' || *pos == '\'') {
-                inAttrVal = true;
-                attrBoundary = *pos;
-            }
-            else if (isWhitespace(*pos) || isLinebreak(*pos))
-                break;
-            else if (*pos == '/' || *pos == '>' || *pos == '<')
-                break;
-            lastChar = *pos;
-        }
-        if (pos == __curpos) {
-            if (pos[0] == '/' && pos[1] == '>') {
-                _lexeme = Lexeme(Token::SelfClosingTagEnd, __curpos, pos+2);
-                return _lexeme.token;
-            }
-            if (pos[0] == '>') {
-                _lexeme = Lexeme(Token::TagEnd, __curpos, pos + 1);
-                return _lexeme.token = Token::TagEnd;
-            }
-            _lexeme = Lexeme(Token::Unknown, __curpos, __curpos);
-            return _lexeme.token; // TODO get rid of it
-        }
-
-        _lexeme = Lexeme(Token::Text, __curpos, pos);
-        return _lexeme.token;
-    }
-
     void Lexer::EatToken() { eatToken(); }
 
     void Lexer::eatToken() {
