@@ -100,14 +100,11 @@ void insertXMLCloseTag();
 void insertAutoXMLType();
 void togglePreventXXE();
 void toggleAllowHuge();
-void nppPrettyPrintXML();
 void nppPrettyPrintXmlFast();
+void nppPrettyPrintXmlAttrFast();
 void nppPrettyPrintXmlIndentOnlyFast();
 void nppLinearizeXmlFast();
-void nppPrettyPrintAttributes();
-void nppPrettyPrintIndentOnly();
 //void insertPrettyPrintTag();
-void nppLinearizeXML();
 void togglePrettyPrintAllFiles();
 
 void nppConvertXML2Text();
@@ -196,24 +193,11 @@ void initMenu() {
 
     addMenuSeparator();
 
-    addMenuItem(L"Pretty print", nppPrettyPrintXML, false, createShortcut('B'));
-    addMenuItem(L"Pretty print (indent attributes)", nppPrettyPrintAttributes, false, createShortcut('A'));
-    addMenuItem(L"Fix indentation (beta)", nppPrettyPrintIndentOnly);
-
-    /*
-    Report::strcpy(funcItem[menuentry]._itemName, L"Enable auto pretty print (libXML) [experimental]");
-    funcItem[menuentry]._pFunc = insertPrettyPrintTag;
-    funcItem[menuentry]._init2Check = doPrettyPrint = (::GetPrivateProfileInt(sectionName, L"doPrettyPrint", 0, iniFilePath) != 0);
-    doPrettyPrint = funcItem[menuentry]._init2Check;
-    menuitemPrettyPrint = menuentry;
-    ++menuentry;
-    */
-
-    addMenuItem(L"Linearize XML", nppLinearizeXML, false, createShortcut('L'));
+    addMenuItem(L"Pretty print", nppPrettyPrintXmlFast, false, createShortcut('B'));
+    addMenuItem(L"Pretty print (indent attributes) - INACTIVE", nppPrettyPrintXmlAttrFast, false, createShortcut('A'));
+    addMenuItem(L"Pretty print - indent only", nppPrettyPrintXmlIndentOnlyFast);
+    addMenuItem(L"Linearize", nppLinearizeXmlFast, false, createShortcut('L'));
     menuitemPrettyPrintAllFiles = addMenuItem(L"Apply to all open files", togglePrettyPrintAllFiles, config.doPrettyPrintAllOpenFiles);
-    addMenuItem(L"Pretty print (fast)", nppPrettyPrintXmlFast);
-    addMenuItem(L"Pretty print - indent only (fast)", nppPrettyPrintXmlIndentOnlyFast);
-    addMenuItem(L"Linearize (fast)", nppLinearizeXmlFast);
 
     addMenuSeparator();
 

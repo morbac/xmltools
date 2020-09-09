@@ -87,9 +87,6 @@
     <ClCompile Include="ToolsPrettyPrintFast.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ToolsPrettyPrintInline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ToolsXLSTransform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -333,7 +333,6 @@
     <ClCompile Include="OptionsDlg.cpp" />
     <ClCompile Include="ToolsEditor.cpp" />
     <ClCompile Include="ToolsPrettyPrintFast.cpp" />
-    <ClCompile Include="ToolsPrettyPrintInline.cpp" />
     <ClCompile Include="Report.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

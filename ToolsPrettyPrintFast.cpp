@@ -43,6 +43,10 @@ void sciDocPrettyPrintXML(ScintillaDoc& doc) {
     doc.SetScrollWidth(80); // 80 is arbitrary
 }
 
+void sciDocPrettyPrintXMLAttr(ScintillaDoc& doc) {
+    // todo
+}
+
 void sciDocPrettyPrintXML_IndentOnly(ScintillaDoc& doc) {
     auto inText = doc.GetWorkText();
     if (inText.text == NULL)
@@ -113,6 +117,10 @@ void sciDocLinearizeXML(ScintillaDoc& doc) {
 
 void nppPrettyPrintXmlFast() {
     nppMultiDocumentCommand(L"PrettyPrintFast", sciDocPrettyPrintXML);
+}
+
+void nppPrettyPrintXmlAttrFast() {
+    nppMultiDocumentCommand(L"PrettyPrintAttrFast", sciDocPrettyPrintXMLAttr);
 }
 
 void nppPrettyPrintXmlIndentOnlyFast() {
