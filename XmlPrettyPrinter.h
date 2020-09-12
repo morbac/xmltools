@@ -14,6 +14,7 @@ struct PrettyPrintParms
     bool keepStartEndWhitespace = false;
     bool autocloseEmptyElements = true;
     bool keepExistingBreaks = false;
+    bool indentAttributes = false;
 };
 
 class XmlPrettyPrinter {

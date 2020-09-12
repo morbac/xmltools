@@ -44,7 +44,40 @@ void sciDocPrettyPrintXML(ScintillaDoc& doc) {
 }
 
 void sciDocPrettyPrintXMLAttr(ScintillaDoc& doc) {
-    // todo
+    auto inText = doc.GetWorkText();
+    if (inText.text == NULL)
+        return;
+
+    PrettyPrintParms parms;
+    parms.eol = doc.EOL();
+    parms.tab = doc.Tab();
+    parms.insertIndents = true;
+    parms.insertNewLines = true;
+    parms.removeWhitespace = true;
+    parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
+    if (xmltoolsoptions.maxElementDepth > 0)
+        parms.maxElementDepth = xmltoolsoptions.maxElementDepth;
+    parms.keepExistingBreaks = false;
+    parms.indentAttributes = true;
+
+    auto docclock_start = clock();
+
+    XmlPrettyPrinter prettyPrinter = XmlPrettyPrinter(inText.text, inText.length, parms);
+    prettyPrinter.Convert();
+    inText.FreeMemory();
+    auto prettyTextStream = prettyPrinter.Stream();
+    auto docclock_end = clock();
+
+    {
+        std::string txt;
+        txt += "crunching => time taken: " + std::to_string(docclock_end - docclock_start) + " ms";
+        dbgln(txt.c_str());
+    }
+
+    // Send formatted string to scintilla
+    const std::string& outText = prettyTextStream->str();
+    doc.SetWorkText(outText.c_str());
+    doc.SetScrollWidth(80); // 80 is arbitrary
 }
 
 void sciDocPrettyPrintXML_IndentOnly(ScintillaDoc& doc) {

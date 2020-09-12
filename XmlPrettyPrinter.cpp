@@ -62,16 +62,32 @@ inline void XmlPrettyPrinter::WriteEatToken() {
 
 bool XmlPrettyPrinter::ParseAttributes() {
     bool insertWhitespaceBeforeAttribute = false;
+    int numAttribute = 0;   // count the attributes (this is used for attributes indentation)
     Token token;
     for (token = lexer.peekToken(); token != Token::InputEnd; token = lexer.peekToken()) {
         if (token == Token::Name || token == Token::Nmtoken) {
             if (insertWhitespaceBeforeAttribute) {
-                if (!indented && indentlevel > 0 && parms.insertIndents)
+                if (parms.indentAttributes && prevTagLen > 0 && numAttribute > 0) {
+                    AddNewline();
+                    if (indentlevel > 0) {
+                        indentlevel--;  // the indent level is prepared for children, but we still are in the 
+                                        // parent tag therefore we just have to decrease it for the indent
+                        Indent();
+                        indentlevel++;  // restore correct indent level
+                    }
+                    for (int i = 0; i < prevTagLen + 2; i++) {
+                        outText.write(" ", 1);
+                    }
+                }
+                else if (!indented && indentlevel > 0 && parms.insertIndents) {
                     Indent();
-                else
+                }
+                else {
                     outText.write(" ", 1);
+                }
 
                 insertWhitespaceBeforeAttribute = false;
+                ++numAttribute;
             }
 
             WriteEatToken();
