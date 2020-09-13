@@ -6,9 +6,17 @@ namespace fs = std::filesystem;
 
 #include "../XmlPrettyPrinter.h"
 
-static bool endsWith(const std::string& str, const std::string& suffix) // waiting for C++20....
-{
+static bool startsWith(const char* str, const char* pre) {
+    size_t lenstr = strlen(str), lenpre = strlen(pre);
+    return lenstr < lenpre ? false : memcmp(pre, str, lenpre) == 0;
+}
+
+static bool endsWith(const std::string& str, const std::string& suffix) { // waiting for C++20....
     return str.size() >= suffix.size() && 0 == str.compare(str.size() - suffix.size(), suffix.size(), suffix);
+}
+
+static bool contains(const char* str, const char* word) {
+    return (strstr(str, word) != NULL);
 }
 
 static std::string replace(std::string& s, const std::string& find, const char *replace) {
@@ -96,6 +104,31 @@ bool testPrettyPrint(const char* input, const char* expectedOutput) {
 
 TEST(PrettyPrint, Default) {
     iterateFolder(L"PrettyPrint", testPrettyPrint);
+}
+
+bool testPrettyPrintIndentAttributes(const char* input, const char* expectedOutput) {
+
+    PrettyPrintParms parms;
+    parms.eol = "\r\n";
+    parms.tab = "\t";
+    parms.autocloseEmptyElements = false;
+    parms.insertIndents = true;
+    parms.insertNewLines = true;
+    parms.removeWhitespace = true;
+    parms.indentAttributes = true;
+
+    if (contains(input, "<!-- SPACE INDENTED / Do not remove this comment -->")) {
+        parms.tab = "  ";
+    }
+
+    auto prettyPrinter = XmlPrettyPrinter(input, strlen(input), parms);
+    prettyPrinter.Convert();
+    const std::string& output = prettyPrinter.Stream()->str();
+    return 0 == strcmp(expectedOutput, output.c_str());
+}
+
+TEST(PrettyPrint, IndentAttr) {
+    iterateFolder(L"PrettyPrintIndentAttributes", testPrettyPrintIndentAttributes);
 }
 
 bool testPrettyPrintIndentOnly(const char* input, const char* expectedOutput) {
