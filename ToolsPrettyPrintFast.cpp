@@ -17,10 +17,11 @@ void sciDocPrettyPrintXML(ScintillaDoc& doc) {
     parms.tab = doc.Tab();
     parms.insertIndents = true;
     parms.insertNewLines = true;
-    parms.removeWhitespace = true;
+    parms.removeWhitespace = xmltoolsoptions.trimTextWhitespace;
     parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
-    if (xmltoolsoptions.maxElementDepth > 0)
+    if (xmltoolsoptions.maxElementDepth > 0) {
         parms.maxElementDepth = xmltoolsoptions.maxElementDepth;
+    }
     parms.keepExistingBreaks = false;
 
     auto docclock_start = clock();
@@ -53,10 +54,11 @@ void sciDocPrettyPrintXMLAttr(ScintillaDoc& doc) {
     parms.tab = doc.Tab();
     parms.insertIndents = true;
     parms.insertNewLines = true;
-    parms.removeWhitespace = true;
+    parms.removeWhitespace = xmltoolsoptions.trimTextWhitespace;
     parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
-    if (xmltoolsoptions.maxElementDepth > 0)
+    if (xmltoolsoptions.maxElementDepth > 0) {
         parms.maxElementDepth = xmltoolsoptions.maxElementDepth;
+    }
     parms.keepExistingBreaks = false;
     parms.indentAttributes = true;
 
@@ -90,10 +92,11 @@ void sciDocPrettyPrintXML_IndentOnly(ScintillaDoc& doc) {
     parms.tab = doc.Tab();
     parms.insertIndents = true;
     parms.insertNewLines = true;
-    parms.removeWhitespace = true;
+    parms.removeWhitespace = xmltoolsoptions.trimTextWhitespace;
     parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
-    if (xmltoolsoptions.maxElementDepth > 0)
+    if (xmltoolsoptions.maxElementDepth > 0) {
         parms.maxElementDepth = xmltoolsoptions.maxElementDepth;
+    }
     parms.keepExistingBreaks = true;
 
     auto docclock_start = clock();
@@ -125,7 +128,7 @@ void sciDocLinearizeXML(ScintillaDoc& doc) {
     parms.tab = "";
     parms.insertIndents = false;
     parms.insertNewLines = false;
-    parms.removeWhitespace = true;
+    parms.removeWhitespace = xmltoolsoptions.trimTextWhitespace;
     parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
     parms.keepExistingBreaks = false;
 

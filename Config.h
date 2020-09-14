@@ -39,6 +39,7 @@ struct struct_xmltoolsoptions {       // default value
 	bool convertQuote = true;
 	bool convertApos = true;
 	bool ppAutoclose = true;
+	bool trimTextWhitespace = false;
 };
 
 extern struct struct_proxyoptions proxyoptions;

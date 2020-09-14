@@ -136,6 +136,8 @@ BOOL COptionsDlg::OnInitDialog() {
 
   pTmpOption = new CMFCPropertyGridProperty(L"Auto-close tags", COleVariant((short)(xmltoolsoptions.ppAutoclose ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Enable auto-close tags on pretty print. For instance, when enabled, \"<sample></sample>\" is replaced with \"<sample/>\".", (DWORD_PTR)&xmltoolsoptions.ppAutoclose);
   pGrpPrettyPrint->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Trim text whitespace", COleVariant((short)(xmltoolsoptions.trimTextWhitespace ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Enable the trim of whitespaces chars (spaces, tabs and line breaks) in text.", (DWORD_PTR)&xmltoolsoptions.trimTextWhitespace);
+  pGrpPrettyPrint->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
 
 
   CMFCPropertyGridProperty* pGrpXmlFeatures = new CMFCPropertyGridProperty(L"XML Features");
