@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src\EmbeddedResources.cpp" />
+    <ClCompile Include="src\ChunkedStreamTests.cpp" />
+    <ClCompile Include="src\LexerTests.cpp" />
+    <ClCompile Include="src\PrettyPrinterTests.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="TestFiles">
+      <UniqueIdentifier>{6ff8b918-7e1e-4f23-9e13-b5b0d4db27f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestFiles\PrettyPrintIdentOnly">
+      <UniqueIdentifier>{ebc2fdba-2c62-4576-abeb-5932ef70ca7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestFiles\PrettyPrint">
+      <UniqueIdentifier>{2ba0d755-a008-4c00-b877-51a729d53261}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestFiles\PrettyPrintIndentAttributes">
+      <UniqueIdentifier>{6a578a9c-78ef-4813-9bae-bda2efc97b35}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="TestFiles\PrettyPrintIndentOnly\Test1.in.xml">
+      <Filter>TestFiles\PrettyPrintIdentOnly</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrintIndentOnly\Test1.out.xml">
+      <Filter>TestFiles\PrettyPrintIdentOnly</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrint\AutoCloseEmptyElement.in.xml">
+      <Filter>TestFiles\PrettyPrint</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrint\AutoCloseEmptyElement.out.xml">
+      <Filter>TestFiles\PrettyPrint</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrint\AutoCloseEmptyElement_child.in.xml">
+      <Filter>TestFiles\PrettyPrint</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrint\AutoCloseEmptyElement_child.out.xml">
+      <Filter>TestFiles\PrettyPrint</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrint\Comment_After_PI.in.xml">
+      <Filter>TestFiles\PrettyPrint</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrint\Comment_After_PI.out.xml">
+      <Filter>TestFiles\PrettyPrint</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrint\FullTest.in.xml">
+      <Filter>TestFiles\PrettyPrint</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrint\FullTest.out.xml">
+      <Filter>TestFiles\PrettyPrint</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrint\markupdecl.in.xml">
+      <Filter>TestFiles\PrettyPrint</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrint\markupdecl.out.xml">
+      <Filter>TestFiles\PrettyPrint</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrint\Test1.in.xml">
+      <Filter>TestFiles\PrettyPrint</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrint\Test1.out.xml">
+      <Filter>TestFiles\PrettyPrint</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrint\xmltag_not_closed.in.xml">
+      <Filter>TestFiles\PrettyPrint</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrint\xmltag_not_closed.out.xml">
+      <Filter>TestFiles\PrettyPrint</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrintIndentAttributes\space-indented.in.xml">
+      <Filter>TestFiles\PrettyPrintIndentAttributes</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrintIndentAttributes\space-indented.out.xml">
+      <Filter>TestFiles\PrettyPrintIndentAttributes</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrintIndentAttributes\tab-indented.in.xml">
+      <Filter>TestFiles\PrettyPrintIndentAttributes</Filter>
+    </Xml>
+    <Xml Include="TestFiles\PrettyPrintIndentAttributes\tab-indented.out.xml">
+      <Filter>TestFiles\PrettyPrintIndentAttributes</Filter>
+    </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\EmbeddedResources.h" />
+    <ClInclude Include="src\resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src\Resource.rc" />
+  </ItemGroup>
+</Project>

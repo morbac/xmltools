@@ -262,6 +262,14 @@ void clearAnnotations(HWND view) {
 int performXMLCheck(int informIfNoError) {
     dbgln("performXMLCheck()");
 
+    // 0. change current folder
+    TCHAR currenPath[MAX_PATH] = { '\0' };
+    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTDIRECTORY, MAX_PATH, (LPARAM)currenPath);
+    if (_wchdir(currenPath)) {
+        dbg(L"Unable to change directory to ");
+        dbgln(currenPath);
+    }
+
     int currentEdit, currentLength, res = 0;
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
     HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
@@ -283,6 +291,8 @@ int performXMLCheck(int informIfNoError) {
     VARIANT_BOOL varStatus;
     VARIANT varCurrentData;
 
+    auto t_start = clock();
+
     Report::char2VARIANT(data, &varCurrentData);
 
     delete[] data;
@@ -290,6 +300,11 @@ int performXMLCheck(int informIfNoError) {
 
     CHK_HR(CreateAndInitDOM(&pXMLDom));
     CHK_HR(pXMLDom->load(varCurrentData, &varStatus));
+
+    auto t_end = clock();
+
+    dbgln(L"crunch time: " + std::to_wstring(t_end - t_start) + L" ms", DBG_LEVEL::DBG_INFO);
+
     if (varStatus == VARIANT_TRUE) {
         if (informIfNoError) {
             Report::_printf_inf(L"No error detected.");

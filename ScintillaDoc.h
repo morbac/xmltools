@@ -129,6 +129,24 @@ struct ScintillaDoc
 		return text;
 	}
 
+	size_t GetText(Sci_PositionCR offset, char *target, Sci_PositionCR length) {
+		if (target == NULL) return 0;  // allocation error, abort check
+		auto max = GetTextLength();
+
+		if (offset >= max) return 0;
+
+		Sci_TextRange range;
+		range.chrg.cpMin = offset;
+		range.chrg.cpMax = offset+length;
+		range.lpstrText = target;
+
+		if (range.chrg.cpMax > (int)max)
+			range.chrg.cpMax = (int)max;
+		
+
+		return ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&range));
+	}
+
 	sciWorkText GetWorkText() {
 		auto selstart = this->SelectionStart();
 		auto selend = this->SelectionEnd();

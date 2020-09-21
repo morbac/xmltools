@@ -3,16 +3,6 @@
 ################################################################################
 
 /.vs/
-/Debug
-/Release
-/Win32/Debug
-/Win32/Release
-/x64/Debug
-/x64/Release
-/packages/Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.3
-/UnitTests/x64/Debug
-/UnitTests/x64/Release
-/UnitTests//Win32/Debug
-/UnitTests/Win32/Release
-/UnitTests/Debug
-/UnitTests/Release
+**/Debug/
+**/Release/
+/packages/*

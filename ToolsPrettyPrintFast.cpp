@@ -5,13 +5,11 @@
 #include "Report.h"
 #include "nppHelpers.h"
 
-#include "XmlPrettyPrinter.h"
+#include "SimpleXml.h"
+
+using namespace SimpleXml;
 
 void sciDocPrettyPrintXML(ScintillaDoc& doc) {
-    auto inText = doc.GetWorkText();
-    if (inText.text == NULL)
-        return;
-
     PrettyPrintParms parms;
     parms.eol = doc.EOL();
     parms.tab = doc.Tab();
@@ -26,9 +24,11 @@ void sciDocPrettyPrintXML(ScintillaDoc& doc) {
 
     auto docclock_start = clock();
 
-    XmlPrettyPrinter prettyPrinter = XmlPrettyPrinter(inText.text, inText.length, parms);
+    std::function chunker = [&doc](size_t a, char* b, size_t c) { return doc.GetText((Sci_PositionCR)a, b, (Sci_PositionCR)c); };
+    ChunkedStream stream(1024 * 1024, chunker);
+    auto prettyPrinter = PrettyPrinter(stream, parms);
     prettyPrinter.Convert();
-    inText.FreeMemory();
+
     auto prettyTextStream = prettyPrinter.Stream();
     auto docclock_end = clock();
 
@@ -45,9 +45,6 @@ void sciDocPrettyPrintXML(ScintillaDoc& doc) {
 }
 
 void sciDocPrettyPrintXMLAttr(ScintillaDoc& doc) {
-    auto inText = doc.GetWorkText();
-    if (inText.text == NULL)
-        return;
 
     PrettyPrintParms parms;
     parms.eol = doc.EOL();
@@ -63,10 +60,11 @@ void sciDocPrettyPrintXMLAttr(ScintillaDoc& doc) {
     parms.indentAttributes = true;
 
     auto docclock_start = clock();
-
-    XmlPrettyPrinter prettyPrinter = XmlPrettyPrinter(inText.text, inText.length, parms);
+    std::function chunker = [&doc](size_t a, char* b, size_t c) { return doc.GetText((Sci_PositionCR)a, b, (Sci_PositionCR)c); };
+    ChunkedStream stream(1024 * 1024, chunker);
+    auto prettyPrinter = PrettyPrinter(stream, parms);
     prettyPrinter.Convert();
-    inText.FreeMemory();
+
     auto prettyTextStream = prettyPrinter.Stream();
     auto docclock_end = clock();
 
@@ -83,10 +81,6 @@ void sciDocPrettyPrintXMLAttr(ScintillaDoc& doc) {
 }
 
 void sciDocPrettyPrintXML_IndentOnly(ScintillaDoc& doc) {
-    auto inText = doc.GetWorkText();
-    if (inText.text == NULL)
-        return;
-
     PrettyPrintParms parms;
     parms.eol = doc.EOL();
     parms.tab = doc.Tab();
@@ -101,9 +95,11 @@ void sciDocPrettyPrintXML_IndentOnly(ScintillaDoc& doc) {
 
     auto docclock_start = clock();
 
-    XmlPrettyPrinter prettyPrinter = XmlPrettyPrinter(inText.text, inText.length, parms);
+    std::function chunker = [&doc](size_t a, char* b, size_t c) { return doc.GetText((Sci_PositionCR)a, b, (Sci_PositionCR)c); };
+    SimpleXml::ChunkedStream stream(1024 * 1024, chunker);
+    auto prettyPrinter = PrettyPrinter(stream, parms);
     prettyPrinter.Convert();
-    inText.FreeMemory();
+
     auto prettyTextStream = prettyPrinter.Stream();
     auto docclock_end = clock();
 
@@ -128,13 +124,14 @@ void sciDocLinearizeXML(ScintillaDoc& doc) {
     parms.tab = "";
     parms.insertIndents = false;
     parms.insertNewLines = false;
-    parms.removeWhitespace = xmltoolsoptions.trimTextWhitespace;
+    parms.removeWhitespace = true;
     parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
     parms.keepExistingBreaks = false;
 
     auto docclock_start = clock();
 
-    XmlPrettyPrinter prettyPrinter = XmlPrettyPrinter(inText.text, inText.length, parms);
+    SimpleXml::ChunkedStream s(inText.text, inText.length);
+    auto prettyPrinter = PrettyPrinter(s, parms);
     prettyPrinter.Convert();
     inText.FreeMemory();
     auto prettyTextStream = prettyPrinter.Stream();

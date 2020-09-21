@@ -1,0 +1,25 @@
+#include "resource.h"
+
+RC_test_pp_input_1	RCDATA "TestFiles/PrettyPrintIndentOnly/Test1.in.xml"
+RC_test_pp_output_1	RCDATA "TestFiles/PrettyPrintIndentOnly/Test1.out.xml"
+
+
+RC_test_pp_AutoCloseEmptyElement_in		RCDATA			"TestFiles/PrettyPrint/AutoCloseEmptyElement.in.xml"
+RC_test_pp_AutoCloseEmptyElement_out	RCDATA			"TestFiles/PrettyPrint/AutoCloseEmptyElement.out.xml"
+RC_test_pp_AutoCloseEmptyElement_child_in	RCDATA		"TestFiles/PrettyPrint/AutoCloseEmptyElement_child.in.xml"
+RC_test_pp_AutoCloseEmptyElement_child_out	RCDATA		"TestFiles/PrettyPrint/AutoCloseEmptyElement_child.out.xml"
+RC_test_pp_Comment_After_PI_in		RCDATA				"TestFiles/PrettyPrint/Comment_After_PI.in.xml"
+RC_test_pp_Comment_After_PI_out		RCDATA				"TestFiles/PrettyPrint/Comment_After_PI.out.xml"
+RC_test_pp_FullTest_in				RCDATA				"TestFiles/PrettyPrint/FullTest.in.xml"
+RC_test_pp_FullTest_out				RCDATA				"TestFiles/PrettyPrint/FullTest.out.xml"
+RC_test_pp_markupdecl_in			RCDATA				"TestFiles/PrettyPrint/markupdecl.in.xml"
+RC_test_pp_markupdecl_out			RCDATA				"TestFiles/PrettyPrint/markupdecl.out.xml"
+RC_test_pp_Test1_in					RCDATA				"TestFiles/PrettyPrint/Test1.in.xml"
+RC_test_pp_Test1_out				RCDATA				"TestFiles/PrettyPrint/Test1.out.xml"
+RC_test_pp_xmltag_not_closed_in		RCDATA				"TestFiles/PrettyPrint/xmltag_not_closed.in.xml"
+RC_test_pp_xmltag_not_closed_out	RCDATA				"TestFiles/PrettyPrint/xmltag_not_closed.out.xml"
+
+RC_test_pp_attributes_space_indented_in		RCDATA		"TestFiles/PrettyPrintIndentAttributes/space-indented.in.xml"
+RC_test_pp_attributes_space_indented_out	RCDATA		"TestFiles/PrettyPrintIndentAttributes/space-indented.out.xml"
+RC_test_pp_attributes_tab_indented_in		RCDATA		"TestFiles/PrettyPrintIndentAttributes/tab-indented.in.xml"
+RC_test_pp_attributes_tab_indented_out		RCDATA		"TestFiles/PrettyPrintIndentAttributes/tab-indented.out.xml"

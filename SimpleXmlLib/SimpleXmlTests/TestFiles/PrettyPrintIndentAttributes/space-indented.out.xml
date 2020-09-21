@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- SPACE INDENTED / Do not remove this comment -->
+<foo a="123"
+     b="456">
+  <foo a="123"
+       b="456"></foo>
+</foo>

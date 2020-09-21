@@ -1,10 +1,48 @@
-#include "StdAfx.h"
 
-#include "../SimpleXmlLexer.h"
+#include "gtest/gtest.h"
+
 #include <vector>
 #include <string>
 
+#include "Lexer.h"
+
+
 using namespace SimpleXml;
+
+struct Lexeme {
+	Token token;
+	std::string_view value;
+
+	Lexeme(Token type, const char* text, const char* end) :value(text, end - text) {
+		this->token = type;
+	}
+
+	Lexeme() {
+		token = Token::None;
+	}
+
+	bool operator ==(const char* right) const {
+		return this->value == right;
+	}
+
+	bool operator ==(const Lexeme& right) const {
+
+		if (token != right.token)
+			return false;
+
+		return value == right.value;
+	}
+
+	bool operator ==(const Token right) const {
+
+		return token == right;
+	}
+
+	bool operator !=(const Token right) const {
+
+		return token != right;
+	}
+};
 
 namespace {
 
@@ -14,25 +52,38 @@ namespace {
 		std::string txt;
 
 		for (const auto &l : expectedLexemes) {
-			txt.append(l.value.text(),l.value.size());
+			txt.append(l.value.data(),l.value.size());
 		}
 
-		Lexer lexer = Lexer(txt.c_str());
-		lexer.registerLinebreaks = registerLinebreaks;
-		Lexeme lexeme;
-		int i = 0;
-		for (lexeme = lexer.get();
+		ChunkedStream s = ChunkedStream(txt.c_str(), txt.size());
+		Lexer lexer = Lexer(s);
+		lexer.parms.registerLinebreaks = registerLinebreaks;
+		Token token;
+		size_t i = 0;
+		for (token = lexer.peekToken();
 			i < expectedLexemes.size();
-			lexeme = lexer.get(),
+			token = lexer.peekToken(),
 			i++) {
 
 			auto& expected = expectedLexemes[i];
 
-			ASSERT_TRUE(lexeme == expected);
+			ASSERT_EQ(expected.value.size(), lexer.tokenSize()) << "index: "+std::to_string(i)+ ", token: " + std::string(expected.value);
+			std::string s;
+			lexer.readTokenData(s);
+			ASSERT_EQ(s, expected.value);
+
+			//lexer.eatToken(); // not required because of readTokenData
 		}
 
 		ASSERT_EQ(i, expectedLexemes.size());
 		ASSERT_TRUE(lexer.Done());
+	}
+
+	std::string tokenText(Lexer& lex) {
+		std::string ret;
+		ret.resize(lex.tokenSize());
+		lex.readTokenData(ret);
+		return ret;
 	}
 
 	void TestSingleLex(const Lexeme& l) {
@@ -48,7 +99,7 @@ namespace {
 
 	//Whitespace
 	TEST(Lexer, Whitespace_tag_space) {
-		auto lex = std::vector{
+		auto lex = std::vector<Lexeme>{
 			CLexeme(Token::TagStart, "<") ,
 			CLexeme(Token::Whitespace, " ")
 		};
@@ -57,7 +108,7 @@ namespace {
 	}
 
 	TEST(Lexer, Whitespace_tag_doublespace) {
-		auto lex = std::vector{
+		auto lex = std::vector<Lexeme>{
 			CLexeme(Token::TagStart, "<") ,
 			CLexeme(Token::Whitespace, " \t")
 		};
@@ -81,12 +132,14 @@ namespace {
 
 		TestLex(lex, false);
 	}
-
+	/*
 	TEST(Lexer,Whitespace_eat) {
-		auto lex = Lexer("   \r\n");
+		const char* xml = "   \r\n";
+		ChunkedStream s = ChunkedStream(xml, strlen(xml));
+		auto lex = Lexer(s);
 		auto l = lex.tryReadWhitespace();
 
-		ASSERT_EQ(l.token, Token::Whitespace);
+		ASSERT_TRUE(l);
 		ASSERT_TRUE(l.value == "   ");
 
 		lex.eatToken();
@@ -94,23 +147,26 @@ namespace {
 	}
 
 	TEST(Lexer, Whitespace_eat_linebreak) {
-		char* txt = "   \r\n";
-		auto lex = Lexer(txt);
+		char* xml = "   \r\n";
+		ChunkedStream s = ChunkedStream(xml, strlen(xml));
+		auto lex = Lexer(s);
 		lex.registerLinebreaks = false;
 		auto l = lex.tryReadWhitespace();
 
-		ASSERT_EQ(l.token, Token::Whitespace);
-		ASSERT_EQ(l.value, txt);
+		ASSERT_TRUE(l);
+		ASSERT_EQ(0, lex.inputStream->begin().value, xml);
 
 		lex.eatToken();
 		ASSERT_TRUE(lex.Done()); // make sure it is really eaten
 	}
-
+	*/
 	TEST(Lexer, Whitespace_eat_fail) {
-		auto lex = Lexer("A");
+		char* xml = "A";
+		ChunkedStream s = ChunkedStream(xml, strlen(xml));
+		auto lex = Lexer(s);
 		auto l = lex.tryReadWhitespace();
 
-		ASSERT_EQ(l.token, Token::Unknown);
+		ASSERT_FALSE(l);
 	}
 
 	TEST(Lexer, Linebreak) {
@@ -150,7 +206,7 @@ namespace {
 	}
 
 	TEST(Lexer, ProcessingInstructionEnd) {
-		auto lex = std::vector{
+		auto lex = std::vector<Lexeme>{
 			CLexeme(Token::ProcessingInstructionStart, "<?") ,
 			CLexeme(Token::ProcessingInstructionEnd, "?>")
 		};
@@ -167,7 +223,7 @@ namespace {
 	}
 
 	TEST(Lexer, TagStart_Name) {
-		auto lex = std::vector{
+		auto lex = std::vector<Lexeme>{
 			CLexeme(Token::TagStart, "<") ,
 			CLexeme(Token::Name, "TEXT")
 		};
@@ -285,46 +341,61 @@ TestLex(lex);
 	// inTag
 
 	TEST(Lexer, InTag_AfterTagStart) {
-		auto lex = Lexer("<");
-		lex.get();
+		ChunkedStream s("<");
+		auto lex = Lexer(s);
+		lex.peekToken();
+		lex.eatToken();
 
 		ASSERT_TRUE(lex.inTag());
 	}
 
 	TEST(Lexer, InTag_AfterATTR) {
-		auto lex = Lexer("<!ATTR");
-		lex.get();
+		ChunkedStream s("<!ATTR");
+		auto lex = Lexer(s);
+		lex.peekToken();
+		lex.eatToken();
 
 		ASSERT_TRUE(lex.inTag());
 	}
 
 	TEST(Lexer, InTag_AfterPI) {
-		auto lex = Lexer("<?");
-		lex.get();
+		ChunkedStream s("<?");
+		auto lex = Lexer(s);
+		lex.peekToken();
+		lex.eatToken();
 
 		ASSERT_TRUE(lex.inTag());
 	}
 
 	TEST(Lexer, InTag_AfterTagCloseStart) {
-		auto lex = Lexer("</ATTR");
-		lex.get();
+		ChunkedStream s("</ATTR");
+		auto lex = Lexer(s);
+		lex.peekToken();
+		lex.eatToken();
 
 		ASSERT_TRUE(lex.inTag());
 	}
 
 	TEST(Lexer, InTag_false_AfterTagEnd) {
-		auto lex = Lexer("<>");
-		lex.get();
-		lex.get();
+		ChunkedStream s("<>");
+		auto lex = Lexer(s);
+		lex.peekToken();
+		lex.eatToken();
+		lex.peekToken();
+		lex.eatToken();
 
 		ASSERT_FALSE(lex.inTag());
 	}
 
 	TEST(Lexer, InTag_false_AfterSelfClosingTagEnd) {
-		auto lex = Lexer("<ATTR/>");
-		lex.get();
-		lex.get();
-		lex.get();
+		ChunkedStream s("<ATTR/>");
+		auto lex = Lexer(s);
+		lex.peekToken();
+		lex.eatToken();
+		lex.peekToken();
+		lex.eatToken();
+		lex.peekToken();
+		lex.eatToken();
 
 		ASSERT_FALSE(lex.inTag());
 	}
@@ -333,34 +404,38 @@ TestLex(lex);
 
 	TEST(Lexer, readUntil) {
 		const char* txt = "abcd";
-		auto lex = Lexer(txt);
+		ChunkedStream s(txt);
+		auto lex = Lexer(s);
 
 		auto l = lex.readUntil("d", true);
-		ASSERT_TRUE(l == Token::Unknown);
-		ASSERT_TRUE(l == txt);
+		ASSERT_TRUE(l);
+		ASSERT_EQ(tokenText(lex), txt);
 	}
 
 	TEST(Lexer, readUntilExcludeEnd) {
 		const char* txt = "abcd";
-		auto lex = Lexer(txt);
+		ChunkedStream s(txt);
+		auto lex = Lexer(s);
 
 		auto l = lex.readUntil("d", false);
-		ASSERT_TRUE(l == Token::Unknown);
-		ASSERT_TRUE(l == "abc");
+		ASSERT_TRUE(l);
+		ASSERT_EQ(tokenText(lex), "abc");
 	}
 
 	TEST(Lexer, readUntil_EndOfFile) {
 		const char* txt = "<ATTR/>";
-		auto lex = Lexer(txt);
+		ChunkedStream s(txt);
+		auto lex = Lexer(s);
 
 		auto l = lex.readUntil("g", true);
-		ASSERT_TRUE(l == Token::Unknown);
-		ASSERT_TRUE(l == txt);
+		ASSERT_FALSE(l);
+		ASSERT_EQ(tokenText(lex), txt);
 	}
 
 	TEST(Lexer, readChar) {
 		const char* txt = "<ATTR/>";
-		auto lex = Lexer(txt);
+		ChunkedStream s(txt);
+		auto lex = Lexer(s);
 
 		auto c = lex.readChar();
 		ASSERT_EQ(c, '<');
@@ -371,7 +446,8 @@ TestLex(lex);
 
 	TEST(Lexer, peekChar) {
 		const char* txt = "<ATTR/>";
-		auto lex = Lexer(txt);
+		ChunkedStream s(txt);
+		auto lex = Lexer(s);
 
 		auto c = lex.peekChar();
 		ASSERT_EQ(c, '<');
@@ -392,5 +468,84 @@ TestLex(lex);
 		};
 
 		TestLex(lex);
+	}
+
+	TEST(Lexer, tryReadName_none) {
+		const char* txt = " name";
+		ChunkedStream s(txt);
+		auto lex = Lexer(s);
+
+		ASSERT_FALSE(lex.tryReadName());
+	}
+
+	TEST(Lexer, tryReadName_1char) {
+		const char* txt = "w ";
+		ChunkedStream s(txt);
+		auto lex = Lexer(s);
+
+		ASSERT_TRUE(lex.tryReadName());
+		std::string name;
+		lex.readTokenData(name);
+		ASSERT_EQ(name, "w");
+	}
+
+	TEST(Lexer, tryReadName_2char) {
+		const char* txt = "w5>";
+		ChunkedStream s(txt);
+		auto lex = Lexer(s);
+
+		ASSERT_TRUE(lex.tryReadName());
+		std::string name;
+		lex.readTokenData(name);
+		ASSERT_EQ(name, "w5");
+	}
+
+	TEST(Lexer, tryReadName_invalidstartchar) {
+		const char* txt = "5x";
+		ChunkedStream s(txt);
+		auto lex = Lexer(s);
+
+		ASSERT_FALSE(lex.tryReadName());
+	}
+
+	TEST(Lexer, tryReadNmtoken_none) {
+		const char* txt = " name";
+		ChunkedStream s(txt);
+		auto lex = Lexer(s);
+
+		ASSERT_FALSE(lex.tryReadNmtoken());
+	}
+
+	TEST(Lexer, tryReadNmtoken_1char) {
+		const char* txt = "w ";
+		ChunkedStream s(txt);
+		auto lex = Lexer(s);
+
+		ASSERT_TRUE(lex.tryReadNmtoken());
+		std::string name;
+		lex.readTokenData(name);
+		ASSERT_EQ(name, "w");
+	}
+
+	TEST(Lexer, tryReadNmtoken_2char) {
+		const char* txt = "w5>";
+		ChunkedStream s(txt);
+		auto lex = Lexer(s);
+
+		ASSERT_TRUE(lex.tryReadNmtoken());
+		std::string name;
+		lex.readTokenData(name);
+		ASSERT_EQ(name, "w5");
+	}
+
+	TEST(Lexer, tryReadNmtoken_invalidstartchar_name) {
+		const char* txt = "5x";
+		ChunkedStream s(txt);
+		auto lex = Lexer(s);
+
+		ASSERT_TRUE(lex.tryReadNmtoken());
+		std::string name;
+		lex.readTokenData(name);
+		ASSERT_EQ(name, "5x");
 	}
 }

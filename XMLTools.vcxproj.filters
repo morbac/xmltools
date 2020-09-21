@@ -66,9 +66,6 @@
     <ClCompile Include="nppMenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SimpleXmlLexer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ToolsComment.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -94,9 +91,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ToolsXPath.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XmlPrettyPrinter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -178,7 +172,7 @@
     <ClInclude Include="XmlPrettyPrinter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SimpleXmlLexer.h">
+    <ClInclude Include="ScintillaDocStreamer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
