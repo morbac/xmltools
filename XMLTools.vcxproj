@@ -355,6 +355,7 @@
     <ClCompile Include="ToolsXLSTransform.cpp" />
     <ClCompile Include="ToolsXmlValidate.cpp" />
     <ClCompile Include="ToolsXPath.cpp" />
+    <ClCompile Include="XmlParser.cpp" />
     <ClCompile Include="XMLTools.cpp" />
     <ClCompile Include="HowtoUseDlg.cpp" />
     <ClCompile Include="InputDlg.cpp" />
@@ -387,6 +388,7 @@
     <ClInclude Include="ScintillaDoc.h" />
     <ClInclude Include="Sci_Position.h" />
     <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="XmlParser.h" />
     <ClInclude Include="XmlPrettyPrinter.h" />
     <ClInclude Include="XMLTools.h" />
     <ClInclude Include="HowtoUseDlg.h" />

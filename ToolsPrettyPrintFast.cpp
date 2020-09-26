@@ -4,12 +4,23 @@
 #include "PluginInterface.h"
 #include "Report.h"
 #include "nppHelpers.h"
-
+#include "XmlParser.h"
 #include "SimpleXml.h"
 
 using namespace SimpleXml;
 
 void sciDocPrettyPrintXML(ScintillaDoc& doc) {
+    ScintillaDoc::sciWorkText inText = doc.GetWorkText();
+    if (inText.text == NULL)
+        return;
+
+    XmlParser* parser = new XmlParser(inText.text);
+
+    parser->nextToken();
+    dbgln(parser->getTokenName());
+
+    delete parser;
+        return;
     PrettyPrintParms parms;
     parms.eol = doc.EOL();
     parms.tab = doc.Tab();
