@@ -23,6 +23,11 @@ void dbg(const CStringW line, DBG_LEVEL level) {
         debugdlg->Add(line);
 }
 
+void dbgln(const char* line, DBG_LEVEL level) {
+    if (level >= config.dbgLevel)
+        debugdlg->AddLine(line);
+}
+
 void dbgln(const CStringW line, DBG_LEVEL level) {
     if (level >= config.dbgLevel)
         debugdlg->AddLine(line);

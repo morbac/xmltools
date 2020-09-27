@@ -5,6 +5,7 @@
 #include "Report.h"
 #include "nppHelpers.h"
 #include "XmlParser.h"
+#include "XmlFormater.h"
 #include "SimpleXml.h"
 
 using namespace SimpleXml;
@@ -15,12 +16,17 @@ void sciDocPrettyPrintXML(ScintillaDoc& doc) {
         return;
 
     XmlParser* parser = new XmlParser(inText.text);
+    XmlFormater* formater = new XmlFormater(parser);
 
-    parser->nextToken();
-    dbgln(parser->getTokenName());
+    doc.SetWorkText(formater->prettyPrint().c_str());
+
+    formater->destroy();
 
     delete parser;
+    delete formater;
+
         return;
+        /*
     PrettyPrintParms parms;
     parms.eol = doc.EOL();
     parms.tab = doc.Tab();
@@ -53,6 +59,7 @@ void sciDocPrettyPrintXML(ScintillaDoc& doc) {
     const std::string& outText = prettyTextStream->str();
     doc.SetWorkText(outText.c_str());
     doc.SetScrollWidth(80); // 80 is arbitrary
+    */
 }
 
 void sciDocPrettyPrintXMLAttr(ScintillaDoc& doc) {

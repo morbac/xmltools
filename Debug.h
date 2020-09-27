@@ -14,6 +14,7 @@ void createDebugDlg();
 void showDebugDlg();
 void detroyDebugDlg();
 void dbg(const CStringW line, DBG_LEVEL level = DBG_LEVEL::DBG_TRACE);
+void dbgln(const char* line, DBG_LEVEL level = DBG_LEVEL::DBG_TRACE);
 void dbgln(const CStringW line, DBG_LEVEL level = DBG_LEVEL::DBG_TRACE);
 void dbgln(const std::wstring &line, DBG_LEVEL level = DBG_LEVEL::DBG_TRACE);
 void dbgln(const TCHAR *line, DBG_LEVEL level = DBG_LEVEL::DBG_TRACE);
