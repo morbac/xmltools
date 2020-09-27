@@ -117,4 +117,11 @@ public:
     * @return A string representation of current token
     */
     std::string getTokenName();
+
+    /*
+    * Generates a string containing a list of recognized tokens
+    * This method has no other goal that help for debug
+    * @return A string-reprensentation of all data tokens
+    */
+    std::string dumpTokens();
 };

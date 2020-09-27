@@ -74,7 +74,7 @@ XmlToken XmlParser::nextToken() {
 				this->inTag = true;
 				return { XmlTokenType::TagOpening,
 					     startpos,
-				         this->readUntilFirstOf(" >\t\r\n") };
+				         this->readUntilFirstOf(" />\t\r\n") };
 			}
 			break;
 		}
@@ -123,14 +123,16 @@ XmlToken XmlParser::nextToken() {
 			// let's parse attributes
 			if (this->hasAttrName) {
 				this->hasAttrName = false;
+				char valDelimiter = currentchar;
+				this->readChars(1);	// skip actual delimiter
 				return { XmlTokenType::AttrValue,
 						 startpos,
-						 this->readUntilFirstOf("/>") };
+						 this->readUntilFirstOf(&currentchar, true) };
 			} else {
 				this->hasAttrName = true;
 				return { XmlTokenType::AttrName,
 					     startpos,
-					     this->readUntilFirstOf("= \t\r\n") };
+					     this->readUntilFirstOf("= /\t\r\n") };
 			}
 		} else {
 			// parsing text
@@ -230,11 +232,27 @@ std::string XmlParser::getTokenName() {
 		case XmlTokenType::Comment: return "COMMENT";
 		case XmlTokenType::CDATA: return "CDATA";
 		case XmlTokenType::LineBreak: return "CR";
-		case XmlTokenType::CharEQ: return "=";
+		case XmlTokenType::CharEQ: return "EQ";
 		case XmlTokenType::EndOfFile: return "EOF";
 		case XmlTokenType::Unknown: return "UNKNOWN";
 		case XmlTokenType::None: return "NONE";
 		default: return "UNDEFINED";
 	}
 	return "UNEXPECTED";
+}
+
+std::string XmlParser::dumpTokens() {
+	this->reset();
+
+	XmlToken token;
+	std::stringstream out;
+
+	while ((token = this->parseNext()).type != XmlTokenType::EndOfFile) {
+		std::string tmp = this->getTokenName();
+
+		out.write("/", 1);
+		out.write(tmp.c_str(), tmp.length());
+	}
+
+	return out.str().erase(0,1);
 }

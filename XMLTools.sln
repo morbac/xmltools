@@ -8,6 +8,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleXml", "SimpleXmlLib\S
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleXmlTests", "SimpleXmlLib\SimpleXmlTests\SimpleXmlTests.vcxproj", "{CF38951D-84F3-4283-9690-D6E931BE7D83}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLToolsTests", "XMLToolsTests\XMLToolsTests.vcxproj", "{D0B86693-D92E-4D72-AB4E-67951EFB720C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC} = {3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -40,6 +45,14 @@ Global
 		{CF38951D-84F3-4283-9690-D6E931BE7D83}.Release|Win32.Build.0 = Release|Win32
 		{CF38951D-84F3-4283-9690-D6E931BE7D83}.Release|x64.ActiveCfg = Release|x64
 		{CF38951D-84F3-4283-9690-D6E931BE7D83}.Release|x64.Build.0 = Release|x64
+		{D0B86693-D92E-4D72-AB4E-67951EFB720C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D0B86693-D92E-4D72-AB4E-67951EFB720C}.Debug|Win32.Build.0 = Debug|Win32
+		{D0B86693-D92E-4D72-AB4E-67951EFB720C}.Debug|x64.ActiveCfg = Debug|x64
+		{D0B86693-D92E-4D72-AB4E-67951EFB720C}.Debug|x64.Build.0 = Debug|x64
+		{D0B86693-D92E-4D72-AB4E-67951EFB720C}.Release|Win32.ActiveCfg = Release|Win32
+		{D0B86693-D92E-4D72-AB4E-67951EFB720C}.Release|Win32.Build.0 = Release|Win32
+		{D0B86693-D92E-4D72-AB4E-67951EFB720C}.Release|x64.ActiveCfg = Release|x64
+		{D0B86693-D92E-4D72-AB4E-67951EFB720C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

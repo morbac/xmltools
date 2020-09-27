@@ -15,15 +15,9 @@ void sciDocPrettyPrintXML(ScintillaDoc& doc) {
     if (inText.text == NULL)
         return;
 
-    XmlParser* parser = new XmlParser(inText.text);
-    XmlFormater* formater = new XmlFormater(parser);
+    XmlFormater formater(inText.text);
+    doc.SetWorkText(formater.prettyPrint().c_str());
 
-    doc.SetWorkText(formater->prettyPrint().c_str());
-
-    formater->destroy();
-
-    delete parser;
-    delete formater;
 
         return;
         /*

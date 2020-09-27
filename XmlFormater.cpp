@@ -1,7 +1,7 @@
 #include "XmlFormater.h"
 
-XmlFormater::XmlFormater(XmlParser* parser) {
-	this->parser = parser;
+XmlFormater::XmlFormater(char* data) {
+	this->parser = new XmlParser(data);
 
 	this->reset();
 }
@@ -19,8 +19,8 @@ void XmlFormater::reset() {
 	this->out.clear();
 }
 
-void XmlFormater::destroy() {
-	this->parser = NULL;
+XmlFormater::~XmlFormater() {
+	delete this->parser;
 }
 
 std::string XmlFormater::prettyPrint() {

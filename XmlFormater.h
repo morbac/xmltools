@@ -25,11 +25,14 @@ class XmlFormater {
 public:
 	/*
 	* Constructor
-	* @param parser A reference to a parser object
+	* @param data The source data
 	*/
-	XmlFormater(XmlParser* parser);
+	XmlFormater(char* data);
 
-	void destroy();
+	/*
+	/ Destructor
+	*/
+	~XmlFormater();
 
 	void reset();
 
