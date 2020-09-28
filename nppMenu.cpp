@@ -100,6 +100,7 @@ void insertXMLCloseTag();
 void insertAutoXMLType();
 void togglePreventXXE();
 void toggleAllowHuge();
+void nppPrettyPrintXmlSlow();
 void nppPrettyPrintXmlFast();
 void nppPrettyPrintXmlAttrFast();
 void nppPrettyPrintXmlIndentOnlyFast();
@@ -193,7 +194,8 @@ void initMenu() {
 
     addMenuSeparator();
 
-    addMenuItem(L"Pretty print", nppPrettyPrintXmlFast, false, createShortcut('B'));
+    addMenuItem(L"Pretty print slow", nppPrettyPrintXmlSlow, false, createShortcut('B'));
+    addMenuItem(L"Pretty print", nppPrettyPrintXmlFast, false);
     addMenuItem(L"Pretty print (indent attributes)", nppPrettyPrintXmlAttrFast, false, createShortcut('A'));
     addMenuItem(L"Pretty print - indent only", nppPrettyPrintXmlIndentOnlyFast);
     addMenuItem(L"Linearize", nppLinearizeXmlFast, false, createShortcut('L'));

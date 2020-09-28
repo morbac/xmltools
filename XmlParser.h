@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sstream>
+#include <queue>
 
 enum class XmlTokenType {
     TagOpening,        // <nx:sample
@@ -16,12 +17,10 @@ enum class XmlTokenType {
     Comment,
     CDATA,
     LineBreak,
-
-    CharEQ,
+    Equal,
 
     EndOfFile,
-    Unknown,
-    None
+    Undefined
 };
 
 #define WHITESPACE_CHARS " \t"
@@ -29,9 +28,9 @@ enum class XmlTokenType {
 #define DELIMITER_CHARS " \t\r\n=\"'<>"
 
 struct XmlToken {
-    XmlTokenType type;
-    const char* chars;
-    size_t size;
+    XmlTokenType type;      // the token type
+    const char* chars;      // a pointer to token chars
+    size_t size;            // the token chars length
 };
 
 class XmlParser {
@@ -40,13 +39,13 @@ class XmlParser {
     size_t srcLength;       // the original source text length
 
     // variying elements
-    size_t curpos;          // the current position of the parser
+    size_t currpos;         // the current position of the parser
     bool inTag;             // indicates we are inside an opening tag
     bool hasAttrName;       // indicates that we got en attribute name
 
-    XmlToken token;
+    XmlToken currtoken;     // the current parsed token
 
-    XmlToken nextToken();
+    XmlToken fetchToken();
 
 public:
     /*

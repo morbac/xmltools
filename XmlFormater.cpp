@@ -1,24 +1,20 @@
 #include "XmlFormater.h"
 
-XmlFormater::XmlFormater(const char* data, size_t length) {
+XmlFormater::XmlFormater(const char* data, size_t length, PrettyPrintParamsType params) {
 	this->parser = new XmlParser(data, length);
 
+	this->prettyPrintParams = params;
 	this->reset();
 }
 
 void XmlFormater::reset() {
-	this->prettyPrintParams.indentChars = "  ";
-	this->prettyPrintParams.eolChars = "\r\n";
-	this->prettyPrintParams.maxIndentLevel = 255;
-	this->prettyPrintParams.allowWhitespaceTrim = false;
-	this->prettyPrintParams.autoCloseTags = true;
-
 	this->indentLevel = 0;
 	this->out.clear();
 }
 
 XmlFormater::~XmlFormater() {
-	this->out.clear();
+	this->reset();
+
 	if (this->parser != NULL) {
 		delete this->parser;
 	}
@@ -28,26 +24,26 @@ std::stringstream* XmlFormater::prettyPrint() {
 	this->reset();
 	this->parser->reset();
 
-	XmlToken token = { XmlTokenType::None }, prevtoken = { XmlTokenType::None };
+	XmlToken token = { XmlTokenType::Undefined };
+	XmlToken prevtoken = token;
 
 	while ((token = this->parser->parseNext()).type != XmlTokenType::EndOfFile) {
-		/*
-		std::string tmp = this->parser->getTokenName();
-		this->out.write(tmp.c_str(), tmp.length());
-		*/
-
 		switch (token.type) {
 			case XmlTokenType::TagOpening: {	// <ns:sample
-				this->writeEOL();
-				this->writeIndentation();
+				if (prevtoken.type != XmlTokenType::Text) {
+					this->writeEOL();
+					this->writeIndentation();
+				}
 
 				this->out.write(token.chars, token.size);
 				break;
 			}
 			case XmlTokenType::TagClosing: {	// </ns:sample
 				this->updateIndentLevel(-1);
-				this->writeEOL();
-				this->writeIndentation();
+				if (prevtoken.type != XmlTokenType::Text) {
+					this->writeEOL();
+					this->writeIndentation();
+				}
 				this->out.write(token.chars, token.size);
 				break;
 			}
@@ -69,28 +65,18 @@ std::stringstream* XmlFormater::prettyPrint() {
 				this->out.write(token.chars, token.size);
 				break;
 			}
-			case XmlTokenType::AttrValue: {
-				this->out.write(token.chars, token.size);
-				break;
-			}
 			case XmlTokenType::Text: {
-				if (prevtoken.type == XmlTokenType::TagOpeningEnd) {
-					this->writeEOL();
-					this->writeIndentation();
+				this->out.write(token.chars, token.size);
+				break;
+			}
+			case XmlTokenType::LineBreak: {
+				if (this->prettyPrintParams.indentOnly) {
+					this->out.write(token.chars, token.size);
 				}
-				this->out.write(token.chars, token.size);
-				break;
-			}
-			case XmlTokenType::Whitespace: {
-				//this->out.write(" ", 1);
-				break;
-			}
-			case XmlTokenType::Instruction: {
-				this->out.write(token.chars, token.size);
 				break;
 			}
 			case XmlTokenType::Comment: {
-				if (prevtoken.type == XmlTokenType::TagOpeningEnd) {
+				if (prevtoken.type != XmlTokenType::Text) {
 					this->writeEOL();
 					this->writeIndentation();
 				}
@@ -98,44 +84,34 @@ std::stringstream* XmlFormater::prettyPrint() {
 				break;
 			}
 			case XmlTokenType::CDATA: {
-				if (prevtoken.type == XmlTokenType::TagOpeningEnd) {
+				if (prevtoken.type != XmlTokenType::Text) {
 					this->writeEOL();
 					this->writeIndentation();
 				}
 				this->out.write(token.chars, token.size);
 				break;
 			}
-			case XmlTokenType::LineBreak: {
-				this->writeEOL();
+			case XmlTokenType::Whitespace: {
+				// ignore all whitespace
 				break;
 			}
-			case XmlTokenType::CharEQ: {
-				this->out.write("=", 1);
-				break;
-			}
-			case XmlTokenType::EndOfFile: {
-				this->out.write(token.chars, token.size);
-				break;
-			}
-			case XmlTokenType::Unknown: {
-				this->out.write(token.chars, token.size);
-				break;
-			}
-			case XmlTokenType::None: {
-				this->out.write(token.chars, token.size);
-				break;
-			}
+			case XmlTokenType::AttrValue:
+			case XmlTokenType::Instruction:
+			case XmlTokenType::Equal: 
+			case XmlTokenType::EndOfFile:
+			case XmlTokenType::Undefined:
 			default: {
 				this->out.write(token.chars, token.size);
 				break;
 			}
 		}
-	
+		
 		prevtoken = token;
 	}
 
 	return &(this->out);
 }
+
 
 void XmlFormater::writeEOL() {
 	this->out.write(this->prettyPrintParams.eolChars.c_str(),

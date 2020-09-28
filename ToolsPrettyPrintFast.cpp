@@ -10,19 +10,49 @@
 
 using namespace SimpleXml;
 
+void sciDocPrettyPrint(ScintillaDoc& doc) {
+    ScintillaDoc::sciWorkText inText = doc.GetWorkText();
+    if (inText.text == NULL) {
+        return;
+    }
+
+    PrettyPrintParamsType params = {
+        doc.Tab(),                          // indentation
+        doc.EOL(),                          // end of line
+        255,                                // max indentation level
+        xmltoolsoptions.trimTextWhitespace, // trim whitespace
+        xmltoolsoptions.ppAutoclose,        // auto-close tags
+        false,                              // indent attributes
+        false                               // indent only
+    };
+    if (xmltoolsoptions.maxElementDepth > 0) {
+        params.maxIndentLevel = xmltoolsoptions.maxElementDepth;
+    }
+
+    auto docclock_start = clock();
+
+    XmlFormater formater(inText.text, inText.length, params);
+    std::string& outText = formater.prettyPrint()->str();
+
+    auto docclock_end = clock();
+
+    {
+        std::string txt;
+        txt += "crunching => time taken: " + std::to_string(docclock_end - docclock_start) + " ms";
+        dbgln(txt.c_str());
+    }
+
+    inText.FreeMemory();
+    doc.SetWorkText(outText.c_str());
+    doc.SetScrollWidth(80);
+}
+
 void sciDocPrettyPrintXML(ScintillaDoc& doc) {
     ScintillaDoc::sciWorkText inText = doc.GetWorkText();
     if (inText.text == NULL) {
         return;
     }
 
-    XmlFormater formater(inText.text, inText.length);
-    std::string& outText = formater.prettyPrint()->str();
-    inText.FreeMemory();
-    doc.SetWorkText(outText.c_str());
-    doc.SetScrollWidth(80);
-
-    /*
     PrettyPrintParms parms;
     parms.eol = doc.EOL();
     parms.tab = doc.Tab();
@@ -55,7 +85,6 @@ void sciDocPrettyPrintXML(ScintillaDoc& doc) {
     const std::string& outText = prettyTextStream->str();
     doc.SetWorkText(outText.c_str());
     doc.SetScrollWidth(80); // 80 is arbitrary
-    */
 }
 
 void sciDocPrettyPrintXMLAttr(ScintillaDoc& doc) {
@@ -160,6 +189,10 @@ void sciDocLinearizeXML(ScintillaDoc& doc) {
     // Send formatted string to scintilla
     const std::string& outText = prettyTextStream->str();
     doc.SetWorkText(outText.c_str());
+}
+
+void nppPrettyPrintXmlSlow() {
+    nppMultiDocumentCommand(L"PrettyPrintSlow", sciDocPrettyPrint);
 }
 
 void nppPrettyPrintXmlFast() {
