@@ -12,7 +12,7 @@ struct prettyPrintParamsType {
 };
 
 class XmlFormater {
-	XmlParser* parser;
+	XmlParser* parser = NULL;
 
 	prettyPrintParamsType prettyPrintParams;
 
@@ -27,7 +27,7 @@ public:
 	* Constructor
 	* @param data The source data
 	*/
-	XmlFormater(char* data);
+	XmlFormater(const char* data, size_t length);
 
 	/*
 	/ Destructor
@@ -36,6 +36,6 @@ public:
 
 	void reset();
 
-	std::string prettyPrint();
+	std::stringstream* prettyPrint();
 };
 

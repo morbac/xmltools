@@ -12,15 +12,17 @@ using namespace SimpleXml;
 
 void sciDocPrettyPrintXML(ScintillaDoc& doc) {
     ScintillaDoc::sciWorkText inText = doc.GetWorkText();
-    if (inText.text == NULL)
+    if (inText.text == NULL) {
         return;
+    }
 
-    XmlFormater formater(inText.text);
-    doc.SetWorkText(formater.prettyPrint().c_str());
+    XmlFormater formater(inText.text, inText.length);
+    std::string& outText = formater.prettyPrint()->str();
+    inText.FreeMemory();
+    doc.SetWorkText(outText.c_str());
+    doc.SetScrollWidth(80);
 
-
-        return;
-        /*
+    /*
     PrettyPrintParms parms;
     parms.eol = doc.EOL();
     parms.tab = doc.Tab();

@@ -1,33 +1,34 @@
 #include "XmlFormater.h"
 
-XmlFormater::XmlFormater(char* data) {
-	this->parser = new XmlParser(data);
+XmlFormater::XmlFormater(const char* data, size_t length) {
+	this->parser = new XmlParser(data, length);
 
 	this->reset();
 }
 
 void XmlFormater::reset() {
-	prettyPrintParams = {
-		"  ",	// indentation chars
-		"\r\n",	// end-of-line
-		255,	// max indentation level
-		false,  // allow whitespace trim
-		true    // allow-close tags
-	};
+	this->prettyPrintParams.indentChars = "  ";
+	this->prettyPrintParams.eolChars = "\r\n";
+	this->prettyPrintParams.maxIndentLevel = 255;
+	this->prettyPrintParams.allowWhitespaceTrim = false;
+	this->prettyPrintParams.autoCloseTags = true;
 
 	this->indentLevel = 0;
 	this->out.clear();
 }
 
 XmlFormater::~XmlFormater() {
-	delete this->parser;
+	this->out.clear();
+	if (this->parser != NULL) {
+		delete this->parser;
+	}
 }
 
-std::string XmlFormater::prettyPrint() {
+std::stringstream* XmlFormater::prettyPrint() {
 	this->reset();
 	this->parser->reset();
 
-	XmlToken token;
+	XmlToken token = { XmlTokenType::None }, prevtoken = { XmlTokenType::None };
 
 	while ((token = this->parser->parseNext()).type != XmlTokenType::EndOfFile) {
 		/*
@@ -73,6 +74,10 @@ std::string XmlFormater::prettyPrint() {
 				break;
 			}
 			case XmlTokenType::Text: {
+				if (prevtoken.type == XmlTokenType::TagOpeningEnd) {
+					this->writeEOL();
+					this->writeIndentation();
+				}
 				this->out.write(token.chars, token.size);
 				break;
 			}
@@ -85,10 +90,18 @@ std::string XmlFormater::prettyPrint() {
 				break;
 			}
 			case XmlTokenType::Comment: {
+				if (prevtoken.type == XmlTokenType::TagOpeningEnd) {
+					this->writeEOL();
+					this->writeIndentation();
+				}
 				this->out.write(token.chars, token.size);
 				break;
 			}
 			case XmlTokenType::CDATA: {
+				if (prevtoken.type == XmlTokenType::TagOpeningEnd) {
+					this->writeEOL();
+					this->writeIndentation();
+				}
 				this->out.write(token.chars, token.size);
 				break;
 			}
@@ -117,9 +130,11 @@ std::string XmlFormater::prettyPrint() {
 				break;
 			}
 		}
+	
+		prevtoken = token;
 	}
 
-	return this->out.str();
+	return &(this->out);
 }
 
 void XmlFormater::writeEOL() {

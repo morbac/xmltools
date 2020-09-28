@@ -30,13 +30,13 @@ enum class XmlTokenType {
 
 struct XmlToken {
     XmlTokenType type;
-    char* chars;
+    const char* chars;
     size_t size;
 };
 
 class XmlParser {
     // constant elements (they no vary after having been set)
-    char* srcText;          // pointer to original source text
+    const char* srcText;    // pointer to original source text
     size_t srcLength;       // the original source text length
 
     // variying elements
@@ -52,8 +52,14 @@ public:
     /*
     * Constructor
     * @param data The data to parse
+    * @param length The data length
     */
-    XmlParser(char* data);
+    XmlParser(const char* data, size_t length);
+
+    /*
+    * Destructor
+    */
+    ~XmlParser();
 
     /*
     * Reset the parser settings
@@ -92,25 +98,28 @@ public:
     /* 
     * Reads stream (and update cursor position) until given delimiter
     * @param delimiter The string to search
+    * @param offset The number of chars to skip before checking delimiter
     * @param goAfter Indicates to place cursor after the delimiter
     * @return Number of readen chars
     */
-    size_t readUntil(const char* delimiter, bool goAfter = false);
+    size_t readUntil(const char* delimiter, size_t offset = 0, bool goAfter = false);
 
     /*
     * Reads stream (and update cursor position) until it finds one of given characters
     * @param characters Set of characters to find
+    * @param offset The number of chars to skip before checking characters
     * @param goAfter Indicates to place cursor after the delimiter
     * @return Number of readen chars
     */
-    size_t readUntilFirstOf(const char* characters, bool goAfter = false);
+    size_t readUntilFirstOf(const char* characters, size_t offset = 0, bool goAfter = false);
 
     /*
     * Reads stream (and update cursor position) until it finds any characters which differs from given characters
     * @param characters Set of characters to skip
+    * @param offset The number of chars to skip before checking characters
     * @return Number of readen chars
     */
-    size_t readUntilFirstNotOf(const char* characters);
+    size_t readUntilFirstNotOf(const char* characters, size_t offset = 0);
 
     /*
     * Gets the current token name (for debug)
