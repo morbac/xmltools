@@ -2,6 +2,7 @@
 <foo a="123">
   <!-- comment -->
   <bar>hello world !</bar>
+  <empty></empty>
   <p>this is<b>bold and<i>italic</i>
     </b>text</p>
   <p>

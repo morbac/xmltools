@@ -247,7 +247,6 @@ size_t XmlParser::readUntilFirstNotOf(const char* characters, size_t offset) {
 	// @todo optimize this
 	size_t res = 0;
 	char cursor;
-	size_t i;
 	if (offset > 0) offset = this->readChars(offset);
 	size_t len = strlen(characters);
 	while (this->currpos < this->srcLength) {

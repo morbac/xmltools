@@ -1,5 +1,23 @@
 #include "XmlFormater.h"
 
+static inline void ltrim(std::string& s) {
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+		return (ch != ' ' && ch != '\t' && ch != '\r' && ch != '\n');
+	}));
+}
+
+// trim from end (in place)
+static inline void rtrim(std::string& s) {
+	s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+		return (ch != ' ' && ch != '\t' && ch != '\r' && ch != '\n');
+	}).base(), s.end());
+}
+
+static inline void trim(std::string& s) {
+	ltrim(s);
+	rtrim(s);
+}
+
 XmlFormater::XmlFormater(const char* data, size_t length) {
 	this->parser = new XmlParser(data, length);
 
@@ -57,6 +75,7 @@ std::stringstream* XmlFormater::prettyPrint() {
 	this->parser->reset();
 
 	XmlToken token = { XmlTokenType::Undefined }, prevtoken, nexttoken;
+	XmlTokenType lastAppliedTokenType = XmlTokenType::Undefined;
 	bool applyAutoclose = false;
 
 	while ((token = this->parser->parseNext()).type != XmlTokenType::EndOfFile) {
@@ -64,12 +83,13 @@ std::stringstream* XmlFormater::prettyPrint() {
 
 		switch (token.type) {
 			case XmlTokenType::TagOpening: {	// <ns:sample
-				if (prevtoken.type != XmlTokenType::Text &&
-					prevtoken.type != XmlTokenType::Undefined) {
+				if (lastAppliedTokenType != XmlTokenType::Text &&
+					lastAppliedTokenType != XmlTokenType::CDATA &&
+					lastAppliedTokenType != XmlTokenType::Undefined) {
 					this->writeEOL();
 					this->writeIndentation();
 				}
-
+				lastAppliedTokenType = XmlTokenType::TagOpening;
 				this->out.write(token.chars, token.size);
 				break;
 			}
@@ -77,10 +97,12 @@ std::stringstream* XmlFormater::prettyPrint() {
 				nexttoken = this->parser->getNextToken();
 				if (this->prettyPrintParams.autoCloseTags &&
 					nexttoken.type == XmlTokenType::TagClosing) {
+					lastAppliedTokenType = XmlTokenType::TagSelfClosingEnd;
 					this->out.write("/>", 2);
 					applyAutoclose = true;
 				}
 				else {
+					lastAppliedTokenType = XmlTokenType::TagOpeningEnd;
 					this->out.write(">", 1);
 					this->updateIndentLevel(1);
 					applyAutoclose = false;
@@ -89,59 +111,70 @@ std::stringstream* XmlFormater::prettyPrint() {
 			}
 			case XmlTokenType::TagClosing: {	// </ns:sample
 				if (!applyAutoclose) {
-					if (prevtoken.type != XmlTokenType::Text &&
-						prevtoken.type != XmlTokenType::Undefined &&
-						prevtoken.type != XmlTokenType::TagOpeningEnd) {
+					this->updateIndentLevel(-1);
+					if (lastAppliedTokenType != XmlTokenType::Text &&
+						lastAppliedTokenType != XmlTokenType::CDATA && 
+						lastAppliedTokenType != XmlTokenType::TagOpeningEnd &&
+						lastAppliedTokenType != XmlTokenType::Undefined) {
 						this->writeEOL();
 						this->writeIndentation();
 					}
-					this->updateIndentLevel(-1);
+					lastAppliedTokenType = XmlTokenType::TagClosing;
 					this->out.write(token.chars, token.size);
 				}
 				break;
 			}
 			case XmlTokenType::TagClosingEnd: {
 				if (!applyAutoclose) {
+					lastAppliedTokenType = XmlTokenType::TagClosingEnd;
 					this->out.write(">", 1);
 				}
 				applyAutoclose = false;
 				break;
 			}
 			case XmlTokenType::TagSelfClosingEnd: {
+				lastAppliedTokenType = XmlTokenType::TagSelfClosingEnd;
 				this->out.write("/>", 2);
 				applyAutoclose = false;
 				break;
 			}
 			case XmlTokenType::AttrName: {
 				this->out.write(" ", 1);
+				lastAppliedTokenType = XmlTokenType::AttrName;
 				this->out.write(token.chars, token.size);
 				break;
 			}
 			case XmlTokenType::Text: {
-				this->out.write(token.chars, token.size);
+				// check if text could be ignored
+				std::string tmp(token.chars, token.size);
+				trim(tmp);
+				if (tmp.length() > 0 || (lastAppliedTokenType != XmlTokenType::TagClosingEnd &&
+					                     lastAppliedTokenType != XmlTokenType::TagSelfClosingEnd)) {
+					lastAppliedTokenType = XmlTokenType::Text;
+					this->out.write(token.chars, token.size);
+				}
 				break;
 			}
 			case XmlTokenType::LineBreak: {
 				if (this->prettyPrintParams.indentOnly) {
+					lastAppliedTokenType = XmlTokenType::LineBreak;
 					this->out.write(token.chars, token.size);
 				}
 				break;
 			}
 			case XmlTokenType::Comment: {
-				if (prevtoken.type != XmlTokenType::Text &&
-					prevtoken.type != XmlTokenType::Undefined) {
+				if (lastAppliedTokenType != XmlTokenType::Text &&
+					lastAppliedTokenType != XmlTokenType::CDATA &&
+					lastAppliedTokenType != XmlTokenType::Undefined) {
 					this->writeEOL();
 					this->writeIndentation();
 				}
+				lastAppliedTokenType = XmlTokenType::Comment;
 				this->out.write(token.chars, token.size);
 				break;
 			}
 			case XmlTokenType::CDATA: {
-				if (prevtoken.type != XmlTokenType::Text &&
-					prevtoken.type != XmlTokenType::Undefined) {
-					this->writeEOL();
-					this->writeIndentation();
-				}
+				lastAppliedTokenType = XmlTokenType::CDATA;
 				this->out.write(token.chars, token.size);
 				break;
 			}
@@ -157,12 +190,11 @@ std::stringstream* XmlFormater::prettyPrint() {
 			case XmlTokenType::EndOfFile:
 			case XmlTokenType::Undefined:
 			default: {
+				lastAppliedTokenType = token.type;
 				this->out.write(token.chars, token.size);
 				break;
 			}
 		}
-		
-		prevtoken = token;
 	}
 
 	return &(this->out);
