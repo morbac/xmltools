@@ -69,9 +69,16 @@ public:
 	/*
 	* Generates a string containing a list of recognized tokens
 	* This method has no other goal that help for debug
+	* @param separator The tokens names separator (default is '/')
 	* @return A string-reprensentation of all data tokens
 	*/
-	std::string debugTokens();
+	std::string debugTokens(std::string separator = "/");
+
+	/*
+	* Performs linearize formating
+	* @return A reference string stream containing the formated string
+	*/
+	std::stringstream* linearize();
 
 	/*
 	* Performs pretty print formating

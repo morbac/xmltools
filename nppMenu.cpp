@@ -104,6 +104,7 @@ void nppPrettyPrintXmlSlow();
 void nppPrettyPrintXmlFast();
 void nppPrettyPrintXmlAttrFast();
 void nppPrettyPrintXmlIndentOnlyFast();
+void nppLinearizeXmlSlow();
 void nppLinearizeXmlFast();
 //void insertPrettyPrintTag();
 void togglePrettyPrintAllFiles();
@@ -198,7 +199,8 @@ void initMenu() {
     addMenuItem(L"Pretty print", nppPrettyPrintXmlFast, false);
     addMenuItem(L"Pretty print (indent attributes)", nppPrettyPrintXmlAttrFast, false, createShortcut('A'));
     addMenuItem(L"Pretty print - indent only", nppPrettyPrintXmlIndentOnlyFast);
-    addMenuItem(L"Linearize", nppLinearizeXmlFast, false, createShortcut('L'));
+    addMenuItem(L"Linearize", nppLinearizeXmlSlow, false, createShortcut('L'));
+    addMenuItem(L"Linearize", nppLinearizeXmlFast, false);
     menuitemPrettyPrintAllFiles = addMenuItem(L"Apply to all open files", togglePrettyPrintAllFiles, config.doPrettyPrintAllOpenFiles);
 
     addMenuSeparator();

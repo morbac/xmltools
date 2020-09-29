@@ -157,6 +157,43 @@ void sciDocPrettyPrintXML_IndentOnly(ScintillaDoc& doc) {
     doc.SetWorkText(outText.c_str());
 }
 
+void sciDocLinearize(ScintillaDoc& doc) {
+    ScintillaDoc::sciWorkText inText = doc.GetWorkText();
+    if (inText.text == NULL) {
+        return;
+    }
+
+    PrettyPrintParamsType params = {
+        doc.Tab(),                          // indentation
+        doc.EOL(),                          // end of line
+        255,                                // max indentation level
+        xmltoolsoptions.trimTextWhitespace, // trim whitespace
+        xmltoolsoptions.ppAutoclose,        // auto-close tags
+        false,                              // indent attributes
+        false                               // indent only
+    };
+    if (xmltoolsoptions.maxElementDepth > 0) {
+        params.maxIndentLevel = xmltoolsoptions.maxElementDepth;
+    }
+
+    auto docclock_start = clock();
+
+    XmlFormater formater(inText.text, inText.length, params);
+    std::string& outText = formater.linearize()->str();
+
+    auto docclock_end = clock();
+
+    {
+        std::string txt;
+        txt += "crunching => time taken: " + std::to_string(docclock_end - docclock_start) + " ms";
+        dbgln(txt.c_str());
+    }
+
+    inText.FreeMemory();
+    doc.SetWorkText(outText.c_str());
+    doc.SetScrollWidth(80);
+}
+
 void sciDocLinearizeXML(ScintillaDoc& doc) {
     auto inText = doc.GetWorkText();
     if (inText.text == NULL)
@@ -205,6 +242,10 @@ void nppPrettyPrintXmlAttrFast() {
 
 void nppPrettyPrintXmlIndentOnlyFast() {
     nppMultiDocumentCommand(L"PrettyPrintIndentOnlyFast", sciDocPrettyPrintXML_IndentOnly);
+}
+
+void nppLinearizeXmlSlow() {
+    nppMultiDocumentCommand(L"LinearizeFast", sciDocLinearize);
 }
 
 void nppLinearizeXmlFast() {

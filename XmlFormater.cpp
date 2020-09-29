@@ -60,7 +60,7 @@ void XmlFormater::reset() {
 	this->out.str(std::string());	// make the stringstream empty
 }
 
-std::string XmlFormater::debugTokens() {
+std::string XmlFormater::debugTokens(std::string separator) {
 	this->reset();
 	this->parser->reset();
 
@@ -68,13 +68,52 @@ std::string XmlFormater::debugTokens() {
 	std::stringstream out;
 
 	while ((token = this->parser->parseNext()).type != XmlTokenType::EndOfFile) {
-		std::string tmp = this->parser->getTokenName();
-
-		out.write("/", 1);
-		out.write(tmp.c_str(), tmp.length());
+		out << separator << this->parser->getTokenName();
 	}
 
-	return out.str().erase(0, 1);
+	// return result after having removed the firt '/'
+	return out.str().erase(0, separator.length());
+}
+
+std::stringstream* XmlFormater::linearize() {
+	this->reset();
+	this->parser->reset();
+
+	XmlToken token = { XmlTokenType::Undefined };
+
+	while ((token = this->parser->parseNext()).type != XmlTokenType::EndOfFile) {
+		switch (token.type) {
+			case XmlTokenType::LineBreak: {
+				break;
+			}
+			case XmlTokenType::Whitespace: {
+				if (this->parser->getXmlContext().inOpeningTag) {
+					this->out << " ";
+				}
+				break;
+			}
+			case XmlTokenType::TagOpening:
+			case XmlTokenType::TagOpeningEnd:
+			case XmlTokenType::TagClosing:
+			case XmlTokenType::TagClosingEnd:
+			case XmlTokenType::TagSelfClosingEnd:
+			case XmlTokenType::AttrName:
+			case XmlTokenType::Text:
+			case XmlTokenType::Comment:
+			case XmlTokenType::CDATA:
+			case XmlTokenType::AttrValue:
+			case XmlTokenType::Instruction:
+			case XmlTokenType::Equal:
+			case XmlTokenType::EndOfFile:
+			case XmlTokenType::Undefined:
+			default: {
+				this->out.write(token.chars, token.size);
+				break;
+			}
+		}
+	}
+
+	return &(this->out);
 }
 
 std::stringstream* XmlFormater::prettyPrint() {
@@ -105,12 +144,12 @@ std::stringstream* XmlFormater::prettyPrint() {
 				if (this->prettyPrintParams.autoCloseTags &&
 					nexttoken.type == XmlTokenType::TagClosing) {
 					lastAppliedTokenType = XmlTokenType::TagSelfClosingEnd;
-					this->out.write("/>", 2);
+					this->out << "/>";
 					applyAutoclose = true;
 				}
 				else {
 					lastAppliedTokenType = XmlTokenType::TagOpeningEnd;
-					this->out.write(">", 1);
+					this->out << ">";
 					this->updateIndentLevel(1);
 					applyAutoclose = false;
 				}
@@ -134,19 +173,19 @@ std::stringstream* XmlFormater::prettyPrint() {
 			case XmlTokenType::TagClosingEnd: {
 				if (!applyAutoclose) {
 					lastAppliedTokenType = XmlTokenType::TagClosingEnd;
-					this->out.write(">", 1);
+					this->out << ">";
 				}
 				applyAutoclose = false;
 				break;
 			}
 			case XmlTokenType::TagSelfClosingEnd: {
 				lastAppliedTokenType = XmlTokenType::TagSelfClosingEnd;
-				this->out.write("/>", 2);
+				this->out << "/>";
 				applyAutoclose = false;
 				break;
 			}
 			case XmlTokenType::AttrName: {
-				this->out.write(" ", 1);
+				this->out << " ";
 				lastAppliedTokenType = XmlTokenType::AttrName;
 				this->out.write(token.chars, token.size);
 				break;
