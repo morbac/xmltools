@@ -36,6 +36,15 @@ public:
 	/*
 	* Constructor
 	* @param data The source data
+	* @param length The source data length
+	*/
+	XmlFormater(const char* data, size_t length);
+
+	/*
+	* Constructor
+	* @param data The source data
+	* @param length The source data length
+	* @param params The formater params
 	*/
 	XmlFormater(const char* data, size_t length, PrettyPrintParamsType params);
 
@@ -45,6 +54,13 @@ public:
 	~XmlFormater();
 
 	void reset();
+
+	/*
+	* Generates a string containing a list of recognized tokens
+	* This method has no other goal that help for debug
+	* @return A string-reprensentation of all data tokens
+	*/
+	std::string debugTokens();
 
 	/*
 	* Performs pretty print formating

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <sstream>
-#include <queue>
 
 enum class XmlTokenType {
     TagOpening,        // <nx:sample
@@ -23,27 +22,30 @@ enum class XmlTokenType {
     Undefined
 };
 
-#define WHITESPACE_CHARS " \t"
-#define LINEBREAK_CHARS "\r\n"
-#define DELIMITER_CHARS " \t\r\n=\"'<>"
-
 struct XmlToken {
     XmlTokenType type;      // the token type
     const char* chars;      // a pointer to token chars
     size_t size;            // the token chars length
 };
 
+struct XmlContext {
+    bool inOpeningTag;
+    bool inClosingTag;
+};
+
 class XmlParser {
     // constant elements (they no vary after having been set)
-    const char* srcText;    // pointer to original source text
-    size_t srcLength;       // the original source text length
+    const char* srcText;        // pointer to original source text
+    size_t srcLength;           // the original source text length
 
     // variying elements
-    size_t currpos;         // the current position of the parser
-    bool inTag;             // indicates we are inside an opening tag
-    bool hasAttrName;       // indicates that we got en attribute name
+    size_t currpos;             // the current position of the parser
+    XmlContext currcontext;     // the actual parsing context
+    bool hasAttrName;           // indicates that we got en attribute name
 
-    XmlToken currtoken;     // the current parsed token
+    XmlToken prevtoken;         // the previous token
+    XmlToken currtoken;         // the current parsed token
+    XmlToken nexttoken;         // the following token
 
     XmlToken fetchToken();
 
@@ -65,7 +67,13 @@ public:
     */
     void reset();
 
-    bool isInTag() { return this->inTag; }
+    /*
+    * Getters
+    */
+    XmlContext getXmlContext() { return this->currcontext; }
+    XmlToken getPrevToken()    { return this->prevtoken; }
+    XmlToken getCurrToken()    { return this->currtoken; }
+    XmlToken getNextToken()    { return this->nexttoken; }
 
     /*
     * Fetch next token
@@ -125,11 +133,4 @@ public:
     * @return A string representation of current token
     */
     std::string getTokenName();
-
-    /*
-    * Generates a string containing a list of recognized tokens
-    * This method has no other goal that help for debug
-    * @return A string-reprensentation of all data tokens
-    */
-    std::string dumpTokens();
 };

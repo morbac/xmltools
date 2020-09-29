@@ -1,9 +1,24 @@
 #include "XmlFormater.h"
 
+XmlFormater::XmlFormater(const char* data, size_t length) {
+	this->parser = new XmlParser(data, length);
+
+	this->prettyPrintParams.indentChars = "  ";
+	this->prettyPrintParams.eolChars = "\r\n";
+	this->prettyPrintParams.maxIndentLevel = 255;
+	this->prettyPrintParams.trimWhitespaceAroundText = false;
+	this->prettyPrintParams.autoCloseTags = false;
+	this->prettyPrintParams.indentAttributes = false;
+	this->prettyPrintParams.indentOnly = false;
+
+	this->reset();
+}
+
 XmlFormater::XmlFormater(const char* data, size_t length, PrettyPrintParamsType params) {
 	this->parser = new XmlParser(data, length);
 
 	this->prettyPrintParams = params;
+
 	this->reset();
 }
 
@@ -20,44 +35,81 @@ XmlFormater::~XmlFormater() {
 	}
 }
 
+std::string XmlFormater::debugTokens() {
+	this->reset();
+	this->parser->reset();
+
+	XmlToken token;
+	std::stringstream out;
+
+	while ((token = this->parser->parseNext()).type != XmlTokenType::EndOfFile) {
+		std::string tmp = this->parser->getTokenName();
+
+		out.write("/", 1);
+		out.write(tmp.c_str(), tmp.length());
+	}
+
+	return out.str().erase(0, 1);
+}
+
 std::stringstream* XmlFormater::prettyPrint() {
 	this->reset();
 	this->parser->reset();
 
-	XmlToken token = { XmlTokenType::Undefined };
-	XmlToken prevtoken = token;
+	XmlToken token = { XmlTokenType::Undefined }, prevtoken, nexttoken;
+	bool applyAutoclose = false;
 
 	while ((token = this->parser->parseNext()).type != XmlTokenType::EndOfFile) {
+		prevtoken = this->parser->getPrevToken();
+
 		switch (token.type) {
 			case XmlTokenType::TagOpening: {	// <ns:sample
-				if (prevtoken.type != XmlTokenType::Text) {
+				if (prevtoken.type != XmlTokenType::Text &&
+					prevtoken.type != XmlTokenType::Undefined) {
 					this->writeEOL();
 					this->writeIndentation();
 				}
 
-				this->out.write(token.chars, token.size);
-				break;
-			}
-			case XmlTokenType::TagClosing: {	// </ns:sample
-				this->updateIndentLevel(-1);
-				if (prevtoken.type != XmlTokenType::Text) {
-					this->writeEOL();
-					this->writeIndentation();
-				}
 				this->out.write(token.chars, token.size);
 				break;
 			}
 			case XmlTokenType::TagOpeningEnd: {
-				this->out.write(">", 1);
-				this->updateIndentLevel(1);
+				nexttoken = this->parser->getNextToken();
+				if (this->prettyPrintParams.autoCloseTags &&
+					nexttoken.type == XmlTokenType::TagClosing) {
+					this->out.write("/>", 2);
+					applyAutoclose = true;
+				}
+				else {
+					this->out.write(">", 1);
+					this->updateIndentLevel(1);
+					applyAutoclose = false;
+				}
+				break;
+			}
+			case XmlTokenType::TagClosing: {	// </ns:sample
+				if (!applyAutoclose) {
+					if (prevtoken.type != XmlTokenType::Text &&
+						prevtoken.type != XmlTokenType::Undefined &&
+						prevtoken.type != XmlTokenType::TagOpeningEnd) {
+						this->writeEOL();
+						this->writeIndentation();
+					}
+					this->updateIndentLevel(-1);
+					this->out.write(token.chars, token.size);
+				}
 				break;
 			}
 			case XmlTokenType::TagClosingEnd: {
-				this->out.write(">", 1);
+				if (!applyAutoclose) {
+					this->out.write(">", 1);
+				}
+				applyAutoclose = false;
 				break;
 			}
 			case XmlTokenType::TagSelfClosingEnd: {
 				this->out.write("/>", 2);
+				applyAutoclose = false;
 				break;
 			}
 			case XmlTokenType::AttrName: {
@@ -76,7 +128,8 @@ std::stringstream* XmlFormater::prettyPrint() {
 				break;
 			}
 			case XmlTokenType::Comment: {
-				if (prevtoken.type != XmlTokenType::Text) {
+				if (prevtoken.type != XmlTokenType::Text &&
+					prevtoken.type != XmlTokenType::Undefined) {
 					this->writeEOL();
 					this->writeIndentation();
 				}
@@ -84,7 +137,8 @@ std::stringstream* XmlFormater::prettyPrint() {
 				break;
 			}
 			case XmlTokenType::CDATA: {
-				if (prevtoken.type != XmlTokenType::Text) {
+				if (prevtoken.type != XmlTokenType::Text &&
+					prevtoken.type != XmlTokenType::Undefined) {
 					this->writeEOL();
 					this->writeIndentation();
 				}
@@ -93,6 +147,8 @@ std::stringstream* XmlFormater::prettyPrint() {
 			}
 			case XmlTokenType::Whitespace: {
 				// ignore all whitespace
+				// note: whitespaces present in text are not
+				//       tokenized as whitespaces, but as text
 				break;
 			}
 			case XmlTokenType::AttrValue:

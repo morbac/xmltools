@@ -1,5 +1,15 @@
 #include "XmlParser.h"
 
+static inline bool contains(const char* characters, char element) {
+	size_t len = strlen(characters);
+	for (size_t i = 0; i < len; ++i) {
+		if (characters[i] == element) {
+			return true;
+		}
+	}
+	return false;
+}
+
 XmlParser::XmlParser(const char* data, size_t length) {
 	this->srcText = data;
 	this->srcLength = length;
@@ -8,20 +18,29 @@ XmlParser::XmlParser(const char* data, size_t length) {
 }
 
 XmlParser::~XmlParser() {
+	this->prevtoken.chars = NULL;
 	this->currtoken.chars = NULL;
+	this->nexttoken.chars = NULL;
 	this->srcText = NULL;
 }
 
 void XmlParser::reset() {
-	this->inTag = false;
+	this->currcontext = { false, false };
 	this->hasAttrName = false;
 	this->currpos = 0;
 
+	this->prevtoken = { XmlTokenType::Undefined, NULL, 0 };
 	this->currtoken = { XmlTokenType::Undefined, NULL, 0 };
+	this->nexttoken = { XmlTokenType::Undefined, NULL, 0 };
 }
 
 XmlToken XmlParser::parseNext() {
-	this->currtoken = this->fetchToken();
+	do {
+		this->prevtoken = this->currtoken;
+		this->currtoken = this->nexttoken;
+		this->nexttoken = this->fetchToken();
+	} while (this->currtoken.type == XmlTokenType::Undefined);
+
 	return this->currtoken;
 }
 
@@ -38,10 +57,12 @@ XmlToken XmlParser::fetchToken() {
 	while (this->currpos < this->srcLength) {
 		currentchar = cursor[0];
 		if (currentchar == '<') {
-			// @todo : prevent buffer overflow
+			// @todo : prevent reading outside chars buffer
 			if (cursor[1] == '?') {
 				// <?xml ...?>
 				// let's leave it untouched
+				this->currcontext.inOpeningTag = false;
+				this->currcontext.inClosingTag = false;
 				return { XmlTokenType::Instruction,
 						 startpos,
 				         this->readUntil("?>", 0, true) };
@@ -49,6 +70,8 @@ XmlToken XmlParser::fetchToken() {
 			else if (cursor[1] == '%') {
 				// not really xml, but for jsp compatibility
 				// let's leave it untouched
+				this->currcontext.inOpeningTag = false;
+				this->currcontext.inClosingTag = false;
 				return { XmlTokenType::Instruction,
 						 startpos,
 						 this->readUntil("%>", 0, true) };
@@ -56,58 +79,85 @@ XmlToken XmlParser::fetchToken() {
 			else if (cursor[1] == '!' && cursor[2] == '-' && cursor[3] == '-') {
 				// <!--
 				// let's leave it untouched
+				this->currcontext.inOpeningTag = false;
+				this->currcontext.inClosingTag = false;
 				return { XmlTokenType::Comment,
 						 startpos,
 						 this->readUntil("-->", 0, true) };
 			}
 			else if (cursor[1] == '!' && cursor[2] == '[' && cursor[3] == 'C' && cursor[4] == 'D' &&
-				cursor[5] == 'A' && cursor[6] == 'T' && cursor[7] == 'A' && cursor[8] == '[') {
+			         cursor[5] == 'A' && cursor[6] == 'T' && cursor[7] == 'A' && cursor[8] == '[') {
 				// <![CDATA[
 				// let's leave it untouched
+				this->currcontext.inOpeningTag = false;
+				this->currcontext.inClosingTag = false;
 				return { XmlTokenType::CDATA,
-						 startpos,
-						 this->readUntil("]]>", 0, true) };
+				         startpos,
+				         this->readUntil("]]>", 0, true) };
 			}
 			else if (cursor[1] == '/') {
 				// </ns:sample
-				this->inTag = false;
+				this->currcontext.inOpeningTag = false;
+				this->currcontext.inClosingTag = true;
 				return { XmlTokenType::TagClosing,
 						 startpos,
-						 this->readUntilFirstOf(" >") };
+						 this->readUntilFirstOf("> \r\n") };
 			}
 			else {
 				// parsing tag name like "<sample" or "<ns:sample"
-				this->inTag = true;
+				this->currcontext.inOpeningTag = true;
+				this->currcontext.inClosingTag = false;
 				return { XmlTokenType::TagOpening,
 					     startpos,
 				         this->readUntilFirstOf(" />\t\r\n") };
 			}
 			break;
 		}
-		else if (currentchar == '>') {
-			if (this->inTag) {
-				this->inTag = false;
-				return { XmlTokenType::TagOpeningEnd,
-						 startpos,
-						 this->readChars(1) };
-			}
-			else {
+		else if (this->currcontext.inClosingTag) {
+			// parsing closing tag content
+			if (currentchar == '>') {
+				this->currcontext.inClosingTag = false;
 				return { XmlTokenType::TagClosingEnd,
 						 startpos,
 						 this->readChars(1) };
 			}
+			else if (currentchar == ' ' || currentchar == '\t') {
+				return { XmlTokenType::Whitespace,
+						 startpos,
+						 this->readUntilFirstNotOf(" \t") };
+			}
+			else if (currentchar == '\r' || currentchar == '\n') {
+				return { XmlTokenType::LineBreak,
+							startpos,
+							this->readUntilFirstNotOf("\r\n") };
+			}
+			else {
+				return { XmlTokenType::Undefined,
+							startpos,
+							this->readChars(1) };
+			}
 		}
-		else if (this->inTag) {
-			// parse tag content
-
-			if (currentchar == '\r' || currentchar == '\n') {
+		else if (this->currcontext.inOpeningTag) {
+			// parse opening tag content
+			if (currentchar == '>') {
+				this->currcontext.inOpeningTag = false;
+				return { XmlTokenType::TagOpeningEnd,
+						 startpos,
+						 this->readChars(1) };
+			}
+			else if (currentchar == ' ' || currentchar == '\t') {
+				return { XmlTokenType::Whitespace,
+						 startpos,
+						 this->readUntilFirstNotOf(" \t") };
+			}
+			else if (currentchar == '\r' || currentchar == '\n') {
 				return { XmlTokenType::LineBreak,
 							startpos,
 							this->readUntilFirstNotOf("\r\n") };
 			}
 			else if (currentchar == '/') {
 				if (cursor[1] == '>') {
-					this->inTag = false;
+					this->currcontext.inOpeningTag = false;
 					return { XmlTokenType::TagSelfClosingEnd,
 							 startpos,
 							 this->readChars(2) };
@@ -122,12 +172,6 @@ XmlToken XmlParser::fetchToken() {
 				return { XmlTokenType::Equal,
 						 startpos,
 						 this->readChars(1) };
-			}
-			else if (currentchar == ' ' || currentchar == '\t') {
-				// parsing whitespace
-				return { XmlTokenType::Whitespace,
-						 startpos,
-						 this->readUntilFirstNotOf(" \t") };
 			}
 			else if (this->hasAttrName) {
 				this->hasAttrName = false;
@@ -160,7 +204,7 @@ XmlToken XmlParser::fetchToken() {
 		}
 	}
 
-	return { XmlTokenType::Undefined, startpos, 1 };
+	return { XmlTokenType::Undefined, startpos, this->readChars(1) };
 }
 
 size_t XmlParser::isIncoming(const char* characters) {
@@ -179,7 +223,7 @@ size_t XmlParser::readChars(size_t nchars) {
 }
 
 size_t XmlParser::readNextWord() {
-	return this->readUntilFirstOf(DELIMITER_CHARS);
+	return this->readUntilFirstOf(" \t\r\n=\"'<>");
 }
 
 size_t XmlParser::readUntilFirstOf(const char* characters, size_t offset, bool goAfter) {
@@ -208,12 +252,7 @@ size_t XmlParser::readUntilFirstNotOf(const char* characters, size_t offset) {
 	size_t len = strlen(characters);
 	while (this->currpos < this->srcLength) {
 		cursor = (this->srcText + this->currpos)[0];
-		for (i = 0; i < len; ++i) {
-			if (cursor == characters[i]) {
-				break;
-			}
-		}
-		if (i >= len) {
+		if (!contains(characters, cursor)) {
 			return res;
 		}
 		++res;
@@ -230,9 +269,7 @@ size_t XmlParser::readUntil(const char* delimiter, size_t offset, bool goAfter) 
 	if (!tmp) tmp = this->srcText + this->srcLength;
 	res = tmp - cursor;
 	if (goAfter) {
-		size_t len = strlen(delimiter);
-		res += len;
-		
+		res += strlen(delimiter);
 	}
 	this->currpos += res;
 	return res + offset;
@@ -255,22 +292,7 @@ std::string XmlParser::getTokenName() {
 		case XmlTokenType::LineBreak: return "LINEBREAK";
 		case XmlTokenType::Equal: return "EQUAL";
 		case XmlTokenType::EndOfFile: return "EOF";
+		case XmlTokenType::Undefined:
 		default: return "UNDEFINED";
 	}
-}
-
-std::string XmlParser::dumpTokens() {
-	this->reset();
-
-	XmlToken token;
-	std::stringstream out;
-
-	while ((token = this->parseNext()).type != XmlTokenType::EndOfFile) {
-		std::string tmp = this->getTokenName();
-
-		out.write("/", 1);
-		out.write(tmp.c_str(), tmp.length());
-	}
-
-	return out.str().erase(0,1);
 }
