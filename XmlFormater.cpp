@@ -21,36 +21,43 @@ static inline void trim(std::string& s) {
 XmlFormater::XmlFormater(const char* data, size_t length) {
 	this->parser = new XmlParser(data, length);
 
-	this->prettyPrintParams.indentChars = "  ";
-	this->prettyPrintParams.eolChars = "\r\n";
-	this->prettyPrintParams.maxIndentLevel = 255;
-	this->prettyPrintParams.trimWhitespaceAroundText = false;
-	this->prettyPrintParams.autoCloseTags = false;
-	this->prettyPrintParams.indentAttributes = false;
-	this->prettyPrintParams.indentOnly = false;
+	PrettyPrintParamsType params;
+	params.indentChars = "  ";
+	params.eolChars = "\n";
+	params.maxIndentLevel = 255;
+	params.trimWhitespaceAroundText = false;
+	params.autoCloseTags = false;
+	params.indentAttributes = false;
+	params.indentOnly = false;
 
-	this->reset();
+	this->init(data, length, params);
 }
 
 XmlFormater::XmlFormater(const char* data, size_t length, PrettyPrintParamsType params) {
+	this->init(data, length, params);
+}
+
+XmlFormater::~XmlFormater() {
+	this->reset();
+	if (this->parser != NULL) {
+		delete this->parser;
+	}
+}
+
+void XmlFormater::init(const char* data, size_t length, PrettyPrintParamsType params) {
+	if (this->parser != NULL) {
+		delete this->parser;
+	}
+
 	this->parser = new XmlParser(data, length);
-
 	this->prettyPrintParams = params;
-
 	this->reset();
 }
 
 void XmlFormater::reset() {
 	this->indentLevel = 0;
 	this->out.clear();
-}
-
-XmlFormater::~XmlFormater() {
-	this->reset();
-
-	if (this->parser != NULL) {
-		delete this->parser;
-	}
+	this->out.str(std::string());	// make the stringstream empty
 }
 
 std::string XmlFormater::debugTokens() {
@@ -202,14 +209,12 @@ std::stringstream* XmlFormater::prettyPrint() {
 
 
 void XmlFormater::writeEOL() {
-	this->out.write(this->prettyPrintParams.eolChars.c_str(),
-		            this->prettyPrintParams.eolChars.length());
+	this->out << this->prettyPrintParams.eolChars;
 }
 
 void XmlFormater::writeIndentation() {
 	for (size_t i = 0; i < this->indentLevel; ++i) {
-		this->out.write(this->prettyPrintParams.indentChars.c_str(),
-			            this->prettyPrintParams.indentChars.length());
+		this->out << this->prettyPrintParams.indentChars;
 	}
 }
 

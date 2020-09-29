@@ -53,6 +53,17 @@ public:
 	*/
 	~XmlFormater();
 
+	/*
+	* Initialize the formater with input data
+	* @param data The source data
+	* @param length The source data length
+	* @param params The formater params
+	*/
+	void init(const char* data, size_t length, PrettyPrintParamsType params);
+
+	/*
+	* Make internal parameters ready for formating
+	*/
 	void reset();
 
 	/*
