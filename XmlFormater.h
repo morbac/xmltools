@@ -4,27 +4,20 @@
 #include <vector>
 #include "XmlParser.h"
 
-struct PrettyPrintParamsType {
-	std::string indentChars;
-	std::string eolChars;
-	size_t maxIndentLevel;
-	bool trimWhitespaceAroundText;
-	bool autoCloseTags;
-	bool indentAttributes;
-	bool indentOnly;
-};
-
-enum class TrimModeType {
-	NONE,
-	LEFT,
-	RIGHT,
-	BOTH
+struct XmlFormaterParamsType {
+	std::string indentChars;	   // indentation char(s)
+	std::string eolChars;		   // end of line char(s)
+	size_t maxIndentLevel;		   // max indent level (0 == unlimited)
+	bool enforceConformity;		   // make the formater respect conformity
+	bool autoCloseTags;			   // make the formater change tags like <a></a> into <a/>
+	bool indentAttributes;		   // make the formater display attributes on separated lines
+	bool indentOnly;			   // make the formater keep the existing linebreaks and only adjust indentation
 };
 
 class XmlFormater {
 	XmlParser* parser = NULL;
 
-	PrettyPrintParamsType prettyPrintParams;
+	XmlFormaterParamsType params;
 
 	std::stringstream out;
 	size_t indentLevel;
@@ -46,7 +39,7 @@ public:
 	* @param length The source data length
 	* @param params The formater params
 	*/
-	XmlFormater(const char* data, size_t length, PrettyPrintParamsType params);
+	XmlFormater(const char* data, size_t length, XmlFormaterParamsType params);
 
 	/*
 	/ Destructor
@@ -59,7 +52,7 @@ public:
 	* @param length The source data length
 	* @param params The formater params
 	*/
-	void init(const char* data, size_t length, PrettyPrintParamsType params);
+	void init(const char* data, size_t length, XmlFormaterParamsType params);
 
 	/*
 	* Make internal parameters ready for formating

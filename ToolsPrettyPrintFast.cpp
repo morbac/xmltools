@@ -16,15 +16,15 @@ void sciDocPrettyPrint(ScintillaDoc& doc) {
         return;
     }
 
-    PrettyPrintParamsType params = {
-        doc.Tab(),                          // indentation
-        doc.EOL(),                          // end of line
-        255,                                // max indentation level
-        xmltoolsoptions.trimTextWhitespace, // trim whitespace
-        xmltoolsoptions.ppAutoclose,        // auto-close tags
-        false,                              // indent attributes
-        false                               // indent only
-    };
+    XmlFormaterParamsType params;
+    params.indentChars = doc.Tab();
+    params.eolChars = doc.EOL();
+    params.maxIndentLevel = 255;
+    params.enforceConformity = !xmltoolsoptions.trimTextWhitespace;
+    params.autoCloseTags = xmltoolsoptions.ppAutoclose;
+    params.indentAttributes = false;
+    params.indentOnly = false;
+
     if (xmltoolsoptions.maxElementDepth > 0) {
         params.maxIndentLevel = xmltoolsoptions.maxElementDepth;
     }
@@ -163,15 +163,15 @@ void sciDocLinearize(ScintillaDoc& doc) {
         return;
     }
 
-    PrettyPrintParamsType params = {
-        doc.Tab(),                          // indentation
-        doc.EOL(),                          // end of line
-        255,                                // max indentation level
-        xmltoolsoptions.trimTextWhitespace, // trim whitespace
-        xmltoolsoptions.ppAutoclose,        // auto-close tags
-        false,                              // indent attributes
-        false                               // indent only
-    };
+    XmlFormaterParamsType params;
+    params.indentChars = doc.Tab();
+    params.eolChars = doc.EOL();
+    params.maxIndentLevel = 255;
+    params.enforceConformity = !xmltoolsoptions.trimTextWhitespace;
+    params.autoCloseTags = xmltoolsoptions.ppAutoclose;
+    params.indentAttributes = false;
+    params.indentOnly = false;
+
     if (xmltoolsoptions.maxElementDepth > 0) {
         params.maxIndentLevel = xmltoolsoptions.maxElementDepth;
     }
