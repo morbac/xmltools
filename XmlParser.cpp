@@ -34,12 +34,54 @@ void XmlParser::reset() {
 	this->nexttoken = { XmlTokenType::Undefined, NULL, 0 };
 }
 
+XmlToken XmlParser::getNextStructureToken() {
+	// @fixme Should we consider whitespace and linebreaks has structure token in opening tag ?
+	if (this->nexttoken.type != XmlTokenType::Whitespace &&
+		this->nexttoken.type != XmlTokenType::LineBreak &&
+		this->nexttoken.type != XmlTokenType::Text) {
+		return this->nexttoken;
+	}
+	else {
+		// let's search in the buffered list
+		for (std::list<XmlToken>::iterator it = this->buffer.begin(); it != this->buffer.end(); ++it) {
+			if ((*it).type != XmlTokenType::Whitespace &&
+				(*it).type != XmlTokenType::LineBreak &&
+				(*it).type != XmlTokenType::Text) {
+				return (*it);
+			}
+		}
+
+		// can't find a structure token in the buffered list, let's fetch next tokens
+		XmlToken res;
+		do {
+			res = this->fetchToken();
+			this->buffer.push_back(res);
+
+			if (res.type != XmlTokenType::Whitespace &&
+				res.type != XmlTokenType::LineBreak &&
+				res.type != XmlTokenType::Text) {
+				return res;
+			}
+		} while (res.type != XmlTokenType::EndOfFile);
+
+		return { XmlTokenType::Undefined, NULL, 0 };
+	}
+}
+
 XmlToken XmlParser::parseNext() {
-	do {
+	if (this->buffer.empty()) {
+		do {
+			this->prevtoken = this->currtoken;
+			this->currtoken = this->nexttoken;
+			this->nexttoken = this->fetchToken();
+		} while (this->currtoken.type == XmlTokenType::Undefined);
+	}
+	else {
 		this->prevtoken = this->currtoken;
 		this->currtoken = this->nexttoken;
-		this->nexttoken = this->fetchToken();
-	} while (this->currtoken.type == XmlTokenType::Undefined);
+		this->nexttoken = this->buffer.front();
+		this->buffer.pop_front();
+	}
 
 	return this->currtoken;
 }

@@ -79,8 +79,9 @@ std::stringstream* XmlFormater::linearize() {
 	this->reset();
 	this->parser->reset();
 
-	XmlToken token = { XmlTokenType::Undefined };
+	XmlToken token = { XmlTokenType::Undefined }, nexttoken;
 	XmlTokenType lastAppliedTokenType = XmlTokenType::Undefined;
+	bool applyAutoclose = false;
 
 	while ((token = this->parser->parseNext()).type != XmlTokenType::EndOfFile) {
 		switch (token.type) {
@@ -95,22 +96,66 @@ std::stringstream* XmlFormater::linearize() {
 				break;
 			}
 			case XmlTokenType::Text: {
+				std::string tmp(token.chars, token.size);
+				trim(tmp);
 				if (this->params.enforceConformity) {
-					lastAppliedTokenType = XmlTokenType::Text;
-					this->out.write(token.chars, token.size);
+					nexttoken = this->parser->getNextToken();
+					if (tmp.length() > 0 ||
+						(nexttoken.type != XmlTokenType::TagOpening &&
+							(nexttoken.type != XmlTokenType::TagClosing ||
+								lastAppliedTokenType == XmlTokenType::TagOpeningEnd))) {
+						lastAppliedTokenType = XmlTokenType::Text;
+						this->out.write(token.chars, token.size);
+					}
 				}
 				else {
-					std::string tmp(token.chars, token.size);
-					trim(tmp);
+					lastAppliedTokenType = XmlTokenType::Text;
 					this->out << tmp;
 				}
 				break;
 			}
+			case XmlTokenType::TagOpeningEnd: {
+				if (this->params.enforceConformity) {
+					nexttoken = this->parser->getNextToken();
+				}
+				else {
+					nexttoken = this->parser->getNextStructureToken();
+				}
+				if (this->params.autoCloseTags &&
+					nexttoken.type == XmlTokenType::TagClosing) {
+					lastAppliedTokenType = XmlTokenType::TagSelfClosingEnd;
+					this->out << "/>";
+					applyAutoclose = true;
+				}
+				else {
+					lastAppliedTokenType = XmlTokenType::TagOpeningEnd;
+					this->out << ">";
+					applyAutoclose = false;
+				}
+				break;
+			}
+			case XmlTokenType::TagClosing: {	// </ns:sample
+				if (!applyAutoclose) {
+					lastAppliedTokenType = XmlTokenType::TagClosing;
+					this->out.write(token.chars, token.size);
+				}
+				break;
+			}
+			case XmlTokenType::TagClosingEnd: {
+				if (!applyAutoclose) {
+					lastAppliedTokenType = XmlTokenType::TagClosingEnd;
+					this->out << ">";
+				}
+				applyAutoclose = false;
+				break;
+			}
+			case XmlTokenType::TagSelfClosingEnd: {
+				lastAppliedTokenType = XmlTokenType::TagSelfClosingEnd;
+				this->out << "/>";
+				applyAutoclose = false;
+				break;
+			}
 			case XmlTokenType::TagOpening:
-			case XmlTokenType::TagOpeningEnd:
-			case XmlTokenType::TagClosing:
-			case XmlTokenType::TagClosingEnd:
-			case XmlTokenType::TagSelfClosingEnd:
 			case XmlTokenType::AttrName:
 			case XmlTokenType::Comment:
 			case XmlTokenType::CDATA:
@@ -133,13 +178,11 @@ std::stringstream* XmlFormater::prettyPrint() {
 	this->reset();
 	this->parser->reset();
 
-	XmlToken token = { XmlTokenType::Undefined }, prevtoken, nexttoken;
+	XmlToken token = { XmlTokenType::Undefined }, nexttoken;
 	XmlTokenType lastAppliedTokenType = XmlTokenType::Undefined;
 	bool applyAutoclose = false;
 
 	while ((token = this->parser->parseNext()).type != XmlTokenType::EndOfFile) {
-		prevtoken = this->parser->getPrevToken();
-
 		switch (token.type) {
 			case XmlTokenType::TagOpening: {	// <ns:sample
 				if (lastAppliedTokenType != XmlTokenType::Text &&

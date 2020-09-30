@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sstream>
+#include <list>
 
 enum class XmlTokenType {
     TagOpening,        // <nx:sample
@@ -49,6 +50,9 @@ class XmlParser {
 
     XmlToken fetchToken();
 
+    // a queue of read tokens
+    std::list<XmlToken> buffer;
+
 public:
     /*
     * Constructor
@@ -74,6 +78,14 @@ public:
     XmlToken getPrevToken()    { return this->prevtoken; }
     XmlToken getCurrToken()    { return this->currtoken; }
     XmlToken getNextToken()    { return this->nexttoken; }
+
+    /*
+    * Get the next non-text token
+    * This function feed the tokens queue until it finds a structural token.
+    * The queue is poped on next "parseNext()" calls
+    * @return The next non-text token
+    */
+    XmlToken getNextStructureToken();
 
     /*
     * Fetch next token
