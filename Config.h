@@ -31,6 +31,7 @@ struct struct_xmltoolsoptions {       // default value
 	int validateOnParse = -1;               // True
 
 	// xmltools options
+	std::wstring formatingEngine = L"SimpleXml";
 	bool useAnnotations = true;                // False
 	int annotationStyle = 12;                // 12
 	bool convertAmp = true;

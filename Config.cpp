@@ -52,6 +52,7 @@ void XmlToolsConfig::Read(std::wstring _configPath) {
 	ReadString(L"proxyUser", proxyoptions.username);
 	ReadString(L"proxyPass", proxyoptions.password);
 
+	ReadString(L"formatingEngine", xmltoolsoptions.formatingEngine);
 	ReadBool(L"useAnnotations", xmltoolsoptions.useAnnotations);
 	ReadInt(L"annotationStyle", xmltoolsoptions.annotationStyle);
 	ReadBool(L"convertAmp", xmltoolsoptions.convertAmp);
@@ -101,6 +102,7 @@ void XmlToolsConfig::Write() {
 	WriteString(L"proxyUser", proxyoptions.username);
 	WriteString(L"proxyPass", proxyoptions.password);
 
+	WriteString(L"formatingEngine", xmltoolsoptions.formatingEngine);
 	WriteBool(L"useAnnotations", xmltoolsoptions.useAnnotations);
 	WriteInt( L"annotationStyle", xmltoolsoptions.annotationStyle);
 	WriteBool(L"convertAmp", xmltoolsoptions.convertAmp);

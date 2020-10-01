@@ -45,43 +45,41 @@ void COptionsDlg::UpdateProperty(CMFCPropertyGridProperty* src, enumOptionType t
   COleVariant val = src->GetValue();
   DWORD_PTR obj = src->GetData();
   switch (type) {
-  case enumOptionType::TYPE_BOOL: {
-      (*((bool*) obj)) = (val.boolVal == VARIANT_TRUE);
-      break;
-    }
-  case enumOptionType::TYPE_TRISTATE: {
-      if (!wcscmp(val.bstrVal, L"False")) (*((int*) obj)) = 0;
-      else if (!wcscmp(val.bstrVal, L"True")) (*((int*) obj)) = 1;
-      else (*((int*) obj)) = -1;
-      break;
-    }
-  case enumOptionType::TYPE_INT: {
-      (*((int*) obj)) = (val.intVal);
-      break;
-    }
-    case enumOptionType::TYPE_LONG: {
-      (*((long*) obj)) = (val.lVal);
-      break;
-    }
-    case enumOptionType::TYPE_WSTRING: {
-        if (obj == 0)
-            obj = obj;
-        else
-          *((std::wstring*) obj) = val.bstrVal;
-      break;
-    }
-    case enumOptionType::TYPE_WCHAR255: {
-      rsize_t len = SysStringLen(val.bstrVal);
-      if (len > 255) len = 255;
-      memset((wchar_t*) obj, '\0', 255 * sizeof(wchar_t));
-      if (len > 0) {
-        wcscpy_s((wchar_t*) obj, len, (wchar_t*) bstr_t(val.bstrVal));
+      case enumOptionType::TYPE_BOOL: {
+          (*((bool*)obj)) = (val.boolVal == VARIANT_TRUE);
+          break;
       }
-      break;
-    }
-    default: {
-      break;
-    }
+      case enumOptionType::TYPE_TRISTATE: {
+          if (!wcscmp(val.bstrVal, L"False")) (*((int*)obj)) = 0;
+          else if (!wcscmp(val.bstrVal, L"True")) (*((int*)obj)) = 1;
+          else (*((int*)obj)) = -1;
+          break;
+      }
+      case enumOptionType::TYPE_INT: {
+          (*((int*)obj)) = (val.intVal);
+          break;
+      }
+      case enumOptionType::TYPE_LONG: {
+          (*((long*)obj)) = (val.lVal);
+          break;
+      }
+      case enumOptionType::TYPE_WSTRING: {
+          if (obj == 0) obj = obj;
+          else *((std::wstring*) obj) = val.bstrVal;
+          break;
+      }
+      case enumOptionType::TYPE_WCHAR255: {
+          rsize_t len = SysStringLen(val.bstrVal);
+          if (len > 255) len = 255;
+          memset((wchar_t*)obj, '\0', 255 * sizeof(wchar_t));
+          if (len > 0) {
+              wcscpy_s((wchar_t*)obj, len, (wchar_t*)bstr_t(val.bstrVal));
+          }
+          break;
+      }
+      default: {
+          break;
+      }
   }
 }
 
@@ -133,7 +131,9 @@ BOOL COptionsDlg::OnInitDialog() {
 
   CMFCPropertyGridProperty* pGrpPrettyPrint = new CMFCPropertyGridProperty(L"Pretty print options");
   m_wndPropList.AddProperty(pGrpPrettyPrint);
-
+  pTmpOption = new CMFCPropertyGridProperty(L"Formating engine", COleVariant(xmltoolsoptions.formatingEngine.c_str()), L"This property let you choose the pretty print and linearize formating engine.", (DWORD_PTR)&xmltoolsoptions.formatingEngine);
+  pTmpOption->AddOption(L"SimpleXml"); pTmpOption->AddOption(L"QuickXml");
+  pGrpPrettyPrint->AddSubItem(pTmpOption); vWStringProperties.push_back(pTmpOption);
   pTmpOption = new CMFCPropertyGridProperty(L"Auto-close tags", COleVariant((short)(xmltoolsoptions.ppAutoclose ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Enable auto-close tags on pretty print. For instance, when enabled, \"<sample></sample>\" is replaced with \"<sample/>\".", (DWORD_PTR)&xmltoolsoptions.ppAutoclose);
   pGrpPrettyPrint->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
   pTmpOption = new CMFCPropertyGridProperty(L"Trim text whitespace", COleVariant((short)(xmltoolsoptions.trimTextWhitespace ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Enable the trim of whitespaces chars (spaces, tabs and line breaks) in text.", (DWORD_PTR)&xmltoolsoptions.trimTextWhitespace);
