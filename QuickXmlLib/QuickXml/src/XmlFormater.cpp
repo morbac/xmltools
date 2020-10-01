@@ -4,19 +4,31 @@ namespace QuickXml {
 	static inline void ltrim(std::string& s) {
 		s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
 			return (ch != ' ' && ch != '\t' && ch != '\r' && ch != '\n');
-			}));
+		}));
 	}
-
-	// trim from end (in place)
 	static inline void rtrim(std::string& s) {
 		s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
 			return (ch != ' ' && ch != '\t' && ch != '\r' && ch != '\n');
-			}).base(), s.end());
+		}).base(), s.end());
 	}
-
 	static inline void trim(std::string& s) {
 		ltrim(s);
 		rtrim(s);
+	}
+
+	static inline void ltrim_s(std::string& s) {
+		s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+			return (ch != ' ' && ch != '\t');
+		}));
+	}
+	static inline void rtrim_s(std::string& s) {
+		s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+			return (ch != ' ' && ch != '\t');
+		}).base(), s.end());
+	}
+	static inline void trim_s(std::string& s) {
+		ltrim_s(s);
+		rtrim_s(s);
 	}
 
 	XmlFormater::XmlFormater(const char* data, size_t length) {
@@ -181,6 +193,7 @@ namespace QuickXml {
 
 		XmlToken token = { XmlTokenType::Undefined }, nexttoken;
 		XmlTokenType lastAppliedTokenType = XmlTokenType::Undefined;
+		bool lastTextHasLineBreaks = false;
 		bool applyAutoclose = false;
 		size_t numAttr = 0;
 		size_t currTagNameLength = 0;
@@ -189,14 +202,20 @@ namespace QuickXml {
 			switch (token.type) {
 				case XmlTokenType::TagOpening: {	// <ns:sample
 					currTagNameLength = token.size;
-					if (lastAppliedTokenType != XmlTokenType::Text &&
-						lastAppliedTokenType != XmlTokenType::CDATA &&
-						lastAppliedTokenType != XmlTokenType::Undefined) {
+					if (this->params.indentOnly) {
+						if (lastTextHasLineBreaks) {
+							this->writeIndentation();
+						}
+					}
+					else if (lastAppliedTokenType != XmlTokenType::Text &&
+						 lastAppliedTokenType != XmlTokenType::CDATA &&
+						 lastAppliedTokenType != XmlTokenType::Undefined) {
 						this->writeEOL();
 						this->writeIndentation();
 					}
 					lastAppliedTokenType = XmlTokenType::TagOpening;
 					this->out.write(token.chars, token.size);
+					lastTextHasLineBreaks = false;
 					break;
 				}
 				case XmlTokenType::TagOpeningEnd: {
@@ -214,21 +233,28 @@ namespace QuickXml {
 						this->updateIndentLevel(1);
 						applyAutoclose = false;
 					}
+					lastTextHasLineBreaks = false;
 					break;
 				}
 				case XmlTokenType::TagClosing: {	// </ns:sample
 					if (!applyAutoclose) {
 						this->updateIndentLevel(-1);
-						if (lastAppliedTokenType != XmlTokenType::Text &&
-							lastAppliedTokenType != XmlTokenType::CDATA &&
-							lastAppliedTokenType != XmlTokenType::TagOpeningEnd &&
-							lastAppliedTokenType != XmlTokenType::Undefined) {
+						if (this->params.indentOnly) {
+							if (lastTextHasLineBreaks) {
+								this->writeIndentation();
+							}
+						}
+						else if (lastAppliedTokenType != XmlTokenType::Text &&
+							 lastAppliedTokenType != XmlTokenType::CDATA &&
+							 lastAppliedTokenType != XmlTokenType::TagOpeningEnd &&
+							 lastAppliedTokenType != XmlTokenType::Undefined) {
 							this->writeEOL();
 							this->writeIndentation();
 						}
 						lastAppliedTokenType = XmlTokenType::TagClosing;
 						this->out.write(token.chars, token.size);
 					}
+					lastTextHasLineBreaks = false;
 					break;
 				}
 				case XmlTokenType::TagClosingEnd: {
@@ -237,6 +263,7 @@ namespace QuickXml {
 						this->out << ">";
 					}
 					applyAutoclose = false;
+					lastTextHasLineBreaks = false;
 					break;
 				}
 				case XmlTokenType::TagSelfClosingEnd: {
@@ -244,6 +271,7 @@ namespace QuickXml {
 					lastAppliedTokenType = XmlTokenType::TagSelfClosingEnd;
 					this->out << "/>";
 					applyAutoclose = false;
+					lastTextHasLineBreaks = false;
 					break;
 				}
 				case XmlTokenType::AttrName: {
@@ -256,6 +284,7 @@ namespace QuickXml {
 					this->out << " ";
 					lastAppliedTokenType = XmlTokenType::AttrName;
 					this->out.write(token.chars, token.size);
+					lastTextHasLineBreaks = false;
 					break;
 				}
 				case XmlTokenType::Text: {
@@ -263,13 +292,24 @@ namespace QuickXml {
 					// @todo implement the !enforceConformity mode
 					XmlToken nexttoken = this->parser->getNextToken();
 					std::string tmp(token.chars, token.size);
-					trim(tmp);
+					if (this->params.indentOnly) {
+						trim_s(tmp);
+					}
+					else {
+						trim(tmp);
+					}
 					if (tmp.length() > 0 ||
 						(nexttoken.type != XmlTokenType::TagOpening &&
 							(nexttoken.type != XmlTokenType::TagClosing ||
 								lastAppliedTokenType == XmlTokenType::TagOpeningEnd))) {
 						lastAppliedTokenType = XmlTokenType::Text;
-						this->out.write(token.chars, token.size);
+						if (this->params.indentOnly) {
+							this->out << tmp;
+							lastTextHasLineBreaks = (tmp.find_first_of("\r\n") != std::string::npos);
+						}
+						else {
+							this->out.write(token.chars, token.size);
+						}
 					}
 					break;
 				}
@@ -277,23 +317,31 @@ namespace QuickXml {
 					if (this->params.indentOnly) {
 						lastAppliedTokenType = XmlTokenType::LineBreak;
 						this->out.write(token.chars, token.size);
+						lastTextHasLineBreaks = true;
 					}
 					break;
 				}
 				case XmlTokenType::Comment: {
-					if (lastAppliedTokenType != XmlTokenType::Text &&
-						lastAppliedTokenType != XmlTokenType::CDATA &&
-						lastAppliedTokenType != XmlTokenType::Undefined) {
+					if (this->params.indentOnly) {
+						if (lastTextHasLineBreaks) {
+							this->writeIndentation();
+						}
+					}
+					else if (lastAppliedTokenType != XmlTokenType::Text &&
+						 lastAppliedTokenType != XmlTokenType::CDATA &&
+						 lastAppliedTokenType != XmlTokenType::Undefined) {
 						this->writeEOL();
 						this->writeIndentation();
 					}
 					lastAppliedTokenType = XmlTokenType::Comment;
 					this->out.write(token.chars, token.size);
+					lastTextHasLineBreaks = false;
 					break;
 				}
 				case XmlTokenType::CDATA: {
 					lastAppliedTokenType = XmlTokenType::CDATA;
 					this->out.write(token.chars, token.size);
+					lastTextHasLineBreaks = false;
 					break;
 				}
 				case XmlTokenType::Whitespace: {
@@ -310,6 +358,7 @@ namespace QuickXml {
 				default: {
 					lastAppliedTokenType = token.type;
 					this->out.write(token.chars, token.size);
+					lastTextHasLineBreaks = false;
 					break;
 				}
 			}
