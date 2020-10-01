@@ -88,6 +88,43 @@ void sciDocPrettyPrintSimpleXml(ScintillaDoc& doc) {
     doc.SetScrollWidth(80); // 80 is arbitrary
 }
 
+void sciDocPrettyPrintQuickXmlAttr(ScintillaDoc& doc) {
+    ScintillaDoc::sciWorkText inText = doc.GetWorkText();
+    if (inText.text == NULL) {
+        return;
+    }
+
+    XmlFormaterParamsType params;
+    params.indentChars = doc.Tab();
+    params.eolChars = doc.EOL();
+    params.maxIndentLevel = 255;
+    params.enforceConformity = !xmltoolsoptions.trimTextWhitespace;
+    params.autoCloseTags = xmltoolsoptions.ppAutoclose;
+    params.indentAttributes = true;
+    params.indentOnly = false;
+
+    if (xmltoolsoptions.maxElementDepth > 0) {
+        params.maxIndentLevel = xmltoolsoptions.maxElementDepth;
+    }
+
+    auto docclock_start = clock();
+
+    XmlFormater formater(inText.text, inText.length, params);
+    std::string& outText = formater.prettyPrint()->str();
+
+    auto docclock_end = clock();
+
+    {
+        std::string txt;
+        txt += "crunching => time taken: " + std::to_string(docclock_end - docclock_start) + " ms";
+        dbgln(txt.c_str());
+    }
+
+    inText.FreeMemory();
+    doc.SetWorkText(outText.c_str());
+    doc.SetScrollWidth(80);
+}
+
 void sciDocPrettyPrintSimpleXmlAttr(ScintillaDoc& doc) {
 
     PrettyPrintParms parms;
@@ -239,7 +276,12 @@ void nppPrettyPrintXmlFast() {
 }
 
 void nppPrettyPrintXmlAttrFast() {
-    nppMultiDocumentCommand(L"PrettyPrintAttrFast", sciDocPrettyPrintSimpleXmlAttr);
+    if (xmltoolsoptions.formatingEngine.compare(L"QuickXml") == 0) {
+        nppMultiDocumentCommand(L"PrettyPrintAttrFast (quickxml)", sciDocPrettyPrintQuickXmlAttr);
+    }
+    else {
+        nppMultiDocumentCommand(L"PrettyPrintAttrFast (simplexml)", sciDocPrettyPrintSimpleXmlAttr);
+    }
 }
 
 void nppPrettyPrintXmlIndentOnlyFast() {

@@ -23,8 +23,28 @@ namespace QuickXml {
 		std::stringstream out;
 		size_t indentLevel;
 
+		/*
+		* Adds an EOL char to output stream
+		*/
 		void writeEOL();
+
+		/*
+		* Write indentations to output stream. The indentation depends on indentLevel variable.
+		*/
 		void writeIndentation();
+
+		/*
+		* Adds a custom string into output stream. The string can be added several times by
+		* specifying the num parameter
+		* @param str The string to add
+		* @param num The number of times the str should be added
+		*/
+		void writeElement(std::string str, size_t num = 1);
+
+		/*
+		* Change the current indentLevel. The function maintains the level in limits [0 .. params.maxIndentLevel]
+		* @param change The direction of change. Value +1 increase the indent level; value -1 decrease the indent level.
+		*/
 		void updateIndentLevel(int change);
 	public:
 		/*

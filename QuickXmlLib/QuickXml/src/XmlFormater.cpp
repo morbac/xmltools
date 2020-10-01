@@ -182,10 +182,13 @@ namespace QuickXml {
 		XmlToken token = { XmlTokenType::Undefined }, nexttoken;
 		XmlTokenType lastAppliedTokenType = XmlTokenType::Undefined;
 		bool applyAutoclose = false;
+		size_t numAttr = 0;
+		size_t currTagNameLength = 0;
 
 		while ((token = this->parser->parseNext()).type != XmlTokenType::EndOfFile) {
 			switch (token.type) {
 				case XmlTokenType::TagOpening: {	// <ns:sample
+					currTagNameLength = token.size;
 					if (lastAppliedTokenType != XmlTokenType::Text &&
 						lastAppliedTokenType != XmlTokenType::CDATA &&
 						lastAppliedTokenType != XmlTokenType::Undefined) {
@@ -197,6 +200,7 @@ namespace QuickXml {
 					break;
 				}
 				case XmlTokenType::TagOpeningEnd: {
+					numAttr = 0;
 					nexttoken = this->parser->getNextToken();
 					if (this->params.autoCloseTags &&
 						nexttoken.type == XmlTokenType::TagClosing) {
@@ -236,12 +240,19 @@ namespace QuickXml {
 					break;
 				}
 				case XmlTokenType::TagSelfClosingEnd: {
+					numAttr = 0; 
 					lastAppliedTokenType = XmlTokenType::TagSelfClosingEnd;
 					this->out << "/>";
 					applyAutoclose = false;
 					break;
 				}
 				case XmlTokenType::AttrName: {
+					if (this->params.indentAttributes && numAttr > 0) {
+						this->writeEOL();
+						this->writeIndentation();
+						this->writeElement(" ", currTagNameLength);
+					}
+					++numAttr;
 					this->out << " ";
 					lastAppliedTokenType = XmlTokenType::AttrName;
 					this->out.write(token.chars, token.size);
@@ -315,6 +326,12 @@ namespace QuickXml {
 	void XmlFormater::writeIndentation() {
 		for (size_t i = 0; i < this->indentLevel; ++i) {
 			this->out << this->params.indentChars;
+		}
+	}
+
+	void XmlFormater::writeElement(std::string str, size_t num) {
+		for (size_t i = 0; i < num; ++i) {
+			this->out << str;
 		}
 	}
 
