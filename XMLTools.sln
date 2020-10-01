@@ -3,6 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLTools", "XMLTools.vcxproj", "{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{729DF6D2-7831-4608-8AFB-D4FCE5872A88} = {729DF6D2-7831-4608-8AFB-D4FCE5872A88}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleXml", "SimpleXmlLib\SimpleXml\SimpleXml.vcxproj", "{C7CF5DA7-16D1-4E03-936A-B71CAC37D26C}"
 EndProject
@@ -12,6 +15,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLToolsTests", "XMLToolsTe
 	ProjectSection(ProjectDependencies) = postProject
 		{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC} = {3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuickXml", "QuickXmlLib\QuickXml\QuickXml.vcxproj", "{729DF6D2-7831-4608-8AFB-D4FCE5872A88}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuickXmlTests", "QuickXmlLib\QuickXmlTests\QuickXmlTests.vcxproj", "{4AB694A0-6C10-4AAB-ABCD-F867C2AE04AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +60,22 @@ Global
 		{D0B86693-D92E-4D72-AB4E-67951EFB720C}.Release|Win32.Build.0 = Release|Win32
 		{D0B86693-D92E-4D72-AB4E-67951EFB720C}.Release|x64.ActiveCfg = Release|x64
 		{D0B86693-D92E-4D72-AB4E-67951EFB720C}.Release|x64.Build.0 = Release|x64
+		{729DF6D2-7831-4608-8AFB-D4FCE5872A88}.Debug|Win32.ActiveCfg = Debug|Win32
+		{729DF6D2-7831-4608-8AFB-D4FCE5872A88}.Debug|Win32.Build.0 = Debug|Win32
+		{729DF6D2-7831-4608-8AFB-D4FCE5872A88}.Debug|x64.ActiveCfg = Debug|x64
+		{729DF6D2-7831-4608-8AFB-D4FCE5872A88}.Debug|x64.Build.0 = Debug|x64
+		{729DF6D2-7831-4608-8AFB-D4FCE5872A88}.Release|Win32.ActiveCfg = Release|Win32
+		{729DF6D2-7831-4608-8AFB-D4FCE5872A88}.Release|Win32.Build.0 = Release|Win32
+		{729DF6D2-7831-4608-8AFB-D4FCE5872A88}.Release|x64.ActiveCfg = Release|x64
+		{729DF6D2-7831-4608-8AFB-D4FCE5872A88}.Release|x64.Build.0 = Release|x64
+		{4AB694A0-6C10-4AAB-ABCD-F867C2AE04AE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4AB694A0-6C10-4AAB-ABCD-F867C2AE04AE}.Debug|Win32.Build.0 = Debug|Win32
+		{4AB694A0-6C10-4AAB-ABCD-F867C2AE04AE}.Debug|x64.ActiveCfg = Debug|x64
+		{4AB694A0-6C10-4AAB-ABCD-F867C2AE04AE}.Debug|x64.Build.0 = Debug|x64
+		{4AB694A0-6C10-4AAB-ABCD-F867C2AE04AE}.Release|Win32.ActiveCfg = Release|Win32
+		{4AB694A0-6C10-4AAB-ABCD-F867C2AE04AE}.Release|Win32.Build.0 = Release|Win32
+		{4AB694A0-6C10-4AAB-ABCD-F867C2AE04AE}.Release|x64.ActiveCfg = Release|x64
+		{4AB694A0-6C10-4AAB-ABCD-F867C2AE04AE}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

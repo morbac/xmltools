@@ -93,12 +93,6 @@
     <ClCompile Include="ToolsXPath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XmlParser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XmlFormater.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="XMLTools.def">
@@ -179,12 +173,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ScintillaDocStreamer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XmlParser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XmlFormater.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

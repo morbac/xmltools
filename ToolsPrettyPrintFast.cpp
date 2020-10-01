@@ -9,6 +9,7 @@
 #include "SimpleXml.h"
 
 using namespace SimpleXml;
+using namespace QuickXml;
 
 void sciDocPrettyPrint(ScintillaDoc& doc) {
     ScintillaDoc::sciWorkText inText = doc.GetWorkText();
