@@ -11,7 +11,7 @@
 using namespace SimpleXml;
 using namespace QuickXml;
 
-void sciDocPrettyPrint(ScintillaDoc& doc) {
+void sciDocPrettyPrintQuickXml(ScintillaDoc& doc) {
     ScintillaDoc::sciWorkText inText = doc.GetWorkText();
     if (inText.text == NULL) {
         return;
@@ -48,7 +48,7 @@ void sciDocPrettyPrint(ScintillaDoc& doc) {
     doc.SetScrollWidth(80);
 }
 
-void sciDocPrettyPrintXML(ScintillaDoc& doc) {
+void sciDocPrettyPrintSimpleXml(ScintillaDoc& doc) {
     ScintillaDoc::sciWorkText inText = doc.GetWorkText();
     if (inText.text == NULL) {
         return;
@@ -88,7 +88,7 @@ void sciDocPrettyPrintXML(ScintillaDoc& doc) {
     doc.SetScrollWidth(80); // 80 is arbitrary
 }
 
-void sciDocPrettyPrintXMLAttr(ScintillaDoc& doc) {
+void sciDocPrettyPrintSimpleXmlAttr(ScintillaDoc& doc) {
 
     PrettyPrintParms parms;
     parms.eol = doc.EOL();
@@ -124,7 +124,7 @@ void sciDocPrettyPrintXMLAttr(ScintillaDoc& doc) {
     doc.SetScrollWidth(80); // 80 is arbitrary
 }
 
-void sciDocPrettyPrintXML_IndentOnly(ScintillaDoc& doc) {
+void sciDocPrettyPrintSimpleXml_IndentOnly(ScintillaDoc& doc) {
     PrettyPrintParms parms;
     parms.eol = doc.EOL();
     parms.tab = doc.Tab();
@@ -158,7 +158,7 @@ void sciDocPrettyPrintXML_IndentOnly(ScintillaDoc& doc) {
     doc.SetWorkText(outText.c_str());
 }
 
-void sciDocLinearize(ScintillaDoc& doc) {
+void sciDocLinearizeQuickXml(ScintillaDoc& doc) {
     ScintillaDoc::sciWorkText inText = doc.GetWorkText();
     if (inText.text == NULL) {
         return;
@@ -195,7 +195,7 @@ void sciDocLinearize(ScintillaDoc& doc) {
     doc.SetScrollWidth(80);
 }
 
-void sciDocLinearizeXML(ScintillaDoc& doc) {
+void sciDocLinearizeSimpleXml(ScintillaDoc& doc) {
     auto inText = doc.GetWorkText();
     if (inText.text == NULL)
         return;
@@ -229,26 +229,28 @@ void sciDocLinearizeXML(ScintillaDoc& doc) {
     doc.SetWorkText(outText.c_str());
 }
 
-void nppPrettyPrintXmlSlow() {
-    nppMultiDocumentCommand(L"PrettyPrintSlow", sciDocPrettyPrint);
-}
-
 void nppPrettyPrintXmlFast() {
-    nppMultiDocumentCommand(L"PrettyPrintFast", sciDocPrettyPrintXML);
+    if (xmltoolsoptions.formatingEngine.compare(L"QuickXml") == 0) {
+        nppMultiDocumentCommand(L"PrettyPrintFast (quickxml)", sciDocPrettyPrintQuickXml);
+    }
+    else {
+        nppMultiDocumentCommand(L"PrettyPrintFast (simplexml)", sciDocPrettyPrintSimpleXml);
+    }
 }
 
 void nppPrettyPrintXmlAttrFast() {
-    nppMultiDocumentCommand(L"PrettyPrintAttrFast", sciDocPrettyPrintXMLAttr);
+    nppMultiDocumentCommand(L"PrettyPrintAttrFast", sciDocPrettyPrintSimpleXmlAttr);
 }
 
 void nppPrettyPrintXmlIndentOnlyFast() {
-    nppMultiDocumentCommand(L"PrettyPrintIndentOnlyFast", sciDocPrettyPrintXML_IndentOnly);
-}
-
-void nppLinearizeXmlSlow() {
-    nppMultiDocumentCommand(L"LinearizeFast", sciDocLinearize);
+    nppMultiDocumentCommand(L"PrettyPrintIndentOnlyFast", sciDocPrettyPrintSimpleXml_IndentOnly);
 }
 
 void nppLinearizeXmlFast() {
-    nppMultiDocumentCommand(L"LinearizeFast", sciDocLinearizeXML);
+    if (xmltoolsoptions.formatingEngine.compare(L"QuickXml") == 0) {
+        nppMultiDocumentCommand(L"LinearizeFast (quickxml)", sciDocLinearizeQuickXml);
+    }
+    else {
+        nppMultiDocumentCommand(L"LinearizeFast (simplexml)", sciDocLinearizeSimpleXml);
+    }
 }

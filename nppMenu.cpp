@@ -100,11 +100,9 @@ void insertXMLCloseTag();
 void insertAutoXMLType();
 void togglePreventXXE();
 void toggleAllowHuge();
-void nppPrettyPrintXmlSlow();
 void nppPrettyPrintXmlFast();
 void nppPrettyPrintXmlAttrFast();
 void nppPrettyPrintXmlIndentOnlyFast();
-void nppLinearizeXmlSlow();
 void nppLinearizeXmlFast();
 //void insertPrettyPrintTag();
 void togglePrettyPrintAllFiles();
@@ -195,12 +193,10 @@ void initMenu() {
 
     addMenuSeparator();
 
-    addMenuItem(L"Pretty print slow", nppPrettyPrintXmlSlow, false, createShortcut('B'));
-    addMenuItem(L"Pretty print", nppPrettyPrintXmlFast, false);
+    addMenuItem(L"Pretty print", nppPrettyPrintXmlFast, false, createShortcut('B'));
     addMenuItem(L"Pretty print (indent attributes)", nppPrettyPrintXmlAttrFast, false, createShortcut('A'));
     addMenuItem(L"Pretty print - indent only", nppPrettyPrintXmlIndentOnlyFast);
-    addMenuItem(L"Linearize", nppLinearizeXmlSlow, false, createShortcut('L'));
-    addMenuItem(L"Linearize", nppLinearizeXmlFast, false);
+    addMenuItem(L"Linearize", nppLinearizeXmlFast, false, createShortcut('L'));
     menuitemPrettyPrintAllFiles = addMenuItem(L"Apply to all open files", togglePrettyPrintAllFiles, config.doPrettyPrintAllOpenFiles);
 
     addMenuSeparator();
