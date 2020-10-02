@@ -191,6 +191,11 @@ namespace QuickXml {
 		this->reset();
 		this->parser->reset();
 
+		// the indentOnly mode forces the indentAttributes
+		if (this->params.indentOnly) {
+			this->params.indentAttributes = true;
+		}
+
 		XmlToken token = { XmlTokenType::Undefined }, nexttoken;
 		XmlTokenType lastAppliedTokenType = XmlTokenType::Undefined;
 		bool lastTextHasLineBreaks = false;
