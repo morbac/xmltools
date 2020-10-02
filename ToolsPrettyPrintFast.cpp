@@ -173,7 +173,7 @@ void sciDocPrettyPrintQuickXml_IndentOnly(ScintillaDoc& doc) {
     params.maxIndentLevel = 255;
     params.enforceConformity = !xmltoolsoptions.trimTextWhitespace;
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
-    params.indentAttributes = false;
+    params.indentAttributes = true;
     params.indentOnly = true;
 
     if (xmltoolsoptions.maxElementDepth > 0) {

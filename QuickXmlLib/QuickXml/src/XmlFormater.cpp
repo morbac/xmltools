@@ -276,7 +276,9 @@ namespace QuickXml {
 				}
 				case XmlTokenType::AttrName: {
 					if (this->params.indentAttributes && numAttr > 0) {
-						this->writeEOL();
+						if (!this->params.indentOnly) {
+							this->writeEOL();
+						}
 						this->writeIndentation();
 						this->writeElement(" ", currTagNameLength);
 					}
