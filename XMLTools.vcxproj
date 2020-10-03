@@ -393,6 +393,7 @@
     <ClInclude Include="InputDlg.h" />
     <ClInclude Include="MessageDlg.h" />
     <ClInclude Include="SelectFileDlg.h" />
+    <ClInclude Include="XmlWrapperInterface.h" />
     <ClInclude Include="XSLTransformDlg.h" />
     <ClInclude Include="XpathEvalDlg.h" />
   </ItemGroup>

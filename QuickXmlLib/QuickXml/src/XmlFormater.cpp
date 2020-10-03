@@ -374,6 +374,87 @@ namespace QuickXml {
 		return &(this->out);
 	}
 
+	std::stringstream* XmlFormater::currentPath(size_t position, bool keepNamespace) {
+		this->reset();
+		this->parser->reset();
+
+		XmlToken token = { XmlTokenType::Undefined };
+		std::vector<std::string> vPath;
+		bool pushed_attr = false;
+
+		while ((token = this->parser->parseNext()).type != XmlTokenType::EndOfFile) {
+			if (token.pos > position) {
+				// cursor position reached, let's stop the loops
+				break;
+			}
+
+			switch (token.type) {
+				case XmlTokenType::TagOpening: {
+					vPath.push_back(std::string(token.chars+1, token.size-1));
+					pushed_attr = false;
+					break;
+				}
+				case XmlTokenType::TagClosingEnd: {
+					vPath.pop_back();
+					pushed_attr = false;
+					break;
+				}
+				case XmlTokenType::TagSelfClosingEnd: {
+					if (pushed_attr) {
+						vPath.pop_back();
+					}
+					vPath.pop_back();
+					pushed_attr = false;
+					break;
+				}
+				case XmlTokenType::AttrName: {
+					if (pushed_attr) {
+						vPath.pop_back();
+					}
+					std::string attr("@");
+					attr.append(token.chars, token.size);
+					vPath.push_back(attr);
+					pushed_attr = true;
+					break;
+				}
+				case XmlTokenType::TagOpeningEnd: {
+					if (pushed_attr) {
+						vPath.pop_back();
+					}
+					pushed_attr = false;
+					break;
+				}
+				case XmlTokenType::LineBreak:
+				case XmlTokenType::Whitespace:
+				case XmlTokenType::Text:
+				case XmlTokenType::TagClosing:
+				case XmlTokenType::Comment:
+				case XmlTokenType::CDATA:
+				case XmlTokenType::AttrValue:
+				case XmlTokenType::Instruction:
+				case XmlTokenType::Equal:
+				case XmlTokenType::Undefined:
+				default: {
+					break;
+				}
+			}
+		}
+
+		size_t size = vPath.size();
+		for (size_t i = 0; i < size; ++i) {
+			this->out << "/";
+			std::string tmp = vPath.at(i);
+			std::string::size_type p = tmp.find(':');
+			if (p != std::string::npos) {
+				this->out << tmp.substr(p + 1);
+			}
+			else {
+				this->out << tmp;
+			}
+		}
+
+		return &(this->out);
+	}
 
 	void XmlFormater::writeEOL() {
 		this->out << this->params.eolChars;

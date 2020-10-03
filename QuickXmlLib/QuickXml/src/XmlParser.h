@@ -28,6 +28,7 @@ namespace QuickXml {
         XmlTokenType type;      // the token type
         const char* chars;      // a pointer to token chars
         size_t size;            // the token chars length
+        size_t pos;             // the token position in stream
     };
 
     struct XmlContext {

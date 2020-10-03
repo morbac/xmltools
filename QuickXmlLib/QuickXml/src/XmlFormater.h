@@ -6,13 +6,13 @@
 
 namespace QuickXml {
 	struct XmlFormaterParamsType {
-		std::string indentChars;	   // indentation char(s)
-		std::string eolChars;		   // end of line char(s)
-		size_t maxIndentLevel;		   // max indent level (0 == unlimited)
-		bool enforceConformity;		   // make the formater respect conformity
-		bool autoCloseTags;			   // make the formater change tags like <a></a> into <a/>
-		bool indentAttributes;		   // make the formater display attributes on separated lines
-		bool indentOnly;			   // make the formater keep the existing linebreaks and only adjust indentation
+		std::string indentChars = "\t";		// indentation char(s)
+		std::string eolChars = "\n";		// end of line char(s)
+		size_t maxIndentLevel = 255;		// max indent level (0 == unlimited)
+		bool enforceConformity = true;		// make the formater respect conformity
+		bool autoCloseTags = false;			// make the formater change tags like <a></a> into <a/>
+		bool indentAttributes = false;		// make the formater display attributes on separated lines
+		bool indentOnly = false;			// make the formater keep the existing linebreaks and only adjust indentation
 	};
 
 	class XmlFormater {
@@ -99,5 +99,13 @@ namespace QuickXml {
 		* @return A reference string stream containing the formated string
 		*/
 		std::stringstream* prettyPrint();
+
+		/*
+		* Construct the path of given position
+		* @param posiiton The reference position to construct path for
+		* @param keepNamespace Flag that indicates if namespace must be added in output path
+		* @return The constructed path
+		*/
+		std::stringstream* currentPath(size_t position, bool keepNamespace = true);
 	};
 }
