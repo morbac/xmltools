@@ -375,7 +375,6 @@
     <ClInclude Include="Config.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="DebugDlg.h" />
-    <ClInclude Include="ScintillaDocStreamer.h" />
     <ClInclude Include="MSXMLHelper.h" />
     <ClInclude Include="Notepad_plus_msgs.h" />
     <ClInclude Include="nppHelpers.h" />
@@ -387,7 +386,6 @@
     <ClInclude Include="ScintillaDoc.h" />
     <ClInclude Include="Sci_Position.h" />
     <ClInclude Include="StdAfx.h" />
-    <ClInclude Include="XmlPrettyPrinter.h" />
     <ClInclude Include="XMLTools.h" />
     <ClInclude Include="HowtoUseDlg.h" />
     <ClInclude Include="InputDlg.h" />

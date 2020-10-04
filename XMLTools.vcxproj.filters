@@ -169,12 +169,6 @@
     <ClInclude Include="ScintillaDoc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="XmlPrettyPrinter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ScintillaDocStreamer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="XmlWrapperInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
