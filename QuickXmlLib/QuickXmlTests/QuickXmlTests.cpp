@@ -341,34 +341,18 @@ namespace QuickXmlTests {
 		}
 
 		TEST_METHOD(CurrentPathTest04) {
-			std::string xml("<a x='1' y='2'><b x='3'><c x='4'/><d x='5'></d></b></a>");
-			std::string ref("/a/b/d/@x");
+			std::string xml("<x:a xmlns:x='x' x='1' y='2'><x:b x='3'><c x='4'/><d x:x='5'></d></x:b></x:a>");
+			std::string ref("/x:a/x:b/d/@x:x");
 
 			XmlFormater formater(xml.c_str(), xml.length());
-			std::stringstream* out = formater.currentPath(41);
+			std::stringstream* out = formater.currentPath(58, true);
 			std::string tmp(out->str());
 
 			Assert::IsTrue(0 == tmp.compare(ref.c_str()));
-		}
 
-		TEST_METHOD(CurrentPathTest05) {
-			std::string xml("<a x='1' y='2'><b x='3'><c x='4'/><d x='5'></d></b></a>");
-			std::string ref("/a/b/d/@x");
-
-			XmlFormater formater(xml.c_str(), xml.length());
-			std::stringstream* out = formater.currentPath(41);
-			std::string tmp(out->str());
-
-			Assert::IsTrue(0 == tmp.compare(ref.c_str()));
-		}
-
-		TEST_METHOD(CurrentPathTest06) {
-			std::string xml("<a x='1' y='2'><b x='3'><c x='4'/><d x='5'></d></b></a>");
-			std::string ref("/a/b/d");
-
-			XmlFormater formater(xml.c_str(), xml.length());
-			std::stringstream* out = formater.currentPath(43);
-			std::string tmp(out->str());
+			ref = "/a/b/d/@x";
+			out = formater.currentPath(58, false);
+			tmp = out->str();
 
 			Assert::IsTrue(0 == tmp.compare(ref.c_str()));
 		}

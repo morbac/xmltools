@@ -440,7 +440,9 @@ namespace QuickXml {
 			this->out << "/";
 			std::string tmp = vPath.at(i);
 			std::string::size_type p = tmp.find(':');
-			if (!keepNamespace && p != std::string::npos) {
+			if (!keepNamespace && tmp.at(0) == '@' && p != std::string::npos) {
+				this->out << "@" << tmp.substr(p + 1);
+			} else if (!keepNamespace && p != std::string::npos) {
 				this->out << tmp.substr(p + 1);
 			}
 			else {
