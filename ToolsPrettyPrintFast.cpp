@@ -59,7 +59,7 @@ void sciDocPrettyPrintSimpleXml(ScintillaDoc& doc) {
     parms.tab = doc.Tab();
     parms.insertIndents = true;
     parms.insertNewLines = true;
-    parms.removeWhitespace = xmltoolsoptions.trimTextWhitespace;
+    parms.removeWhitespace = true;
     parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
     if (xmltoolsoptions.maxElementDepth > 0) {
         parms.maxElementDepth = xmltoolsoptions.maxElementDepth;
@@ -132,7 +132,7 @@ void sciDocPrettyPrintSimpleXmlAttr(ScintillaDoc& doc) {
     parms.tab = doc.Tab();
     parms.insertIndents = true;
     parms.insertNewLines = true;
-    parms.removeWhitespace = xmltoolsoptions.trimTextWhitespace;
+    parms.removeWhitespace = true;
     parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
     if (xmltoolsoptions.maxElementDepth > 0) {
         parms.maxElementDepth = xmltoolsoptions.maxElementDepth;
@@ -204,7 +204,7 @@ void sciDocPrettyPrintSimpleXml_IndentOnly(ScintillaDoc& doc) {
     parms.tab = doc.Tab();
     parms.insertIndents = true;
     parms.insertNewLines = true;
-    parms.removeWhitespace = xmltoolsoptions.trimTextWhitespace;
+    parms.removeWhitespace = true;
     parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
     if (xmltoolsoptions.maxElementDepth > 0) {
         parms.maxElementDepth = xmltoolsoptions.maxElementDepth;
