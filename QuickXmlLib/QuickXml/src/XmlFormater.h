@@ -71,6 +71,13 @@ namespace QuickXml {
 		* Initialize the formater with input data
 		* @param data The source data
 		* @param length The source data length
+		*/
+		void init(const char* data, size_t length);
+
+		/*
+		* Initialize the formater with input data
+		* @param data The source data
+		* @param length The source data length
 		* @param params The formater params
 		*/
 		void init(const char* data, size_t length, XmlFormaterParamsType params);
@@ -107,5 +114,11 @@ namespace QuickXml {
 		* @return The constructed path
 		*/
 		std::stringstream* currentPath(size_t position, bool keepNamespace = true);
+
+		/*
+		* Construct a default formater parameters object
+		* @return A default parameters set for formater
+		*/
+		XmlFormaterParamsType getDefaultParams();
 	};
 }

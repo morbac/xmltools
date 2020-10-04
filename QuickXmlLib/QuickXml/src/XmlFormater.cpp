@@ -34,16 +34,7 @@ namespace QuickXml {
 	XmlFormater::XmlFormater(const char* data, size_t length) {
 		this->parser = new XmlParser(data, length);
 
-		XmlFormaterParamsType params;
-		params.indentChars = "  ";
-		params.eolChars = "\n";
-		params.maxIndentLevel = 255;
-		params.enforceConformity = true;
-		params.autoCloseTags = false;
-		params.indentAttributes = false;
-		params.indentOnly = false;
-
-		this->init(data, length, params);
+		this->init(data, length, this->getDefaultParams());
 	}
 
 	XmlFormater::XmlFormater(const char* data, size_t length, XmlFormaterParamsType params) {
@@ -55,6 +46,10 @@ namespace QuickXml {
 		if (this->parser != NULL) {
 			delete this->parser;
 		}
+	}
+
+	void XmlFormater::init(const char* data, size_t length) {
+		this->init(data, length, this->getDefaultParams());
 	}
 
 	void XmlFormater::init(const char* data, size_t length, XmlFormaterParamsType params) {
@@ -445,7 +440,7 @@ namespace QuickXml {
 			this->out << "/";
 			std::string tmp = vPath.at(i);
 			std::string::size_type p = tmp.find(':');
-			if (p != std::string::npos) {
+			if (!keepNamespace && p != std::string::npos) {
 				this->out << tmp.substr(p + 1);
 			}
 			else {
@@ -486,5 +481,17 @@ namespace QuickXml {
 				this->indentLevel = 0;
 			}
 		}
+	}
+
+	XmlFormaterParamsType XmlFormater::getDefaultParams() {
+		XmlFormaterParamsType params;
+		params.indentChars = "  ";
+		params.eolChars = "\n";
+		params.maxIndentLevel = 255;
+		params.enforceConformity = true;
+		params.autoCloseTags = false;
+		params.indentAttributes = false;
+		params.indentOnly = false;
+		return params;
 	}
 }
