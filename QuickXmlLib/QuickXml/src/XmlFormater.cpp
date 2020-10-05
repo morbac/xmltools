@@ -279,8 +279,10 @@ namespace QuickXml {
 						if (!this->params.indentOnly) {
 							this->writeEOL();
 						}
-						this->writeIndentation();
-						this->writeElement(" ", currTagNameLength);
+						if (!this->params.indentOnly || lastTextHasLineBreaks) {
+							this->writeIndentation();
+							this->writeElement(" ", currTagNameLength);
+						}
 					}
 					++numAttr;
 					this->out << " ";
