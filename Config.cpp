@@ -61,7 +61,7 @@ void XmlToolsConfig::Read(std::wstring _configPath) {
 	ReadBool(L"convertQuote", xmltoolsoptions.convertQuote);
 	ReadBool(L"convertApos", xmltoolsoptions.convertApos);
 	ReadBool(L"ppAutoclose", xmltoolsoptions.ppAutoclose);
-	ReadBool(L"trimTextWhitespace", xmltoolsoptions.trimTextWhitespace);
+	ReadBool(L"ensureConformity", xmltoolsoptions.ensureConformity);
 
 	ReadInt(L"allowDocumentFunction", xmltoolsoptions.allowDocumentFunction);
 	ReadInt(L"allowXsltScript", xmltoolsoptions.allowXsltScript);
@@ -111,7 +111,7 @@ void XmlToolsConfig::Write() {
 	WriteBool(L"convertQuote", xmltoolsoptions.convertQuote);
 	WriteBool(L"convertApos", xmltoolsoptions.convertApos);
 	WriteBool(L"ppAutoclose", xmltoolsoptions.ppAutoclose);
-	WriteBool(L"trimTextWhitespace", xmltoolsoptions.trimTextWhitespace);
+	WriteBool(L"ensureConformity", xmltoolsoptions.ensureConformity);
 
 	WriteInt(L"allowDocumentFunction", xmltoolsoptions.allowDocumentFunction);
 	WriteInt(L"allowXsltScript", xmltoolsoptions.allowXsltScript);

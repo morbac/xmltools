@@ -101,7 +101,7 @@ namespace QuickXmlTests {
 
 			// now we verify that pretty printing the orignal and the linearized
 			// version produce the same when conformity enforcement is activated
-			if (params.enforceConformity) {
+			if (params.ensureConformity) {
 				formater.init(tmp.c_str(), tmp.length(), params);
 				out = formater.prettyPrint();
 				std::string tmp2 = tmp = out->str();
@@ -142,7 +142,7 @@ namespace QuickXmlTests {
 			params.indentChars = "\t";
 			params.eolChars = "\n";
 			params.maxIndentLevel = 255;
-			params.enforceConformity = true;
+			params.ensureConformity = true;
 			params.autoCloseTags = false;
 			params.indentAttributes = false;
 			params.indentOnly = false;
@@ -155,7 +155,7 @@ namespace QuickXmlTests {
 			params.indentChars = "\t";
 			params.eolChars = '\n';
 			params.maxIndentLevel = 255;
-			params.enforceConformity = true;
+			params.ensureConformity = true;
 			params.autoCloseTags = true;
 			params.indentAttributes = false;
 			params.indentOnly = false;
@@ -190,7 +190,7 @@ namespace QuickXmlTests {
 			params.indentChars = "\t";
 			params.eolChars = "\n";
 			params.maxIndentLevel = 255;
-			params.enforceConformity = true;
+			params.ensureConformity = true;
 			params.autoCloseTags = false;
 			params.indentAttributes = true;
 			params.indentOnly = false;
@@ -209,7 +209,7 @@ namespace QuickXmlTests {
 			params.indentChars = "\t";
 			params.eolChars = "\n";
 			params.maxIndentLevel = 255;
-			params.enforceConformity = true;
+			params.ensureConformity = true;
 			params.autoCloseTags = false;
 			params.indentAttributes = false;
 			params.indentOnly = true;
@@ -229,7 +229,7 @@ namespace QuickXmlTests {
 			params.indentChars = "\t";
 			params.eolChars = "\n";
 			params.maxIndentLevel = 255;
-			params.enforceConformity = true;
+			params.ensureConformity = true;
 			params.autoCloseTags = false;
 			params.indentAttributes = false;
 			params.indentOnly = false;
@@ -245,7 +245,7 @@ namespace QuickXmlTests {
 			params.indentChars = "\t";
 			params.eolChars = "\n";
 			params.maxIndentLevel = 255;
-			params.enforceConformity = false;
+			params.ensureConformity = false;
 			params.autoCloseTags = false;
 			params.indentAttributes = false;
 			params.indentOnly = false;
@@ -261,7 +261,7 @@ namespace QuickXmlTests {
 			params.indentChars = "\t";
 			params.eolChars = "\n";
 			params.maxIndentLevel = 255;
-			params.enforceConformity = true;
+			params.ensureConformity = true;
 			params.autoCloseTags = true;
 			params.indentAttributes = false;
 			params.indentOnly = false;
@@ -277,7 +277,7 @@ namespace QuickXmlTests {
 			params.indentChars = "\t";
 			params.eolChars = "\n";
 			params.maxIndentLevel = 255;
-			params.enforceConformity = false;
+			params.ensureConformity = false;
 			params.autoCloseTags = true;
 			params.indentAttributes = false;
 			params.indentOnly = false;

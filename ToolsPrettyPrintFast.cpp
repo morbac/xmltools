@@ -21,7 +21,7 @@ void sciDocPrettyPrintQuickXml(ScintillaDoc& doc) {
     params.indentChars = doc.Tab();
     params.eolChars = doc.EOL();
     params.maxIndentLevel = 255;
-    params.enforceConformity = !xmltoolsoptions.trimTextWhitespace;
+    params.ensureConformity = xmltoolsoptions.ensureConformity;
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
     params.indentAttributes = false;
     params.indentOnly = false;
@@ -98,7 +98,7 @@ void sciDocPrettyPrintQuickXmlAttr(ScintillaDoc& doc) {
     params.indentChars = doc.Tab();
     params.eolChars = doc.EOL();
     params.maxIndentLevel = 255;
-    params.enforceConformity = !xmltoolsoptions.trimTextWhitespace;
+    params.ensureConformity = xmltoolsoptions.ensureConformity;
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
     params.indentAttributes = true;
     params.indentOnly = false;
@@ -171,7 +171,7 @@ void sciDocPrettyPrintQuickXml_IndentOnly(ScintillaDoc& doc) {
     params.indentChars = doc.Tab();
     params.eolChars = doc.EOL();
     params.maxIndentLevel = 255;
-    params.enforceConformity = !xmltoolsoptions.trimTextWhitespace;
+    params.ensureConformity = xmltoolsoptions.ensureConformity;
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
     params.indentAttributes = true;
     params.indentOnly = true;
@@ -242,7 +242,7 @@ void sciDocLinearizeQuickXml(ScintillaDoc& doc) {
     params.indentChars = doc.Tab();
     params.eolChars = doc.EOL();
     params.maxIndentLevel = 255;
-    params.enforceConformity = !xmltoolsoptions.trimTextWhitespace;
+    params.ensureConformity = xmltoolsoptions.ensureConformity;
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
     params.indentAttributes = false;
     params.indentOnly = false;

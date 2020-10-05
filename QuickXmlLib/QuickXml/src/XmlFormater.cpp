@@ -106,7 +106,7 @@ namespace QuickXml {
 				case XmlTokenType::Text: {
 					std::string tmp(token.chars, token.size);
 					trim(tmp);
-					if (this->params.enforceConformity) {
+					if (this->params.ensureConformity) {
 						nexttoken = this->parser->getNextToken();
 						if (tmp.length() > 0 ||
 							(nexttoken.type != XmlTokenType::TagOpening &&
@@ -123,7 +123,7 @@ namespace QuickXml {
 					break;
 				}
 				case XmlTokenType::TagOpeningEnd: {
-					if (this->params.enforceConformity) {
+					if (this->params.ensureConformity) {
 						nexttoken = this->parser->getNextToken();
 					}
 					else {
@@ -490,7 +490,7 @@ namespace QuickXml {
 		params.indentChars = "  ";
 		params.eolChars = "\n";
 		params.maxIndentLevel = 255;
-		params.enforceConformity = true;
+		params.ensureConformity = true;
 		params.autoCloseTags = false;
 		params.indentAttributes = false;
 		params.indentOnly = false;

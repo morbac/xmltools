@@ -9,7 +9,7 @@ namespace QuickXml {
 		std::string indentChars = "\t";		// indentation char(s)
 		std::string eolChars = "\n";		// end of line char(s)
 		size_t maxIndentLevel = 255;		// max indent level (0 == unlimited)
-		bool enforceConformity = true;		// make the formater respect conformity
+		bool ensureConformity = true;		// make the formater respect conformity
 		bool autoCloseTags = false;			// make the formater change tags like <a></a> into <a/>
 		bool indentAttributes = false;		// make the formater display attributes on separated lines
 		bool indentOnly = false;			// make the formater keep the existing linebreaks and only adjust indentation

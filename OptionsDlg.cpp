@@ -131,12 +131,12 @@ BOOL COptionsDlg::OnInitDialog() {
 
   CMFCPropertyGridProperty* pGrpPrettyPrint = new CMFCPropertyGridProperty(L"Pretty print options");
   m_wndPropList.AddProperty(pGrpPrettyPrint);
-  pTmpOption = new CMFCPropertyGridProperty(L"Formating engine", COleVariant(xmltoolsoptions.formatingEngine.c_str()), L"This property let you choose the pretty print and linearize formating engine.", (DWORD_PTR)&xmltoolsoptions.formatingEngine);
+  pTmpOption = new CMFCPropertyGridProperty(L"Formating engine", COleVariant(xmltoolsoptions.formatingEngine.c_str()), L"This property let you choose the pretty print and linearize formating engine. Currently, you have choice between:\r\n- SimpleXml: A fast and low memory engine developped by LetMeSleepAlready (https://github.com/LetMeSleepAlready)\r\n- QuickXml: A quick and simple engine which focus on conformity", (DWORD_PTR)&xmltoolsoptions.formatingEngine);
   pTmpOption->AddOption(L"SimpleXml"); pTmpOption->AddOption(L"QuickXml");
   pGrpPrettyPrint->AddSubItem(pTmpOption); vWStringProperties.push_back(pTmpOption);
   pTmpOption = new CMFCPropertyGridProperty(L"Auto-close tags", COleVariant((short)(xmltoolsoptions.ppAutoclose ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Enable auto-close tags on pretty print. For instance, when enabled, \"<sample></sample>\" is replaced with \"<sample/>\".", (DWORD_PTR)&xmltoolsoptions.ppAutoclose);
   pGrpPrettyPrint->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
-  pTmpOption = new CMFCPropertyGridProperty(L"Trim text whitespace", COleVariant((short)(xmltoolsoptions.trimTextWhitespace ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Enable the trim of whitespaces chars (spaces, tabs and line breaks) in text.", (DWORD_PTR)&xmltoolsoptions.trimTextWhitespace);
+  pTmpOption = new CMFCPropertyGridProperty(L"Ensure conformity", COleVariant((short)(xmltoolsoptions.ensureConformity ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Make the prettyprint/linearize engine maintain XML conformity. Whitespace are trimmed and linebreaks are added only if it does not modify the xml structure. Currently only available on QuickXml.", (DWORD_PTR)&xmltoolsoptions.ensureConformity);
   pGrpPrettyPrint->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
 
 
