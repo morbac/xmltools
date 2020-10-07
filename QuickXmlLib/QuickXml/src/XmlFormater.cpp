@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "XmlFormater.h"
 
 namespace QuickXml {
