@@ -1,12 +1,12 @@
-version: 2.4.11.{Build}
+version: 3.1.0.{Build}
 
 environment:
   matrix:
   - PlatformToolset: v142
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
 
-  - PlatformToolset: v141_xp
-    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+  #- PlatformToolset: v141_xp
+  #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
 
 
 platform:
@@ -25,6 +25,8 @@ install:
     - if "%PlatformToolset%"=="v141_xp" call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %archi%
     - if "%PlatformToolset%"=="v142" call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %archi%
 
+    - nuget restore "%APPVEYOR_BUILD_FOLDER%"\SimpleXmlLib\SimpleXmlTests\packages.config -PackagesDirectory "%APPVEYOR_BUILD_FOLDER%"\packages
+
 build_script:
     - cd "%APPVEYOR_BUILD_FOLDER%"
     - msbuild XMLTools.sln /m /p:configuration="%configuration%" /p:platform="%platform_input%" /p:PlatformToolset="%PlatformToolset%" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
@@ -33,7 +35,7 @@ after_build:
     - cd "%APPVEYOR_BUILD_FOLDER%"
     - ps: |
         Push-AppveyorArtifact "$env:PLATFORM_INPUT\$env:CONFIGURATION\XMLTools.dll" -FileName XMLTools.dll
-        if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release" -and $env:PLATFORMTOOLSET -eq "v141_xp")
+        if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release" -and $env:PLATFORMTOOLSET -eq "v142")
         {
             if($env:ARCH -eq "x64"){
                 $ZipFileName = "XMLTools_$($env:APPVEYOR_REPO_TAG_NAME)_x64.zip"
@@ -61,5 +63,5 @@ deploy:
     force_update: true
     on:
         appveyor_repo_tag: true
-        PlatformToolset: v141_xp
+        PlatformToolset: v142
         configuration: Release
