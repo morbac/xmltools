@@ -93,6 +93,9 @@
     <ClCompile Include="ToolsXPath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ToolsErrors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="XMLTools.def">

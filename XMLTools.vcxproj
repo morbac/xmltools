@@ -342,6 +342,7 @@
     <ClCompile Include="nppHelpers.cpp" />
     <ClCompile Include="OptionsDlg.cpp" />
     <ClCompile Include="ToolsEditor.cpp" />
+    <ClCompile Include="ToolsErrors.cpp" />
     <ClCompile Include="ToolsPrettyPrintFast.cpp" />
     <ClCompile Include="Report.cpp" />
     <ClCompile Include="StdAfx.cpp">
