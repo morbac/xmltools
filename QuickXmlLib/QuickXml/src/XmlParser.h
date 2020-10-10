@@ -14,7 +14,8 @@ namespace QuickXml {
         AttrValue,
         Text,
         Whitespace,
-        Instruction,
+        Instruction,       // <?..?> / <%..%>
+        Declaration,       // <!..>
         Comment,
         CDATA,
         LineBreak,
@@ -121,9 +122,14 @@ namespace QuickXml {
         * @param delimiter The string to search
         * @param offset The number of chars to skip before checking delimiter
         * @param goAfter Indicates to place cursor after the delimiter
+        * @param skipDelimiter A delimiter which introduce a segment to ignore. Let's consider following example:
+        *          <!DOCTYPE greeting [
+                     <!ELEMENT greeting (#PCDATA)>
+                   ]>
+                 Reading until delimiter ">" with skipDelimiter "<" will skip the internal <!ELEMENT..>
         * @return Number of readen chars
         */
-        size_t readUntil(const char* delimiter, size_t offset = 0, bool goAfter = false);
+        size_t readUntil(const char* delimiter, size_t offset = 0, bool goAfter = false, std::string skipDelimiter = "");
 
         /*
         * Reads stream (and update cursor position) until it finds one of given characters

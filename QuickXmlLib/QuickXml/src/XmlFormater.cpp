@@ -168,6 +168,7 @@ namespace QuickXml {
 				case XmlTokenType::AttrName:
 				case XmlTokenType::Comment:
 				case XmlTokenType::CDATA:
+				case XmlTokenType::Declaration:
 				case XmlTokenType::AttrValue:
 				case XmlTokenType::Instruction:
 				case XmlTokenType::Equal:
@@ -343,20 +344,16 @@ namespace QuickXml {
 					lastTextHasLineBreaks = false;
 					break;
 				}
-				case XmlTokenType::CDATA: {
-					lastAppliedTokenType = XmlTokenType::CDATA;
-					this->out.write(token.chars, token.size);
-					lastTextHasLineBreaks = false;
-					break;
-				}
 				case XmlTokenType::Whitespace: {
 					// ignore all whitespace
 					// note: whitespaces present in text are not
 					//       tokenized as whitespaces, but as text
 					break;
 				}
+				case XmlTokenType::CDATA:
 				case XmlTokenType::AttrValue:
 				case XmlTokenType::Instruction:
+				case XmlTokenType::Declaration:
 				case XmlTokenType::Equal:
 				case XmlTokenType::EndOfFile:
 				case XmlTokenType::Undefined:

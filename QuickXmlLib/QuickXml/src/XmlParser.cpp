@@ -145,6 +145,16 @@ namespace QuickXml {
 							 this->readUntil("]]>", 0, true),
 							 this->currpos };
 				}
+				else if (cursor[1] == '!') {
+					// some other declaration
+					this->currcontext.inOpeningTag = false;
+					this->currcontext.inClosingTag = false;
+					// @todo : parse declaration
+					return { XmlTokenType::Declaration,
+							 startpos,
+							 this->readUntil(">", 0, true, "<"),
+							 this->currpos };
+				}
 				else if (cursor[1] == '/') {
 					// </ns:sample
 					this->currcontext.inOpeningTag = false;
@@ -327,17 +337,42 @@ namespace QuickXml {
 		return res + offset;
 	}
 
-	size_t XmlParser::readUntil(const char* delimiter, size_t offset, bool goAfter) {
+	size_t XmlParser::readUntil(const char* delimiter, size_t offset, bool goAfter, std::string skipDelimiter) {
 		size_t res = 0;
 		if (offset > 0) offset = this->readChars(offset);
 		const char* cursor = this->srcText + this->currpos;
-		const char* tmp = strstr(cursor, delimiter);
-		if (!tmp) tmp = this->srcText + this->srcLength;
-		res = tmp - cursor;
-		if (goAfter) {
-			res += strlen(delimiter);
+		if (skipDelimiter.length() > 0) {
+			size_t lvl = 0;
+			const char* beg;
+			const char* end;
+			do {
+				end = strstr(cursor, delimiter);
+				beg = strstr(cursor, skipDelimiter.c_str());
+				if (beg != NULL && beg < end) {
+					++lvl;
+					cursor = beg + 1;
+				}
+				else if (end != NULL && lvl > 0) {
+					--lvl;
+					cursor = end + 1;
+				}
+			} while (lvl > 0);
+			if (!end) end = this->srcText + this->srcLength;
+			res = end - (this->srcText + this->currpos);
+			if (goAfter) {
+				res += strlen(delimiter);
+			}
+			this->currpos += res;
 		}
-		this->currpos += res;
+		else {
+			const char* end = strstr(cursor, delimiter);
+			if (!end) end = this->srcText + this->srcLength;
+			res = end - cursor;
+			if (goAfter) {
+				res += strlen(delimiter);
+			}
+			this->currpos += res;
+		}
 		return res + offset;
 	}
 
@@ -353,6 +388,7 @@ namespace QuickXml {
 			case XmlTokenType::Text: return "TEXT";
 			case XmlTokenType::Whitespace: return "WHITESPACE";
 			case XmlTokenType::Instruction: return "INSTRUCTION";
+			case XmlTokenType::Declaration: return "DECLARATION";
 			case XmlTokenType::Comment: return "COMMENT";
 			case XmlTokenType::CDATA: return "CDATA";
 			case XmlTokenType::LineBreak: return "LINEBREAK";
