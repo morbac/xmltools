@@ -296,11 +296,6 @@ namespace QuickXml {
 				}
 				case XmlTokenType::Text: {
 					// check if text could be ignored
-					/*if (lastAppliedTokenType == XmlTokenType::Declaration) {
-						// text is always ignored in declarations
-						break;
-					}
-					*/
 					XmlToken nexttoken = this->parser->getNextToken();
 					std::string tmp(token.chars, token.size);
 					if (this->params.indentOnly) {

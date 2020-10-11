@@ -52,6 +52,8 @@ void CDebugDlg::UpdateWindowText() {
 
 BEGIN_MESSAGE_MAP(CDebugDlg, CDialog)
   ON_WM_SIZE()
+    ON_BN_CLICKED(IDC_BTNCLOSE, &CDebugDlg::OnBnClickedBtnclose)
+    ON_BN_CLICKED(IDC_BTNCLEAR, &CDebugDlg::OnBnClickedBtnclear)
 END_MESSAGE_MAP()
 
 
@@ -62,9 +64,16 @@ void CDebugDlg::OnSize(UINT nType, int cx, int cy) {
   CDialog::OnSize(nType, cx, cy);
 
   CWnd *txt_wnd = GetDlgItem(IDC_EDITDEBUG);
+  CWnd* btn_clear = GetDlgItem(IDC_BTNCLEAR);
+  CWnd* btn_close = GetDlgItem(IDC_BTNCLOSE);
   if (txt_wnd) {
     int border = 8;
-    txt_wnd->MoveWindow(border, border, cx-2*border, cy-2*border);
+    int btnHeight = 26;
+    int btnWidth = 86;
+    txt_wnd->MoveWindow(border, border, cx-2*border, cy-3*border-btnHeight);
+    btn_clear->MoveWindow(((cx - border) / 2) - btnWidth, cy - border - btnHeight, btnWidth, btnHeight);
+    btn_close->MoveWindow(((cx + border) / 2), cy - border - btnHeight, btnWidth, btnHeight);
+
   }
 }
 
@@ -80,4 +89,17 @@ BOOL CDebugDlg::OnInitDialog()
 
   return TRUE;  // return TRUE unless you set the focus to a control
   // EXCEPTION : les pages de propriétés OCX devraient retourner FALSE
+}
+
+
+void CDebugDlg::OnBnClickedBtnclose()
+{
+    this->OnOK();
+}
+
+
+void CDebugDlg::OnBnClickedBtnclear()
+{
+    this->s_valDebug = L"";
+    UpdateWindowText();
 }

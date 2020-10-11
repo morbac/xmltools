@@ -27,4 +27,6 @@ public:
   CStringW s_valDebug;
   afx_msg void OnSize(UINT nType, int cx, int cy);
   virtual BOOL OnInitDialog();
+  afx_msg void OnBnClickedBtnclose();
+  afx_msg void OnBnClickedBtnclear();
 };
