@@ -26,7 +26,7 @@ namespace QuickXml {
 	}
 
 	void XmlParser::reset() {
-		this->currcontext = { false, false };
+		this->currcontext = { false, false, 0 };
 		this->hasAttrName = false;
 		this->currpos = 0;
 
@@ -146,14 +146,21 @@ namespace QuickXml {
 							 this->currpos };
 				}
 				else if (cursor[1] == '!') {
+					// <!  for instance "<![INCLUDE or <!DOCTYPE
 					// some other declaration
 					this->currcontext.inOpeningTag = false;
 					this->currcontext.inClosingTag = false;
-					// @todo : parse declaration
-					return { XmlTokenType::Declaration,
-							 startpos,
-							 this->readUntil(">", 0, true, "<"),
-							 this->currpos };
+					this->currcontext.declarationObjects++;
+					XmlToken token = { XmlTokenType::Declaration,
+					                   startpos,
+									   this->readUntilFirstOf("[>", (cursor[2] == '[' ? 3 : 2), false),
+									   this->currpos };
+					cursor = this->srcText + this->currpos;
+					if (cursor[0] == '[') {
+						this->readChars(1);
+						token.size++;
+					}
+					return token;
 				}
 				else if (cursor[1] == '/') {
 					// </ns:sample
@@ -174,6 +181,44 @@ namespace QuickXml {
 							 this->currpos };
 				}
 				break;
+			}
+			else if (this->currcontext.declarationObjects > 0) {
+				if (currentchar == ']' && cursor[1] == '>') {
+					if (this->currcontext.declarationObjects > 0) {
+						this->currcontext.declarationObjects--;
+					}
+					return { XmlTokenType::DeclarationEnd,
+							 startpos,
+							 this->readChars(2),
+							 this->currpos };
+				}
+				else if (currentchar == '>') {
+					if (this->currcontext.declarationObjects > 0) {
+						this->currcontext.declarationObjects--;
+					}
+					return { XmlTokenType::DeclarationEnd,
+							 startpos,
+							 this->readChars(1),
+							 this->currpos };
+				}
+				else if (currentchar == ' ' || currentchar == '\t') {
+					return { XmlTokenType::Whitespace,
+							 startpos,
+							 this->readUntilFirstNotOf(" \t"),
+							 this->currpos };
+				}
+				else if (currentchar == '\r' || currentchar == '\n') {
+					return { XmlTokenType::LineBreak,
+							 startpos,
+							 this->readUntilFirstNotOf("\r\n"),
+							 this->currpos };
+				}
+				else {
+					return { XmlTokenType::Undefined,
+							 startpos,
+							 this->readChars(1),
+							 this->currpos };
+				}
 			}
 			else if (this->currcontext.inClosingTag) {
 				// parsing closing tag content
@@ -389,6 +434,7 @@ namespace QuickXml {
 			case XmlTokenType::Whitespace: return "WHITESPACE";
 			case XmlTokenType::Instruction: return "INSTRUCTION";
 			case XmlTokenType::Declaration: return "DECLARATION";
+			case XmlTokenType::DeclarationEnd: return "DECLARATION_END";
 			case XmlTokenType::Comment: return "COMMENT";
 			case XmlTokenType::CDATA: return "CDATA";
 			case XmlTokenType::LineBreak: return "LINEBREAK";

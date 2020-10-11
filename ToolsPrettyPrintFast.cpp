@@ -303,6 +303,41 @@ void sciDocLinearizeSimpleXml(ScintillaDoc& doc) {
     doc.SetWorkText(outText.c_str());
 }
 
+void sciDocTokenizeQuickXml(ScintillaDoc& doc) {
+    ScintillaDoc::sciWorkText inText = doc.GetWorkText();
+    if (inText.text == NULL) {
+        return;
+    }
+
+    XmlFormaterParamsType params;
+    params.indentChars = doc.Tab();
+    params.eolChars = doc.EOL();
+    params.maxIndentLevel = 255;
+    params.ensureConformity = xmltoolsoptions.ensureConformity;
+    params.autoCloseTags = xmltoolsoptions.ppAutoclose;
+    params.indentAttributes = false;
+    params.indentOnly = false;
+
+    if (xmltoolsoptions.maxElementDepth > 0) {
+        params.maxIndentLevel = xmltoolsoptions.maxElementDepth;
+    }
+
+    auto docclock_start = clock();
+
+    XmlFormater formater(inText.text, inText.length, params);
+    std::string outText = formater.debugTokens("\r\n");
+
+    auto docclock_end = clock();
+
+    {
+        std::string txt;
+        txt += "crunching => time taken: " + std::to_string(docclock_end - docclock_start) + " ms";
+        dbgln(txt.c_str());
+    }
+
+    dbgln(outText.c_str(), DBG_LEVEL::DBG_ERROR);
+}
+
 void nppPrettyPrintXmlFast() {
     if (xmltoolsoptions.formatingEngine.compare(L"QuickXml") == 0) {
         nppMultiDocumentCommand(L"PrettyPrintFast (quickxml)", sciDocPrettyPrintQuickXml);
@@ -337,4 +372,8 @@ void nppLinearizeXmlFast() {
     else {
         nppMultiDocumentCommand(L"LinearizeFast (simplexml)", sciDocLinearizeSimpleXml);
     }
+}
+
+void nppTokenizeXmlFast() {
+    nppMultiDocumentCommand(L"TokenizeFast (quickxml)", sciDocTokenizeQuickXml);
 }

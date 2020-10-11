@@ -15,7 +15,8 @@ namespace QuickXml {
         Text,
         Whitespace,
         Instruction,       // <?..?> / <%..%>
-        Declaration,       // <!..>
+        Declaration,       // <!
+        DeclarationEnd,    // >
         Comment,
         CDATA,
         LineBreak,
@@ -35,6 +36,7 @@ namespace QuickXml {
     struct XmlContext {
         bool inOpeningTag;
         bool inClosingTag;
+        size_t declarationObjects;
     };
 
     class XmlParser {

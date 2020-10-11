@@ -110,7 +110,7 @@ namespace QuickXml {
 					if (this->params.ensureConformity) {
 						nexttoken = this->parser->getNextToken();
 						if (tmp.length() > 0 ||
-							(nexttoken.type != XmlTokenType::TagOpening &&
+							((nexttoken.type != XmlTokenType::TagOpening && nexttoken.type != XmlTokenType::Declaration) &&
 								(nexttoken.type != XmlTokenType::TagClosing ||
 									lastAppliedTokenType == XmlTokenType::TagOpeningEnd))) {
 							lastAppliedTokenType = XmlTokenType::Text;
@@ -169,6 +169,7 @@ namespace QuickXml {
 				case XmlTokenType::Comment:
 				case XmlTokenType::CDATA:
 				case XmlTokenType::Declaration:
+				case XmlTokenType::DeclarationEnd:
 				case XmlTokenType::AttrValue:
 				case XmlTokenType::Instruction:
 				case XmlTokenType::Equal:
@@ -295,7 +296,11 @@ namespace QuickXml {
 				}
 				case XmlTokenType::Text: {
 					// check if text could be ignored
-					// @todo implement the !enforceConformity mode
+					/*if (lastAppliedTokenType == XmlTokenType::Declaration) {
+						// text is always ignored in declarations
+						break;
+					}
+					*/
 					XmlToken nexttoken = this->parser->getNextToken();
 					std::string tmp(token.chars, token.size);
 					if (this->params.indentOnly) {
@@ -305,9 +310,8 @@ namespace QuickXml {
 						trim(tmp);
 					}
 					if (tmp.length() > 0 ||
-						(nexttoken.type != XmlTokenType::TagOpening &&
-							(nexttoken.type != XmlTokenType::TagClosing ||
-								lastAppliedTokenType == XmlTokenType::TagOpeningEnd))) {
+						((nexttoken.type != XmlTokenType::TagOpening && nexttoken.type != XmlTokenType::Declaration) &&
+							(nexttoken.type != XmlTokenType::TagClosing || lastAppliedTokenType == XmlTokenType::TagOpeningEnd))) {
 						lastAppliedTokenType = XmlTokenType::Text;
 						if (this->params.indentOnly) {
 							this->out << tmp;
@@ -325,6 +329,36 @@ namespace QuickXml {
 						this->out.write(token.chars, token.size);
 						lastTextHasLineBreaks = true;
 					}
+					break;
+				}
+				case XmlTokenType::Declaration: {
+					if (this->params.indentOnly) {
+						if (lastTextHasLineBreaks) {
+							this->writeIndentation();
+						}
+					}
+					else if (lastAppliedTokenType != XmlTokenType::Text &&
+					         lastAppliedTokenType != XmlTokenType::CDATA &&
+					         lastAppliedTokenType != XmlTokenType::Undefined) {
+						this->writeEOL();
+						this->writeIndentation();
+					}
+					lastAppliedTokenType = XmlTokenType::Declaration;
+					this->out.write(token.chars, token.size);
+					this->updateIndentLevel(1);
+					break;
+				}
+				case XmlTokenType::DeclarationEnd: {
+					// > or ]>
+					this->updateIndentLevel(-1);
+					if (token.chars[0] == ']') {
+						if (!this->params.indentOnly) {
+							this->writeEOL();
+						}
+						this->writeIndentation();
+					}
+					lastAppliedTokenType = XmlTokenType::DeclarationEnd;
+					this->out.write(token.chars, token.size);
 					break;
 				}
 				case XmlTokenType::Comment: {
@@ -353,7 +387,6 @@ namespace QuickXml {
 				case XmlTokenType::CDATA:
 				case XmlTokenType::AttrValue:
 				case XmlTokenType::Instruction:
-				case XmlTokenType::Declaration:
 				case XmlTokenType::Equal:
 				case XmlTokenType::EndOfFile:
 				case XmlTokenType::Undefined:
