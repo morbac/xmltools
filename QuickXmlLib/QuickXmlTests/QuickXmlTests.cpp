@@ -142,7 +142,7 @@ namespace QuickXmlTests {
 			params.indentChars = "\t";
 			params.eolChars = "\n";
 			params.maxIndentLevel = 255;
-			params.ensureConformity = true;
+			params.ensureConformity = false;
 			params.autoCloseTags = false;
 			params.indentAttributes = false;
 			params.indentOnly = false;
@@ -151,6 +151,22 @@ namespace QuickXmlTests {
 		}
 
 		TEST_METHOD(PrettyPrintTest02) {
+			std::string xml("<a>\n<b/>\n\n<!--test-->\n<d/>\n</a>");
+			std::string ref("<a>\n\t<b/>\n\t<!--test-->\n\t<d/>\n</a>");
+
+			XmlFormaterParamsType params;
+			params.indentChars = "\t";
+			params.eolChars = "\n";
+			params.maxIndentLevel = 255;
+			params.ensureConformity = false;
+			params.autoCloseTags = true;
+			params.indentAttributes = false;
+			params.indentOnly = false;
+
+			testPrettyPrint(xml, ref, params);
+		}
+
+		TEST_METHOD(PrettyPrintTest03) {
 			XmlFormaterParamsType params;
 			params.indentChars = "\t";
 			params.eolChars = '\n';

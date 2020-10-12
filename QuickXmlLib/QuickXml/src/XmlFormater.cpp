@@ -110,9 +110,10 @@ namespace QuickXml {
 					if (this->params.ensureConformity) {
 						nexttoken = this->parser->getNextToken();
 						if (tmp.length() > 0 ||
-							((nexttoken.type != XmlTokenType::TagOpening && nexttoken.type != XmlTokenType::Declaration) &&
-								(nexttoken.type != XmlTokenType::TagClosing ||
-									lastAppliedTokenType == XmlTokenType::TagOpeningEnd))) {
+							((nexttoken.type != XmlTokenType::TagOpening &&
+								nexttoken.type != XmlTokenType::Comment &&
+								nexttoken.type != XmlTokenType::Declaration) &&
+								(nexttoken.type != XmlTokenType::TagClosing || lastAppliedTokenType == XmlTokenType::TagOpeningEnd))) {
 							lastAppliedTokenType = XmlTokenType::Text;
 							this->out.write(token.chars, token.size);
 						}
@@ -305,7 +306,9 @@ namespace QuickXml {
 						trim(tmp);
 					}
 					if (tmp.length() > 0 ||
-						((nexttoken.type != XmlTokenType::TagOpening && nexttoken.type != XmlTokenType::Declaration) &&
+						((nexttoken.type != XmlTokenType::TagOpening &&
+							nexttoken.type != XmlTokenType::Comment &&
+							nexttoken.type != XmlTokenType::Declaration) &&
 							(nexttoken.type != XmlTokenType::TagClosing || lastAppliedTokenType == XmlTokenType::TagOpeningEnd))) {
 						lastAppliedTokenType = XmlTokenType::Text;
 						if (this->params.indentOnly) {
