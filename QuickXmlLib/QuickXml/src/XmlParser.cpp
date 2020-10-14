@@ -37,17 +37,13 @@ namespace QuickXml {
 
 	XmlToken XmlParser::getNextStructureToken() {
 		// @fixme Should we consider whitespace and linebreaks has structure token in opening tag ?
-		if (this->nexttoken.type != XmlTokenType::Whitespace &&
-			this->nexttoken.type != XmlTokenType::LineBreak &&
-			this->nexttoken.type != XmlTokenType::Text) {
+		if (!(this->nexttoken.type & (XmlTokenType::Whitespace | XmlTokenType::LineBreak | XmlTokenType::Text))) {
 			return this->nexttoken;
 		}
 		else {
 			// let's search in the buffered list
 			for (std::list<XmlToken>::iterator it = this->buffer.begin(); it != this->buffer.end(); ++it) {
-				if ((*it).type != XmlTokenType::Whitespace &&
-					(*it).type != XmlTokenType::LineBreak &&
-					(*it).type != XmlTokenType::Text) {
+				if (!((*it).type & (XmlTokenType::Whitespace |XmlTokenType::LineBreak | XmlTokenType::Text))) {
 					return (*it);
 				}
 			}
@@ -58,9 +54,7 @@ namespace QuickXml {
 				res = this->fetchToken();
 				this->buffer.push_back(res);
 
-				if (res.type != XmlTokenType::Whitespace &&
-					res.type != XmlTokenType::LineBreak &&
-					res.type != XmlTokenType::Text) {
+				if (!(res.type & (XmlTokenType::Whitespace | XmlTokenType::LineBreak | XmlTokenType::Text))) {
 					return res;
 				}
 			} while (res.type != XmlTokenType::EndOfFile);
@@ -83,6 +77,14 @@ namespace QuickXml {
 			this->nexttoken = this->buffer.front();
 			this->buffer.pop_front();
 		}
+
+		return this->currtoken;
+	}
+
+	XmlToken XmlParser::parseUntil(XmlTokensType type) {
+		do {
+			this->parseNext();
+		} while (!(this->currtoken.type & type));
 
 		return this->currtoken;
 	}

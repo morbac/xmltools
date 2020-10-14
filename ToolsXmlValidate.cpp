@@ -4,10 +4,13 @@
 #include "nppHelpers.h"
 #include "Report.h"
 #include "XMLTools.h"
+#include "XmlParser.h"
 
 #include "SelectFileDlg.h"
 
 #include <string>
+
+using namespace QuickXml;
 
 int performXMLCheck(int informIfNoError) {
     dbgln("performXMLCheck()");
@@ -140,6 +143,8 @@ void XMLValidation(int informIfNoError) {
 
     CHK_HR(pXMLDom->load(varXML, &varStatus));
     if (varStatus == VARIANT_TRUE) {
+        bool hasSchemaOrDTD = false;
+
         // search for xsi:noNamespaceSchemaLocation or xsi:schemaLocation
         CHK_HR(pXMLDom->setProperty(L"SelectionNamespaces", _variant_t("xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'")));
         hr = pXMLDom->selectNodes(L"/*/@xsi:noNamespaceSchemaLocation", &pNodes);
@@ -149,8 +154,23 @@ void XMLValidation(int informIfNoError) {
         hr = pXMLDom->selectNodes(L"/*/@xsi:schemaLocation", &pNodes);
         CHK_HR(pNodes->get_length(&length));
         bool sl = (length > 0);
+        hasSchemaOrDTD = (nnsl || sl);
 
-        if (true || nnsl || sl) {
+        // search for DTD - this will be done using QuickXml
+        if (!hasSchemaOrDTD) {
+            XmlParser parser(data, currentLength);
+            XmlToken token = undefinedToken;
+            do {
+                token = parser.parseUntil(XmlTokenType::Declaration | XmlTokenType::TagOpening); 
+                if (token.type == XmlTokenType::Declaration && !strncmp(token.chars, "<!DOCTYPE", 9)) {
+                    break;
+                }
+            } while (token.type != XmlTokenType::EndOfFile && token.type != XmlTokenType::TagOpening);
+
+            hasSchemaOrDTD = (token.type == XmlTokenType::Declaration);
+        }
+
+        if (hasSchemaOrDTD) {
             // if noNamespaceSchemaLocation or schemaLocation attribute is present,
             // validation is supposed OK since xml is loaded with INIT_OPTION_VALIDATEONPARSE
             // option

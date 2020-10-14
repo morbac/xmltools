@@ -4,33 +4,43 @@
 #include <list>
 
 namespace QuickXml {
-    enum class XmlTokenType {
-        TagOpening,        // <nx:sample
-        TagClosing,        // </nx:sample
-        TagOpeningEnd,     // > of opening tag
-        TagClosingEnd,     // > of closing tag
-        TagSelfClosingEnd, // /> of self closing tag
-        AttrName,
-        AttrValue,
-        Text,
-        Whitespace,
-        Instruction,       // <?..?> / <%..%>
-        Declaration,       // <!
-        DeclarationEnd,    // >
-        Comment,
-        CDATA,
-        LineBreak,
-        Equal,
+    enum XmlTokenType {
+        Undefined         = 1 <<  0,
 
-        EndOfFile,
-        Undefined
+        TagOpening        = 1 <<  1, // <nx:sample
+        TagClosing        = 1 <<  2, // </nx:sample
+        TagOpeningEnd     = 1 <<  3, // > of opening tag
+        TagClosingEnd     = 1 <<  4, // > of closing tag
+        TagSelfClosingEnd = 1 <<  5, // /> of self closing tag
+        AttrName          = 1 <<  6,
+        AttrValue         = 1 <<  7,
+        Text              = 1 <<  8,
+        Whitespace        = 1 <<  9,
+        Instruction       = 1 << 10, // <?..?> / <%..%>
+        Declaration       = 1 << 11, // <!
+        DeclarationEnd    = 1 << 12, // >
+        Comment           = 1 << 13,
+        CDATA             = 1 << 14,
+        LineBreak         = 1 << 15,
+        Equal             = 1 << 16,
+
+        EndOfFile         = 1 << 30
     };
+
+    typedef int XmlTokensType;  // combined tokens (ex: XmlTokenType::TagOpening | XmlTokenType::Declaration)
 
     struct XmlToken {
         XmlTokenType type;      // the token type
         const char* chars;      // a pointer to token chars
         size_t size;            // the token chars length
         size_t pos;             // the token position in stream
+    };
+
+    const XmlToken undefinedToken = {
+        XmlTokenType::Undefined,
+        "",
+        0,
+        0
     };
 
     struct XmlContext {
@@ -97,6 +107,15 @@ namespace QuickXml {
         * @return The next recognized token
         */
         XmlToken parseNext();
+
+        /*
+        * Parse input until first token of given type
+        * @type The type of tokens to fetch; multiple tokens can be passed using OR operator
+        *       (ex. XmlTokenType::Declaration | XmlTokenType::TagOpening)
+        * @return The found token. The EndOfFile token is returned if no occurrence
+        *         could be found
+        */
+        XmlToken parseUntil(XmlTokensType type);
 
         /*
         * Search for given characters and return position of first occurrence

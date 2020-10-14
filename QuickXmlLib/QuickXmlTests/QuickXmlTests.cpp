@@ -142,7 +142,7 @@ namespace QuickXmlTests {
 			params.indentChars = "\t";
 			params.eolChars = "\n";
 			params.maxIndentLevel = 255;
-			params.ensureConformity = false;
+			params.ensureConformity = true;
 			params.autoCloseTags = false;
 			params.indentAttributes = false;
 			params.indentOnly = false;

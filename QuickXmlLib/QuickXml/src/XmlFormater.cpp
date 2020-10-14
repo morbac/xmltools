@@ -211,9 +211,7 @@ namespace QuickXml {
 							this->writeIndentation();
 						}
 					}
-					else if (lastAppliedTokenType != XmlTokenType::Text &&
-						 lastAppliedTokenType != XmlTokenType::CDATA &&
-						 lastAppliedTokenType != XmlTokenType::Undefined) {
+					else if (!(lastAppliedTokenType & (XmlTokenType::Text | XmlTokenType::CDATA | XmlTokenType::Undefined))) {
 						this->writeEOL();
 						this->writeIndentation();
 					}
@@ -225,8 +223,7 @@ namespace QuickXml {
 				case XmlTokenType::TagOpeningEnd: {
 					numAttr = 0;
 					nexttoken = this->parser->getNextToken();
-					if (this->params.autoCloseTags &&
-						nexttoken.type == XmlTokenType::TagClosing) {
+					if (this->params.autoCloseTags && nexttoken.type == XmlTokenType::TagClosing) {
 						lastAppliedTokenType = XmlTokenType::TagSelfClosingEnd;
 						this->out << "/>";
 						applyAutoclose = true;
@@ -248,10 +245,7 @@ namespace QuickXml {
 								this->writeIndentation();
 							}
 						}
-						else if (lastAppliedTokenType != XmlTokenType::Text &&
-							 lastAppliedTokenType != XmlTokenType::CDATA &&
-							 lastAppliedTokenType != XmlTokenType::TagOpeningEnd &&
-							 lastAppliedTokenType != XmlTokenType::Undefined) {
+						else if (!(lastAppliedTokenType & (XmlTokenType::Text | XmlTokenType::CDATA | XmlTokenType::TagOpeningEnd | XmlTokenType::Undefined))) {
 							this->writeEOL();
 							this->writeIndentation();
 						}
@@ -306,9 +300,7 @@ namespace QuickXml {
 						trim(tmp);
 					}
 					if (tmp.length() > 0 ||
-						((nexttoken.type != XmlTokenType::TagOpening &&
-							nexttoken.type != XmlTokenType::Comment &&
-							nexttoken.type != XmlTokenType::Declaration) &&
+						((!(nexttoken.type & (XmlTokenType::TagOpening | XmlTokenType::Comment | XmlTokenType::Declaration))) &&
 							(nexttoken.type != XmlTokenType::TagClosing || lastAppliedTokenType == XmlTokenType::TagOpeningEnd))) {
 						lastAppliedTokenType = XmlTokenType::Text;
 						if (this->params.indentOnly) {
@@ -335,9 +327,7 @@ namespace QuickXml {
 							this->writeIndentation();
 						}
 					}
-					else if (lastAppliedTokenType != XmlTokenType::Text &&
-					         lastAppliedTokenType != XmlTokenType::CDATA &&
-					         lastAppliedTokenType != XmlTokenType::Undefined) {
+					else if (!(lastAppliedTokenType & (XmlTokenType::Text | XmlTokenType::CDATA | XmlTokenType::Undefined))) {
 						this->writeEOL();
 						this->writeIndentation();
 					}
@@ -365,9 +355,7 @@ namespace QuickXml {
 							this->writeIndentation();
 						}
 					}
-					else if (lastAppliedTokenType != XmlTokenType::Text &&
-						 lastAppliedTokenType != XmlTokenType::CDATA &&
-						 lastAppliedTokenType != XmlTokenType::Undefined) {
+					else if (!(lastAppliedTokenType & (XmlTokenType::Text | XmlTokenType::CDATA | XmlTokenType::Undefined))) {
 						this->writeEOL();
 						this->writeIndentation();
 					}
@@ -404,7 +392,7 @@ namespace QuickXml {
 		this->reset();
 		this->parser->reset();
 
-		XmlToken token = { XmlTokenType::Undefined };
+		XmlToken token = undefinedToken;
 		std::vector<std::string> vPath;
 		bool pushed_attr = false;
 
