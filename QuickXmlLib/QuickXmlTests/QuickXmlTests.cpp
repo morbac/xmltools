@@ -233,7 +233,6 @@ namespace QuickXmlTests {
 			testIndentOnly(xml, ref, params);
 		}
 
-		// Indent only
 		TEST_METHOD(IndentOnlyTest02) {
 			std::string xml("<p xmlns:ns=\"x\"   a=\"1\" b c=\"2\">\n<x ns:d ns:e=\"x\"/>\n<y ns:d\n\tns:e=\"y\">z</y>\n</p>");
 			std::string ref("<p xmlns:ns=\"x\" a=\"1\" b c=\"2\">\n\t<x ns:d ns:e=\"x\"/>\n\t<y ns:d\n\t   ns:e=\"y\">z</y>\n</p>");
@@ -253,7 +252,6 @@ namespace QuickXmlTests {
 		//--------------------------------------------------------------------------------------------
 
 		// Linearize
-
 		TEST_METHOD(LinearizeTest01) {
 			std::string xml("<p> <x> </x>  <y/> <x> </x> z <y/> <x/>  <y/> <x/> z <y/> </p>");
 			std::string ref("<p><x> </x><y/><x> </x> z <y/><x/><y/><x/> z <y/></p>");
@@ -321,7 +319,6 @@ namespace QuickXmlTests {
 		//--------------------------------------------------------------------------------------------
 
 		// Current path
-
 		TEST_METHOD(CurrentPathTest01) {
 			std::string xml("<x:a xmlns:x=\"sample\"><x:b><c/><d></d></x:b></x:a>"); 
 			std::string ref("/x:a/x:b/d");

@@ -3,24 +3,23 @@
 #include "Scintilla.h"
 #include "nppHelpers.h"
 #include "Report.h"
+#include "XmlFormater.h"
 
 #include "XPathEvalDlg.h"
+
+using namespace QuickXml;
 
 std::wstring currentXPath(bool preciseXPath) {
     dbgln("currentXPath()");
 
-    HRESULT hr = S_OK;
-    ISAXXMLReader* pRdr = NULL;
-    variant_t varXML;
-    PathBuilder pPB;
-
+    XmlFormater* formater = NULL;
     int currentEdit;
     std::string::size_type currentLength, currentPos;
+    std::wstring nodepath(L"");
+
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
     HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
     currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
-
-    std::wstring nodepath(L"");
 
     char* data = new char[currentLength + sizeof(char)];
     if (!data) return nodepath;  // allocation error, abort check
@@ -30,57 +29,10 @@ std::wstring currentXPath(bool preciseXPath) {
     currentPos = long(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
     ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
-    std::string str(data);
+    formater = new XmlFormater(data, currentLength);
+    nodepath = Report::widen(formater->currentPath(currentPos, true)->str());
     delete[] data;
-    data = NULL;
-
-    // end tag pos
-    std::string::size_type begpos = str.find_first_of("<");
-    std::string::size_type endpos = str.find_last_of(">");
-
-    // let's reach the end of current tag (if we are inside a tag)
-    if (currentPos > begpos && currentPos <= endpos) {
-        currentPos = str.find_last_of("\"<>", currentPos - 1) + 1;
-        bool cursorInAttribute = false;
-
-        // check if we are in a closing tag
-        if (currentPos >= 1 && currentPos < currentLength - 2 * sizeof(char) && str.at(currentPos - 1) == '<' && str.at(currentPos) == '!' && str.at(currentPos + 1) == '-' && str.at(currentPos + 2) == '-') {  // check if in a comment
-            return nodepath;
-        }
-        else if (currentPos >= 1 && str.at(currentPos - 1) == '<' && str.at(currentPos) == '/') {
-            // if we are inside closing tag (inside </x>, let's go back before '<' char so we are inside node)
-            --currentPos;
-        }
-        else {
-            if (currentPos >= 2 && str.at(currentPos - 1) == '\"' && str.at(currentPos - 2) == '=') {
-                cursorInAttribute = true;
-                currentPos = str.find('\"', currentPos) + 1;
-            }
-            else {
-                // let's get the end of current tag or text
-                size_t s = str.find_first_of("<>", currentPos);
-                // if inside a auto-closing tag (ex. '<x/>'), let's go back before '/' char, the '>' is added before slash)
-                if (s > 0 && str.at(s) == '>' && str.at(s - 1) == '/') currentPos = s - 1;
-                else currentPos = s;
-            }
-        }
-
-        str.erase(currentPos);
-        str += ">";
-
-        varXML.SetString(str.c_str());
-
-        CHK_HR(CreateAndInitSAX(&pRdr));
-        CHK_HR(pRdr->putContentHandler(&pPB));
-
-        // no CHK_HR on next call because it will fail since our xml has been truncated at current cursor location
-        pRdr->parse(varXML);
-
-        nodepath = pPB.getPath(preciseXPath);
-        pRdr->Release();
-    }
-
-CleanUp:
+    delete formater;
 
     return nodepath;
 }
