@@ -30,7 +30,7 @@ std::wstring currentXPath(bool preciseXPath) {
     ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
     formater = new XmlFormater(data, currentLength);
-    nodepath = Report::widen(formater->currentPath(currentPos, true)->str());
+    nodepath = Report::utf8ToUcs2(formater->currentPath(currentPos, true)->str());
     delete[] data;
     delete formater;
 
