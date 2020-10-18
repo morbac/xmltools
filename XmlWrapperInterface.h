@@ -66,9 +66,11 @@ public:
     * Perform validity check
     * @param xml A pointer on the begin of xml buffer
     * @param size The xml buffer length
+    * @param schemaFilename Optional. A schema file path; required if schema is not declared in root element
+    * @param validationNamespace Optional. A validation namespace
     * @return Return true if xml is valid, otherwise false
     */
-    virtual bool checkValidity(const char* xml, size_t size) = 0;
+    virtual bool checkValidity(const char* xml, size_t size, std::wstring schemaFilename = L"", std::wstring validationNamespace = L"") = 0;
 
     /*
     * Perform xpath evaluation

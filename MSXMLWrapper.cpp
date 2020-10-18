@@ -88,8 +88,86 @@ CleanUp:
 	return res;
 }
 
-bool MSXMLWrapper::checkValidity(const char* xml, size_t size) {
-	return true;
+bool MSXMLWrapper::checkValidity(const char* xml, size_t size, std::wstring schemaFilename, std::wstring validationNamespace) {
+    HRESULT hr = S_OK;
+    IXMLDOMDocument2* pXMLDom = NULL;
+    IXMLDOMParseError* pXMLErr = NULL;
+    IXMLDOMParseError2* pXMLErr2 = NULL;
+    IXMLDOMNodeList* pNodes = NULL;
+    IXMLDOMNode* pNode = NULL;
+    IXMLDOMElement* pElement = NULL;
+    IXMLDOMSchemaCollection2* pXS = NULL;
+    VARIANT_BOOL varStatus;
+    VARIANT varXML;
+    BSTR bstrNodeName = NULL;
+    bool res = true;
+
+    Report::char2VARIANT(xml, &varXML);
+
+    CHK_HR(CreateAndInitDOM(&pXMLDom, (INIT_OPTION_VALIDATEONPARSE | INIT_OPTION_RESOLVEEXTERNALS)));
+    CHK_HR(pXMLDom->load(varXML, &varStatus));
+
+    if (varStatus == VARIANT_TRUE) {
+        if (!schemaFilename.empty()) {
+            CHK_HR(CreateAndInitSchema(&pXS));
+            hr = pXS->add(_bstr_t(validationNamespace.c_str()), CComVariant(schemaFilename.c_str()));
+            if (SUCCEEDED(hr)) {
+                // Create a DOMDocument and set its properties.
+                SAFE_RELEASE(pXMLDom);
+                CHK_HR(CreateAndInitDOM(&pXMLDom, (INIT_OPTION_VALIDATEONPARSE | INIT_OPTION_RESOLVEEXTERNALS)));
+                CHK_HR(pXMLDom->putref_schemas(CComVariant(pXS)));
+
+                /*
+                pXMLDom->put_async(VARIANT_FALSE);
+                pXMLDom->put_validateOnParse(VARIANT_TRUE);
+                pXMLDom->put_resolveExternals(VARIANT_TRUE);
+                */
+
+                CHK_HR(pXMLDom->load(varXML, &varStatus));
+                if (varStatus != VARIANT_TRUE) {
+                    CHK_HR(pXMLDom->get_parseError(&pXMLErr));
+                    this->buildErrorsVector(pXMLErr);
+                    res = false;
+                }
+            }
+            else {
+                this->errors.push_back({
+                    0,
+                    0,
+                    0,
+                    L"Invalid schema or missing namespace."
+                });
+                res = false;
+            }
+        }
+
+        if (res) {
+            // If we are here, this means that noNamespaceSchemaLocation or schemaLocation attribute is present.
+            // So validation is supposed OK since xml is loaded with INIT_OPTION_VALIDATEONPARSE option. Then we
+            // just have to test validity.
+            if (pXMLDom->validate((IXMLDOMParseError**)&pXMLErr2) == S_FALSE) {
+                this->buildErrorsVector(pXMLErr2);
+                res = false;
+            }
+        }
+    }
+    else {
+        CHK_HR(pXMLDom->get_parseError(&pXMLErr));
+        this->buildErrorsVector(pXMLErr);
+        res = false;
+    }
+
+CleanUp:
+    SAFE_RELEASE(pXMLDom);
+    SAFE_RELEASE(pXMLErr);
+    SAFE_RELEASE(pNodes);
+    SAFE_RELEASE(pNode);
+    SAFE_RELEASE(pElement);
+    SAFE_RELEASE(pXS);
+    VariantClear(&varXML);
+    SysFreeString(bstrNodeName);
+
+	return res;
 }
 
 std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, size_t size, std::wstring xpath, std::wstring ns) {
@@ -205,7 +283,6 @@ CleanUp:
     SAFE_RELEASE(pNode);
     SysFreeString(bstrNodeName);
     SysFreeString(bstrNodeType);
-    VariantClear(&varNodeValue);
 
 	return res;
 }
