@@ -24,7 +24,7 @@ void closeXMLTag() {
         struct TextRange tr = { {startPos, currentPos}, buf };
         ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 
-        if (buf[size - 2] != '/' && buf[size - 2] != '-') {
+        if (buf[size - 2] != '/' && buf[size - 2] != '-' && buf[size - 2] != '?' && buf[size - 2] != ']' && buf[size - 2] != ')' && buf[size - 2] != '%') {
             const char* pBegin = &buf[0];
             const char* pCur = &buf[size - 2];
             int insertStringSize = 2;
@@ -37,7 +37,7 @@ void closeXMLTag() {
 
             if (*pCur == '<') {
                 ++pCur;
-                if (*pCur == '/' || *pCur == '!') return;
+                if (*pCur == '/' || *pCur == '!' || *pCur == '?' || *pCur == '[' || *pCur == '%') return;
 
                 // search attributes of
                 while (*pCur != '>' && *pCur != ' ' && *pCur != '\n' && *pCur != '\r') {
