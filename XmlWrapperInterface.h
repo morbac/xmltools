@@ -12,10 +12,10 @@ struct XPathResultEntryType {
 };
 
 struct ErrorEntryType {
-    size_t line;        // 0-based line number having the error
-    size_t linepos;     // 0-based position in line
-    size_t filepos;     // 0-based position in whole stream
-    std::string reason; // error description
+    long line;           // 0-based line number having the error
+    long linepos;        // 0-based position in line
+    long filepos;        // 0-based position in whole stream
+    std::wstring reason; // error description
 };
 
 enum XmlCapabilityType {
@@ -35,7 +35,7 @@ enum XmlCapabilityType {
 */
 
 class XmlWrapperInterface {
-    int capabilities = 0;
+    std::vector<ErrorEntryType> errors;
 
 public:
     XmlWrapperInterface() {}
@@ -68,7 +68,7 @@ public:
     * @param xml A pointer on the begin of xml buffer
     * @param size The xml buffer length
     * @param xpath The expression to be evaluated
-    * @param ns An optional string descibing the required namespaces
+    * @param ns An optional string describing the required namespaces (ex: "xmlns:npp='http://notepad-plus-plus.org' xmlns:a='another-namespace'")
     * @param A vector containing all evaluation occurrences
     */
     virtual std::vector<XPathResultEntryType> xpathEvaluate(const char* xml, size_t size, std::wstring xpath, std::wstring ns = L"") = 0;
@@ -79,9 +79,9 @@ public:
     * @param xmllen The xml buffer length
     * @param xml A pointer on the begin of xsl buffer
     * @param xsllen The xsl buffer length
-    * @param A pointer to a string stream containing xsl transformation result
+    * @param The transformation result as string
     */
-    virtual std::stringstream* xslTransform(const char* xml, size_t xmllen, const char* xsl, size_t xsllen) = 0;
+    virtual std::string xslTransform(const char* xml, size_t xmllen, const char* xsl, size_t xsllen) = 0;
 
     /*
     * Get errors of last executed action

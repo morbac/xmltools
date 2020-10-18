@@ -8,6 +8,8 @@
 
 #include "SelectFileDlg.h"
 
+#include "MSXMLWrapper.h"
+
 #include <string>
 
 using namespace QuickXml;
@@ -37,41 +39,22 @@ int performXMLCheck(int informIfNoError) {
 
     ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
-    //updateProxyConfig();
-    HRESULT hr = S_OK;
-    IXMLDOMDocument2* pXMLDom = NULL;
-    IXMLDOMParseError* pXMLErr = NULL;
-    VARIANT_BOOL varStatus;
-    VARIANT varCurrentData;
-
     auto t_start = clock();
 
-    Report::char2VARIANT(data, &varCurrentData);
-
-    delete[] data;
-    data = NULL;
-
-    CHK_HR(CreateAndInitDOM(&pXMLDom));
-    CHK_HR(pXMLDom->load(varCurrentData, &varStatus));
+    MSXMLWrapper msxml;
+    bool isok = msxml.checkSyntax(data, currentLength);
 
     auto t_end = clock();
-
     dbgln(L"crunch time: " + std::to_wstring(t_end - t_start) + L" ms", DBG_LEVEL::DBG_INFO);
 
-    if (varStatus == VARIANT_TRUE) {
+    if (isok) {
         if (informIfNoError) {
             Report::_printf_inf(L"No error detected.");
         }
     }
     else {
-        CHK_HR(pXMLDom->get_parseError(&pXMLErr));
-        displayXMLErrors(pXMLErr, hCurrentEditView, L"XML Parsing error");
+        displayXMLErrors(msxml.getLastErrors(), hCurrentEditView, L"XML Parsing error");
     }
-
-CleanUp:
-    SAFE_RELEASE(pXMLDom);
-    SAFE_RELEASE(pXMLErr);
-    VariantClear(&varCurrentData);
 
     return res;
 }

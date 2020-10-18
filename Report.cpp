@@ -641,7 +641,7 @@ void Report::char2BSTR(char* inParam, BSTR * outParam) {
 }
 */
 
-void Report::char2VARIANT(char* inParam, VARIANT* outParam) {
+void Report::char2VARIANT(const char* inParam, VARIANT* outParam) {
   // from https://stackoverflow.com/questions/1822914/load-xml-into-c-msxml-from-byte-array?rq=1
   // https://docs.microsoft.com/en-us/previous-versions/aa468560(v=msdn.10)?redirectedfrom=MSDN
   size_t len = strlen(inParam);

@@ -94,7 +94,7 @@ public:
   static bool isEOL(const char cc, const char nc, int mode);
 
   static void char2BSTR(char* inParam, BSTR* outParam);
-  static void char2VARIANT(char* inParam, VARIANT* outParam);
+  static void char2VARIANT(const char* inParam, VARIANT* outParam);
   static void char2BSTR(const CStringW& inParam, BSTR* outParam);
 
   // below methods got from https://github.com/RoelofBerg/Utf8Ucs2Converter

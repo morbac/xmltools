@@ -4,6 +4,7 @@
 #include "nppHelpers.h"
 #include "Report.h"
 #include "XMLTools.h"
+#include "XmlWrapperInterface.h"
 
 #include <map>
 
@@ -232,6 +233,12 @@ void displayXMLErrors(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDe
 CleanUp:
     SAFE_RELEASE(pTmpErr);
     SAFE_RELEASE(pAllErrors);
+}
+
+void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view, const wchar_t* szDesc) {
+    for (std::vector<ErrorEntryType>::iterator it = errors.begin(); it != errors.end(); ++it) {
+        displayXMLError((*it).reason, view, (*it).line, (*it).linepos, (*it).filepos);
+    }
 }
 
 bool hasCurrentDocAnnotations() {

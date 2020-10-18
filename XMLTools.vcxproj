@@ -333,6 +333,7 @@
     <ClCompile Include="AboutBoxDlg.cpp" />
     <ClCompile Include="CMyPropertyGridCtrl.cpp" />
     <ClCompile Include="Debug.cpp" />
+    <ClCompile Include="MSXMLWrapper.cpp" />
     <ClCompile Include="nppMenu.cpp" />
     <ClCompile Include="ToolsComment.cpp" />
     <ClCompile Include="Config.cpp" />
@@ -377,6 +378,7 @@
     <ClInclude Include="Debug.h" />
     <ClInclude Include="DebugDlg.h" />
     <ClInclude Include="MSXMLHelper.h" />
+    <ClInclude Include="MSXMLWrapper.h" />
     <ClInclude Include="Notepad_plus_msgs.h" />
     <ClInclude Include="nppHelpers.h" />
     <ClInclude Include="OptionsDlg.h" />

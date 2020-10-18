@@ -14,6 +14,7 @@
 
 #include "resource.h"    // main symbols
 #include "MSXMLHelper.h"
+#include "XmlWrapperInterface.h"
 #include "Config.h"
 #include "Debug.h"
 #include <string>
@@ -28,8 +29,9 @@
 #endif
 
 extern void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDesc = NULL);
-extern void displayXMLErrors(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDesc = NULL);
 extern void displayXMLError(std::wstring wmsg, HWND view = NULL, size_t line = NULL, size_t linepos = NULL, size_t filepos = NULL);
+extern void displayXMLErrors(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDesc = NULL);
+extern void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view = NULL, const wchar_t* szDesc = NULL);
 extern void clearAnnotations(HWND view = NULL);
 
 void savePluginParams();
