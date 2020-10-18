@@ -14,6 +14,49 @@ int MSXMLWrapper::getCapabilities() {
 	return ALL_OPTIONS;
 }
 
+void MSXMLWrapper::buildErrorsVector(IXMLDOMParseError* pXMLErr) {
+    HRESULT hr = S_OK;
+    IXMLDOMParseErrorCollection* pAllErrors = NULL;
+    IXMLDOMParseError2* pTmpErr = NULL;
+    long line = 0;
+    long linepos = 0;
+    long filepos = 0;
+    BSTR bstrReason = NULL;
+    long length = 0;
+
+    this->resetErrors();
+
+    CHK_HR(((IXMLDOMParseError2*)pXMLErr)->get_allErrors(&pAllErrors));
+    if (pAllErrors != NULL) {
+
+        CHK_HR(pAllErrors->get_length(&length));
+        for (long i = 0; i < length; ++i) {
+            CHK_HR(pAllErrors->get_next(&pTmpErr));
+            CHK_HR(pAllErrors->get_item(i, &pTmpErr));
+
+            CHK_HR(pXMLErr->get_line(&line));
+            CHK_HR(pXMLErr->get_linepos(&linepos));
+            CHK_HR(pXMLErr->get_filepos(&filepos));
+            CHK_HR(pXMLErr->get_reason(&bstrReason));
+
+            this->errors.push_back({
+                line,
+                linepos,
+                filepos,
+                std::wstring((wchar_t*)bstr_t(bstrReason))
+            });
+
+            SAFE_RELEASE(pTmpErr);
+        }
+
+        SAFE_RELEASE(pAllErrors);
+    }
+
+CleanUp:
+    SAFE_RELEASE(pAllErrors);
+    SAFE_RELEASE(pTmpErr);
+}
+
 bool MSXMLWrapper::checkSyntax(const char* xml, size_t size) {
     bool res = true;
 
@@ -21,15 +64,8 @@ bool MSXMLWrapper::checkSyntax(const char* xml, size_t size) {
     HRESULT hr = S_OK;
     IXMLDOMDocument2* pXMLDom = NULL;
     IXMLDOMParseError* pXMLErr = NULL;
-    IXMLDOMParseError2* pTmpErr = NULL;
-    IXMLDOMParseErrorCollection* pAllErrors = NULL;
     VARIANT_BOOL varStatus;
     VARIANT varCurrentData;
-    long line = 0;
-    long linepos = 0;
-    long filepos = 0;
-    BSTR bstrReason = NULL;
-    long length = 0;
 
     this->errors.clear();
 
@@ -42,39 +78,12 @@ bool MSXMLWrapper::checkSyntax(const char* xml, size_t size) {
 
     if (!res) {
         CHK_HR(pXMLDom->get_parseError(&pXMLErr));
-        CHK_HR(((IXMLDOMParseError2*)pXMLErr)->get_allErrors(&pAllErrors));
-        if (pAllErrors != NULL) {
-
-            CHK_HR(pAllErrors->get_length(&length));
-            for (long i = 0; i < length; ++i) {
-                CHK_HR(pAllErrors->get_next(&pTmpErr));
-                CHK_HR(pAllErrors->get_item(i, &pTmpErr));
-
-                CHK_HR(pXMLErr->get_line(&line));
-                CHK_HR(pXMLErr->get_linepos(&linepos));
-                CHK_HR(pXMLErr->get_filepos(&filepos));
-                CHK_HR(pXMLErr->get_reason(&bstrReason));
-
-                this->errors.push_back({
-                    line,
-                    linepos,
-                    filepos,
-                    std::wstring((wchar_t*)bstr_t(bstrReason))
-                });
-
-                SAFE_RELEASE(pTmpErr);
-            }
-
-            SAFE_RELEASE(pAllErrors);
-        }
+        this->buildErrorsVector(pXMLErr);
     }
 
 CleanUp:
     SAFE_RELEASE(pXMLDom);
     SAFE_RELEASE(pXMLErr);
-    SAFE_RELEASE(pTmpErr);
-    SAFE_RELEASE(pAllErrors);
-    VariantClear(&varCurrentData);
     VariantClear(&varCurrentData);
 
 	return res;

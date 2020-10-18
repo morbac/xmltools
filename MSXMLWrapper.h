@@ -5,6 +5,8 @@
 class MSXMLWrapper : public XmlWrapperInterface {
 	std::vector<ErrorEntryType> errors;
 
+	void buildErrorsVector(IXMLDOMParseError* pXMLErr);
+
 public:
 	MSXMLWrapper();
 	~MSXMLWrapper();

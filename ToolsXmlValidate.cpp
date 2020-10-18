@@ -41,8 +41,9 @@ int performXMLCheck(int informIfNoError) {
 
     auto t_start = clock();
 
-    MSXMLWrapper msxml;
-    bool isok = msxml.checkSyntax(data, currentLength);
+    XmlWrapperInterface* wrapper = new MSXMLWrapper();
+
+    bool isok = wrapper->checkSyntax(data, currentLength);
 
     auto t_end = clock();
     dbgln(L"crunch time: " + std::to_wstring(t_end - t_start) + L" ms", DBG_LEVEL::DBG_INFO);
@@ -53,8 +54,10 @@ int performXMLCheck(int informIfNoError) {
         }
     }
     else {
-        displayXMLErrors(msxml.getLastErrors(), hCurrentEditView, L"XML Parsing error");
+        displayXMLErrors(wrapper->getLastErrors(), hCurrentEditView, L"XML Parsing error");
     }
+
+    delete wrapper;
 
     return res;
 }

@@ -37,9 +37,16 @@ enum XmlCapabilityType {
 class XmlWrapperInterface {
     std::vector<ErrorEntryType> errors;
 
+protected:
+    void resetErrors() {
+        this->errors.clear();
+    }
+
 public:
     XmlWrapperInterface() {}
-    virtual ~XmlWrapperInterface() {}
+    virtual ~XmlWrapperInterface() {
+        this->errors.clear();
+    }
 
     /*
     * Inform about the interface capabilities
