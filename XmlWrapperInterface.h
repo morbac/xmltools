@@ -6,9 +6,9 @@
 // WORK IN PROGRESS
 
 struct XPathResultEntryType {
-    std::string type;
-    std::string name;
-    std::string value;
+    std::wstring type;
+    std::wstring name;
+    std::wstring value;
 };
 
 struct ErrorEntryType {

@@ -93,7 +93,8 @@ public:
   static bool isEOL(const std::string& txt, const std::string::size_type txtlength, unsigned int pos, int mode);
   static bool isEOL(const char cc, const char nc, int mode);
 
-  static void char2BSTR(char* inParam, BSTR* outParam);
+  static void char2BSTR(const char* inParam, BSTR* outParam);
+  static void char2BSTR(const wchar_t* inParam, BSTR* outParam);
   static void char2VARIANT(const char* inParam, VARIANT* outParam);
   static void char2BSTR(const CStringW& inParam, BSTR* outParam);
 

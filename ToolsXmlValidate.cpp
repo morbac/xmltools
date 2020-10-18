@@ -8,6 +8,7 @@
 
 #include "SelectFileDlg.h"
 
+#include "XmlWrapperInterface.h"
 #include "MSXMLWrapper.h"
 
 #include <string>

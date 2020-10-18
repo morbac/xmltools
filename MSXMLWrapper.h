@@ -1,6 +1,7 @@
 #pragma once
 
 #include "XmlWrapperInterface.h"
+#include "MSXMLHelper.h"
 
 class MSXMLWrapper : public XmlWrapperInterface {
 	std::vector<ErrorEntryType> errors;

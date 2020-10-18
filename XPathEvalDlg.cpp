@@ -7,6 +7,8 @@
 #include "XpathEvalDlg.h"
 #include "Report.h"
 #include "MSXMLHelper.h"
+#include "XmlWrapperInterface.h"
+#include "MSXMLWrapper.h"
 #include <assert.h>
 
 #ifdef _DEBUG
@@ -64,10 +66,10 @@ void CXPathEvalDlg::OnBtnEvaluate() {
   this->UpdateData();
   this->m_sResult = _T("");
   if (!m_sExpression.GetLength()) {
-    Report::_printf_err(L"Empty expression; evaluation aborted.");
-  } else {
-
-    execute_xpath_expression(m_sExpression);
+      Report::_printf_err(L"Empty expression; evaluation aborted.");
+  }
+  else {
+      execute_xpath_expression(m_sExpression);
   }
 }
 
@@ -82,59 +84,35 @@ void CXPathEvalDlg::OnBtnEvaluate() {
  * Returns 0 on success and a negative value otherwise.
  */
 int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
-  HRESULT hr = S_OK;
-  IXMLDOMDocument2* pXMLDom = NULL;
-  IXMLDOMNodeList* pNodes = NULL;
-  IXMLDOMParseError* pXMLErr = NULL;
-  VARIANT_BOOL varStatus;
-  BSTR bstrXPath = NULL;
-  VARIANT varXML;
+    int currentEdit, currentLength;
+    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
+    HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
 
-  int currentEdit, currentLength;
-  ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-  HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
+    currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
-  currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+    char* data = new char[currentLength + sizeof(char)];
+    if (!data) return(-1);  // allocation error, abort check
+    memset(data, '\0', currentLength + sizeof(char));
 
-  char *data = new char[currentLength + sizeof(char)];
-  if (!data) return(-1);  // allocation error, abort check
-  memset(data, '\0', currentLength + sizeof(char));
+    ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
-  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
+    XmlWrapperInterface* wrapper = new MSXMLWrapper();
+    std::vector<XPathResultEntryType> nodes = wrapper->xpathEvaluate(data, currentLength, xpathExpr.GetString(), m_sNamespace.GetString());
 
-  Report::char2BSTR(xpathExpr, &bstrXPath);
-  Report::char2VARIANT(data, &varXML);
-
-  CHK_ALLOC(bstrXPath);
-
-  delete [] data;
-  data = NULL;
-
-  CHK_HR(CreateAndInitDOM(&pXMLDom));
-  CHK_HR(pXMLDom->load(varXML, &varStatus));
-  if (varStatus == VARIANT_TRUE) {
-    CHK_HR(pXMLDom->setProperty(L"SelectionNamespaces", _variant_t(m_sNamespace)));
-    CHK_HR(pXMLDom->setProperty(L"SelectionLanguage", _variant_t(L"XPath")));
-    hr = pXMLDom->selectNodes(bstrXPath, &pNodes);
-    if (FAILED(hr)) {
-      Report::_printf_err(L"Error: error on XPath expression.");
-      goto CleanUp;
+    std::vector<ErrorEntryType> errors = wrapper->getLastErrors();
+    if (errors.empty()) {
+        print_xpath_nodes(nodes);
+    }
+    else {
+        displayXMLErrors(errors, hCurrentEditView, L"Error: unable to parse XML");
     }
 
-    print_xpath_nodes(pNodes);
-  } else {
-    CHK_HR(pXMLDom->get_parseError(&pXMLErr));
-    displayXMLErrors(pXMLErr, hCurrentEditView, L"Error: unable to parse XML");
-  }
+    delete[] data;
+    data = NULL;
 
-CleanUp:
-  SAFE_RELEASE(pXMLDom);
-  SAFE_RELEASE(pNodes);
-  SAFE_RELEASE(pXMLErr);
-  VariantClear(&varXML);
-  SysFreeString(bstrXPath);
+    delete wrapper;
 
-  return(0);
+    return 0;
 }
 
 void CXPathEvalDlg::AddToList(CListCtrl *list, CStringW type, CStringW name, CStringW value) {
@@ -146,80 +124,20 @@ void CXPathEvalDlg::AddToList(CListCtrl *list, CStringW type, CStringW name, CSt
   this->m_sResult.AppendFormat(L"%s\t%s\t%s\n", type.GetString(), name.GetString(), value.GetString());
 }
 
-void CXPathEvalDlg::print_xpath_nodes(IXMLDOMNodeList* pNodes) {
-  HRESULT hr = S_OK;
-  IXMLDOMNode* pNode = NULL;
-  DOMNodeType nodeType;
-  BSTR bstrNodeName = NULL;
-  BSTR bstrNodeType = NULL;
-  VARIANT varNodeValue;
-  CStringW value;
-  long length;
+void CXPathEvalDlg::print_xpath_nodes(std::vector<XPathResultEntryType> nodes) {
+    CListCtrl* listresults = (CListCtrl*)this->GetDlgItem(IDC_LIST_XPATHRESULTS);
+    listresults->DeleteAllItems();
 
-  V_VT(&varNodeValue) = VT_UNKNOWN;
-
-  CListCtrl* listresults = (CListCtrl*)this->GetDlgItem(IDC_LIST_XPATHRESULTS);
-  listresults->DeleteAllItems();
-
-  CHK_HR(pNodes->get_length(&length));
-
-  if (length == 0) {
-    AddToList(listresults, "", "No result", "");
-  } else {
-    for (long i = 0; i < length; ++i) {
-      CHK_HR(pNodes->get_item(i, &pNode));
-
-      CHK_HR(pNode->get_nodeType(&nodeType));
-      CHK_HR(pNode->get_nodeName(&bstrNodeName));
-      CHK_HR(pNode->get_nodeValue(&varNodeValue));
-      CHK_HR(pNode->get_nodeTypeString(&bstrNodeType));
-
-      switch (nodeType) {
-        case NODE_ELEMENT: {
-          // let's concatenate all direct text children
-          // rem: pNode->get_text(&bstrNodeValue) is not appropriate
-          //      because it concatenates the node content and the
-          //      content of its descendants; in our case we only
-          //      want direct child content
-          IXMLDOMNodeList* pNodeList;
-          // @fixme: would it be better to use CComPtr<IXMLDOMNodeList> pNodeList; ?
-          long numChildren;
-          value = "";
-          CHK_HR(pNode->get_childNodes(&pNodeList));
-          CHK_HR(pNodeList->get_length(&numChildren));
-          for (long j = 0; j < numChildren; ++j) {
-            SAFE_RELEASE(pNode);
-            CHK_HR(pNodeList->get_item(j, &pNode));
-            CHK_HR(pNode->get_nodeType(&nodeType));
-            if (nodeType == NODE_TEXT) {
-              VariantClear(&varNodeValue);
-              CHK_HR(pNode->get_nodeValue(&varNodeValue));
-              value.Append(varNodeValue.bstrVal);
-            }
-            SAFE_RELEASE(pNode);
-          }
-          SAFE_RELEASE(pNodeList);
-          break;
-        }
-        default: {
-          value = varNodeValue.bstrVal;
-        }
-      }
-
-      AddToList(listresults, bstrNodeType, bstrNodeName, value);
-
-      SysFreeString(bstrNodeName);
-      SysFreeString(bstrNodeType);
-      VariantClear(&varNodeValue);
-      SAFE_RELEASE(pNode);
+    if (nodes.size() == 0) {
+        AddToList(listresults, "", "No result", "");
     }
-  }
-
-CleanUp:
-  SAFE_RELEASE(pNode);
-  SysFreeString(bstrNodeName);
-  SysFreeString(bstrNodeType);
-  VariantClear(&varNodeValue);
+    else {
+        for (std::vector<XPathResultEntryType>::iterator it = nodes.begin(); it != nodes.end(); ++it) {
+            AddToList(listresults, Report::cstring((*it).type.c_str()),
+                                   Report::cstring((*it).name.c_str()),
+                                   Report::cstring((*it).value.c_str()));
+        }
+    }
 }
 
 BOOL CXPathEvalDlg::OnInitDialog() {
@@ -356,7 +274,6 @@ void CXPathEvalDlg::OnBnClickedBtnCopy2clipboard() {
     MessageBox(L"Result has been copied into clipboard.");
   }
 }
-
 
 void CXPathEvalDlg::OnBnClickedBtnClearlist() {
   CListCtrl *listresults = (CListCtrl*) this->GetDlgItem(IDC_LIST_XPATHRESULTS);

@@ -8,57 +8,57 @@
 //
 
 #include "PluginInterface.h"
+#include "XmlWrapperInterface.h"
 
 #include <string>
 
 /////////////////////////////////////////////////////////////////////////////
 // CXPathEvalDlg dialog
 
-class CXPathEvalDlg : public CDialog
-{
-// Construction
+class CXPathEvalDlg : public CDialog {
+    // Construction
 public:
-  CXPathEvalDlg(CWnd* pParent = NULL, unsigned long flags = 0);   // standard constructor
+    CXPathEvalDlg(CWnd* pParent = NULL, unsigned long flags = 0);   // standard constructor
 
-// Dialog Data
-  //{{AFX_DATA(CXPathEvalDlg)
-  enum { IDD = IDD_XPATHEVAL };
-  CStringW m_sExpression;
-  CStringW m_sNamespace;
-  CStringW m_sResult;
-  //}}AFX_DATA
+  // Dialog Data
+    //{{AFX_DATA(CXPathEvalDlg)
+    enum { IDD = IDD_XPATHEVAL };
+    CStringW m_sExpression;
+    CStringW m_sNamespace;
+    CStringW m_sResult;
+    //}}AFX_DATA
 
 
-// Overrides
-  // ClassWizard generated virtual function overrides
-  //{{AFX_VIRTUAL(CXPathEvalDlg)
-  protected:
-  virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-  //}}AFX_VIRTUAL
-
-// Implementation
+  // Overrides
+    // ClassWizard generated virtual function overrides
+    //{{AFX_VIRTUAL(CXPathEvalDlg)
 protected:
-  unsigned long m_iFlags;
+    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+    //}}AFX_VIRTUAL
 
-  int execute_xpath_expression(CStringW xpathExpr);
-  void print_xpath_nodes(IXMLDOMNodeList* pNodes);
-  //int register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList);
-  void AddToList(CListCtrl *list, CStringW type, CStringW name, CStringW value);
+  // Implementation
+protected:
+    unsigned long m_iFlags;
 
-  HWND getCurrentHScintilla(int which);
+    int execute_xpath_expression(CStringW xpathExpr);
+    void print_xpath_nodes(std::vector<XPathResultEntryType> nodes);
+    //int register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList);
+    void AddToList(CListCtrl* list, CStringW type, CStringW name, CStringW value);
 
-  // Generated message map functions
-  //{{AFX_MSG(CXPathEvalDlg)
-  afx_msg void OnBtnEvaluate();
-  virtual BOOL OnInitDialog();
-  afx_msg void OnSize(UINT nType, int cx, int cy);
-  //}}AFX_MSG
-  DECLARE_MESSAGE_MAP()
+    HWND getCurrentHScintilla(int which);
+
+    // Generated message map functions
+    //{{AFX_MSG(CXPathEvalDlg)
+    afx_msg void OnBtnEvaluate();
+    virtual BOOL OnInitDialog();
+    afx_msg void OnSize(UINT nType, int cx, int cy);
+    //}}AFX_MSG
+    DECLARE_MESSAGE_MAP()
 public:
-  afx_msg void OnBnClickedBtnCopy2clipboard();
-//  afx_msg void OnDestroy();
-//  afx_msg void OnClose();
-  afx_msg void OnBnClickedBtnClearlist();
+    afx_msg void OnBnClickedBtnCopy2clipboard();
+    //  afx_msg void OnDestroy();
+    //  afx_msg void OnClose();
+    afx_msg void OnBnClickedBtnClearlist();
 };
 
 //{{AFX_INSERT_LOCATION}}
