@@ -237,7 +237,12 @@ CleanUp:
 
 void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view, const wchar_t* szDesc) {
     for (std::vector<ErrorEntryType>::iterator it = errors.begin(); it != errors.end(); ++it) {
-        displayXMLError((*it).reason, view, (*it).line, (*it).linepos, (*it).filepos);
+        if ((*it).line < 0) {
+            Report::_printf_err((*it).reason);
+        }
+        else {
+            displayXMLError((*it).reason, view, (*it).line, (*it).linepos, (*it).filepos);
+        }
     }
 }
 

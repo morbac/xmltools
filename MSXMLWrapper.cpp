@@ -102,6 +102,8 @@ bool MSXMLWrapper::checkValidity(const char* xml, size_t size, std::wstring sche
     BSTR bstrNodeName = NULL;
     bool res = true;
 
+    this->errors.clear();
+
     Report::char2VARIANT(xml, &varXML);
 
     CHK_HR(CreateAndInitDOM(&pXMLDom, (INIT_OPTION_VALIDATEONPARSE | INIT_OPTION_RESOLVEEXTERNALS)));
@@ -132,9 +134,9 @@ bool MSXMLWrapper::checkValidity(const char* xml, size_t size, std::wstring sche
             }
             else {
                 this->errors.push_back({
-                    0,
-                    0,
-                    0,
+                    -1,
+                    -1,
+                    -1,
                     L"Invalid schema or missing namespace."
                 });
                 res = false;
@@ -187,6 +189,8 @@ std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, s
     std::wstring value;
     long length;
 
+    this->errors.clear();
+
     Report::char2BSTR(xpath.c_str(), &bstrXPath);
     Report::char2VARIANT(xml, &varXML);
 
@@ -203,10 +207,10 @@ std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, s
             this->buildErrorsVector(pXMLErr);
 
             this->errors.push_back({
-                0,
-                0,
-                0,
-                L"Error: error on XPath expression."
+                -1,
+                -1,
+                -1,
+                L"Error: error on XPath expression, or missing namespace definition."
             });
 
             goto CleanUp;
@@ -287,9 +291,283 @@ CleanUp:
 	return res;
 }
 
-std::string MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, const char* xsl, size_t xsllen) {
-	std::stringstream out;
-	return out.str();
+/*
+  Get next key/val pair in string, starting from given position. The function
+  returns the position where parser stoped, or -1 (std::string::npos) when no
+  pair was found. The 'key' and 'val' variables are feeded with readen key and
+  value.
+  @todo: rewrite this method and use regex
+*/
+std::string::size_type getNextParam(std::wstring& str, std::string::size_type startpos, std::wstring* key, std::wstring* val) {
+    std::string::size_type len = str.length();
+    if (startpos < 0 || startpos >= len || !key || !val) return std::string::npos;
+
+    // skip spaces, tabs and carriage returns
+    std::string::size_type keypos = str.find_first_not_of(L" \t\r\n", startpos);
+    if (keypos == std::string::npos || keypos >= len) return std::string::npos;
+
+    // next char shouldn't be a '='
+    if (str.at(keypos) == '=') return std::string::npos;
+
+    // keypos points on begin of the key; let's search for next '=' or ' '
+    std::string::size_type valpos = str.find_first_of(L"=", keypos + 1);
+    valpos = str.find_last_not_of(L" =", valpos);  // get last char of the key
+    *key = str.substr(keypos, valpos - keypos + 1);
+
+    // skip the '='
+    valpos = 1 + str.find_first_of(L"=", valpos + 1);
+
+    if (str.at(valpos) == ' ') valpos = str.find_first_not_of(L" ", valpos);  // skip eventual space chars
+    if (valpos < 0 || valpos >= len) return std::string::npos;
+
+    // here we must parse the string; if it starts with an apostroph, let's search
+    // the next apostroph; otherwise let's read the next word
+    std::string::size_type valendpos = valpos;
+    if (str.at(valendpos) == '\'') {
+        valendpos = str.find_first_of(L"\'", valendpos + 1);
+        *val = str.substr(valpos, valendpos - valpos + 1);
+    }
+    else {
+        valendpos = str.find_first_of(L" \t\r\n", valendpos);
+        // at the end of the string, valendpos = -1
+        if (valendpos < 0) valendpos = len;
+        *val = str.substr(valpos, valendpos - valpos);
+    }
+
+    return valendpos;
+}
+
+bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xslfile, XSLTransformResultType* out, std::wstring options, UniMode srcEncoding) {
+    // inspired from https://www.codeguru.com/cpp/data/data-misc/xml/article.php/c4565/Doing-XSLT-with-MSXML-in-C.htm
+    // and msxsl tool source code (https://www.microsoft.com/en-us/download/details.aspx?id=21714)
+    HRESULT hr = S_OK;
+    HGLOBAL hg = NULL;
+    IXMLDOMDocument2* pXml = NULL;
+    IXMLDOMDocument2* pXslt = NULL;
+    IXSLTemplate* pTemplate = NULL;
+    IXSLProcessor* pProcessor = NULL;
+    IXMLDOMParseError* pXMLErr = NULL;
+    IXMLDOMNodeList* pNodes = NULL;
+    IXMLDOMNode* pNode = NULL;
+    IStream* pOutStream = NULL;
+    VARIANT varCurrentData;
+    VARIANT varValue;
+    VARIANT_BOOL varStatus;
+    BSTR bstrEncoding = NULL;
+    long length;
+    bool currentDataIsXml = true;
+    bool outputAsStream = false;
+    bool res = true;
+
+    this->errors.clear();
+
+    V_VT(&varValue) = VT_UNKNOWN;
+
+    Report::char2VARIANT(xml, &varCurrentData);
+
+    // active document may either be XML or XSL; if XSL,
+    // then m_sSelectedFile refers to an XML file
+    CHK_HR(CreateAndInitDOM(&pXml));
+    CHK_HR(pXml->loadXML(_bstr_t(xml), &varStatus));
+    if (varStatus == VARIANT_TRUE) {
+        CHK_HR(pXml->setProperty(L"SelectionNamespaces", variant_t(L"xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"")));
+        if (SUCCEEDED(pXml->selectNodes(L"/xsl:stylesheet", &pNodes))) {
+            CHK_HR(pNodes->get_length(&length));
+            if (length == 1) {
+                // the active document is an XSL one; let's invert both files
+                currentDataIsXml = false;
+            }
+        }
+    }
+    else {
+        CHK_HR(pXml->get_parseError(&pXMLErr));
+        this->buildErrorsVector(pXMLErr);
+
+        if (this->errors.size() == 0) {
+            this->errors.push_back({
+                -1,
+                -1,
+                -1,
+                L"An error occurred during current source loading. Please check source validity. Transformation aborted."
+             });
+        }
+        res = false;
+    }
+    SAFE_RELEASE(pXml);
+    SAFE_RELEASE(pNodes);
+
+    if (!res) goto CleanUp;
+
+    // load xml
+    CHK_HR(CreateAndInitDOM(&pXml));
+    if (currentDataIsXml) {
+        CHK_HR(pXml->load(varCurrentData, &varStatus));
+    }
+    else {
+        CHK_HR(pXml->load(_variant_t(xslfile.c_str()), &varStatus));
+    }
+    if (varStatus == VARIANT_TRUE) {
+        // load xsl
+        CHK_HR(CreateAndInitDOM(&pXslt, (INIT_OPTION_PRESERVEWHITESPACE | INIT_OPTION_FREETHREADED)));
+        if (currentDataIsXml) {
+            CHK_HR(pXslt->load(_variant_t(xslfile.c_str()), &varStatus));
+        }
+        else {
+            CHK_HR(pXslt->load(varCurrentData, &varStatus));
+        }
+        if (varStatus == VARIANT_TRUE) {
+            // detect output encoding
+            CHK_HR(pXslt->setProperty(L"SelectionNamespaces", variant_t(L"xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"")));
+            if (SUCCEEDED(pXslt->selectNodes(L"/xsl:stylesheet/xsl:output/@encoding", &pNodes))) {
+                CHK_HR(pNodes->get_length(&length));
+                if (length == 1) {
+                    // get encoding from output declaration
+                    pNodes->get_item(0, &pNode);
+                    pNode->get_text(&bstrEncoding);
+                    out->encoding = Report::getEncoding(bstrEncoding);
+                    SAFE_RELEASE(pNode);
+                    SAFE_RELEASE(pNodes);
+
+                    outputAsStream = TRUE;
+                }
+                else {
+                    // get encoding of source file
+                    out->encoding = srcEncoding;
+                    outputAsStream = FALSE;
+                }
+            }
+            CHK_HR(pXslt->setProperty(L"SelectionNamespaces", variant_t(L"")));
+
+            // build template
+            CHK_HR(CreateAndInitXSLTemplate(&pTemplate));
+            if (SUCCEEDED(pTemplate->putref_stylesheet(pXslt))) {
+                CHK_HR(pTemplate->createProcessor(&pProcessor));
+
+                // set startMode
+                // @todo
+
+                // set parameters; let's decode params string; the string should have the following form:
+                //   variable1=value1;variable2=value2;variable3="value 3"
+                std::string::size_type i = std::string::npos;
+                std::wstring key, val;
+                while ((i = getNextParam(options, i + 1, &key, &val)) != std::string::npos) {
+                    _bstr_t var0(key.c_str());
+                    VARIANT var1;
+                    CHK_HR(VariantFromString(val.c_str(), var1));
+                    CHK_HR(pProcessor->addParameter(var0, var1));
+                }
+
+                // attach to processor XML file we want to transform,
+                // add one parameter, maxprice, with a value of 35, and
+                // do the transformation
+                CHK_HR(pProcessor->put_input(_variant_t(pXml)));
+
+                // method 1 -----------------------------------------------------------
+                if (outputAsStream) {
+                    // prepare Stream object to store results of transformation,
+                    // and set processor output to it
+                    CHK_HR(CreateStreamOnHGlobal(0, TRUE, &pOutStream));
+                    V_VT(&varValue) = VT_UNKNOWN;
+                    V_UNKNOWN(&varValue) = (IUnknown*)pOutStream;
+                    CHK_HR(pProcessor->put_output(varValue));
+                    VariantClear(&varValue);
+                }
+
+                // transform
+                CHK_HR(pProcessor->transform(&varStatus));
+                if (varStatus == VARIANT_TRUE) {
+                    // get results of transformation and send them to a new NPP document
+                    if (outputAsStream) {
+                        CHK_HR(pOutStream->Write((void const*)"\0", 1, 0));
+                        CHK_HR(GetHGlobalFromStream(pOutStream, &hg));
+                        char* tmp = (char*)GlobalLock(hg);
+                        if (tmp != NULL) {
+                            out->data = tmp;
+                        }
+                        else {
+                            this->errors.push_back({
+                                -1,
+                                -1,
+                                -1,
+                                L"An unexpected error occurred during XSL transformation"
+                            });
+                            res = false;
+                        }
+                    }
+                    else {
+                        pProcessor->get_output(&varValue);
+                        out->data = _com_util::ConvertBSTRToString(_bstr_t(varValue));
+                        VariantClear(&varValue);
+                    }
+
+                    if (outputAsStream) {
+                        GlobalUnlock(hg);
+                    }
+                }
+                else {
+                    this->errors.push_back({
+                        -1,
+                        -1,
+                        -1,
+                        L"An error occurred during XSL transformation"
+                    });
+                    res = false;
+                }
+            }
+            else {
+                this->errors.push_back({
+                    -1,
+                    -1,
+                    -1,
+                    L"The XSL stylesheet is not valid. Transformation aborted."
+                });
+                res = false;
+            }
+        }
+        else {
+            CHK_HR(pXslt->get_parseError(&pXMLErr));
+            this->buildErrorsVector(pXMLErr);
+            res = false;
+        }
+    }
+    else {
+        CHK_HR(pXml->get_parseError(&pXMLErr));
+        this->buildErrorsVector(pXMLErr);
+
+        if (this->errors.size() == 0) {
+            if (currentDataIsXml) {
+                this->errors.push_back({
+                    -1,
+                    -1,
+                    -1,
+                    L"An error occurred during XSL loading. Please check XSL validity. Transformation aborted."
+                });
+            }
+            else {
+                this->errors.push_back({
+                    -1,
+                    -1,
+                    -1,
+                    L"An error occurred during XML loading. Please check XML validity. Transformation aborted."
+                });
+            }
+        }
+        res = false;
+    }
+
+CleanUp:
+    SAFE_RELEASE(pXml);
+    SAFE_RELEASE(pXslt);
+    SAFE_RELEASE(pTemplate);
+    SAFE_RELEASE(pProcessor);
+    SAFE_RELEASE(pXMLErr);
+    SAFE_RELEASE(pOutStream);
+    SAFE_RELEASE(pNodes);
+    SAFE_RELEASE(pNode);
+    SysFreeString(bstrEncoding);
+    VariantClear(&varCurrentData);
+
+    return res;
 }
 
 std::vector<ErrorEntryType> MSXMLWrapper::getLastErrors() {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Report.h"
 #include <sstream>
 #include <vector>
 
@@ -9,6 +10,11 @@ struct XPathResultEntryType {
     std::wstring type;
     std::wstring name;
     std::wstring value;
+};
+
+struct XSLTransformResultType {
+    std::string data;
+    UniMode encoding = UniMode::uniEnd;
 };
 
 struct ErrorEntryType {
@@ -86,11 +92,14 @@ public:
     * Perform xsl transformation
     * @param xml A pointer on the begin of xml buffer
     * @param xmllen The xml buffer length
-    * @param xml A pointer on the begin of xsl buffer
-    * @param xsllen The xsl buffer length
-    * @param The transformation result as string
+    * @param xslfile The path of XSL transformation stylesheet
+    * @param out A reference to the output object; the output object is updated with transformation result
+    * @param options Parameters passed to transformer
+    * @param srcEncoding The encoding of source document
+    * @param The transformation result as a XSLTransformResultType object
+    * @return The function retruns true if transformation could be done without error; if errors occurred, it returns false
     */
-    virtual std::string xslTransform(const char* xml, size_t xmllen, const char* xsl, size_t xsllen) = 0;
+    virtual bool xslTransform(const char* xml, size_t xmllen, std::wstring xslfile, XSLTransformResultType* out, std::wstring options = L"", UniMode srcEncoding = UniMode::uniEnd) = 0;
 
     /*
     * Get errors of last executed action

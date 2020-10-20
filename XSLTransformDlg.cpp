@@ -7,7 +7,8 @@
 #include "XSLTransformDlg.h"
 #include "Report.h"
 #include "menuCmdID.h"
-#include "MSXMLHelper.h"
+#include "XmlWrapperInterface.h"
+#include "MSXMLWrapper.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -66,238 +67,42 @@ BOOL CXSLTransformDlg::OnInitDialog() {
                 // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-/*
-  Get next key/val pair in string, starting from given position. The function
-  returns the position where parser stoped, or -1 (std::string::npos) when no
-  pair was found. The 'key' and 'val' variables are feeded with readen key and
-  value.
-  @todo: rewrite this method and use regex
-*/
-std::string::size_type getNextParam(std::wstring& str, std::string::size_type startpos, std::wstring *key, std::wstring *val) {
-  std::string::size_type len = str.length();
-  if (startpos < 0 || startpos >= len || !key || !val) return std::string::npos;
-
-  // skip spaces, tabs and carriage returns
-  std::string::size_type keypos = str.find_first_not_of(L" \t\r\n", startpos);
-  if (keypos == std::string::npos || keypos >= len) return std::string::npos;
-
-  // next char shouldn't be a '='
-  if (str.at(keypos) == '=') return std::string::npos;
-
-  // keypos points on begin of the key; let's search for next '=' or ' '
-  std::string::size_type valpos = str.find_first_of(L"=", keypos+1);
-  valpos = str.find_last_not_of(L" =", valpos);  // get last char of the key
-  *key = str.substr(keypos, valpos-keypos+1);
-
-  // skip the '='
-  valpos = 1+str.find_first_of(L"=", valpos+1);
-
-  if (str.at(valpos) == ' ') valpos = str.find_first_not_of(L" ", valpos);  // skip eventual space chars
-  if (valpos < 0 || valpos >= len) return std::string::npos;
-
-  // here we must parse the string; if it starts with an apostroph, let's search
-  // the next apostroph; otherwise let's read the next word
-  std::string::size_type valendpos = valpos;
-  if (str.at(valendpos) == '\'') {
-    valendpos = str.find_first_of(L"\'", valendpos+1);
-    *val = str.substr(valpos, valendpos-valpos+1);
-  } else {
-    valendpos = str.find_first_of(L" \t\r\n", valendpos);
-    // at the end of the string, valendpos = -1
-    if (valendpos < 0) valendpos = len;
-    *val = str.substr(valpos, valendpos-valpos);
-  }
-
-  return valendpos;
-}
-
 void CXSLTransformDlg::OnBtnTransform() {
-  // inspired from https://www.codeguru.com/cpp/data/data-misc/xml/article.php/c4565/Doing-XSLT-with-MSXML-in-C.htm
-  // and msxsl tool source code (https://www.microsoft.com/en-us/download/details.aspx?id=21714)
-  HRESULT hr = S_OK;
-  HGLOBAL hg = NULL;
-  char* output = NULL;
-  IXMLDOMDocument2* pXml = NULL;
-  IXMLDOMDocument2* pXslt = NULL;
-  IXSLTemplate* pTemplate = NULL;
-  IXSLProcessor* pProcessor = NULL;
-  IXMLDOMParseError* pXMLErr = NULL;
-  IXMLDOMNodeList* pNodes = NULL;
-  IXMLDOMNode* pNode = NULL;
-  //IXMLDOMDocument2* pDOMObject = NULL;
-  IStream* pOutStream = NULL;
-  VARIANT varCurrentData;
-  VARIANT varValue;
-  VARIANT_BOOL varStatus;
-  BSTR bstrEncoding = NULL;
-  long length;
-  bool currentDataIsXml = true;
+    this->UpdateData();
 
-  bool outputAsStream = false;
-
-  V_VT(&varValue) = VT_UNKNOWN;
-
-  this->UpdateData();
-
-  if (this->m_sSelectedFile.GetLength() <= 0) {
-    Report::_printf_err(L"Cannot continue, missing parameters. Please select a file.");
-    return;
-  }
-
-  int currentEdit, currentLength;
-  ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-  HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-  UniMode encoding = UniMode::uniEnd;
-
-  currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
-
-  char* data = new char[currentLength + sizeof(char)];
-  if (!data) return;  // allocation error, abort check
-  memset(data, '\0', currentLength + sizeof(char));
-
-  ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
-
-  Report::char2VARIANT(data, &varCurrentData);
-
-  // active document may either be XML or XSL; if XSL,
-  // then m_sSelectedFile refers to an XML file
-  CHK_HR(CreateAndInitDOM(&pXml));
-  CHK_HR(pXml->loadXML(_bstr_t(data), &varStatus));
-  if (varStatus == VARIANT_TRUE) {
-    CHK_HR(pXml->setProperty(L"SelectionNamespaces", variant_t(L"xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"")));
-    if (SUCCEEDED(pXml->selectNodes(L"/xsl:stylesheet", &pNodes))) {
-      CHK_HR(pNodes->get_length(&length));
-      if (length == 1) {
-        // the active document is an XSL one; let's invert both files
-        currentDataIsXml = false;
-      }
+    if (this->m_sSelectedFile.GetLength() <= 0) {
+        Report::_printf_err(L"Cannot continue, missing parameters. Please select a file.");
+        return;
     }
-  }
-  SAFE_RELEASE(pXml);
-  SAFE_RELEASE(pNodes);
 
-  delete[] data;
-  data = NULL;
+    int currentEdit, currentLength;
+    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
+    HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
+    
+    currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
-  // load xml
-  CHK_HR(CreateAndInitDOM(&pXml));
-  if (currentDataIsXml) {
-    CHK_HR(pXml->load(varCurrentData, &varStatus));
-  } else {
-    CHK_HR(pXml->load(_variant_t(m_sSelectedFile), &varStatus));
-  }
-  if (varStatus == VARIANT_TRUE) {
-    // load xsl
-    CHK_HR(CreateAndInitDOM(&pXslt, (INIT_OPTION_PRESERVEWHITESPACE | INIT_OPTION_FREETHREADED)));
-    if (currentDataIsXml) {
-      CHK_HR(pXslt->load(_variant_t(m_sSelectedFile), &varStatus));
-    } else {
-      CHK_HR(pXslt->load(varCurrentData, &varStatus));
+    char* data = new char[currentLength + sizeof(char)];
+    if (!data) return;  // allocation error, abort check
+    memset(data, '\0', currentLength + sizeof(char));
+
+    ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
+
+    XmlWrapperInterface* wrapper = new MSXMLWrapper();
+    XSLTransformResultType res;
+    if (wrapper->xslTransform(data, currentLength, m_sSelectedFile.GetString(), &res)) {
+        ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FILE_NEW);
+        if (res.encoding != UniMode::uniEnd) Report::setEncoding(res.encoding, hCurrentEditView);
+        ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(res.data.c_str()));
     }
-    if (varStatus == VARIANT_TRUE) {
-      // detect output encoding
-      CHK_HR(pXslt->setProperty(L"SelectionNamespaces", variant_t(L"xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"")));
-      if (SUCCEEDED(pXslt->selectNodes(L"/xsl:stylesheet/xsl:output/@encoding", &pNodes))) {
-        CHK_HR(pNodes->get_length(&length));
-        if (length == 1) {
-          // get encoding from output declaration
-          pNodes->get_item(0, &pNode);
-          pNode->get_text(&bstrEncoding);
-          encoding = Report::getEncoding(bstrEncoding);
-          SAFE_RELEASE(pNode);
-          SAFE_RELEASE(pNodes);
-
-          outputAsStream = TRUE;
-        } else {
-          // get encoding of source file
-          encoding = Report::getEncoding(nppData._nppHandle);
-          outputAsStream = FALSE;
-        }
-      }
-      CHK_HR(pXslt->setProperty(L"SelectionNamespaces", variant_t(L"")));
-
-      // build template
-      CHK_HR(CreateAndInitXSLTemplate(&pTemplate));
-      if (SUCCEEDED(pTemplate->putref_stylesheet(pXslt))) {
-        CHK_HR(pTemplate->createProcessor(&pProcessor));
-
-        // set startMode
-        // @todo
-
-        // set parameters; let's decode params string; the string should have the following form:
-        //   variable1=value1;variable2=value2;variable3="value 3"
-        std::string::size_type i = std::string::npos;
-        std::wstring options = this->m_sXSLTOptions, key, val;
-        while ((i = getNextParam(options, i + 1, &key, &val)) != std::string::npos) {
-          _bstr_t var0(key.c_str());
-          VARIANT var1;
-          CHK_HR(VariantFromString(val.c_str(), var1));
-          CHK_HR(pProcessor->addParameter(var0, var1));
-        }
-
-        // attach to processor XML file we want to transform,
-        // add one parameter, maxprice, with a value of 35, and
-        // do the transformation
-        CHK_HR(pProcessor->put_input(_variant_t(pXml)));
-
-        // method 1 -----------------------------------------------------------
-        if (outputAsStream) {
-          // prepare Stream object to store results of transformation,
-          // and set processor output to it
-          CHK_HR(CreateStreamOnHGlobal(0, TRUE, &pOutStream));
-          V_VT(&varValue) = VT_UNKNOWN;
-          V_UNKNOWN(&varValue) = (IUnknown*)pOutStream;
-          CHK_HR(pProcessor->put_output(varValue));
-        }
-
-        // transform
-        CHK_HR(pProcessor->transform(&varStatus));
-        if (varStatus == VARIANT_TRUE) {
-          // get results of transformation and send them to a new NPP document
-          if (outputAsStream) {
-            CHK_HR(pOutStream->Write((void const*)"\0", 1, 0));
-            CHK_HR(GetHGlobalFromStream(pOutStream, &hg));
-            output = (char*)GlobalLock(hg);
-          } else {
-            pProcessor->get_output(&varValue);
-            output = _com_util::ConvertBSTRToString(_bstr_t(varValue));
-          }
-
-          ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FILE_NEW);
-          if (encoding != UniMode::uniEnd) Report::setEncoding(encoding, hCurrentEditView);
-          ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(output));
-
-          if (outputAsStream) {
-            GlobalUnlock(hg);
-          }
-        } else {
-          Report::_printf_err(L"An error occurred during XSL transformation");
-        }
-      } else {
-        Report::_printf_err(L"The XSL stylesheet is not valid. Transformation aborted.");
-      }
-    } else {
-      CHK_HR(pXslt->get_parseError(&pXMLErr));
-      displayXMLErrors(pXMLErr, hCurrentEditView, L"Error: unable to parse XML");
+    else {
+        std::vector<ErrorEntryType> errors = wrapper->getLastErrors();
+        displayXMLErrors(errors, hCurrentEditView, L"Error while XSL transformation");
     }
-  } else {
-    CHK_HR(pXml->get_parseError(&pXMLErr));
-    displayXMLErrors(pXMLErr, hCurrentEditView, L"Error while loading XSL");
-  }
 
-CleanUp:
-  SAFE_RELEASE(pXml);
-  SAFE_RELEASE(pXslt);
-  SAFE_RELEASE(pTemplate);
-  SAFE_RELEASE(pProcessor);
-  SAFE_RELEASE(pXMLErr);
-  //SAFE_RELEASE(pDOMObject);
-  SAFE_RELEASE(pOutStream);
-  SAFE_RELEASE(pNodes);
-  SAFE_RELEASE(pNode);
-  SysFreeString(bstrEncoding);
-  VariantClear(&varCurrentData);
-  VariantClear(&varValue);
+    delete[] data;
+    data = NULL;
+
+    delete wrapper;
 }
 
 CStringW CXSLTransformDlg::ShowOpenFileDlg(CStringW filetypes) {

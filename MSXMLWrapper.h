@@ -16,7 +16,7 @@ public:
 	bool checkSyntax(const char* xml, size_t size);
 	bool checkValidity(const char* xml, size_t size, std::wstring schemaFilename = L"", std::wstring validationNamespace = L"");
 	std::vector<XPathResultEntryType> xpathEvaluate(const char* xml, size_t size, std::wstring xpath, std::wstring ns = L"");
-	std::string xslTransform(const char* xml, size_t xmllen, const char* xsl, size_t xsllen);
+	bool xslTransform(const char* xml, size_t xmllen, std::wstring xslfile, XSLTransformResultType* out, std::wstring options = L"", UniMode srcEncoding = UniMode::uniEnd);
 	std::vector<ErrorEntryType> getLastErrors();
 };
 
