@@ -26,8 +26,8 @@ void sciDocPrettyPrintQuickXml(ScintillaDoc& doc) {
     params.indentAttributes = false;
     params.indentOnly = false;
 
-    if (xmltoolsoptions.maxElementDepth > 0) {
-        params.maxIndentLevel = xmltoolsoptions.maxElementDepth;
+    if (msxmloptions.maxElementDepth > 0) {
+        params.maxIndentLevel = msxmloptions.maxElementDepth;
     }
 
     auto docclock_start = clock();
@@ -61,8 +61,8 @@ void sciDocPrettyPrintSimpleXml(ScintillaDoc& doc) {
     parms.insertNewLines = true;
     parms.removeWhitespace = true;
     parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
-    if (xmltoolsoptions.maxElementDepth > 0) {
-        parms.maxElementDepth = xmltoolsoptions.maxElementDepth;
+    if (msxmloptions.maxElementDepth > 0) {
+        parms.maxElementDepth = msxmloptions.maxElementDepth;
     }
     parms.keepExistingBreaks = false;
 
@@ -103,8 +103,8 @@ void sciDocPrettyPrintQuickXmlAttr(ScintillaDoc& doc) {
     params.indentAttributes = true;
     params.indentOnly = false;
 
-    if (xmltoolsoptions.maxElementDepth > 0) {
-        params.maxIndentLevel = xmltoolsoptions.maxElementDepth;
+    if (msxmloptions.maxElementDepth > 0) {
+        params.maxIndentLevel = msxmloptions.maxElementDepth;
     }
 
     auto docclock_start = clock();
@@ -134,8 +134,8 @@ void sciDocPrettyPrintSimpleXmlAttr(ScintillaDoc& doc) {
     parms.insertNewLines = true;
     parms.removeWhitespace = true;
     parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
-    if (xmltoolsoptions.maxElementDepth > 0) {
-        parms.maxElementDepth = xmltoolsoptions.maxElementDepth;
+    if (msxmloptions.maxElementDepth > 0) {
+        parms.maxElementDepth = msxmloptions.maxElementDepth;
     }
     parms.keepExistingBreaks = false;
     parms.indentAttributes = true;
@@ -176,8 +176,8 @@ void sciDocPrettyPrintQuickXml_IndentOnly(ScintillaDoc& doc) {
     params.indentAttributes = true;
     params.indentOnly = true;
 
-    if (xmltoolsoptions.maxElementDepth > 0) {
-        params.maxIndentLevel = xmltoolsoptions.maxElementDepth;
+    if (msxmloptions.maxElementDepth > 0) {
+        params.maxIndentLevel = msxmloptions.maxElementDepth;
     }
 
     auto docclock_start = clock();
@@ -206,8 +206,8 @@ void sciDocPrettyPrintSimpleXml_IndentOnly(ScintillaDoc& doc) {
     parms.insertNewLines = true;
     parms.removeWhitespace = true;
     parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
-    if (xmltoolsoptions.maxElementDepth > 0) {
-        parms.maxElementDepth = xmltoolsoptions.maxElementDepth;
+    if (msxmloptions.maxElementDepth > 0) {
+        parms.maxElementDepth = msxmloptions.maxElementDepth;
     }
     parms.keepExistingBreaks = true;
 
@@ -247,8 +247,8 @@ void sciDocLinearizeQuickXml(ScintillaDoc& doc) {
     params.indentAttributes = false;
     params.indentOnly = false;
 
-    if (xmltoolsoptions.maxElementDepth > 0) {
-        params.maxIndentLevel = xmltoolsoptions.maxElementDepth;
+    if (msxmloptions.maxElementDepth > 0) {
+        params.maxIndentLevel = msxmloptions.maxElementDepth;
     }
 
     auto docclock_start = clock();
@@ -318,8 +318,8 @@ void sciDocTokenizeQuickXml(ScintillaDoc& doc) {
     params.indentAttributes = false;
     params.indentOnly = false;
 
-    if (xmltoolsoptions.maxElementDepth > 0) {
-        params.maxIndentLevel = xmltoolsoptions.maxElementDepth;
+    if (msxmloptions.maxElementDepth > 0) {
+        params.maxIndentLevel = msxmloptions.maxElementDepth;
     }
 
     auto docclock_start = clock();

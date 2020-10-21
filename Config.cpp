@@ -3,6 +3,7 @@
 
 struct struct_proxyoptions proxyoptions = {};
 struct struct_xmltoolsoptions xmltoolsoptions = {};
+struct struct_msxmloptions msxmloptions = {};
 XmlToolsConfig config;
 
 void XmlToolsConfig::WriteString(const wchar_t* name, const std::wstring& value) {
@@ -63,22 +64,22 @@ void XmlToolsConfig::Read(std::wstring _configPath) {
 	ReadBool(L"ppAutoclose", xmltoolsoptions.ppAutoclose);
 	ReadBool(L"ensureConformity", xmltoolsoptions.ensureConformity);
 
-	ReadInt(L"allowDocumentFunction", xmltoolsoptions.allowDocumentFunction);
-	ReadInt(L"allowXsltScript", xmltoolsoptions.allowXsltScript);
-	ReadInt(L"forceResync", xmltoolsoptions.forceResync);
-	ReadInt(L"maxElementDepth", xmltoolsoptions.maxElementDepth);
-	ReadInt(L"maxXMLSize", xmltoolsoptions.maxXMLSize);
-	ReadInt(L"multipleErrorMessages", xmltoolsoptions.multipleErrorMessages);
-	ReadInt(L"newParser", xmltoolsoptions.newParser);
-	ReadInt(L"normalizeAttributeValues", xmltoolsoptions.normalizeAttributeValues);
-	ReadInt(L"populateElementDefaultValues", xmltoolsoptions.populateElementDefaultValues);
-	ReadInt(L"prohibitDTD", xmltoolsoptions.prohibitDTD);
-	ReadInt(L"resolveExternals", xmltoolsoptions.resolveExternals);
-	ReadString(L"selectionLanguage", xmltoolsoptions.selectionLanguage);
-	ReadString(L"selectionNamespace", xmltoolsoptions.selectionNamespace);
-	ReadInt(L"serverHTTPRequest", xmltoolsoptions.serverHTTPRequest);
-	ReadInt(L"useInlineSchema", xmltoolsoptions.useInlineSchema);
-	ReadInt(L"validateOnParse", xmltoolsoptions.validateOnParse);
+	ReadInt(L"allowDocumentFunction", msxmloptions.allowDocumentFunction);
+	ReadInt(L"allowXsltScript", msxmloptions.allowXsltScript);
+	ReadInt(L"forceResync", msxmloptions.forceResync);
+	ReadInt(L"maxElementDepth", msxmloptions.maxElementDepth);
+	ReadInt(L"maxXMLSize", msxmloptions.maxXMLSize);
+	ReadInt(L"multipleErrorMessages", msxmloptions.multipleErrorMessages);
+	ReadInt(L"newParser", msxmloptions.newParser);
+	ReadInt(L"normalizeAttributeValues", msxmloptions.normalizeAttributeValues);
+	ReadInt(L"populateElementDefaultValues", msxmloptions.populateElementDefaultValues);
+	ReadInt(L"prohibitDTD", msxmloptions.prohibitDTD);
+	ReadInt(L"resolveExternals", msxmloptions.resolveExternals);
+	ReadString(L"selectionLanguage", msxmloptions.selectionLanguage);
+	ReadString(L"selectionNamespace", msxmloptions.selectionNamespace);
+	ReadInt(L"serverHTTPRequest", msxmloptions.serverHTTPRequest);
+	ReadInt(L"useInlineSchema", msxmloptions.useInlineSchema);
+	ReadInt(L"validateOnParse", msxmloptions.validateOnParse);
 	int dbgLevel = static_cast<int>(config.dbgLevel);
 	ReadInt(L"dbgLevel", dbgLevel);
 	config.dbgLevel = static_cast<DBG_LEVEL>(dbgLevel);
@@ -113,22 +114,22 @@ void XmlToolsConfig::Write() {
 	WriteBool(L"ppAutoclose", xmltoolsoptions.ppAutoclose);
 	WriteBool(L"ensureConformity", xmltoolsoptions.ensureConformity);
 
-	WriteInt(L"allowDocumentFunction", xmltoolsoptions.allowDocumentFunction);
-	WriteInt(L"allowXsltScript", xmltoolsoptions.allowXsltScript);
-	WriteInt(L"forceResync", xmltoolsoptions.forceResync);
-	WriteInt(L"maxElementDepth", xmltoolsoptions.maxElementDepth);
-	WriteInt(L"maxXMLSize", xmltoolsoptions.maxXMLSize);
-	WriteInt(L"multipleErrorMessages", xmltoolsoptions.multipleErrorMessages);
-	WriteInt(L"newParser", xmltoolsoptions.newParser);
-	WriteInt(L"normalizeAttributeValues", xmltoolsoptions.normalizeAttributeValues);
-	WriteInt(L"populateElementDefaultValues",xmltoolsoptions.populateElementDefaultValues);
-	WriteInt(L"prohibitDTD", xmltoolsoptions.prohibitDTD);
-	WriteInt(L"resolveExternals", xmltoolsoptions.resolveExternals);
-	WriteString(L"selectionLanguage", xmltoolsoptions.selectionLanguage);
-	WriteString(L"selectionNamespace", xmltoolsoptions.selectionNamespace);
-	WriteInt(L"serverHTTPRequest", xmltoolsoptions.serverHTTPRequest);
-	WriteInt(L"useInlineSchema", xmltoolsoptions.useInlineSchema);
-	WriteInt(L"validateOnParse", xmltoolsoptions.validateOnParse);
+	WriteInt(L"allowDocumentFunction", msxmloptions.allowDocumentFunction);
+	WriteInt(L"allowXsltScript", msxmloptions.allowXsltScript);
+	WriteInt(L"forceResync", msxmloptions.forceResync);
+	WriteInt(L"maxElementDepth", msxmloptions.maxElementDepth);
+	WriteInt(L"maxXMLSize", msxmloptions.maxXMLSize);
+	WriteInt(L"multipleErrorMessages", msxmloptions.multipleErrorMessages);
+	WriteInt(L"newParser", msxmloptions.newParser);
+	WriteInt(L"normalizeAttributeValues", msxmloptions.normalizeAttributeValues);
+	WriteInt(L"populateElementDefaultValues", msxmloptions.populateElementDefaultValues);
+	WriteInt(L"prohibitDTD", msxmloptions.prohibitDTD);
+	WriteInt(L"resolveExternals", msxmloptions.resolveExternals);
+	WriteString(L"selectionLanguage", msxmloptions.selectionLanguage);
+	WriteString(L"selectionNamespace", msxmloptions.selectionNamespace);
+	WriteInt(L"serverHTTPRequest", msxmloptions.serverHTTPRequest);
+	WriteInt(L"useInlineSchema", msxmloptions.useInlineSchema);
+	WriteInt(L"validateOnParse", msxmloptions.validateOnParse);
 
 	WriteInt(L"dbgLevel", (int)config.dbgLevel);
 }

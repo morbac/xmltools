@@ -3,8 +3,7 @@
 #include "Report.h"
 #include <sstream>
 #include <vector>
-
-// WORK IN PROGRESS
+#include <map>
 
 struct XPathResultEntryType {
     std::wstring type;
@@ -34,6 +33,29 @@ enum XmlCapabilityType {
     ALL_OPTIONS       = GET_ERROR_DETAILS | CHECK_SYNTAX | CHECK_VALIDITY | EVALUATE_XPATH | XSL_TRANSFORM
 };
 
+// Option related types
+enum OptionDataType {
+    OPTION_TYPE_INTEGER,
+    OPTION_TYPE_DOUBLE,
+    OPTION_TYPE_BOOLEAN,
+    OPTION_TYPE_STRING
+};
+
+enum OptionFormatType {
+    OPTION_FORMAT_TEXT,
+    OPTION_FORMAT_COMBO,
+    OPTION_FORMAT_CHECKBOX
+};
+
+struct XmlWrapperOptionType {
+    std::wstring label;                             // the option name or label
+    std::wstring description;                       // a text describing the option
+    std::wstring defaultValue;                      // the option default value
+    OptionDataType type;                            // the option data type
+    OptionFormatType format;                        // the option format (when displayed in options dialog)
+    std::map<std::string, std::string> options;     // a map with value and caption of combo entries
+};
+
 /*
 * This abstract class is the interface for external XML-API wrappers.
 * The purpose of this interface is to define the expected methods for
@@ -41,9 +63,12 @@ enum XmlCapabilityType {
 */
 
 class XmlWrapperInterface {
+protected:
     std::vector<ErrorEntryType> errors;
 
-protected:
+    // A map with wrapper options
+    std::map<std::string, XmlWrapperOptionType> options;
+
     void resetErrors() {
         this->errors.clear();
     }
@@ -105,7 +130,15 @@ public:
     * Get errors of last executed action
     * @return A vector of errors descriptions
     */
-    virtual std::vector<ErrorEntryType> getLastErrors() = 0;
+    std::vector<ErrorEntryType> getLastErrors() {
+        return this->errors;
+    }
 
-
+    /*
+    * Get wrapper options
+    * @return A vector of wrapper options
+    */
+    std::map<std::string, XmlWrapperOptionType> getOptions() {
+        return this->options;
+    }
 };

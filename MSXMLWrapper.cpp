@@ -3,10 +3,28 @@
 #include <comutil.h>
 
 MSXMLWrapper::MSXMLWrapper() {
+    std::map<std::string, std::string> tristate{ { "-1", "default" }, { "0", "false" }, { "1", "true" } };
+
+    this->options["allowDocumentFunction"] = {
+        L"Allow document function",
+        L"",
+        L"-1",
+        OPTION_TYPE_INTEGER,
+        OPTION_FORMAT_COMBO,
+        tristate
+    };
+    this->options["allowXsltScript"] = {
+        L"Allow Xslt Script",
+        L"",
+        L"-1",
+        OPTION_TYPE_INTEGER,
+        OPTION_FORMAT_COMBO,
+        tristate
+    };
 }
 
 MSXMLWrapper::~MSXMLWrapper() {
-    this->errors.clear();
+    this->resetErrors();
 }
 
 int MSXMLWrapper::getCapabilities() {
@@ -66,7 +84,7 @@ bool MSXMLWrapper::checkSyntax(const char* xml, size_t size) {
     VARIANT_BOOL varStatus;
     VARIANT varCurrentData;
 
-    this->errors.clear();
+    this->resetErrors();
 
     Report::char2VARIANT(xml, &varCurrentData);
 
@@ -102,7 +120,7 @@ bool MSXMLWrapper::checkValidity(const char* xml, size_t size, std::wstring sche
     BSTR bstrNodeName = NULL;
     bool res = true;
 
-    this->errors.clear();
+    this->resetErrors();
 
     Report::char2VARIANT(xml, &varXML);
 
@@ -189,7 +207,7 @@ std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, s
     std::wstring value;
     long length;
 
-    this->errors.clear();
+    this->resetErrors();
 
     Report::char2BSTR(xpath.c_str(), &bstrXPath);
     Report::char2VARIANT(xml, &varXML);
@@ -359,7 +377,7 @@ bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xsl
     bool outputAsStream = false;
     bool res = true;
 
-    this->errors.clear();
+    this->resetErrors();
 
     V_VT(&varValue) = VT_UNKNOWN;
 
@@ -568,8 +586,4 @@ CleanUp:
     VariantClear(&varCurrentData);
 
     return res;
-}
-
-std::vector<ErrorEntryType> MSXMLWrapper::getLastErrors() {
-	return this->errors;
 }

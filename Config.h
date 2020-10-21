@@ -11,7 +11,7 @@ struct struct_proxyoptions {
 	std::wstring password = L"";
 };
 
-struct struct_xmltoolsoptions {       // default value
+struct struct_msxmloptions {                // default value
   // msxml features
 	int allowDocumentFunction = -1;         // True in 3.0. False in 6.0.
 	int allowXsltScript = -1;               // True in 3.0. False in 6.0.
@@ -31,6 +31,9 @@ struct struct_xmltoolsoptions {       // default value
 	int validateOnParse = -1;               // True
 
 	// xmltools options
+};
+
+struct struct_xmltoolsoptions {
 	std::wstring formatingEngine = L"SimpleXml";
 	bool useAnnotations = true;                // False
 	int annotationStyle = 12;                // 12
@@ -45,6 +48,7 @@ struct struct_xmltoolsoptions {       // default value
 
 extern struct struct_proxyoptions proxyoptions;
 extern struct struct_xmltoolsoptions xmltoolsoptions;
+extern struct struct_msxmloptions msxmloptions;
 
 class XmlToolsConfig {
 	const wchar_t* sectionName = L"XML Tools";

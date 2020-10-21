@@ -45,22 +45,22 @@ HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc, int options) {
     (*ppDoc)->put_resolveExternals(options & INIT_OPTION_RESOLVEEXTERNALS ? VARIANT_TRUE : VARIANT_FALSE);
     (*ppDoc)->put_preserveWhiteSpace(options & INIT_OPTION_PRESERVEWHITESPACE ? VARIANT_TRUE : VARIANT_FALSE);
 
-    if (xmltoolsoptions.allowDocumentFunction >= 0) (*ppDoc)->setProperty(L"AllowDocumentFunction", _variant_t(xmltoolsoptions.allowDocumentFunction > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (xmltoolsoptions.allowXsltScript >= 0) (*ppDoc)->setProperty(L"AllowXsltScript", _variant_t(xmltoolsoptions.allowXsltScript > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (xmltoolsoptions.forceResync >= 0) (*ppDoc)->setProperty(L"ForceResync", _variant_t(xmltoolsoptions.forceResync > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (xmltoolsoptions.maxElementDepth >= 0) (*ppDoc)->setProperty(L"MaxElementDepth", _variant_t(xmltoolsoptions.maxElementDepth));
-    if (xmltoolsoptions.maxXMLSize >= 0) (*ppDoc)->setProperty(L"MaxXMLSize", _variant_t(xmltoolsoptions.maxXMLSize));
-    if (xmltoolsoptions.multipleErrorMessages >= 0) (*ppDoc)->setProperty(L"MultipleErrorMessages", _variant_t(xmltoolsoptions.multipleErrorMessages > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (xmltoolsoptions.newParser >= 0) (*ppDoc)->setProperty(L"NewParser", _variant_t(xmltoolsoptions.newParser > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (xmltoolsoptions.normalizeAttributeValues >= 0) (*ppDoc)->setProperty(L"NormalizeAttributeValues", _variant_t(xmltoolsoptions.normalizeAttributeValues > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (xmltoolsoptions.populateElementDefaultValues >= 0) (*ppDoc)->setProperty(L"PopulateElementDefaultValues", _variant_t(xmltoolsoptions.populateElementDefaultValues > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (xmltoolsoptions.prohibitDTD >= 0) (*ppDoc)->setProperty(L"ProhibitDTD", _variant_t(xmltoolsoptions.prohibitDTD > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (xmltoolsoptions.resolveExternals >= 0) (*ppDoc)->setProperty(L"ResolveExternals", _variant_t(xmltoolsoptions.resolveExternals > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (xmltoolsoptions.selectionLanguage.length() >= 0) (*ppDoc)->setProperty(L"SelectionLanguage", _variant_t(xmltoolsoptions.selectionLanguage.c_str()));
-    if (xmltoolsoptions.selectionNamespace.length() >= 0) (*ppDoc)->setProperty(L"SelectionNamespace", _variant_t(xmltoolsoptions.selectionNamespace.c_str()));
-    if (xmltoolsoptions.serverHTTPRequest >= 0) (*ppDoc)->setProperty(L"ServerHTTPRequest", _variant_t(xmltoolsoptions.serverHTTPRequest > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (xmltoolsoptions.useInlineSchema >= 0) (*ppDoc)->setProperty(L"UseInlineSchema", _variant_t(xmltoolsoptions.useInlineSchema > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (xmltoolsoptions.validateOnParse >= 0) (*ppDoc)->setProperty(L"ValidateOnParse", _variant_t(xmltoolsoptions.validateOnParse > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.allowDocumentFunction >= 0) (*ppDoc)->setProperty(L"AllowDocumentFunction", _variant_t(msxmloptions.allowDocumentFunction > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.allowXsltScript >= 0) (*ppDoc)->setProperty(L"AllowXsltScript", _variant_t(msxmloptions.allowXsltScript > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.forceResync >= 0) (*ppDoc)->setProperty(L"ForceResync", _variant_t(msxmloptions.forceResync > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.maxElementDepth >= 0) (*ppDoc)->setProperty(L"MaxElementDepth", _variant_t(msxmloptions.maxElementDepth));
+    if (msxmloptions.maxXMLSize >= 0) (*ppDoc)->setProperty(L"MaxXMLSize", _variant_t(msxmloptions.maxXMLSize));
+    if (msxmloptions.multipleErrorMessages >= 0) (*ppDoc)->setProperty(L"MultipleErrorMessages", _variant_t(msxmloptions.multipleErrorMessages > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.newParser >= 0) (*ppDoc)->setProperty(L"NewParser", _variant_t(msxmloptions.newParser > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.normalizeAttributeValues >= 0) (*ppDoc)->setProperty(L"NormalizeAttributeValues", _variant_t(msxmloptions.normalizeAttributeValues > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.populateElementDefaultValues >= 0) (*ppDoc)->setProperty(L"PopulateElementDefaultValues", _variant_t(msxmloptions.populateElementDefaultValues > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.prohibitDTD >= 0) (*ppDoc)->setProperty(L"ProhibitDTD", _variant_t(msxmloptions.prohibitDTD > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.resolveExternals >= 0) (*ppDoc)->setProperty(L"ResolveExternals", _variant_t(msxmloptions.resolveExternals > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.selectionLanguage.length() >= 0) (*ppDoc)->setProperty(L"SelectionLanguage", _variant_t(msxmloptions.selectionLanguage.c_str()));
+    if (msxmloptions.selectionNamespace.length() >= 0) (*ppDoc)->setProperty(L"SelectionNamespace", _variant_t(msxmloptions.selectionNamespace.c_str()));
+    if (msxmloptions.serverHTTPRequest >= 0) (*ppDoc)->setProperty(L"ServerHTTPRequest", _variant_t(msxmloptions.serverHTTPRequest > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.useInlineSchema >= 0) (*ppDoc)->setProperty(L"UseInlineSchema", _variant_t(msxmloptions.useInlineSchema > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.validateOnParse >= 0) (*ppDoc)->setProperty(L"ValidateOnParse", _variant_t(msxmloptions.validateOnParse > 0 ? VARIANT_TRUE : VARIANT_FALSE));
   }
   return hr;
 }
@@ -69,7 +69,7 @@ HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc, int options) {
 HRESULT CreateAndInitSAX(ISAXXMLReader** ppDoc) {
   HRESULT hr = CoCreateInstance(CLSID_SAXXMLReader60, NULL, CLSCTX_ALL, IID_PPV_ARGS(ppDoc));
   if (SUCCEEDED(hr)) {
-    (*ppDoc)->putFeature(L"prohibit-dtd", _variant_t(xmltoolsoptions.prohibitDTD ? VARIANT_TRUE : VARIANT_FALSE));
+    (*ppDoc)->putFeature(L"prohibit-dtd", _variant_t(msxmloptions.prohibitDTD ? VARIANT_TRUE : VARIANT_FALSE));
   }
   return hr;
 }

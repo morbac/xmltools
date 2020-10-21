@@ -63,6 +63,7 @@
 #define IDC_PROPERTIES                  2051
 #define IDC_BTNCLEAR                    2053
 #define IDC_BTNCLOSE                    2054
+#define IDC_TAB1                        2055
 
 // Next default values for new objects
 // 
@@ -70,7 +71,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        2016
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2055
+#define _APS_NEXT_CONTROL_VALUE         2056
 #define _APS_NEXT_SYMED_VALUE           2000
 #endif
 #endif
