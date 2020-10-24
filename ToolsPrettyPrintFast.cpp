@@ -20,15 +20,11 @@ void sciDocPrettyPrintQuickXml(ScintillaDoc& doc) {
     XmlFormaterParamsType params;
     params.indentChars = doc.Tab();
     params.eolChars = doc.EOL();
-    params.maxIndentLevel = 255;
+    params.maxIndentLevel = xmltoolsoptions.maxIndentLevel;
     params.ensureConformity = xmltoolsoptions.ensureConformity;
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
     params.indentAttributes = false;
     params.indentOnly = false;
-
-    if (msxmloptions.maxElementDepth > 0) {
-        params.maxIndentLevel = msxmloptions.maxElementDepth;
-    }
 
     auto docclock_start = clock();
 
@@ -61,8 +57,8 @@ void sciDocPrettyPrintSimpleXml(ScintillaDoc& doc) {
     parms.insertNewLines = true;
     parms.removeWhitespace = true;
     parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
-    if (msxmloptions.maxElementDepth > 0) {
-        parms.maxElementDepth = msxmloptions.maxElementDepth;
+    if (xmltoolsoptions.maxIndentLevel > 0) {
+        parms.maxElementDepth = xmltoolsoptions.maxIndentLevel;
     }
     parms.keepExistingBreaks = false;
 
@@ -97,15 +93,11 @@ void sciDocPrettyPrintQuickXmlAttr(ScintillaDoc& doc) {
     XmlFormaterParamsType params;
     params.indentChars = doc.Tab();
     params.eolChars = doc.EOL();
-    params.maxIndentLevel = 255;
+    params.maxIndentLevel = xmltoolsoptions.maxIndentLevel;
     params.ensureConformity = xmltoolsoptions.ensureConformity;
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
     params.indentAttributes = true;
     params.indentOnly = false;
-
-    if (msxmloptions.maxElementDepth > 0) {
-        params.maxIndentLevel = msxmloptions.maxElementDepth;
-    }
 
     auto docclock_start = clock();
 
@@ -134,8 +126,8 @@ void sciDocPrettyPrintSimpleXmlAttr(ScintillaDoc& doc) {
     parms.insertNewLines = true;
     parms.removeWhitespace = true;
     parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
-    if (msxmloptions.maxElementDepth > 0) {
-        parms.maxElementDepth = msxmloptions.maxElementDepth;
+    if (xmltoolsoptions.maxIndentLevel > 0) {
+        parms.maxElementDepth = xmltoolsoptions.maxIndentLevel;
     }
     parms.keepExistingBreaks = false;
     parms.indentAttributes = true;
@@ -170,15 +162,11 @@ void sciDocPrettyPrintQuickXml_IndentOnly(ScintillaDoc& doc) {
     XmlFormaterParamsType params;
     params.indentChars = doc.Tab();
     params.eolChars = doc.EOL();
-    params.maxIndentLevel = 255;
+    params.maxIndentLevel = xmltoolsoptions.maxIndentLevel;
     params.ensureConformity = xmltoolsoptions.ensureConformity;
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
     params.indentAttributes = true;
     params.indentOnly = true;
-
-    if (msxmloptions.maxElementDepth > 0) {
-        params.maxIndentLevel = msxmloptions.maxElementDepth;
-    }
 
     auto docclock_start = clock();
 
@@ -206,8 +194,8 @@ void sciDocPrettyPrintSimpleXml_IndentOnly(ScintillaDoc& doc) {
     parms.insertNewLines = true;
     parms.removeWhitespace = true;
     parms.autocloseEmptyElements = xmltoolsoptions.ppAutoclose;
-    if (msxmloptions.maxElementDepth > 0) {
-        parms.maxElementDepth = msxmloptions.maxElementDepth;
+    if (xmltoolsoptions.maxIndentLevel > 0) {
+        parms.maxElementDepth = xmltoolsoptions.maxIndentLevel;
     }
     parms.keepExistingBreaks = true;
 
@@ -241,15 +229,11 @@ void sciDocLinearizeQuickXml(ScintillaDoc& doc) {
     XmlFormaterParamsType params;
     params.indentChars = doc.Tab();
     params.eolChars = doc.EOL();
-    params.maxIndentLevel = 255;
+    params.maxIndentLevel = xmltoolsoptions.maxIndentLevel;
     params.ensureConformity = xmltoolsoptions.ensureConformity;
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
     params.indentAttributes = false;
     params.indentOnly = false;
-
-    if (msxmloptions.maxElementDepth > 0) {
-        params.maxIndentLevel = msxmloptions.maxElementDepth;
-    }
 
     auto docclock_start = clock();
 
@@ -312,15 +296,11 @@ void sciDocTokenizeQuickXml(ScintillaDoc& doc) {
     XmlFormaterParamsType params;
     params.indentChars = doc.Tab();
     params.eolChars = doc.EOL();
-    params.maxIndentLevel = 255;
+    params.maxIndentLevel = xmltoolsoptions.maxIndentLevel;
     params.ensureConformity = xmltoolsoptions.ensureConformity;
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
     params.indentAttributes = false;
     params.indentOnly = false;
-
-    if (msxmloptions.maxElementDepth > 0) {
-        params.maxIndentLevel = msxmloptions.maxElementDepth;
-    }
 
     auto docclock_start = clock();
 

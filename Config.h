@@ -37,6 +37,7 @@ struct struct_xmltoolsoptions {
 	std::wstring formatingEngine = L"SimpleXml";
 	bool useAnnotations = true;                // False
 	int annotationStyle = 12;                // 12
+	int maxIndentLevel = 0;
 	bool convertAmp = true;
 	bool convertLt = true;
 	bool convertGt = true;

@@ -138,6 +138,8 @@ BOOL COptionsDlg::OnInitDialog() {
   pGrpPrettyPrint->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
   pTmpOption = new CMFCPropertyGridProperty(L"Ensure conformity", COleVariant((short)(xmltoolsoptions.ensureConformity ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Make the prettyprint/linearize engine maintain XML conformity. Whitespace are trimmed and linebreaks are added only if it does not modify the xml structure. Currently only available on QuickXml.", (DWORD_PTR)&xmltoolsoptions.ensureConformity);
   pGrpPrettyPrint->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Max indent level", COleVariant((long)xmltoolsoptions.maxIndentLevel, VT_INT), L"The max indentation level for pretty print. A zero (0) value means no indentation limit", (DWORD_PTR)&xmltoolsoptions.maxIndentLevel);
+  pGrpPrettyPrint->AddSubItem(pTmpOption); vIntProperties.push_back(pTmpOption);
 
 
   CMFCPropertyGridProperty* pGrpXmlFeatures = new CMFCPropertyGridProperty(L"MSXML Features");

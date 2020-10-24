@@ -65,6 +65,7 @@ namespace QuickXml {
 
 	void XmlFormater::reset() {
 		this->indentLevel = 0;
+		this->levelCounter = 0;
 		this->out.clear();
 		this->out.str(std::string());	// make the stringstream empty
 	}
@@ -490,17 +491,20 @@ namespace QuickXml {
 
 	void XmlFormater::updateIndentLevel(int change) {
 		if (change > 0) {
-			if (++this->indentLevel > this->params.maxIndentLevel) {
-				this->indentLevel = this->params.maxIndentLevel;
-			}
+			++this->levelCounter;
 		}
 		else if (change < 0) {
-			if (this->indentLevel > 0) {
-				--this->indentLevel;
+			if (this->levelCounter > 0) {
+				--this->levelCounter;
 			}
 			else {
-				this->indentLevel = 0;
+				this->levelCounter = 0;
 			}
+		}
+
+		this->indentLevel = this->levelCounter;
+		if (this->params.maxIndentLevel > 0 && this->indentLevel > this->params.maxIndentLevel) {
+			this->indentLevel = this->params.maxIndentLevel;
 		}
 	}
 

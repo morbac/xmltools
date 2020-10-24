@@ -21,7 +21,8 @@ namespace QuickXml {
 		XmlFormaterParamsType params;
 
 		std::stringstream out;
-		size_t indentLevel;
+		size_t indentLevel;                 // the real applied indent level
+		size_t levelCounter;                // the level counter
 
 		/*
 		* Adds an EOL char to output stream
