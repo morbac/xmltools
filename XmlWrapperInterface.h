@@ -23,7 +23,7 @@ struct ErrorEntryType {
     std::wstring reason; // error description
 };
 
-enum XmlCapabilityType {
+enum XmlCapabilityType : int {
     GET_ERROR_DETAILS = 1 << 0, // the wrapped api can return errors details
     CHECK_SYNTAX      = 1 << 1, // the wrapped api can perform syntax check
     CHECK_VALIDITY    = 1 << 2, // the wrapped api can perform validity check
@@ -34,14 +34,14 @@ enum XmlCapabilityType {
 };
 
 // Option related types
-enum OptionDataType {
+enum class OptionDataType {
     OPTION_TYPE_INTEGER,
     OPTION_TYPE_DOUBLE,
     OPTION_TYPE_BOOLEAN,
     OPTION_TYPE_STRING
 };
 
-enum OptionFormatType {
+enum class OptionFormatType {
     OPTION_FORMAT_TEXT,
     OPTION_FORMAT_COMBO,
     OPTION_FORMAT_CHECKBOX

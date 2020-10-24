@@ -9,16 +9,16 @@ MSXMLWrapper::MSXMLWrapper() {
         L"Allow document function",
         L"",
         L"-1",
-        OPTION_TYPE_INTEGER,
-        OPTION_FORMAT_COMBO,
+        OptionDataType::OPTION_TYPE_INTEGER,
+        OptionFormatType::OPTION_FORMAT_COMBO,
         tristate
     };
     this->options["allowXsltScript"] = {
         L"Allow Xslt Script",
         L"",
         L"-1",
-        OPTION_TYPE_INTEGER,
-        OPTION_FORMAT_COMBO,
+        OptionDataType::OPTION_TYPE_INTEGER,
+        OptionFormatType::OPTION_FORMAT_COMBO,
         tristate
     };
 }
@@ -28,7 +28,7 @@ MSXMLWrapper::~MSXMLWrapper() {
 }
 
 int MSXMLWrapper::getCapabilities() {
-	return ALL_OPTIONS;
+    return XmlCapabilityType::ALL_OPTIONS;
 }
 
 void MSXMLWrapper::buildErrorsVector(IXMLDOMParseError* pXMLErr) {
