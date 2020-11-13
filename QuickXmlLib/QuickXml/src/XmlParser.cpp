@@ -223,6 +223,7 @@ namespace QuickXml {
 				}
 			}
 			else if (this->currcontext.inClosingTag) {
+				this->hasAttrName = false;
 				// parsing closing tag content
 				if (currentchar == '>') {
 					this->currcontext.inClosingTag = false;
@@ -253,6 +254,7 @@ namespace QuickXml {
 			else if (this->currcontext.inOpeningTag) {
 				// parse opening tag content
 				if (currentchar == '>') {
+					this->hasAttrName = false;
 					this->currcontext.inOpeningTag = false;
 					return { XmlTokenType::TagOpeningEnd,
 							 startpos,
@@ -273,6 +275,7 @@ namespace QuickXml {
 				}
 				else if (currentchar == '/') {
 					if (cursor[1] == '>') {
+						this->hasAttrName = false;
 						this->currcontext.inOpeningTag = false;
 						return { XmlTokenType::TagSelfClosingEnd,
 								 startpos,
@@ -287,6 +290,7 @@ namespace QuickXml {
 					}
 				}
 				else if (currentchar == '=') {
+					this->expectAttrValue = true;
 					return { XmlTokenType::Equal,
 							 startpos,
 							 this->readChars(1),
@@ -294,13 +298,25 @@ namespace QuickXml {
 				}
 				else if (this->hasAttrName) {
 					this->hasAttrName = false;
-					char valDelimiter[2] = { currentchar, '\0' };
-					if (currentchar == '\"' || currentchar == '\'') {
+					if (this->expectAttrValue || currentchar == '"' || currentchar == '\'') {
 						// standard value, delimited with " or '
-						return { XmlTokenType::AttrValue,
-								 startpos,
-								 this->readUntilFirstOf(valDelimiter, 1, true),	// skip actual delimiter + parse content
-							     this->currpos };
+						this->expectAttrValue = false;
+						if (currentchar == '"' || currentchar == '\'') {
+							// normal case, let's skip the quoted/apostrophed attribute value
+							char valDelimiter[2] = { currentchar, '\0' };
+							return { XmlTokenType::AttrValue,
+									 startpos,
+									 this->readUntilFirstOf(valDelimiter, 1, true),	// skip actual delimiter + parse content
+									 this->currpos };
+						}
+						else {
+							// we have some unexpected chars between the = and the attribute value
+							// let's read next word of string
+							return { XmlTokenType::AttrValue,
+									 startpos,
+									 this->readNextWord(true),
+									 this->currpos };
+						}
 					}
 					else {
 						// attribute with no value
@@ -331,13 +347,6 @@ namespace QuickXml {
 		return { XmlTokenType::Undefined, startpos, this->readChars(1), this->currpos };
 	}
 
-	size_t XmlParser::isIncoming(const char* characters) {
-		const char* cursor = this->srcText + this->currpos;
-		const char* tmp = strstr(cursor, characters);
-		if (!tmp) return -1;
-		return tmp - cursor;
-	}
-
 	size_t XmlParser::readChars(size_t nchars) {
 		if (this->currpos + nchars > this->srcLength) {
 			nchars = this->srcLength - this->currpos;
@@ -346,8 +355,32 @@ namespace QuickXml {
 		return nchars;
 	}
 
-	size_t XmlParser::readNextWord() {
-		return this->readUntilFirstOf(" \t\r\n=\"'<>");
+	size_t XmlParser::readNextWord(bool skipQuotedStrings) {
+		if (skipQuotedStrings) {
+			const char* cursor = this->srcText + this->currpos;
+			size_t num = 0;
+			size_t n = this->readChars(1);
+			while (n > 0) {
+				num += n;
+				if (cursor[num] == ' ' || cursor[num] == '\t' || cursor[num] == '\r' || cursor[num] == '\n') {
+					break;
+				}
+				else if (cursor[num] == '"') {
+					num += this->readUntil("\"", 1, true);
+					break;
+				}
+				else if (cursor[num] == '\'') {
+					num += this->readUntil("'", 1, true);
+					break;
+				}
+				n = this->readChars(1);
+			}
+
+			return num;
+		}
+		else {
+			return this->readUntilFirstOf(" \t\r\n=\"'<>");
+		}
 	}
 
 	size_t XmlParser::readUntilFirstOf(const char* characters, size_t offset, bool goAfter) {

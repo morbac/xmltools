@@ -58,6 +58,7 @@ namespace QuickXml {
         size_t currpos;             // the current position of the parser
         XmlContext currcontext;     // the actual parsing context
         bool hasAttrName;           // indicates that we got en attribute name
+        bool expectAttrValue;       // the paread read an = in tag, then it expects an attribute value
 
         XmlToken prevtoken;         // the previous token
         XmlToken currtoken;         // the current parsed token
@@ -118,13 +119,6 @@ namespace QuickXml {
         XmlToken parseUntil(XmlTokensType type);
 
         /*
-        * Search for given characters and return position of first occurrence
-        * @param characters The substring to find in main stream
-        * @return The position of substring or -1 if not found
-        */
-        size_t isIncoming(const char* characters);
-
-        /*
         * Reads some chars in main stream
         * @nchars The number of chars to read
         * @return The number of chars read (might be lower then parameter,
@@ -136,7 +130,7 @@ namespace QuickXml {
         * Reads the next word in main stream and update cursor position
         * @return The size of word
         */
-        size_t readNextWord();
+        size_t readNextWord(bool skipQuotedStrings = false);
 
         /*
         * Reads stream (and update cursor position) until given delimiter

@@ -246,7 +246,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
           closeXMLTag();
         }
         //if (doAutoIndent && lastChar == '\n') tagAutoIndent();
-        //if (doAttrAutoComplete && lastChar == '\"') attributeAutoComplete();
+        //if (doAttrAutoComplete && lastChar == '"') attributeAutoComplete();
       }
 
       break;
