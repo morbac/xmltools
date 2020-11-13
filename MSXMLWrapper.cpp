@@ -1,3 +1,5 @@
+#include "StdAfx.h"
+
 #include "MSXMLWrapper.h"
 #include "Report.h"
 #include <comutil.h>
