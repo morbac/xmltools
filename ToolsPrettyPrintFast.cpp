@@ -305,7 +305,7 @@ void sciDocTokenizeQuickXml(ScintillaDoc& doc) {
     auto docclock_start = clock();
 
     XmlFormater formater(inText.text, inText.length, params);
-    std::string outText = formater.debugTokens("\r\n");
+    std::string outText = formater.debugTokens("\r\n", true);
 
     auto docclock_end = clock();
 

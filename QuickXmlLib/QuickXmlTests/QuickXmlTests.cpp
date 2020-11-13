@@ -32,7 +32,7 @@ namespace QuickXmlTests {
 
 		void testParser(std::string xml, std::string ref) {
 			XmlFormater formater(xml.c_str(), xml.length());
-			std::string tmp = formater.debugTokens();
+			std::string tmp = formater.debugTokens("/", false);
 			Assert::IsTrue(0 == ref.compare(tmp));
 		}
 

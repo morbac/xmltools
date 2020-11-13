@@ -92,9 +92,10 @@ namespace QuickXml {
 		* Generates a string containing a list of recognized tokens
 		* This method has no other goal that help for debug
 		* @param separator The tokens names separator (default is '/')
+		* @param detailed Indicates that output should include data
 		* @return A string-reprensentation of all data tokens
 		*/
-		std::string debugTokens(std::string separator = "/");
+		std::string debugTokens(std::string separator = "/", bool detailed = false);
 
 		/*
 		* Performs linearize formating

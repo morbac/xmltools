@@ -70,7 +70,7 @@ namespace QuickXml {
 		this->out.str(std::string());	// make the stringstream empty
 	}
 
-	std::string XmlFormater::debugTokens(std::string separator) {
+	std::string XmlFormater::debugTokens(std::string separator, bool detailed) {
 		this->reset();
 		this->parser->reset();
 
@@ -79,6 +79,11 @@ namespace QuickXml {
 
 		while ((token = this->parser->parseNext()).type != XmlTokenType::EndOfFile) {
 			out << separator << this->parser->getTokenName();
+
+			if (detailed) {
+				out << ": ";
+				out.write(token.chars, token.size);
+			}
 		}
 
 		// return result after having removed the firt '/'
