@@ -41,4 +41,5 @@ protected:
 public:
   virtual BOOL OnInitDialog();
   afx_msg void OnBnClickedButton1();
+  afx_msg void OnNMClickLnkhomepage(NMHDR* pNMHDR, LRESULT* pResult);
 };
