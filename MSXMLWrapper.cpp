@@ -88,6 +88,7 @@ bool MSXMLWrapper::checkSyntax(const char* xml, size_t size) {
 
     this->resetErrors();
 
+    VariantInit(&varCurrentData);
     Report::char2VARIANT(xml, &varCurrentData);
 
     CHK_HR(CreateAndInitDOM(&pXMLDom));
@@ -124,6 +125,7 @@ bool MSXMLWrapper::checkValidity(const char* xml, size_t size, std::wstring sche
 
     this->resetErrors();
 
+    VariantInit(&varXML);
     Report::char2VARIANT(xml, &varXML);
 
     CHK_HR(CreateAndInitDOM(&pXMLDom, (INIT_OPTION_VALIDATEONPARSE | INIT_OPTION_RESOLVEEXTERNALS)));
@@ -212,6 +214,8 @@ std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, s
     this->resetErrors();
 
     Report::char2BSTR(xpath.c_str(), &bstrXPath);
+
+    VariantInit(&varXML);
     Report::char2VARIANT(xml, &varXML);
 
     CHK_ALLOC(bstrXPath);
@@ -383,6 +387,7 @@ bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xsl
 
     V_VT(&varValue) = VT_UNKNOWN;
 
+    VariantInit(&varCurrentData);
     Report::char2VARIANT(xml, &varCurrentData);
 
     // active document may either be XML or XSL; if XSL,
@@ -473,8 +478,10 @@ bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xsl
                 while ((i = getNextParam(options, i + 1, &key, &val)) != std::string::npos) {
                     _bstr_t var0(key.c_str());
                     VARIANT var1;
+                    VariantInit(&var1);
                     CHK_HR(VariantFromString(val.c_str(), var1));
                     CHK_HR(pProcessor->addParameter(var0, var1));
+                    VariantClear(&var1);
                 }
 
                 // attach to processor XML file we want to transform,

@@ -48,12 +48,12 @@ enum class OptionFormatType {
 };
 
 struct XmlWrapperOptionType {
-    std::wstring label;                             // the option name or label
-    std::wstring description;                       // a text describing the option
-    std::wstring defaultValue;                      // the option default value
-    OptionDataType type;                            // the option data type
-    OptionFormatType format;                        // the option format (when displayed in options dialog)
-    std::map<std::string, std::string> options;     // a map with value and caption of combo entries
+    std::wstring label;                                             // the option name or label
+    std::wstring description;                                       // a text describing the option
+    std::wstring defaultValue;                                      // the option default value
+    OptionDataType type = OptionDataType::OPTION_TYPE_STRING;       // the option data type
+    OptionFormatType format = OptionFormatType::OPTION_FORMAT_TEXT; // the option format (when displayed in options dialog)
+    std::map<std::string, std::string> options;                     // a map with value and caption of combo entries
 };
 
 /*
