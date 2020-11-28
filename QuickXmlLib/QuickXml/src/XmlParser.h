@@ -31,15 +31,15 @@ namespace QuickXml {
 
     struct XmlToken {
         XmlTokenType type;      // the token type
+        size_t pos;             // the token position in stream
         const char* chars;      // a pointer to token chars
         size_t size;            // the token chars length
-        size_t pos;             // the token position in stream
     };
 
     const XmlToken undefinedToken = {
         XmlTokenType::Undefined,
-        "",
         0,
+        "",
         0
     };
 

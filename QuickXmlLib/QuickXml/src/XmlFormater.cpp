@@ -403,7 +403,7 @@ namespace QuickXml {
 		bool pushed_attr = false;
 
 		while ((token = this->parser->parseNext()).type != XmlTokenType::EndOfFile) {
-			if (token.pos > position) {
+			if (token.pos >= position) {
 				// cursor position reached, let's stop the loops
 				break;
 			}

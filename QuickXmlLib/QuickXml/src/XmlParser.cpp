@@ -94,16 +94,18 @@ namespace QuickXml {
 
 		const char* cursor = this->srcText + this->currpos;
 		const char* startpos = this->srcText + this->currpos;
+		size_t currpos_bak;
 
 		if (this->currpos >= this->srcLength) {
 			return { XmlTokenType::EndOfFile,
+					 this->srcLength,
 				     this->srcText + this->srcLength,
-				     0,
-				     this->srcLength };
+				     0 };
 		}
 
 		while (this->currpos < this->srcLength) {
 			currentchar = cursor[0];
+			currpos_bak = this->currpos;
 			if (currentchar == '<') {
 				// @todo : prevent reading outside chars buffer
 				if (cursor[1] == '?') {
@@ -112,9 +114,9 @@ namespace QuickXml {
 					this->currcontext.inOpeningTag = false;
 					this->currcontext.inClosingTag = false;
 					return { XmlTokenType::Instruction,
+							 this->currpos,
 							 startpos,
-							 this->readUntil("?>", 0, true),
-					         this->currpos};
+						     this->readUntil("?>", 0, true) };
 				}
 				else if (cursor[1] == '%') {
 					// not really xml, but for jsp compatibility
@@ -122,9 +124,9 @@ namespace QuickXml {
 					this->currcontext.inOpeningTag = false;
 					this->currcontext.inClosingTag = false;
 					return { XmlTokenType::Instruction,
+							 this->currpos,
 							 startpos,
-							 this->readUntil("%>", 0, true),
-							 this->currpos };
+							 this->readUntil("%>", 0, true) };
 				}
 				else if (cursor[1] == '!' && cursor[2] == '-' && cursor[3] == '-') {
 					// <!--
@@ -132,9 +134,9 @@ namespace QuickXml {
 					this->currcontext.inOpeningTag = false;
 					this->currcontext.inClosingTag = false;
 					return { XmlTokenType::Comment,
+							 this->currpos,
 							 startpos,
-							 this->readUntil("-->", 0, true),
-							 this->currpos };
+							 this->readUntil("-->", 0, true) };
 				}
 				else if (cursor[1] == '!' && cursor[2] == '[' && cursor[3] == 'C' && cursor[4] == 'D' &&
 					cursor[5] == 'A' && cursor[6] == 'T' && cursor[7] == 'A' && cursor[8] == '[') {
@@ -143,9 +145,9 @@ namespace QuickXml {
 					this->currcontext.inOpeningTag = false;
 					this->currcontext.inClosingTag = false;
 					return { XmlTokenType::CDATA,
+							 this->currpos,
 							 startpos,
-							 this->readUntil("]]>", 0, true),
-							 this->currpos };
+							 this->readUntil("]]>", 0, true) };
 				}
 				else if (cursor[1] == '!') {
 					// <!  for instance "<![INCLUDE or <!DOCTYPE
@@ -154,9 +156,9 @@ namespace QuickXml {
 					this->currcontext.inClosingTag = false;
 					this->currcontext.declarationObjects++;
 					XmlToken token = { XmlTokenType::Declaration,
+									   this->currpos,
 					                   startpos,
-									   this->readUntilFirstOf("[>", (cursor[2] == '[' ? 3 : 2), false),
-									   this->currpos };
+									   this->readUntilFirstOf("[>", (cursor[2] == '[' ? 3 : 2), false) };
 					cursor = this->srcText + this->currpos;
 					if (cursor[0] == '[') {
 						this->readChars(1);
@@ -169,18 +171,18 @@ namespace QuickXml {
 					this->currcontext.inOpeningTag = false;
 					this->currcontext.inClosingTag = true;
 					return { XmlTokenType::TagClosing,
+							 this->currpos,
 							 startpos,
-							 this->readUntilFirstOf("> \r\n"),
-							 this->currpos };
+							 this->readUntilFirstOf("> \r\n") };
 				}
 				else {
 					// parsing tag name like "<sample" or "<ns:sample"
 					this->currcontext.inOpeningTag = true;
 					this->currcontext.inClosingTag = false;
 					return { XmlTokenType::TagOpening,
+							 this->currpos,
 							 startpos,
-							 this->readUntilFirstOf(" />\t\r\n"),
-							 this->currpos };
+							 this->readUntilFirstOf(" />\t\r\n") };
 				}
 				break;
 			}
@@ -190,36 +192,36 @@ namespace QuickXml {
 						this->currcontext.declarationObjects--;
 					}
 					return { XmlTokenType::DeclarationEnd,
+							 this->currpos,
 							 startpos,
-							 this->readChars(2),
-							 this->currpos };
+							 this->readChars(2) };
 				}
 				else if (currentchar == '>') {
 					if (this->currcontext.declarationObjects > 0) {
 						this->currcontext.declarationObjects--;
 					}
 					return { XmlTokenType::DeclarationEnd,
+							 this->currpos,
 							 startpos,
-							 this->readChars(1),
-							 this->currpos };
+							 this->readChars(1) };
 				}
 				else if (currentchar == ' ' || currentchar == '\t') {
 					return { XmlTokenType::Whitespace,
+							 this->currpos,
 							 startpos,
-							 this->readUntilFirstNotOf(" \t"),
-							 this->currpos };
+							 this->readUntilFirstNotOf(" \t") };
 				}
 				else if (currentchar == '\r' || currentchar == '\n') {
 					return { XmlTokenType::LineBreak,
+							 this->currpos,
 							 startpos,
-							 this->readUntilFirstNotOf("\r\n"),
-							 this->currpos };
+							 this->readUntilFirstNotOf("\r\n") };
 				}
 				else {
 					return { XmlTokenType::Undefined,
+							 this->currpos,
 							 startpos,
-							 this->readChars(1),
-							 this->currpos };
+							 this->readChars(1) };
 				}
 			}
 			else if (this->currcontext.inClosingTag) {
@@ -228,27 +230,27 @@ namespace QuickXml {
 				if (currentchar == '>') {
 					this->currcontext.inClosingTag = false;
 					return { XmlTokenType::TagClosingEnd,
+							 this->currpos,
 							 startpos,
-							 this->readChars(1),
-							 this->currpos };
+							 this->readChars(1) };
 				}
 				else if (currentchar == ' ' || currentchar == '\t') {
 					return { XmlTokenType::Whitespace,
+							 this->currpos,
 							 startpos,
-							 this->readUntilFirstNotOf(" \t"),
-							 this->currpos };
+							 this->readUntilFirstNotOf(" \t") };
 				}
 				else if (currentchar == '\r' || currentchar == '\n') {
 					return { XmlTokenType::LineBreak,
+							 this->currpos,
 							 startpos,
-							 this->readUntilFirstNotOf("\r\n"),
-							 this->currpos };
+							 this->readUntilFirstNotOf("\r\n") };
 				}
 				else {
 					return { XmlTokenType::Undefined,
+							 this->currpos,
 							 startpos,
-							 this->readChars(1),
-							 this->currpos };
+							 this->readChars(1) };
 				}
 			}
 			else if (this->currcontext.inOpeningTag) {
@@ -257,44 +259,44 @@ namespace QuickXml {
 					this->hasAttrName = false;
 					this->currcontext.inOpeningTag = false;
 					return { XmlTokenType::TagOpeningEnd,
+							 this->currpos,
 							 startpos,
-							 this->readChars(1),
-							 this->currpos };
+							 this->readChars(1) };
 				}
 				else if (currentchar == ' ' || currentchar == '\t') {
 					return { XmlTokenType::Whitespace,
+							 this->currpos,
 							 startpos,
-							 this->readUntilFirstNotOf(" \t"),
-							 this->currpos };
+							 this->readUntilFirstNotOf(" \t") };
 				}
 				else if (currentchar == '\r' || currentchar == '\n') {
 					return { XmlTokenType::LineBreak,
+							 this->currpos,
 							 startpos,
-							 this->readUntilFirstNotOf("\r\n"),
-							 this->currpos };
+							 this->readUntilFirstNotOf("\r\n") };
 				}
 				else if (currentchar == '/') {
 					if (cursor[1] == '>') {
 						this->hasAttrName = false;
 						this->currcontext.inOpeningTag = false;
 						return { XmlTokenType::TagSelfClosingEnd,
+								 this->currpos,
 								 startpos,
-								 this->readChars(2),
-							     this->currpos };
+								 this->readChars(2) };
 					}
 					else {
 						return { XmlTokenType::Undefined,
+								 this->currpos,
 								 startpos,
-								 this->readChars(1),
-							     this->currpos };
+								 this->readChars(1) };
 					}
 				}
 				else if (currentchar == '=') {
 					this->expectAttrValue = true;
 					return { XmlTokenType::Equal,
+							 this->currpos,
 							 startpos,
-							 this->readChars(1),
-							 this->currpos };
+							 this->readChars(1) };
 				}
 				else if (this->hasAttrName) {
 					this->hasAttrName = false;
@@ -305,46 +307,49 @@ namespace QuickXml {
 							// normal case, let's skip the quoted/apostrophed attribute value
 							char valDelimiter[2] = { currentchar, '\0' };
 							return { XmlTokenType::AttrValue,
-									 startpos,
-									 this->readUntilFirstOf(valDelimiter, 1, true),	// skip actual delimiter + parse content
-									 this->currpos };
+									 this->currpos,
+								     startpos,
+									 this->readUntilFirstOf(valDelimiter, 1, true) }; // skip actual delimiter + parse content
 						}
 						else {
 							// we have some unexpected chars between the = and the attribute value
 							// let's read next word of string
 							return { XmlTokenType::AttrValue,
+									 this->currpos,
 									 startpos,
-									 this->readNextWord(true),
-									 this->currpos };
+									 this->readNextWord(true) };
 						}
 					}
 					else {
 						// attribute with no value
 						this->hasAttrName = true;
 						return { XmlTokenType::AttrName,
+								 this->currpos,
 								 startpos,
-								 this->readUntilFirstOf("= /\t\r\n"),
-							     this->currpos };
+								 this->readUntilFirstOf("= /\t\r\n") };
 					}
 				}
 				else {
 					this->hasAttrName = true;
 					return { XmlTokenType::AttrName,
+							 this->currpos,
 							 startpos,
-							 this->readUntilFirstOf("= /\t\r\n"),
-							 this->currpos };
+							 this->readUntilFirstOf("= /\t\r\n") };
 				}
 			}
 			else {
 				// parsing text
 				return { XmlTokenType::Text,
+						 this->currpos,
 						 startpos,
-						 this->readUntilFirstOf("<"),
-					     this->currpos };
+						 this->readUntilFirstOf("<") };
 			}
 		}
 
-		return { XmlTokenType::Undefined, startpos, this->readChars(1), this->currpos };
+		return { XmlTokenType::Undefined,
+			     this->currpos,
+			     startpos,
+			     this->readChars(1) };
 	}
 
 	size_t XmlParser::readChars(size_t nchars) {
