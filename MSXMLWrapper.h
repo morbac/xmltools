@@ -4,7 +4,7 @@
 #include "MSXMLHelper.h"
 
 class MSXMLWrapper : public XmlWrapperInterface {
-	void buildErrorsVector(IXMLDOMParseError* pXMLErr);
+	void buildErrorsVector(IXMLDOMParseError* pXMLErr, const wchar_t* szDesc = L"An unexpected error occurred");
 
 public:
 	MSXMLWrapper();

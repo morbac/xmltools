@@ -33,7 +33,7 @@ int MSXMLWrapper::getCapabilities() {
     return XmlCapabilityType::ALL_OPTIONS;
 }
 
-void MSXMLWrapper::buildErrorsVector(IXMLDOMParseError* pXMLErr) {
+void MSXMLWrapper::buildErrorsVector(IXMLDOMParseError* pXMLErr, const wchar_t* szDesc) {
     HRESULT hr = S_OK;
     IXMLDOMParseErrorCollection* pAllErrors = NULL;
     IXMLDOMParseError2* pTmpErr = NULL;
@@ -45,30 +45,37 @@ void MSXMLWrapper::buildErrorsVector(IXMLDOMParseError* pXMLErr) {
 
     this->resetErrors();
 
-    CHK_HR(((IXMLDOMParseError2*)pXMLErr)->get_allErrors(&pAllErrors));
-    if (pAllErrors != NULL) {
+    try {
+        CHK_HR(((IXMLDOMParseError2*)pXMLErr)->get_allErrors(&pAllErrors));
+        if (pAllErrors != NULL) {
+            CHK_HR(pAllErrors->get_length(&length));
+            for (long i = 0; i < length; ++i) {
+                CHK_HR(pAllErrors->get_next(&pTmpErr));
+                CHK_HR(pAllErrors->get_item(i, &pTmpErr));
 
-        CHK_HR(pAllErrors->get_length(&length));
-        for (long i = 0; i < length; ++i) {
-            CHK_HR(pAllErrors->get_next(&pTmpErr));
-            CHK_HR(pAllErrors->get_item(i, &pTmpErr));
+                CHK_HR(pXMLErr->get_line(&line));
+                CHK_HR(pXMLErr->get_linepos(&linepos));
+                CHK_HR(pXMLErr->get_filepos(&filepos));
+                CHK_HR(pXMLErr->get_reason(&bstrReason));
 
-            CHK_HR(pXMLErr->get_line(&line));
-            CHK_HR(pXMLErr->get_linepos(&linepos));
-            CHK_HR(pXMLErr->get_filepos(&filepos));
-            CHK_HR(pXMLErr->get_reason(&bstrReason));
+                this->errors.push_back({
+                    line,
+                    linepos,
+                    filepos,
+                    std::wstring((wchar_t*)bstr_t(bstrReason))
+                    });
 
-            this->errors.push_back({
-                line,
-                linepos,
-                filepos,
-                std::wstring((wchar_t*)bstr_t(bstrReason))
-            });
+                SAFE_RELEASE(pTmpErr);
+            }
 
-            SAFE_RELEASE(pTmpErr);
+            SAFE_RELEASE(pAllErrors);
         }
-
-        SAFE_RELEASE(pAllErrors);
+        else {
+            this->errors.push_back({ -1, -1, -1, szDesc });
+        }
+    }
+    catch (...) {
+        this->errors.push_back({ -1, -1, -1, szDesc });
     }
 
 CleanUp:
