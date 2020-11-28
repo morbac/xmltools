@@ -33,14 +33,39 @@ int MSXMLWrapper::getCapabilities() {
     return XmlCapabilityType::ALL_OPTIONS;
 }
 
-void MSXMLWrapper::buildErrorsVector(IXMLDOMParseError* pXMLErr, const wchar_t* szDesc) {
-    HRESULT hr = S_OK;
-    IXMLDOMParseErrorCollection* pAllErrors = NULL;
-    IXMLDOMParseError2* pTmpErr = NULL;
+void MSXMLWrapper::addErrorToVector(IXMLDOMParseError* pXMLErr, const wchar_t* szDesc) {
+    HRESULT hr = S_OK; 
     long line = 0;
     long linepos = 0;
     long filepos = 0;
     BSTR bstrReason = NULL;
+
+    if (pXMLErr != NULL) {
+        CHK_HR(pXMLErr->get_line(&line));
+        CHK_HR(pXMLErr->get_linepos(&linepos));
+        CHK_HR(pXMLErr->get_filepos(&filepos));
+        CHK_HR(pXMLErr->get_reason(&bstrReason));
+
+        if (line == 0 || linepos == 0) {
+            line = 1;
+            linepos = 1;
+        }
+
+        this->errors.push_back({
+            line,
+            linepos,
+            filepos+1,
+            std::wstring((wchar_t*)bstr_t(bstrReason))
+        });
+    }
+
+CleanUp:
+    SysFreeString(bstrReason);
+}
+void MSXMLWrapper::buildErrorsVector(IXMLDOMParseError* pXMLErr, const wchar_t* szDesc) {
+    HRESULT hr = S_OK;
+    IXMLDOMParseErrorCollection* pAllErrors = NULL;
+    IXMLDOMParseError2* pTmpErr = NULL;
     long length = 0;
 
     this->resetErrors();
@@ -52,30 +77,18 @@ void MSXMLWrapper::buildErrorsVector(IXMLDOMParseError* pXMLErr, const wchar_t* 
             for (long i = 0; i < length; ++i) {
                 CHK_HR(pAllErrors->get_next(&pTmpErr));
                 CHK_HR(pAllErrors->get_item(i, &pTmpErr));
-
-                CHK_HR(pXMLErr->get_line(&line));
-                CHK_HR(pXMLErr->get_linepos(&linepos));
-                CHK_HR(pXMLErr->get_filepos(&filepos));
-                CHK_HR(pXMLErr->get_reason(&bstrReason));
-
-                this->errors.push_back({
-                    line,
-                    linepos,
-                    filepos,
-                    std::wstring((wchar_t*)bstr_t(bstrReason))
-                    });
-
+                this->addErrorToVector(pTmpErr);
                 SAFE_RELEASE(pTmpErr);
             }
 
             SAFE_RELEASE(pAllErrors);
         }
         else {
-            this->errors.push_back({ -1, -1, -1, szDesc });
+            this->addErrorToVector(pXMLErr, szDesc);
         }
     }
     catch (...) {
-        this->errors.push_back({ -1, -1, -1, szDesc });
+        this->addErrorToVector(pXMLErr, szDesc);
     }
 
 CleanUp:
