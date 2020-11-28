@@ -154,6 +154,9 @@ void XMLValidation(int informIfNoError) {
             rootSample += "\r\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
             rootSample += "\r\n    xsi:noNamespaceSchemaLocation=\"XSD_FILE_PATH\">";
         }
+        else {
+            rootSample = "\r\n!! PLEASE MAKE SURE THAT CURRENT XML IS NOT EMPTY OR INVALID !!";
+        }
 
         pSelectFileDlg->m_sRootElementSample = rootSample;
         if (pSelectFileDlg->DoModal() == IDOK) {
