@@ -205,8 +205,8 @@ void initMenu() {
 
     addMenuSeparator();
 
-    addMenuItem(L"Current XML Path", getCurrentXPathStd, false, createShortcut('P'));
-    addMenuItem(L"Current XML Path with predicates", getCurrentXPathPredicate);
+    addMenuItem(L"Current XML Path", getCurrentXPathStd);
+    addMenuItem(L"Current XML Path with predicates", getCurrentXPathPredicate, false, createShortcut('P'));
     addMenuItem(L"Evaluate XPath expression...", evaluateXPath);
 
     addMenuSeparator();
