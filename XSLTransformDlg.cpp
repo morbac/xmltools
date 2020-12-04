@@ -89,7 +89,7 @@ void CXSLTransformDlg::OnBtnTransform() {
 
     XmlWrapperInterface* wrapper = new MSXMLWrapper();
     XSLTransformResultType res;
-    if (wrapper->xslTransform(data, currentLength, m_sSelectedFile.GetString(), &res)) {
+    if (wrapper->xslTransform(data, currentLength, m_sSelectedFile.GetString(), &res, m_sXSLTOptions.GetString())) {
         ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FILE_NEW);
         if (res.encoding != UniMode::uniEnd) Report::setEncoding(res.encoding, hCurrentEditView);
         ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(res.data.c_str()));

@@ -344,7 +344,7 @@ CleanUp:
 */
 std::string::size_type getNextParam(std::wstring& str, std::string::size_type startpos, std::wstring* key, std::wstring* val) {
     std::string::size_type len = str.length();
-    if (startpos < 0 || startpos >= len || !key || !val) return std::string::npos;
+    if (startpos == std::string::npos || startpos >= len || !key || !val) return std::string::npos;
 
     // skip spaces, tabs and carriage returns
     std::string::size_type keypos = str.find_first_not_of(L" \t\r\n", startpos);
@@ -369,12 +369,12 @@ std::string::size_type getNextParam(std::wstring& str, std::string::size_type st
     std::string::size_type valendpos = valpos;
     if (str.at(valendpos) == '\'') {
         valendpos = str.find_first_of(L"\'", valendpos + 1);
-        *val = str.substr(valpos, valendpos - valpos + 1);
+        *val = str.substr(valpos + 1, valendpos - valpos - 1);  // get value without apostrophs
     }
     else {
         valendpos = str.find_first_of(L" \t\r\n", valendpos);
         // at the end of the string, valendpos = -1
-        if (valendpos < 0) valendpos = len;
+        if (valendpos == std::string::npos) valendpos = len;
         *val = str.substr(valpos, valendpos - valpos);
     }
 
