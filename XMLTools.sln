@@ -20,6 +20,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuickXml", "QuickXmlLib\Qui
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuickXmlTests", "QuickXmlLib\QuickXmlTests\QuickXmlTests.vcxproj", "{4AB694A0-6C10-4AAB-ABCD-F867C2AE04AE}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StringXml", "StringXmlLib\StringXml\StringXml.vcxproj", "{A3961AD9-8311-4929-BAB7-D022452944A8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -76,6 +78,14 @@ Global
 		{4AB694A0-6C10-4AAB-ABCD-F867C2AE04AE}.Release|Win32.Build.0 = Release|Win32
 		{4AB694A0-6C10-4AAB-ABCD-F867C2AE04AE}.Release|x64.ActiveCfg = Release|x64
 		{4AB694A0-6C10-4AAB-ABCD-F867C2AE04AE}.Release|x64.Build.0 = Release|x64
+		{A3961AD9-8311-4929-BAB7-D022452944A8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A3961AD9-8311-4929-BAB7-D022452944A8}.Debug|Win32.Build.0 = Debug|Win32
+		{A3961AD9-8311-4929-BAB7-D022452944A8}.Debug|x64.ActiveCfg = Debug|x64
+		{A3961AD9-8311-4929-BAB7-D022452944A8}.Debug|x64.Build.0 = Debug|x64
+		{A3961AD9-8311-4929-BAB7-D022452944A8}.Release|Win32.ActiveCfg = Release|Win32
+		{A3961AD9-8311-4929-BAB7-D022452944A8}.Release|Win32.Build.0 = Release|Win32
+		{A3961AD9-8311-4929-BAB7-D022452944A8}.Release|x64.ActiveCfg = Release|x64
+		{A3961AD9-8311-4929-BAB7-D022452944A8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

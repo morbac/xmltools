@@ -131,8 +131,8 @@ BOOL COptionsDlg::OnInitDialog() {
 
   CMFCPropertyGridProperty* pGrpPrettyPrint = new CMFCPropertyGridProperty(L"Pretty print options");
   m_wndPropList.AddProperty(pGrpPrettyPrint);
-  pTmpOption = new CMFCPropertyGridProperty(L"Formating engine", COleVariant(xmltoolsoptions.formatingEngine.c_str()), L"This property let you choose the pretty print and linearize formating engine. Currently, you have choice between:\r\n- SimpleXml: A fast and low memory engine developped by LetMeSleepAlready (https://github.com/LetMeSleepAlready)\r\n- QuickXml: A quick and simple engine which focus on conformity", (DWORD_PTR)&xmltoolsoptions.formatingEngine);
-  pTmpOption->AddOption(L"SimpleXml"); pTmpOption->AddOption(L"QuickXml");
+  pTmpOption = new CMFCPropertyGridProperty(L"Formating engine", COleVariant(xmltoolsoptions.formatingEngine.c_str()), L"This property let you choose the pretty print and linearize formating engine. Currently, you have choice between:\r\n- SimpleXml: A fast and low memory engine developped by LetMeSleepAlready (https://github.com/LetMeSleepAlready)\r\n- QuickXml: A quick and simple engine which focus on conformity\r\n- StringXml: An engine based on string processing. This engine is more permissive on invalid xml, but very slow on big xml files.", (DWORD_PTR)&xmltoolsoptions.formatingEngine);
+  pTmpOption->AddOption(L"SimpleXml"); pTmpOption->AddOption(L"QuickXml"); pTmpOption->AddOption(L"StringXml");
   pGrpPrettyPrint->AddSubItem(pTmpOption); vWStringProperties.push_back(pTmpOption);
   pTmpOption = new CMFCPropertyGridProperty(L"Auto-close tags", COleVariant((short)(xmltoolsoptions.ppAutoclose ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Enable auto-close tags on pretty print. For instance, when enabled, \"<sample></sample>\" is replaced with \"<sample/>\".", (DWORD_PTR)&xmltoolsoptions.ppAutoclose);
   pGrpPrettyPrint->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
