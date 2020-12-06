@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="QuickXmlTests.cpp">
+    <ClCompile Include="src\QuickXmlTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

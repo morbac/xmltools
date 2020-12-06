@@ -164,7 +164,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="QuickXmlTests.cpp" />
+    <ClCompile Include="src\QuickXmlTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\QuickXml\QuickXml.vcxproj">
