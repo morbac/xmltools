@@ -100,7 +100,7 @@ void sciDocPrettyPrintStringXml(ScintillaDoc& doc) {
     auto docclock_start = clock();
 
     StringXml::XmlFormater formater(inText.text, inText.length, params);
-    std::string& outText = formater.prettyPrint(false, true, false);
+    std::string& outText = formater.prettyPrint();
 
     auto docclock_end = clock();
 
@@ -205,7 +205,7 @@ void sciDocPrettyPrintStringXmlAttr(ScintillaDoc& doc) {
     auto docclock_start = clock();
 
     StringXml::XmlFormater formater(inText.text, inText.length, params);
-    std::string& outText = formater.prettyPrint(false, true, true);
+    std::string& outText = formater.prettyPrintAttr();
 
     auto docclock_end = clock();
 
@@ -308,7 +308,7 @@ void sciDocPrettyPrintStringXml_IndentOnly(ScintillaDoc& doc) {
     auto docclock_start = clock();
 
     StringXml::XmlFormater formater(inText.text, inText.length, params);
-    std::string& outText = formater.prettyPrint(false, true, false, true);
+    std::string& outText = formater.prettyPrintIndent();
 
     auto docclock_end = clock();
 
