@@ -7,7 +7,7 @@
 #include "XmlParser.h"
 #include "XmlFormater.h"
 #include "SimpleXml.h"
-#include "StringXmlLib/StringXml/StringXml.h"
+#include "StringXml.h"
 
 void sciDocPrettyPrintQuickXml(ScintillaDoc& doc) {
     ScintillaDoc::sciWorkText inText = doc.GetWorkText();

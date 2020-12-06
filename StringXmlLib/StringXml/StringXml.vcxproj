@@ -160,10 +160,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="StringXml.cpp" />
+    <ClCompile Include="src\StringXml.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="StringXml.h" />
+    <ClInclude Include="src\StringXml.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
