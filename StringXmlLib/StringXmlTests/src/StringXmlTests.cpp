@@ -42,13 +42,13 @@ namespace StringXmlTests {
 
 		void testIndentAttr(std::string xml, std::string ref, XmlFormaterParamsType params) {
 			std::string tmp = xml;
-			XmlFormater formater(&xml, params);
+			XmlFormater formater(&tmp, params);
 			formater.prettyPrintAttr();
 
 			Assert::IsTrue(0 == ref.compare(tmp));
 
 			// check that a second pretty print keeps structure unchanged
-			formater.prettyPrint();
+			formater.prettyPrintAttr();
 
 			Assert::IsTrue(0 == ref.compare(tmp));
 		}
@@ -61,7 +61,7 @@ namespace StringXmlTests {
 			Assert::IsTrue(0 == ref.compare(tmp));
 
 			// check that a second pretty print keeps structure unchanged
-			formater.prettyPrint();
+			formater.prettyPrintIndent();
 
 			Assert::IsTrue(0 == ref.compare(tmp));
 		}
@@ -136,8 +136,8 @@ namespace StringXmlTests {
 
 		// Indent attributes
 		TEST_METHOD(IndentAttrTest01) {
-			std::string xml("<p xmlns:ns=\"x\" a=\"1\" b c=\"2\"><x ns:d ns:e=\"x\"/><y ns:d ns:e=\"y\">z</y></p>");
-			std::string ref("<p xmlns:ns=\"x\"\n   a=\"1\"\n   b\n   c=\"2\">\n\t<x ns:d\n\t   ns:e=\"x\"/>\n\t<y ns:d\n\t   ns:e=\"y\">z</y>\n</p>");
+			std::string xml("<p xmlns:ns=\"x\" a=\"1\" b=\"2\"><x ns:d=\"x\"/><y ns:d=\"y\">z</y></p>");
+			std::string ref("<p xmlns:ns=\"x\"\n   a=\"1\"\n   b=\"2\">\n\t<x ns:d=\"x\"/>\n\t<y ns:d=\"y\">z</y>\n</p>");
 
 			XmlFormaterParamsType params;
 			params.indentChars = "\t";
@@ -151,8 +151,8 @@ namespace StringXmlTests {
 
 		// Indent only
 		TEST_METHOD(IndentOnlyTest01) {
-			std::string xml("<p xmlns:ns=\"x\"\na=\"1\"\nb\nc=\"2\">\n<x ns:d\n\tns:e=\"x\"/>\n\t<y ns:d\n\tns:e=\"y\">z</y>\n</p>");
-			std::string ref("<p xmlns:ns=\"x\"\n   a=\"1\"\n   b\n   c=\"2\">\n\t<x ns:d\n\t   ns:e=\"x\"/>\n\t<y ns:d\n\t   ns:e=\"y\">z</y>\n</p>");
+			std::string xml("<p xmlns:ns=\"x\"\na=\"1\"\nb=\"2\">\n<x ns:d=\"x\"/>\n\t<y ns:d=\"y\">z</y>\n</p>");
+			std::string ref("<p xmlns:ns=\"x\" a=\"1\" b=\"2\">\n\t<x ns:d=\"x\"/>\n\t<y ns:d=\"y\">z</y>\n</p>");
 
 			XmlFormaterParamsType params;
 			params.indentChars = "\t";
@@ -163,8 +163,8 @@ namespace StringXmlTests {
 		}
 
 		TEST_METHOD(IndentOnlyTest02) {
-			std::string xml("<p xmlns:ns=\"x\"   a=\"1\" b c=\"2\">\n<x ns:d ns:e=\"x\"/>\n<y ns:d\n\tns:e=\"y\">z</y>\n</p>");
-			std::string ref("<p xmlns:ns=\"x\" a=\"1\" b c=\"2\">\n\t<x ns:d ns:e=\"x\"/>\n\t<y ns:d\n\t   ns:e=\"y\">z</y>\n</p>");
+			std::string xml("<p xmlns:ns=\"x\"   a=\"1\" b=\"2\">\n<x ns:d=\"x\"/>\n<y ns:d=\"y\">z</y>\n</p>");
+			std::string ref("<p xmlns:ns=\"x\" a=\"1\" b=\"2\">\n\t<x ns:d=\"x\"/>\n\t<y ns:d=\"y\">z</y>\n</p>");
 
 			XmlFormaterParamsType params;
 			params.indentChars = "\t";
