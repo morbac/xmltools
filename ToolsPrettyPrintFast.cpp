@@ -91,16 +91,13 @@ void sciDocPrettyPrintStringXml(ScintillaDoc& doc) {
     StringXml::XmlFormaterParamsType params;
     params.indentChars = doc.Tab();
     params.eolChars = doc.EOL();
-    params.maxIndentLevel = xmltoolsoptions.maxIndentLevel;
-    params.ensureConformity = xmltoolsoptions.ensureConformity;
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
-    params.indentAttributes = false;
-    params.indentOnly = false;
 
     auto docclock_start = clock();
 
-    StringXml::XmlFormater formater(inText.text, inText.length, params);
-    std::string& outText = formater.prettyPrint();
+    std::string str(inText.text, inText.length);
+    StringXml::XmlFormater formater(&str, params);
+    formater.prettyPrint();
 
     auto docclock_end = clock();
 
@@ -111,8 +108,8 @@ void sciDocPrettyPrintStringXml(ScintillaDoc& doc) {
     }
 
     inText.FreeMemory();
-    doc.SetWorkText(outText.c_str());
-    outText.clear();
+    doc.SetWorkText(str.c_str());
+    str.clear();
     doc.SetScrollWidth(80);
 }
 
@@ -196,16 +193,13 @@ void sciDocPrettyPrintStringXmlAttr(ScintillaDoc& doc) {
     StringXml::XmlFormaterParamsType params;
     params.indentChars = doc.Tab();
     params.eolChars = doc.EOL();
-    params.maxIndentLevel = xmltoolsoptions.maxIndentLevel;
-    params.ensureConformity = xmltoolsoptions.ensureConformity;
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
-    params.indentAttributes = true;
-    params.indentOnly = false;
 
     auto docclock_start = clock();
 
-    StringXml::XmlFormater formater(inText.text, inText.length, params);
-    std::string& outText = formater.prettyPrintAttr();
+    std::string str(inText.text, inText.length);
+    StringXml::XmlFormater formater(&str, params);
+    formater.prettyPrintAttr();
 
     auto docclock_end = clock();
 
@@ -216,8 +210,8 @@ void sciDocPrettyPrintStringXmlAttr(ScintillaDoc& doc) {
     }
 
     inText.FreeMemory();
-    doc.SetWorkText(outText.c_str());
-    outText.clear();
+    doc.SetWorkText(str.c_str());
+    str.clear();
     doc.SetScrollWidth(80);
 }
 
@@ -299,16 +293,13 @@ void sciDocPrettyPrintStringXml_IndentOnly(ScintillaDoc& doc) {
     StringXml::XmlFormaterParamsType params;
     params.indentChars = doc.Tab();
     params.eolChars = doc.EOL();
-    params.maxIndentLevel = xmltoolsoptions.maxIndentLevel;
-    params.ensureConformity = xmltoolsoptions.ensureConformity;
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
-    params.indentAttributes = true;
-    params.indentOnly = true;
 
     auto docclock_start = clock();
 
-    StringXml::XmlFormater formater(inText.text, inText.length, params);
-    std::string& outText = formater.prettyPrintIndent();
+    std::string str(inText.text, inText.length);
+    StringXml::XmlFormater formater(&str, params);
+    formater.prettyPrintIndent();
 
     auto docclock_end = clock();
 
@@ -319,8 +310,8 @@ void sciDocPrettyPrintStringXml_IndentOnly(ScintillaDoc& doc) {
     }
 
     inText.FreeMemory();
-    doc.SetWorkText(outText.c_str());
-    outText.clear();
+    doc.SetWorkText(str.c_str());
+    str.clear();
     doc.SetScrollWidth(80);
 }
 
@@ -402,16 +393,13 @@ void sciDocLinearizeStringXml(ScintillaDoc& doc) {
     StringXml::XmlFormaterParamsType params;
     params.indentChars = doc.Tab();
     params.eolChars = doc.EOL();
-    params.maxIndentLevel = xmltoolsoptions.maxIndentLevel;
-    params.ensureConformity = xmltoolsoptions.ensureConformity;
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
-    params.indentAttributes = false;
-    params.indentOnly = false;
 
     auto docclock_start = clock();
 
-    StringXml::XmlFormater formater(inText.text, inText.length, params);
-    std::string& outText = formater.linearize();
+    std::string str(inText.text, inText.length);
+    StringXml::XmlFormater formater(&str, params);
+    formater.linearize();
 
     auto docclock_end = clock();
 
@@ -422,8 +410,8 @@ void sciDocLinearizeStringXml(ScintillaDoc& doc) {
     }
 
     inText.FreeMemory();
-    doc.SetWorkText(outText.c_str());
-    outText.clear();
+    doc.SetWorkText(str.c_str());
+    str.clear();
     doc.SetScrollWidth(80);
 }
 
