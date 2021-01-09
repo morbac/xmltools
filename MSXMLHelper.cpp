@@ -82,7 +82,7 @@ HRESULT CreateAndInitXSLTemplate(IXSLTemplate** pIXSLTemplate) {
   return hr;
 }
 
-// Helper function to create a SAX instance.
+// Helper function to create a schema collection instance.
 HRESULT CreateAndInitSchema(IXMLDOMSchemaCollection2** pISchema) {
   HRESULT hr = CoCreateInstance(CLSID_XMLSchemaCache60, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(pISchema));
   if (SUCCEEDED(hr)) {

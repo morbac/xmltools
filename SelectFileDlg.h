@@ -21,7 +21,7 @@ public:
   enum { IDD = IDD_SELECTFILE };
   CStringW  m_sSelectedFilename;
   CStringW  m_sValidationNamespace;
-  CStringW  m_sRootElementSample;
+  CStringW  m_sRootElementName;
   //}}AFX_DATA
 
   CStringW ShowOpenFileDlg(CStringW filetypes);
@@ -39,6 +39,7 @@ protected:
   // Generated message map functions
   //{{AFX_MSG(CSelectFileDlg)
   afx_msg void OnBtnExploreXSDFile();
+  afx_msg BOOL OnInitDialog();
   //}}AFX_MSG
   DECLARE_MESSAGE_MAP()
 public:

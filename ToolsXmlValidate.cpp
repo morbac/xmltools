@@ -149,16 +149,12 @@ void XMLValidation(int informIfNoError) {
         CStringW rootSample = "<";
         nodes.clear();
         nodes = wrapper->xpathEvaluate(data, currentLength, L"/*", L"");
-        if (nodes.size() > 0) {
-            rootSample += nodes.at(0).name.c_str();
-            rootSample += "\r\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
-            rootSample += "\r\n    xsi:noNamespaceSchemaLocation=\"XSD_FILE_PATH\">";
-        }
-        else {
-            rootSample = "\r\n!! PLEASE MAKE SURE THAT CURRENT XML IS NOT EMPTY OR INVALID !!";
+        if (nodes.size() == 1) {
+            pSelectFileDlg->m_sRootElementName = nodes.at(0).name.c_str();
+        } else {
+            pSelectFileDlg->m_sRootElementName = L"";
         }
 
-        pSelectFileDlg->m_sRootElementSample = rootSample;
         if (pSelectFileDlg->DoModal() == IDOK) {
             //lastXMLSchema = pSelectFileDlg->m_sSelectedFilename;
             if (!wrapper->checkValidity(data, currentLength, pSelectFileDlg->m_sSelectedFilename.GetString(), pSelectFileDlg->m_sValidationNamespace.GetString())) {

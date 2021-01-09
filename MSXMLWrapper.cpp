@@ -131,7 +131,7 @@ CleanUp:
 
 bool MSXMLWrapper::checkValidity(const char* xml, size_t size, std::wstring schemaFilename, std::wstring validationNamespace) {
     HRESULT hr = S_OK;
-    IXMLDOMDocument2* pXMLDom = NULL;
+    IXMLDOMDocument2 *pXMLDom = NULL, *pXSDDom = NULL;
     IXMLDOMParseError* pXMLErr = NULL;
     IXMLDOMParseError2* pXMLErr2 = NULL;
     IXMLDOMNodeList* pNodes = NULL;
@@ -153,34 +153,47 @@ bool MSXMLWrapper::checkValidity(const char* xml, size_t size, std::wstring sche
 
     if (varStatus == VARIANT_TRUE) {
         if (!schemaFilename.empty()) {
-            CHK_HR(CreateAndInitSchema(&pXS));
-            hr = pXS->add(_bstr_t(validationNamespace.c_str()), CComVariant(schemaFilename.c_str()));
-            if (SUCCEEDED(hr)) {
-                // Create a DOMDocument and set its properties.
-                SAFE_RELEASE(pXMLDom);
-                CHK_HR(CreateAndInitDOM(&pXMLDom, (INIT_OPTION_VALIDATEONPARSE | INIT_OPTION_RESOLVEEXTERNALS)));
-                CHK_HR(pXMLDom->putref_schemas(CComVariant(pXS)));
+            CHK_HR(CreateAndInitDOM(&pXSDDom, (INIT_OPTION_VALIDATEONPARSE | INIT_OPTION_RESOLVEEXTERNALS)));
+            CHK_HR(pXSDDom->load(CComVariant(schemaFilename.c_str()), &varStatus));
+            if (varStatus == VARIANT_TRUE) {
+                CHK_HR(CreateAndInitSchema(&pXS));
+                hr = pXS->add(_bstr_t(validationNamespace.c_str()), CComVariant(schemaFilename.c_str()));
+                if (SUCCEEDED(hr)) {
+                    // Create a DOMDocument and set its properties.
+                    SAFE_RELEASE(pXMLDom);
+                    CHK_HR(CreateAndInitDOM(&pXMLDom, (INIT_OPTION_VALIDATEONPARSE | INIT_OPTION_RESOLVEEXTERNALS)));
+                    CHK_HR(pXMLDom->putref_schemas(CComVariant(pXS)));
 
-                /*
-                pXMLDom->put_async(VARIANT_FALSE);
-                pXMLDom->put_validateOnParse(VARIANT_TRUE);
-                pXMLDom->put_resolveExternals(VARIANT_TRUE);
-                */
+                    /*
+                    pXMLDom->put_async(VARIANT_FALSE);
+                    pXMLDom->put_validateOnParse(VARIANT_TRUE);
+                    pXMLDom->put_resolveExternals(VARIANT_TRUE);
+                    */
 
-                CHK_HR(pXMLDom->load(varXML, &varStatus));
-                if (varStatus != VARIANT_TRUE) {
-                    CHK_HR(pXMLDom->get_parseError(&pXMLErr));
-                    this->buildErrorsVector(pXMLErr);
+                    CHK_HR(pXMLDom->load(varXML, &varStatus));
+                    if (varStatus != VARIANT_TRUE) {
+                        CHK_HR(pXMLDom->get_parseError(&pXMLErr));
+                        this->buildErrorsVector(pXMLErr);
+                        res = false;
+                    }
+                }
+                else {
+                    this->errors.push_back({
+                        -1,
+                        -1,
+                        -1,
+                        L"Invalid schema or missing namespace."
+                        });
                     res = false;
                 }
             }
             else {
                 this->errors.push_back({
-                    -1,
-                    -1,
-                    -1,
-                    L"Invalid schema or missing namespace."
-                });
+                        -1,
+                        -1,
+                        -1,
+                        L"The referenced schema is detected as being invalid. Please fix it before using it as validation schema."
+                    });
                 res = false;
             }
         }
@@ -203,6 +216,7 @@ bool MSXMLWrapper::checkValidity(const char* xml, size_t size, std::wstring sche
 
 CleanUp:
     SAFE_RELEASE(pXMLDom);
+    SAFE_RELEASE(pXSDDom);
     SAFE_RELEASE(pXMLErr);
     SAFE_RELEASE(pNodes);
     SAFE_RELEASE(pNode);
