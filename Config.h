@@ -34,7 +34,7 @@ struct struct_msxmloptions {                // default value
 };
 
 struct struct_xmltoolsoptions {
-	std::wstring formatingEngine = L"SimpleXml";
+	std::wstring formatingEngine = L"QuickXml";
 	bool useAnnotations = true;                // False
 	int annotationStyle = 12;                // 12
 	int maxIndentLevel = 0;
