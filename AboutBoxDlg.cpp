@@ -48,9 +48,9 @@ BOOL CAboutBoxDlg::OnInitDialog()
   #else
     SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s\r\n%s\r\n\r\nXML engine: MSXML",
         XMLTOOLS_VERSION_NUMBER, XMLTOOLS_VERSION_STATUS).c_str());
-
-    GetDlgItem(IDC_LNKHOMEPAGE)->SetWindowText(Report::str_format(L"<a href=\"%s\">%s</a>", XMLTOOLS_HOMEPAGE_URL, XMLTOOLS_HOMEPAGE_URL).c_str());
   #endif
+
+  GetDlgItem(IDC_LNKHOMEPAGE)->SetWindowText(Report::str_format(L"<a href=\"%s\">%s</a>", XMLTOOLS_HOMEPAGE_URL, XMLTOOLS_HOMEPAGE_URL).c_str());
 
   return TRUE;  // return TRUE unless you set the focus to a control
   // EXCEPTION : les pages de propriétés OCX devraient retourner FALSE
