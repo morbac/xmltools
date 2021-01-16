@@ -69,7 +69,7 @@ namespace QuickXml {
 				this->prevtoken = this->currtoken;
 				this->currtoken = this->nexttoken;
 				this->nexttoken = this->fetchToken();
-			} while (this->currtoken.type == XmlTokenType::Undefined);
+			} while (this->currtoken.type == XmlTokenType::Undefined && this->currtoken.type != XmlTokenType::EndOfFile);
 		}
 		else {
 			this->prevtoken = this->currtoken;
@@ -82,6 +82,7 @@ namespace QuickXml {
 	}
 
 	XmlToken XmlParser::parseUntil(XmlTokensType type) {
+		type |= XmlTokenType::EndOfFile;	// let's avoid infinite loop
 		do {
 			this->parseNext();
 		} while (!(this->currtoken.type & type));
