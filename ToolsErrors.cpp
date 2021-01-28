@@ -159,7 +159,13 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, 
         }
     }
     else {
-        Report::_printf_err(wmsg);
+        if (linepos != NULL) {
+            centerOnPosition(view, line, 0, 0, NULL);
+            Report::_printf_err(Report::str_format(L"Line %d, pos %d:\r\n%s", line, linepos, wmsg.c_str()));
+        }
+        else {
+            Report::_printf_err(wmsg);
+        }
     }
 }
 
