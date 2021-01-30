@@ -20,6 +20,17 @@ void deleteAnnotations() {
 // line +- nlines/2
 // for horizontal position, we calculate the text width and check if it is
 // out of the bounding box; then scroll horizontally if required
+// @param view the view hwnd
+// @param line the 1-based line position (first line is the line 1)
+// @param hofs the height offset; when a vertical scroll is required, this offset
+//             indicates how many additional line scroll are needed to avoid having
+//             the line clamped at top or bottom line
+// @param wofs the width offset; when an horizontal scroll is required, this offset
+//             indicates how many additional columns scroll are needed to avoid having
+//             the caret clamped at left or right border
+// @param text : the line text begin; the text correspond to the left text part of line;
+//               we need it as text to compute the text bounding box size (it might
+//               differs depending on font type and size)
 void centerOnPosition(HWND view, size_t line, size_t hofs, size_t wofs, const char* text) {
     try {
         RECT rect;
@@ -44,24 +55,34 @@ void centerOnPosition(HWND view, size_t line, size_t hofs, size_t wofs, const ch
 
         ::SendMessage(view, SCI_GOTOLINE, line - 1, 0);
 
-        // center on column
+        // scroll horizontally to make column hofs visible
+        size_t width = 0;
         if (text != NULL) {
-            size_t width = (size_t) ::SendMessage(view, SCI_TEXTWIDTH, 32, reinterpret_cast<LPARAM>(text));
-            size_t margins = (size_t) ::SendMessage(view, SCI_GETMARGINS, 0, 0);
-            size_t wmargin = 0;
-            for (size_t i = 0; i < margins; ++i) {
-                wmargin += (size_t) ::SendMessage(view, SCI_GETMARGINWIDTHN, i, 0);
-            }
-
-            if (width + wofs > ((size_t)rect.right - (size_t)rect.left - wmargin)) {
-                // error message goes out of the bounding box
-                size_t scroll = width + wofs - ((size_t)rect.right - (size_t)rect.left - wmargin);
-                ::SendMessage(view, SCI_SETXOFFSET, (int)scroll, 0);
-            }
+            width = (size_t) ::SendMessage(view, SCI_TEXTWIDTH, 32, reinterpret_cast<LPARAM>(text));
+        }
+        else {
+            char *tmpbuffer = new char[wofs + sizeof(char)];
+            memset(tmpbuffer, ' ', wofs + sizeof(char));
+            tmpbuffer[wofs] = '\0';
+            width = (size_t) ::SendMessage(view, SCI_TEXTWIDTH, 32, reinterpret_cast<LPARAM>(tmpbuffer));
+            delete[] tmpbuffer;
+        }
+        size_t margins = (size_t) ::SendMessage(view, SCI_GETMARGINS, 0, 0);
+        size_t wmargin = 0;
+        for (size_t i = 0; i < margins; ++i) {
+            wmargin += (size_t) ::SendMessage(view, SCI_GETMARGINWIDTHN, i, 0);
         }
 
+        if (width + wofs > ((size_t)rect.right - (size_t)rect.left - wmargin)) {
+            // error message goes out of the bounding box
+            size_t scroll = width + wofs - ((size_t)rect.right - (size_t)rect.left - wmargin);
+            ::SendMessage(view, SCI_SETXOFFSET, (int)scroll, 0);
+        }
     }
     catch (...) {}
+}
+void centerOnPosition(HWND view, size_t line, size_t col) {
+    centerOnPosition(view, line, 3, col, NULL);
 }
 
 void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, size_t filepos) {
@@ -153,19 +174,19 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, 
         centerOnPosition(view, line, std::count(wmsg.begin(), wmsg.end(), '\n'), maxannotwidth, buffer);
 
         if (buffer != NULL) delete[] buffer;
-
-        if (filepos != NULL) {
-            ::SendMessage(view, SCI_GOTOPOS, filepos - 1, 0);
-        }
     }
     else {
         if (linepos != NULL) {
-            centerOnPosition(view, line, 0, 0, NULL);
+            centerOnPosition(view, line, linepos);
             Report::_printf_err(Report::str_format(L"Line %d, pos %d:\r\n%s", line, linepos, wmsg.c_str()));
         }
         else {
             Report::_printf_err(wmsg);
         }
+    }
+
+    if (filepos != NULL) {
+        ::SendMessage(view, SCI_GOTOPOS, filepos - 1, 0);
     }
 }
 
