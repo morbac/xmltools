@@ -86,7 +86,7 @@ void centerOnPosition(HWND view, size_t line, size_t col) {
     centerOnPosition(view, line, 3, col, NULL);
 }
 
-void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, size_t filepos) {
+void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, size_t filepos, bool doCenterOnPos) {
     // clear final \r\n
     std::string::size_type p = wmsg.find_last_not_of(L"\r\n");
     if (p != std::string::npos && p < wmsg.length()) {
@@ -172,13 +172,17 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, 
 
         hasAnnotations[::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0)] = true;
 
-        centerOnPosition(view, line, std::count(wmsg.begin(), wmsg.end(), '\n'), maxannotwidth, buffer);
+        if (doCenterOnPos) {
+            centerOnPosition(view, line, std::count(wmsg.begin(), wmsg.end(), '\n'), maxannotwidth, buffer);
+        }
 
         if (buffer != NULL) delete[] buffer;
     }
     else {
         if (linepos != NULL) {
-            centerOnPosition(view, line, linepos);
+            if (doCenterOnPos) {
+                centerOnPosition(view, line, linepos);
+            }
             Report::_printf_err(Report::str_format(L"Line %d, pos %d:\r\n%s", line, linepos, wmsg.c_str()));
         }
         else {
@@ -186,12 +190,12 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, 
         }
     }
 
-    if (filepos != NULL) {
+    if (doCenterOnPos && filepos != NULL) {
         ::SendMessage(view, SCI_GOTOPOS, filepos - 1, 0);
     }
 }
 
-void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDesc) {
+void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDesc, bool doCenterOnPos) {
     HRESULT hr = S_OK;
     long line = 0;
     long linepos = 0;
@@ -226,7 +230,7 @@ void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDes
             }
         }
 
-        displayXMLError(wmsg, view, line, linepos, (size_t)filepos + 1);
+        displayXMLError(wmsg, view, line, linepos, (size_t)filepos + 1, doCenterOnPos);
     }
 
 CleanUp:
@@ -303,7 +307,7 @@ void displayXMLErrors(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDe
                 for (long i = 0; i < length; ++i) {
                     CHK_HR(pAllErrors->get_next(&pTmpErr));
                     CHK_HR(pAllErrors->get_item(i, &pTmpErr));
-                    displayXMLError(pTmpErr, view, szDesc);
+                    displayXMLError(pTmpErr, view, szDesc, i == 0);
                     SAFE_RELEASE(pTmpErr);
                 }
             }
@@ -346,7 +350,8 @@ void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view, const wchar
                 Report::_printf_err((*it).reason);
             }
             else {
-                displayXMLError((*it).reason, view, (*it).line, (*it).linepos, (*it).filepos);
+                bool isFirst = (it == errors.begin());
+                displayXMLError((*it).reason, view, (*it).line, (*it).linepos, (*it).filepos, isFirst);
             }
         }
     }
