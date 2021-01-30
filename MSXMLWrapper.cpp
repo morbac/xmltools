@@ -33,7 +33,7 @@ int MSXMLWrapper::getCapabilities() {
     return XmlCapabilityType::ALL_OPTIONS;
 }
 
-void MSXMLWrapper::addErrorToVector(IXMLDOMParseError* pXMLErr, const wchar_t* szDesc) {
+void MSXMLWrapper::addErrorToVector(IXMLDOMParseError2* pXMLErr, const wchar_t* szDesc) {
     HRESULT hr = S_OK; 
     long line = 0;
     long linepos = 0;
@@ -62,7 +62,8 @@ void MSXMLWrapper::addErrorToVector(IXMLDOMParseError* pXMLErr, const wchar_t* s
 CleanUp:
     SysFreeString(bstrReason);
 }
-void MSXMLWrapper::buildErrorsVector(IXMLDOMParseError* pXMLErr, const wchar_t* szDesc) {
+
+void MSXMLWrapper::buildErrorsVector(IXMLDOMParseError2* pXMLErr, const wchar_t* szDesc) {
     HRESULT hr = S_OK;
     IXMLDOMParseErrorCollection* pAllErrors = NULL;
     IXMLDOMParseError2* pTmpErr = NULL;
@@ -71,7 +72,7 @@ void MSXMLWrapper::buildErrorsVector(IXMLDOMParseError* pXMLErr, const wchar_t* 
     this->resetErrors();
 
     try {
-        CHK_HR(((IXMLDOMParseError2*)pXMLErr)->get_allErrors(&pAllErrors));
+        CHK_HR(pXMLErr->get_allErrors(&pAllErrors));
         if (pAllErrors != NULL) {
             CHK_HR(pAllErrors->get_length(&length));
             for (long i = 0; i < length; ++i) {
@@ -101,8 +102,8 @@ bool MSXMLWrapper::checkSyntax(const char* xml, size_t size) {
 
     //updateProxyConfig();
     HRESULT hr = S_OK;
-    IXMLDOMDocument2* pXMLDom = NULL;
-    IXMLDOMParseError* pXMLErr = NULL;
+    IXMLDOMDocument3* pXMLDom = NULL;
+    IXMLDOMParseError2* pXMLErr = NULL;
     VARIANT_BOOL varStatus;
     VARIANT varCurrentData;
 
@@ -117,7 +118,7 @@ bool MSXMLWrapper::checkSyntax(const char* xml, size_t size) {
     res = (varStatus == VARIANT_TRUE);
 
     if (!res) {
-        CHK_HR(pXMLDom->get_parseError(&pXMLErr));
+        CHK_HR(pXMLDom->get_parseError((IXMLDOMParseError**)&pXMLErr));
         this->buildErrorsVector(pXMLErr);
     }
 
@@ -130,10 +131,12 @@ CleanUp:
 }
 
 bool MSXMLWrapper::checkValidity(const char* xml, size_t size, std::wstring schemaFilename, std::wstring validationNamespace) {
+    // source: https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ms754649(v=vs.85)
+
     HRESULT hr = S_OK;
-    IXMLDOMDocument2 *pXMLDom = NULL, *pXSDDom = NULL;
-    IXMLDOMParseError* pXMLErr = NULL;
-    IXMLDOMParseError2* pXMLErr2 = NULL;
+    IXMLDOMDocument3 *pXMLDom = NULL,  // The MultipleErrorMessages property is supported by IXMLDOMDocument3, together with
+                     *pXSDDom = NULL;  // IXMLDOMParseError2 and IXMLDOMParseErrorCollection interfaces introduced in MSXML 5.0
+    IXMLDOMParseError2* pXMLErr = NULL;
     IXMLDOMNodeList* pNodes = NULL;
     IXMLDOMNode* pNode = NULL;
     IXMLDOMElement* pElement = NULL;
@@ -172,7 +175,7 @@ bool MSXMLWrapper::checkValidity(const char* xml, size_t size, std::wstring sche
 
                     CHK_HR(pXMLDom->load(varXML, &varStatus));
                     if (varStatus != VARIANT_TRUE) {
-                        CHK_HR(pXMLDom->get_parseError(&pXMLErr));
+                        CHK_HR(pXMLDom->get_parseError((IXMLDOMParseError**)&pXMLErr));
                         this->buildErrorsVector(pXMLErr);
                         res = false;
                     }
@@ -202,14 +205,14 @@ bool MSXMLWrapper::checkValidity(const char* xml, size_t size, std::wstring sche
             // If we are here, this means that noNamespaceSchemaLocation or schemaLocation attribute is present.
             // So validation is supposed OK since xml is loaded with INIT_OPTION_VALIDATEONPARSE option. Then we
             // just have to test validity.
-            if (pXMLDom->validate((IXMLDOMParseError**)&pXMLErr2) == S_FALSE) {
-                this->buildErrorsVector(pXMLErr2);
+            if (pXMLDom->validate((IXMLDOMParseError**)&pXMLErr) == S_FALSE) {
+                this->buildErrorsVector(pXMLErr);
                 res = false;
             }
         }
     }
     else {
-        CHK_HR(pXMLDom->get_parseError(&pXMLErr));
+        CHK_HR(pXMLDom->get_parseError((IXMLDOMParseError**)&pXMLErr));
         this->buildErrorsVector(pXMLErr);
         res = false;
     }
@@ -230,9 +233,9 @@ CleanUp:
 
 std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, size_t size, std::wstring xpath, std::wstring ns) {
     HRESULT hr = S_OK;
-    IXMLDOMDocument2* pXMLDom = NULL;
+    IXMLDOMDocument3* pXMLDom = NULL;
     IXMLDOMNodeList* pNodes = NULL;
-    IXMLDOMParseError* pXMLErr = NULL;
+    IXMLDOMParseError2* pXMLErr = NULL;
     VARIANT_BOOL varStatus;
     BSTR bstrXPath = NULL;
     IXMLDOMNode* pNode = NULL;
@@ -261,7 +264,7 @@ std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, s
         CHK_HR(pXMLDom->setProperty(L"SelectionLanguage", _variant_t(L"XPath")));
         hr = pXMLDom->selectNodes(bstrXPath, &pNodes);
         if (FAILED(hr)) {
-            CHK_HR(pXMLDom->get_parseError(&pXMLErr));
+            CHK_HR(pXMLDom->get_parseError((IXMLDOMParseError**)&pXMLErr));
             this->buildErrorsVector(pXMLErr);
 
             this->errors.push_back({
@@ -332,7 +335,7 @@ std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, s
         }
     }
     else {
-        CHK_HR(pXMLDom->get_parseError(&pXMLErr));
+        CHK_HR(pXMLDom->get_parseError((IXMLDOMParseError**)&pXMLErr));
         this->buildErrorsVector(pXMLErr);
     }
 CleanUp:
@@ -400,11 +403,11 @@ bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xsl
     // and msxsl tool source code (https://www.microsoft.com/en-us/download/details.aspx?id=21714)
     HRESULT hr = S_OK;
     HGLOBAL hg = NULL;
-    IXMLDOMDocument2* pXml = NULL;
-    IXMLDOMDocument2* pXslt = NULL;
+    IXMLDOMDocument3* pXml = NULL;
+    IXMLDOMDocument3* pXslt = NULL;
     IXSLTemplate* pTemplate = NULL;
     IXSLProcessor* pProcessor = NULL;
-    IXMLDOMParseError* pXMLErr = NULL;
+    IXMLDOMParseError2* pXMLErr = NULL;
     IXMLDOMNodeList* pNodes = NULL;
     IXMLDOMNode* pNode = NULL;
     IStream* pOutStream = NULL;
@@ -439,7 +442,7 @@ bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xsl
         }
     }
     else {
-        CHK_HR(pXml->get_parseError(&pXMLErr));
+        CHK_HR(pXml->get_parseError((IXMLDOMParseError**)&pXMLErr));
         this->buildErrorsVector(pXMLErr);
 
         if (this->errors.size() == 0) {
@@ -586,13 +589,13 @@ bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xsl
             }
         }
         else {
-            CHK_HR(pXslt->get_parseError(&pXMLErr));
+            CHK_HR(pXslt->get_parseError((IXMLDOMParseError**)&pXMLErr));
             this->buildErrorsVector(pXMLErr);
             res = false;
         }
     }
     else {
-        CHK_HR(pXml->get_parseError(&pXMLErr));
+        CHK_HR(pXml->get_parseError((IXMLDOMParseError**)&pXMLErr));
         this->buildErrorsVector(pXMLErr);
 
         if (this->errors.size() == 0) {

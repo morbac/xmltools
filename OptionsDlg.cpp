@@ -107,7 +107,7 @@ BOOL COptionsDlg::OnInitDialog() {
   pTmpOption = new CMFCPropertyGridProperty(L"Debug level", COleVariant((long)config.dbgLevel, VT_INT), L"0 = TRACE, 1 = INFO, 2 = WARNINGS, 3 = ERRORS", (DWORD_PTR)&config.dbgLevel);
   pGrpOptions->AddSubItem(pTmpOption); vIntProperties.push_back(pTmpOption);
 
-  pTmpOption = new CMFCPropertyGridProperty(L"Error display mode", COleVariant(xmltoolsoptions.errorDisplayMode.c_str()), L"This property let you choose the mode use to report errors.\r\n\- Annotation: make errors display inline. Use Annotations style option below to customize the annotations style.\r\n- Dialog: make the error display in a scrollable dialog. All errors are display in a single dialog.\r\n- Alert: display every error in a single alert dialog.", (DWORD_PTR)&xmltoolsoptions.errorDisplayMode);
+  pTmpOption = new CMFCPropertyGridProperty(L"Error display mode", COleVariant(xmltoolsoptions.errorDisplayMode.c_str()), L"This property let you choose the mode use to report errors.\r\n- Annotation: make errors display inline. Use Annotations style option below to customize the annotations style.\r\n- Dialog: make the error display in a scrollable dialog. All errors are display in a single dialog.\r\n- Alert: display error in a single alert dialog.", (DWORD_PTR)&xmltoolsoptions.errorDisplayMode);
   pTmpOption->AddOption(L"Annotation"); pTmpOption->AddOption(L"Dialog"); pTmpOption->AddOption(L"Alert");
   pGrpOptions->AddSubItem(pTmpOption); vWStringProperties.push_back(pTmpOption);
   

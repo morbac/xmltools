@@ -1,7 +1,7 @@
 #ifndef __MSXMLHELPER_H__
 #define __MSXMLHELPER_H__
 
-#include <msxml6.h>
+#include <MsXml6.h>
 #include <string>
 #include <vector>
 
@@ -40,7 +40,7 @@ HRESULT VariantFromString(PCWSTR wszValue, VARIANT& Variant);
 HRESULT VariantFromObject(IUnknown* pUnk, VARIANT& varObject);
 
 // Helper function to create a DOM instance.
-HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc, int options = INIT_OPTION_PRESERVEWHITESPACE);
+HRESULT CreateAndInitDOM(IXMLDOMDocument3** ppDoc, int options = INIT_OPTION_PRESERVEWHITESPACE);
 
 // Helper function to create a sax instance.
 HRESULT CreateAndInitSAX(ISAXXMLReader** ppDoc);

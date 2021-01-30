@@ -30,15 +30,7 @@ CleanUp:
   return hr;
 }
 
-// Helper function to create a DOM instance.
-HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc, int options) {
-  HRESULT hr;
-  if (options & INIT_OPTION_FREETHREADED) {
-    hr = CoCreateInstance(CLSID_FreeThreadedDOMDocument60, NULL, CLSCTX_SERVER, IID_PPV_ARGS(ppDoc));
-  } else {
-    hr = CoCreateInstance(CLSID_DOMDocument60, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(ppDoc));
-  }
-  if (SUCCEEDED(hr)) {
+void ApplyOptions(IXMLDOMDocument3** ppDoc, int options) {
     // These methods should not fail so don't inspect result
     (*ppDoc)->put_async(options & INIT_OPTION_ASYNC ? VARIANT_TRUE : VARIANT_FALSE);
     (*ppDoc)->put_validateOnParse(options & INIT_OPTION_VALIDATEONPARSE ? VARIANT_TRUE : VARIANT_FALSE);
@@ -61,8 +53,21 @@ HRESULT CreateAndInitDOM(IXMLDOMDocument2** ppDoc, int options) {
     if (msxmloptions.serverHTTPRequest >= 0) (*ppDoc)->setProperty(L"ServerHTTPRequest", _variant_t(msxmloptions.serverHTTPRequest > 0 ? VARIANT_TRUE : VARIANT_FALSE));
     if (msxmloptions.useInlineSchema >= 0) (*ppDoc)->setProperty(L"UseInlineSchema", _variant_t(msxmloptions.useInlineSchema > 0 ? VARIANT_TRUE : VARIANT_FALSE));
     if (msxmloptions.validateOnParse >= 0) (*ppDoc)->setProperty(L"ValidateOnParse", _variant_t(msxmloptions.validateOnParse > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-  }
-  return hr;
+}
+
+// Helper function to create a DOM instance.
+HRESULT CreateAndInitDOM(IXMLDOMDocument3** ppDoc, int options) {
+    HRESULT hr;
+    if (options & INIT_OPTION_FREETHREADED) {
+        hr = CoCreateInstance(CLSID_FreeThreadedDOMDocument60, NULL, CLSCTX_SERVER, IID_PPV_ARGS(ppDoc));
+    }
+    else {
+        hr = CoCreateInstance(CLSID_DOMDocument60, NULL, CLSCTX_INPROC_SERVER, IID_IXMLDOMDocument3, (LPVOID*)(ppDoc));
+    }
+    if (SUCCEEDED(hr)) {
+        ApplyOptions(ppDoc, options);
+    }
+    return hr;
 }
 
 // Helper function to create a XSL instance.
