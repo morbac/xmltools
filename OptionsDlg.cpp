@@ -107,12 +107,12 @@ BOOL COptionsDlg::OnInitDialog() {
   pTmpOption = new CMFCPropertyGridProperty(L"Debug level", COleVariant((long)config.dbgLevel, VT_INT), L"0 = TRACE, 1 = INFO, 2 = WARNINGS, 3 = ERRORS", (DWORD_PTR)&config.dbgLevel);
   pGrpOptions->AddSubItem(pTmpOption); vIntProperties.push_back(pTmpOption);
 
-  pTmpOption = new CMFCPropertyGridProperty(L"Display errors as annotations", COleVariant((short) (xmltoolsoptions.useAnnotations ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"When enabled, errors are displayed as annotation directly in the XML document. When disabled, errors are displayed in dialogs.", (DWORD_PTR) &xmltoolsoptions.useAnnotations);
-  pGrpOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Error display mode", COleVariant(xmltoolsoptions.errorDisplayMode.c_str()), L"This property let you choose the mode use to report errors.\r\n\- Annotation: make errors display inline. Use Annotations style option below to customize the annotations style.\r\n- Dialog: make the error display in a scrollable dialog. All errors are display in a single dialog.\r\n- Alert: display every error in a single alert dialog.", (DWORD_PTR)&xmltoolsoptions.errorDisplayMode);
+  pTmpOption->AddOption(L"Annotation"); pTmpOption->AddOption(L"Dialog"); pTmpOption->AddOption(L"Alert");
+  pGrpOptions->AddSubItem(pTmpOption); vWStringProperties.push_back(pTmpOption);
   
   this->pAnnotationStyleProperty = new CMFCPropertyGridProperty(L"Annotations style", COleVariant((long) xmltoolsoptions.annotationStyle, VT_INT), L"Error messages style when displayed as annotations.\r\nUse \"Annotation preview\" button below to display an annotation sample.", (DWORD_PTR) &xmltoolsoptions.annotationStyle);
   pGrpOptions->AddSubItem(this->pAnnotationStyleProperty); vIntProperties.push_back(this->pAnnotationStyleProperty);
-
 
   CMFCPropertyGridProperty* pGrpXml2Txt = new CMFCPropertyGridProperty(L"XML to Text conversion");
   m_wndPropList.AddProperty(pGrpXml2Txt);
@@ -253,17 +253,17 @@ void COptionsDlg::OnBnClickedOk() {
 }
 
 void COptionsDlg::OnBnClickedBtnviewannotation() {
-  bool prevStatus = xmltoolsoptions.useAnnotations;
+  std::wstring prevStatus = xmltoolsoptions.errorDisplayMode;
   int prevStyle = xmltoolsoptions.annotationStyle;
 
-  xmltoolsoptions.useAnnotations = true;
+  xmltoolsoptions.errorDisplayMode = L"Annotation";
   xmltoolsoptions.annotationStyle = this->pAnnotationStyleProperty->GetValue().intVal;
 
   testAnnotation = true;
   clearAnnotations();
   displayXMLError(L"This is an annotation example.");
 
-  xmltoolsoptions.useAnnotations = prevStatus;
+  xmltoolsoptions.errorDisplayMode = prevStatus;
   xmltoolsoptions.annotationStyle = prevStyle;
 }
 

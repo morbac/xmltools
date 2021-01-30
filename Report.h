@@ -40,6 +40,10 @@ public:
   static void registerWarn(const char* s);
   static void registerMessage(const char* s);
 
+  static void registerError(const wchar_t* s);
+  static void registerWarn(const wchar_t* s);
+  static void registerMessage(const wchar_t* s);
+
   static void registerError(void * ctx, const char* s, ...);
   static void registerWarn(void * ctx, const char* s, ...);
   static void registerMessage(void * ctx, const char* s, ...);

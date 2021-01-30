@@ -5,6 +5,7 @@
 #include "Report.h"
 #include "XMLTools.h"
 #include "XmlWrapperInterface.h"
+#include "MessageDlg.h"
 
 #include <map>
 
@@ -101,7 +102,7 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, 
     LRESULT bufferid = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
     UniMode encoding = UniMode(::SendMessage(nppData._nppHandle, NPPM_GETBUFFERENCODING, bufferid, 0));
 
-    if (xmltoolsoptions.useAnnotations) {
+    if (xmltoolsoptions.errorDisplayMode.compare(L"Annotation") == 0) {
         if (line == NULL) {
             line = (size_t) ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLINE, 0, 0) + 1;
         }
@@ -232,29 +233,87 @@ CleanUp:
     SysFreeString(bstrReason);
 }
 
+std::wstring formatXMLError(IXMLDOMParseError* pXMLErr) {
+    HRESULT hr = S_OK;
+    long line = 0;
+    long linepos = 0;
+    long filepos = 0;
+    BSTR bstrReason = NULL;
+    std::wstring wmsg = L"";
+
+    if (pXMLErr != NULL) {
+        CHK_HR(pXMLErr->get_line(&line));
+        CHK_HR(pXMLErr->get_linepos(&linepos));
+        CHK_HR(pXMLErr->get_filepos(&filepos));
+        CHK_HR(pXMLErr->get_reason(&bstrReason));
+
+        if (line > 0 && linepos > 0) {
+            wmsg = Report::str_format(L"Line %d, pos %d: %s", line, linepos, bstrReason);
+        }
+        else {
+            wmsg = Report::str_format(L"%s", bstrReason);
+        }
+    }
+
+CleanUp:
+    SysFreeString(bstrReason);
+
+    return wmsg;
+}
+
 void displayXMLErrors(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDesc) {
     HRESULT hr = S_OK;
     IXMLDOMParseError2* pTmpErr = NULL;
     IXMLDOMParseErrorCollection* pAllErrors = NULL;
     long length = 0;
 
-    try {
-        CHK_HR(((IXMLDOMParseError2*)pXMLErr)->get_allErrors(&pAllErrors));
-        if (pAllErrors != NULL) {
-            CHK_HR(pAllErrors->get_length(&length));
-            for (long i = 0; i < length; ++i) {
-                CHK_HR(pAllErrors->get_next(&pTmpErr));
-                CHK_HR(pAllErrors->get_item(i, &pTmpErr));
-                displayXMLError(pTmpErr, view, szDesc);
-                SAFE_RELEASE(pTmpErr);
+    if (xmltoolsoptions.errorDisplayMode.compare(L"Dialog") == 0) {
+        Report::clearLog();
+        Report::registerMessage(szDesc);
+        Report::registerMessage(L"");
+
+        try {
+            CHK_HR(((IXMLDOMParseError2*)pXMLErr)->get_allErrors(&pAllErrors));
+            if (pAllErrors != NULL) {
+                CHK_HR(pAllErrors->get_length(&length));
+                for (long i = 0; i < length; ++i) {
+                    CHK_HR(pAllErrors->get_next(&pTmpErr));
+                    CHK_HR(pAllErrors->get_item(i, &pTmpErr));
+                    Report::registerError(formatXMLError(pTmpErr).c_str());
+                    SAFE_RELEASE(pTmpErr);
+                }
+            }
+            else {
+                Report::registerError(szDesc);
             }
         }
-        else {
+        catch (...) {
+            Report::registerError(szDesc);
+        }
+
+        CMessageDlg* msgdlg = new CMessageDlg();
+        msgdlg->m_sMessage = Report::getLog().c_str();
+        msgdlg->DoModal();
+    }
+    else {
+        try {
+            CHK_HR(((IXMLDOMParseError2*)pXMLErr)->get_allErrors(&pAllErrors));
+            if (pAllErrors != NULL) {
+                CHK_HR(pAllErrors->get_length(&length));
+                for (long i = 0; i < length; ++i) {
+                    CHK_HR(pAllErrors->get_next(&pTmpErr));
+                    CHK_HR(pAllErrors->get_item(i, &pTmpErr));
+                    displayXMLError(pTmpErr, view, szDesc);
+                    SAFE_RELEASE(pTmpErr);
+                }
+            }
+            else {
+                displayXMLError(pXMLErr, view, szDesc);
+            }
+        }
+        catch (...) {
             displayXMLError(pXMLErr, view, szDesc);
         }
-    }
-    catch (...) {
-        displayXMLError(pXMLErr, view, szDesc);
     }
 
 CleanUp:
@@ -263,18 +322,38 @@ CleanUp:
 }
 
 void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view, const wchar_t* szDesc) {
-    for (std::vector<ErrorEntryType>::iterator it = errors.begin(); it != errors.end(); ++it) {
-        if ((*it).line < 0) {
-            Report::_printf_err((*it).reason);
+    if (xmltoolsoptions.errorDisplayMode.compare(L"Dialog") == 0) {
+        Report::clearLog();
+        Report::registerMessage(szDesc);
+        Report::registerMessage(L"");
+
+        for (std::vector<ErrorEntryType>::iterator it = errors.begin(); it != errors.end(); ++it) {
+            if ((*it).line < 0) {
+                Report::registerError((*it).reason.c_str());
+            }
+            else {
+                Report::registerError(Report::str_format(L"Line %d, pos %d: %s", (*it).line, (*it).linepos, (*it).reason.c_str()).c_str());
+            }
         }
-        else {
-            displayXMLError((*it).reason, view, (*it).line, (*it).linepos, (*it).filepos);
+
+        CMessageDlg* msgdlg = new CMessageDlg();
+        msgdlg->m_sMessage = Report::getLog().c_str();
+        msgdlg->DoModal();
+    }
+    else {
+        for (std::vector<ErrorEntryType>::iterator it = errors.begin(); it != errors.end(); ++it) {
+            if ((*it).line < 0) {
+                Report::_printf_err((*it).reason);
+            }
+            else {
+                displayXMLError((*it).reason, view, (*it).line, (*it).linepos, (*it).filepos);
+            }
         }
     }
 }
 
 bool hasCurrentDocAnnotations() {
-    if (!xmltoolsoptions.useAnnotations) return false;
+    if (xmltoolsoptions.errorDisplayMode.compare(L"Annotation") != 0) return false;
     try {
         return hasAnnotations.at(::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0));
     }

@@ -169,10 +169,16 @@ std::wstring Report::getLog() {
 }
 
 void Report::registerError(const char* s) {
-  currentLog += L"ERROR: ";
+  currentLog += L"ERROR - ";
   Report::appendToStdString(&currentLog, s, currentEncoding);
   currentLog = currentLog.substr(0, currentLog.length()-1);
   currentLog += L"\r\n";
+}
+
+void Report::registerError(const wchar_t* s) {
+    currentLog += L"ERROR - ";
+    currentLog += s;
+    currentLog += L"\r\n";
 }
 
 void Report::registerError(void * ctx, const char* s, ...) {
@@ -189,10 +195,16 @@ void Report::registerError(void * ctx, const char* s, ...) {
 }
 
 void Report::registerWarn(const char* s) {
-  currentLog += L"WARN: ";
+  currentLog += L"WARN - ";
   Report::appendToStdString(&currentLog, s, currentEncoding);
   currentLog = currentLog.substr(0, currentLog.length()-1);
   currentLog += L"\r\n";
+}
+
+void Report::registerWarn(const wchar_t* s) {
+    currentLog += L"WARN - ";
+    currentLog += s;
+    currentLog += L"\r\n";
 }
 
 void Report::registerWarn(void * ctx, const char* s, ...) {
@@ -213,6 +225,12 @@ void Report::registerMessage(const char* s) {
   currentLog = currentLog.substr(0, currentLog.length()-1);
   currentLog += L"\r\n";
 }
+
+void Report::registerMessage(const wchar_t* s) {
+    currentLog += s;
+    currentLog += L"\r\n";
+}
+
 void Report::registerMessage(void * ctx, const char* s, ...) {
   if (!s || !strlen(s)) return;
 

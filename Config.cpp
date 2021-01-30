@@ -54,7 +54,7 @@ void XmlToolsConfig::Read(std::wstring _configPath) {
 	ReadString(L"proxyPass", proxyoptions.password);
 
 	ReadString(L"formatingEngine", xmltoolsoptions.formatingEngine);
-	ReadBool(L"useAnnotations", xmltoolsoptions.useAnnotations);
+	ReadString(L"errorDisplayMode", xmltoolsoptions.errorDisplayMode);
 	ReadInt(L"annotationStyle", xmltoolsoptions.annotationStyle);
 	ReadInt(L"maxIndentLevel", xmltoolsoptions.maxIndentLevel);
 	ReadBool(L"convertAmp", xmltoolsoptions.convertAmp);
@@ -105,7 +105,7 @@ void XmlToolsConfig::Write() {
 	WriteString(L"proxyPass", proxyoptions.password);
 
 	WriteString(L"formatingEngine", xmltoolsoptions.formatingEngine);
-	WriteBool(L"useAnnotations", xmltoolsoptions.useAnnotations);
+	WriteString(L"errorDisplayMode", xmltoolsoptions.errorDisplayMode);
 	WriteInt( L"annotationStyle", xmltoolsoptions.annotationStyle);
 	WriteInt(L"maxIndentLevel", xmltoolsoptions.maxIndentLevel);
 	WriteBool(L"convertAmp", xmltoolsoptions.convertAmp);
