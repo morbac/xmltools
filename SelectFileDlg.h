@@ -22,6 +22,7 @@ public:
   CStringW  m_sSelectedFilename;
   CStringW  m_sValidationNamespace;
   CStringW  m_sRootElementName;
+  CStringW  m_sRootElemenSample;
   //}}AFX_DATA
 
   CStringW ShowOpenFileDlg(CStringW filetypes);
@@ -42,8 +43,6 @@ protected:
   afx_msg BOOL OnInitDialog();
   //}}AFX_MSG
   DECLARE_MESSAGE_MAP()
-public:
-  afx_msg void OnBnClickedOk();
 };
 
 //{{AFX_INSERT_LOCATION}}

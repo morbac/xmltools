@@ -26,9 +26,10 @@ CSelectFileDlg::CSelectFileDlg(CWnd* pParent /*=NULL*/)
   : CDialog(CSelectFileDlg::IDD, pParent)
 {
   //{{AFX_DATA_INIT(CSelectFileDlg)
-  m_sSelectedFilename = _T("");
-  m_sValidationNamespace = _T("");
-  m_sRootElementName = _T("");
+  m_sSelectedFilename = L"";
+  m_sValidationNamespace = L"";
+  m_sRootElementName = L"";
+  m_sRootElemenSample = L"Please select a XML schema file";
   //}}AFX_DATA_INIT
 }
 
@@ -47,7 +48,6 @@ BEGIN_MESSAGE_MAP(CSelectFileDlg, CDialog)
   //{{AFX_MSG_MAP(CSelectFileDlg)
   ON_BN_CLICKED(IDC_BTN_EXPLORE_XSDFILE, OnBtnExploreXSDFile)
   //}}AFX_MSG_MAP
-  ON_BN_CLICKED(IDOK, &CSelectFileDlg::OnBnClickedOk)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -64,7 +64,10 @@ CStringW CSelectFileDlg::ShowOpenFileDlg(CStringW filetypes)
 }
 
 BOOL CSelectFileDlg::OnInitDialog() {
-    GetDlgItem(IDC_EDIT_ROOTELEMSAMPLE)->SetWindowText(L"Please select a XML schema file");
+    if (!m_sSelectedFilename.IsEmpty()) GetDlgItem(IDC_EDIT_FILENAME)->SetWindowText(m_sSelectedFilename);
+    if (!m_sValidationNamespace.IsEmpty()) GetDlgItem(IDC_EDIT_NAMESPACE)->SetWindowText(m_sValidationNamespace);
+    if (!m_sRootElemenSample.IsEmpty()) GetDlgItem(IDC_EDIT_ROOTELEMSAMPLE)->SetWindowText(m_sRootElemenSample);
+
     return TRUE;
 }
 
@@ -90,29 +93,29 @@ void CSelectFileDlg::OnBtnExploreXSDFile() {
                 GetDlgItem(IDC_EDIT_NAMESPACE)->SetWindowText(targetNamespace.c_str());
 
                 // write info text
-                CStringW rootSample = "<";
-                rootSample += this->m_sRootElementName;
-                rootSample += "\r\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
-                rootSample += "\r\n    xsi:schemaLocation=\"";
-                rootSample += targetNamespace.c_str();
-                rootSample += " ";
-                rootSample += ret;
-                rootSample += "\">";
+                m_sRootElemenSample = "<";
+                m_sRootElemenSample += this->m_sRootElementName;
+                m_sRootElemenSample += "\r\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
+                m_sRootElemenSample += "\r\n    xsi:schemaLocation=\"";
+                m_sRootElemenSample += targetNamespace.c_str();
+                m_sRootElemenSample += " ";
+                m_sRootElemenSample += ret;
+                m_sRootElemenSample += "\">";
 
-                GetDlgItem(IDC_EDIT_ROOTELEMSAMPLE)->SetWindowText(rootSample);
+                GetDlgItem(IDC_EDIT_ROOTELEMSAMPLE)->SetWindowText(m_sRootElemenSample);
             }
             else {
                 GetDlgItem(IDC_EDIT_NAMESPACE)->SetWindowText(L"");
 
                 // write info text
-                CStringW rootSample = "<";
-                rootSample += this->m_sRootElementName;
-                rootSample += "\r\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
-                rootSample += "\r\n    xsi:noNamespaceSchemaLocation=\"";
-                rootSample += ret;
-                rootSample += "\">";
+                m_sRootElemenSample = "<";
+                m_sRootElemenSample += this->m_sRootElementName;
+                m_sRootElemenSample += "\r\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
+                m_sRootElemenSample += "\r\n    xsi:noNamespaceSchemaLocation=\"";
+                m_sRootElemenSample += ret;
+                m_sRootElemenSample += "\">";
 
-                GetDlgItem(IDC_EDIT_ROOTELEMSAMPLE)->SetWindowText(rootSample);
+                GetDlgItem(IDC_EDIT_ROOTELEMSAMPLE)->SetWindowText(m_sRootElemenSample);
             }
 
             delete wrapper;
@@ -120,11 +123,4 @@ void CSelectFileDlg::OnBtnExploreXSDFile() {
 
         GetDlgItem(IDC_EDIT_FILENAME)->SetWindowText(ret);
     }
-}
-
-
-void CSelectFileDlg::OnBnClickedOk()
-{
-  // TODO: Add your control notification handler code here
-  CDialog::OnOK();
 }
