@@ -104,60 +104,35 @@ void XMLValidation(int informIfNoError) {
     ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
     XmlWrapperInterface* wrapper = new MSXMLWrapper();
+    bool isok = wrapper->checkSyntax(data, currentLength);
 
-    // check if a schema prompt is requested
-    std::vector<XPathResultEntryType> nodes = wrapper->xpathEvaluate(data, currentLength, L"/*/@xsi:noNamespaceSchemaLocation", L"xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'");
-    bool nnsl = (nodes.size() > 0);
-    nodes.clear();
-
-    nodes = wrapper->xpathEvaluate(data, currentLength, L"/*/@xsi:schemaLocation", L"xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'");
-    bool sl = (nodes.size() > 0);
-
-    bool hasSchemaOrDTD = (nnsl || sl);
-
-    if (!hasSchemaOrDTD) {
-        // search for DTD - this will be done using QuickXml
-        XmlParser parser(data, currentLength);
-        XmlToken token = undefinedToken;
-        do {
-            token = parser.parseUntil(XmlTokenType::Declaration | XmlTokenType::TagOpening);
-            if (token.type == XmlTokenType::Declaration && !strncmp(token.chars, "<!DOCTYPE", 9)) {
-                break;
-            }
-        } while (token.type != XmlTokenType::EndOfFile && token.type != XmlTokenType::TagOpening);
-
-        hasSchemaOrDTD = (token.type == XmlTokenType::Declaration);
-    }
-
-    if (hasSchemaOrDTD) {
-        if (!wrapper->checkValidity(data, currentLength)) {
-            std::vector<ErrorEntryType> errors = wrapper->getLastErrors();
-            displayXMLErrors(errors, hCurrentEditView, L"XML Validation error");
-        }
-        else {
-            Report::_printf_inf(L"No error detected.");
-        }
-    }
-    else {
-        // if noNamespaceSchemaLocation or schemaLocation attributes are not present,
-        // we must prompt for XSD to user and create a schema cache
-        if (pSelectFileDlg == NULL) {
-            pSelectFileDlg = new CSelectFileDlg();
-        }
-        //pSelectFileDlg->m_sSelectedFilename = lastXMLSchema.c_str();
-
-        CStringW rootSample = "<";
+    if (isok) {
+        // check if a schema prompt is requested
+        std::vector<XPathResultEntryType> nodes = wrapper->xpathEvaluate(data, currentLength, L"/*/@xsi:noNamespaceSchemaLocation", L"xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'");
+        bool nnsl = (nodes.size() > 0);
         nodes.clear();
-        nodes = wrapper->xpathEvaluate(data, currentLength, L"/*", L"");
-        if (nodes.size() == 1) {
-            pSelectFileDlg->m_sRootElementName = nodes.at(0).name.c_str();
-        } else {
-            pSelectFileDlg->m_sRootElementName = L"";
+
+        nodes = wrapper->xpathEvaluate(data, currentLength, L"/*/@xsi:schemaLocation", L"xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'");
+        bool sl = (nodes.size() > 0);
+
+        bool hasSchemaOrDTD = (nnsl || sl);
+
+        if (!hasSchemaOrDTD) {
+            // search for DTD - this will be done using QuickXml
+            XmlParser parser(data, currentLength);
+            XmlToken token = undefinedToken;
+            do {
+                token = parser.parseUntil(XmlTokenType::Declaration | XmlTokenType::TagOpening);
+                if (token.type == XmlTokenType::Declaration && !strncmp(token.chars, "<!DOCTYPE", 9)) {
+                    break;
+                }
+            } while (token.type != XmlTokenType::EndOfFile && token.type != XmlTokenType::TagOpening);
+
+            hasSchemaOrDTD = (token.type == XmlTokenType::Declaration);
         }
 
-        if (pSelectFileDlg->DoModal() == IDOK) {
-            //lastXMLSchema = pSelectFileDlg->m_sSelectedFilename;
-            if (!wrapper->checkValidity(data, currentLength, pSelectFileDlg->m_sSelectedFilename.GetString(), pSelectFileDlg->m_sValidationNamespace.GetString())) {
+        if (hasSchemaOrDTD) {
+            if (!wrapper->checkValidity(data, currentLength)) {
                 std::vector<ErrorEntryType> errors = wrapper->getLastErrors();
                 displayXMLErrors(errors, hCurrentEditView, L"XML Validation error");
             }
@@ -165,6 +140,38 @@ void XMLValidation(int informIfNoError) {
                 Report::_printf_inf(L"No error detected.");
             }
         }
+        else {
+            // if noNamespaceSchemaLocation or schemaLocation attributes are not present,
+            // we must prompt for XSD to user and create a schema cache
+            if (pSelectFileDlg == NULL) {
+                pSelectFileDlg = new CSelectFileDlg();
+            }
+            //pSelectFileDlg->m_sSelectedFilename = lastXMLSchema.c_str();
+
+            CStringW rootSample = "<";
+            nodes.clear();
+            nodes = wrapper->xpathEvaluate(data, currentLength, L"/*", L"");
+            if (nodes.size() == 1) {
+                pSelectFileDlg->m_sRootElementName = nodes.at(0).name.c_str();
+            }
+            else {
+                pSelectFileDlg->m_sRootElementName = L"";
+            }
+
+            if (pSelectFileDlg->DoModal() == IDOK) {
+                //lastXMLSchema = pSelectFileDlg->m_sSelectedFilename;
+                if (!wrapper->checkValidity(data, currentLength, pSelectFileDlg->m_sSelectedFilename.GetString(), pSelectFileDlg->m_sValidationNamespace.GetString())) {
+                    std::vector<ErrorEntryType> errors = wrapper->getLastErrors();
+                    displayXMLErrors(errors, hCurrentEditView, L"XML Validation error");
+                }
+                else {
+                    Report::_printf_inf(L"No error detected.");
+                }
+            }
+        }
+    }
+    else {
+        Report::_printf_inf(L"Please fix xml syntax first.");
     }
 
     delete[] data;
