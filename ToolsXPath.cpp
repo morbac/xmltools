@@ -80,9 +80,16 @@ CXPathEvalDlg* pXPathEvalDlg = NULL;
 void evaluateXPath() {
     dbgln("evaluateXPath()");
 
+#if true
+    if (pXPathEvalDlg == NULL) {
+        pXPathEvalDlg = new CXPathEvalDlg(NULL, NULL);
+    }
+    pXPathEvalDlg->DoModal();
+#else
     if (pXPathEvalDlg == NULL) {
         pXPathEvalDlg = new CXPathEvalDlg(NULL, NULL);
         pXPathEvalDlg->Create(CXPathEvalDlg::IDD, NULL);
     }
     pXPathEvalDlg->ShowWindow(SW_SHOW);
+#endif
 }

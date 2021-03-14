@@ -160,7 +160,9 @@ BOOL CXPathEvalDlg::OnInitDialog() {
   ClientToScreen(myRect);
   MoveWindow(myRect.left+100, myRect.top+100, myRect.Width(), myRect.Height());
 
-  return TRUE;  // return TRUE unless you set the focus to a control
+  GetDlgItem(IDC_EDIT_EXPRESSION)->SetFocus();
+
+  return FALSE;  // return TRUE unless you set the focus to a control
                 // EXCEPTION: OCX Property Pages should return FALSE
 }
 
