@@ -45,11 +45,65 @@ struct struct_xmltoolsoptions {
 	bool convertApos = true;
 	bool ppAutoclose = true;
 	bool ensureConformity = true;
+
+	bool tbCheckXML = true;
+	bool tbValidateXML = true;
+	bool tbPrevError = true;
+	bool tbNextError = true;
+	bool tbPrettyPrint = true;
+	bool tbPrettyPrintIndentAttr = true;
+	bool tbPrettyPrintIndentOnly = true;
+	bool tbLinearize = true;
+	bool tbCurrentXMLPath = true;
+	bool tbCurrentXMLPathNS = true;
+	bool tbEvalXPath = true;
+	bool tbXSLTransform = true;
+	bool tbEscape = true;
+	bool tbUnescape = true;
+	bool tbComment = true;
+	bool tbUncomment = true;
+	bool tbOptions = true;
 };
 
 extern struct struct_proxyoptions proxyoptions;
 extern struct struct_xmltoolsoptions xmltoolsoptions;
 extern struct struct_msxmloptions msxmloptions;
+
+struct struct_menuitems {
+	int menuitemToggleCheckXML = -1;
+	int menuitemToggleValidation = -1;
+	/*int menuitemPrettyPrint = -1;*/
+	int menuitemToggleCloseTag = -1;
+	int menuitemToggleAutoIndent = -1;
+	int menuitemToggleAttrAutoComplete = -1;
+	int menuitemToggleAutoXMLType = -1;
+	int menuitemTogglePreventXXE = -1;
+	int menuitemToggleAllowHuge = -1;
+	int menuitemTogglePrettyPrintAllFiles = -1;
+
+	int menuitemCheckXML = -1;
+	int menuitemValidateXML = -1;
+	int menuitemPreviousError = -1;
+	int menuitemNextError = -1;
+	int menuitemPrettyPrint = -1;
+	int menuitemPrettyPrintIndentAttr = -1;
+	int menuitemPrettyPrintIndentOnly = -1;
+	int menuitemLinearize = -1;
+	int menuitemCurrentXMLPath = -1;
+	int menuitemCurrentXMLPathNS = -1;
+	int menuitemEvalXPath = -1;
+	int menuitemXSLTransform = -1;
+	int menuitemEscape = -1;
+	int menuitemUnescape = -1;
+	int menuitemComment = -1;
+	int menuitemUncomment = -1;
+	int menuitemOptions = -1;
+	int menuitemDebugWindow = -1;
+	int menuitemAbout = -1;
+	int menuitemTokenize = -1;
+};
+
+extern struct struct_menuitems menuitems;
 
 class XmlToolsConfig {
 	const wchar_t* sectionName = L"XML Tools";

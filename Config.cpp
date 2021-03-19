@@ -65,6 +65,24 @@ void XmlToolsConfig::Read(std::wstring _configPath) {
 	ReadBool(L"ppAutoclose", xmltoolsoptions.ppAutoclose);
 	ReadBool(L"ensureConformity", xmltoolsoptions.ensureConformity);
 
+	ReadBool(L"tbCheckXML", xmltoolsoptions.tbCheckXML);
+	ReadBool(L"tbValidateXML", xmltoolsoptions.tbValidateXML);
+	ReadBool(L"tbPrevError", xmltoolsoptions.tbPrevError);
+	ReadBool(L"tbNextError", xmltoolsoptions.tbNextError);
+	ReadBool(L"tbPrettyPrint", xmltoolsoptions.tbPrettyPrint);
+	ReadBool(L"tbPrettyPrintIndentAttr", xmltoolsoptions.tbPrettyPrintIndentAttr);
+	ReadBool(L"tbPrettyPrintIndentOnly", xmltoolsoptions.tbPrettyPrintIndentOnly);
+	ReadBool(L"tbLinearize", xmltoolsoptions.tbLinearize);
+	ReadBool(L"tbCurrentXMLPath", xmltoolsoptions.tbCurrentXMLPath);
+	ReadBool(L"tbCurrentXMLPathNS", xmltoolsoptions.tbCurrentXMLPathNS);
+	ReadBool(L"tbEvalXPath", xmltoolsoptions.tbEvalXPath);
+	ReadBool(L"tbXSLTransform", xmltoolsoptions.tbXSLTransform);
+	ReadBool(L"tbEscape", xmltoolsoptions.tbEscape);
+	ReadBool(L"tbUnescape", xmltoolsoptions.tbUnescape);
+	ReadBool(L"tbComment", xmltoolsoptions.tbComment);
+	ReadBool(L"tbUncomment", xmltoolsoptions.tbUncomment);
+	ReadBool(L"tbOptions", xmltoolsoptions.tbOptions);
+
 	ReadInt(L"allowDocumentFunction", msxmloptions.allowDocumentFunction);
 	ReadInt(L"allowXsltScript", msxmloptions.allowXsltScript);
 	ReadInt(L"forceResync", msxmloptions.forceResync);
@@ -115,6 +133,24 @@ void XmlToolsConfig::Write() {
 	WriteBool(L"convertApos", xmltoolsoptions.convertApos);
 	WriteBool(L"ppAutoclose", xmltoolsoptions.ppAutoclose);
 	WriteBool(L"ensureConformity", xmltoolsoptions.ensureConformity);
+
+	WriteBool(L"tbCheckXML", xmltoolsoptions.tbCheckXML);
+	WriteBool(L"tbValidateXML", xmltoolsoptions.tbValidateXML);
+	WriteBool(L"tbPrevError", xmltoolsoptions.tbPrevError);
+	WriteBool(L"tbNextError", xmltoolsoptions.tbNextError);
+	WriteBool(L"tbPrettyPrint", xmltoolsoptions.tbPrettyPrint);
+	WriteBool(L"tbPrettyPrintIndentAttr", xmltoolsoptions.tbPrettyPrintIndentAttr);
+	WriteBool(L"tbPrettyPrintIndentOnly", xmltoolsoptions.tbPrettyPrintIndentOnly);
+	WriteBool(L"tbLinearize", xmltoolsoptions.tbLinearize);
+	WriteBool(L"tbCurrentXMLPath", xmltoolsoptions.tbCurrentXMLPath);
+	WriteBool(L"tbCurrentXMLPathNS", xmltoolsoptions.tbCurrentXMLPathNS);
+	WriteBool(L"tbEvalXPath", xmltoolsoptions.tbEvalXPath);
+	WriteBool(L"tbXSLTransform", xmltoolsoptions.tbXSLTransform);
+	WriteBool(L"tbEscape", xmltoolsoptions.tbEscape);
+	WriteBool(L"tbUnescape", xmltoolsoptions.tbUnescape);
+	WriteBool(L"tbComment", xmltoolsoptions.tbComment);
+	WriteBool(L"tbUncomment", xmltoolsoptions.tbUncomment);
+	WriteBool(L"tbOptions", xmltoolsoptions.tbOptions);
 
 	WriteInt(L"allowDocumentFunction", msxmloptions.allowDocumentFunction);
 	WriteInt(L"allowXsltScript", msxmloptions.allowXsltScript);

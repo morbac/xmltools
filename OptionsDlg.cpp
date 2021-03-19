@@ -191,6 +191,46 @@ BOOL COptionsDlg::OnInitDialog() {
   pGrpXmlFeatures->AddSubItem(pTmpOption); vTristateProperties.push_back(pTmpOption);
   
 
+  CMFCPropertyGridProperty* pGrpToolbarOptions = new CMFCPropertyGridProperty(L"Toolbar");
+  m_wndPropList.AddProperty(pGrpToolbarOptions);
+  pTmpOption = new CMFCPropertyGridProperty(L"Check XML syntax now", COleVariant((short)(xmltoolsoptions.tbCheckXML ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Check XML syntax now` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbCheckXML);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Validate now", COleVariant((short)(xmltoolsoptions.tbValidateXML ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Validate now` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbCheckXML);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Previous error", COleVariant((short)(xmltoolsoptions.tbPrevError ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Previous error` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbPrevError);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Next error", COleVariant((short)(xmltoolsoptions.tbNextError ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Next error` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbNextError);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Pretty print", COleVariant((short)(xmltoolsoptions.tbPrettyPrint ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Pretty print` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbPrettyPrint);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Pretty print - indent attributes", COleVariant((short)(xmltoolsoptions.tbPrettyPrintIndentAttr ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Pretty print - indent attributes` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbPrettyPrintIndentAttr);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Pretty print - indent only", COleVariant((short)(xmltoolsoptions.tbPrettyPrintIndentOnly ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Pretty print - indent only` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbPrettyPrintIndentOnly);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Linearize", COleVariant((short)(xmltoolsoptions.tbLinearize ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Linearize` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbLinearize);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Current XML Path", COleVariant((short)(xmltoolsoptions.tbCurrentXMLPath ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Current XML Path` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbCurrentXMLPath);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Current XML Path with predicates", COleVariant((short)(xmltoolsoptions.tbCurrentXMLPathNS ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Current XML Path with predicates` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbCurrentXMLPathNS);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Evaluate XPath expression...", COleVariant((short)(xmltoolsoptions.tbEvalXPath ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Evaluate XPath expression...` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbEvalXPath);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"XSL Transformation...", COleVariant((short)(xmltoolsoptions.tbXSLTransform ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `XSL Transformation...` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbXSLTransform);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Escape characters in selector", COleVariant((short)(xmltoolsoptions.tbEscape ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Escape characters in selector` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbEscape);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Unescape characters in selector", COleVariant((short)(xmltoolsoptions.tbUnescape ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Unescape characters in selector` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbUnescape);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Comment selection", COleVariant((short)(xmltoolsoptions.tbComment ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Comment selection` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbComment);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Comment selection", COleVariant((short)(xmltoolsoptions.tbUncomment ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Uncomment selection` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbUncomment);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Options...", COleVariant((short)(xmltoolsoptions.tbOptions ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Options...` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbOptions);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  
+  pGrpToolbarOptions->Expand(FALSE);
+
+
   CMFCPropertyGridProperty* pGrpProxyOptions = new CMFCPropertyGridProperty(L"Proxy options (disabled)");
   m_wndPropList.AddProperty(pGrpProxyOptions);
 

@@ -357,6 +357,14 @@ void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view, const wchar
     }
 }
 
+void previousError() {
+    // @todo To be implemented
+}
+
+void nextError() {
+    // @todo To be implemented
+}
+
 bool hasCurrentDocAnnotations() {
     if (xmltoolsoptions.errorDisplayMode.compare(L"Annotation") != 0) return false;
     try {

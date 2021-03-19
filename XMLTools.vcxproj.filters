@@ -191,4 +191,72 @@
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="bitmap1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Prev.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Next.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Previous.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\CheckXml.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ValidateXml.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\bitmap1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Comment.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\CurrentXPath.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\CurrentXPathNS.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\empty.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\EscapeXml.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\EvaluateXPath.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Linearize.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Options.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\PrettyPrint.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\PrettyPrintAttr.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\PrettyPrintIndentOnly.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Uncomment.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\UnescapeXml.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\XmlTransform.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\XslTransform.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

@@ -413,6 +413,30 @@
       <Project>{a3961ad9-8311-4929-bab7-d022452944a8}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="bitmap1.bmp" />
+    <Image Include="Prev.bmp" />
+    <Image Include="res\bitmap1.bmp" />
+    <Image Include="res\CheckXml.bmp" />
+    <Image Include="res\Comment.bmp" />
+    <Image Include="res\CurrentXPath.bmp" />
+    <Image Include="res\CurrentXPathNS.bmp" />
+    <Image Include="res\empty.bmp" />
+    <Image Include="res\EscapeXml.bmp" />
+    <Image Include="res\EvaluateXPath.bmp" />
+    <Image Include="res\Linearize.bmp" />
+    <Image Include="res\Next.bmp" />
+    <Image Include="res\Options.bmp" />
+    <Image Include="res\PrettyPrint.bmp" />
+    <Image Include="res\PrettyPrintAttr.bmp" />
+    <Image Include="res\PrettyPrintIndentOnly.bmp" />
+    <Image Include="res\Previous.bmp" />
+    <Image Include="res\Uncomment.bmp" />
+    <Image Include="res\UnescapeXml.bmp" />
+    <Image Include="res\ValidateXml.bmp" />
+    <Image Include="res\XmlTransform.bmp" />
+    <Image Include="res\XslTransform.bmp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

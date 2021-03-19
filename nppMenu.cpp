@@ -6,17 +6,7 @@
 #include <assert.h>
 
 std::vector<FuncItem> nppMenu;
-
-int menuitemCheckXML = -1,
-    menuitemValidation = -1,
-    /*menuitemPrettyPrint = -1,*/
-    menuitemCloseTag = -1,
-    menuitemAutoIndent = -1,
-    menuitemAttrAutoComplete = -1,
-    menuitemAutoXMLType = -1,
-    menuitemPreventXXE = -1,
-    menuitemAllowHuge = -1,
-    menuitemPrettyPrintAllFiles = -1;
+struct struct_menuitems menuitems = {};
 
 void ToggleMenuItem(int idx, bool& value) {
     value = !value;
@@ -27,12 +17,12 @@ void ToggleMenuItem(int idx, bool& value) {
 
 void insertXMLCheckTag() {
     dbgln("insertXMLCheckTag()");
-    ToggleMenuItem(menuitemCheckXML, config.doCheckXML);
+    ToggleMenuItem(menuitems.menuitemToggleCheckXML, config.doCheckXML);
 }
 
 void insertValidationTag() {
     dbgln("insertValidationTag()");
-    ToggleMenuItem(menuitemValidation, config.doValidation);
+    ToggleMenuItem(menuitems.menuitemToggleValidation, config.doValidation);
 }
 
 /*
@@ -47,7 +37,7 @@ void insertPrettyPrintTag() {
 
 void insertXMLCloseTag() {
     dbgln("insertXMLCloseTag()");
-    ToggleMenuItem(menuitemCloseTag, config.doCloseTag);
+    ToggleMenuItem(menuitems.menuitemToggleCloseTag, config.doCloseTag);
 }
 
 void insertTagAutoIndent() {
@@ -58,7 +48,7 @@ void insertTagAutoIndent() {
         Report::_printf_inf(L"This function is in alpha state and might disappear in future release.");
         tagAutoIndentWarningDisplayed = true;
     }
-    ToggleMenuItem(menuitemAutoIndent, config.doAutoIndent);
+    ToggleMenuItem(menuitems.menuitemToggleAutoIndent, config.doAutoIndent);
 }
 
 void insertAttributeAutoComplete() {
@@ -70,31 +60,33 @@ void insertAttributeAutoComplete() {
         insertAttributeAutoCompleteWarningDisplayed = true;
     }
 
-    ToggleMenuItem(menuitemAttrAutoComplete, config.doAttrAutoComplete);
+    ToggleMenuItem(menuitems.menuitemToggleAttrAutoComplete, config.doAttrAutoComplete);
 }
 
 void insertAutoXMLType() {
     dbgln("insertAutoXMLType()");
-    ToggleMenuItem(menuitemAutoXMLType, config.doAutoXMLType);
+    ToggleMenuItem(menuitems.menuitemToggleAutoXMLType, config.doAutoXMLType);
 }
 
 void togglePreventXXE() {
     dbgln("togglePreventXXE()");
-    ToggleMenuItem(menuitemPreventXXE, config.doPreventXXE);
+    ToggleMenuItem(menuitems.menuitemTogglePreventXXE, config.doPreventXXE);
 }
 
 void toggleAllowHuge() {
     dbgln("toggleAllowHuge()");
-    ToggleMenuItem(menuitemAllowHuge, config.doAllowHuge);
+    ToggleMenuItem(menuitems.menuitemToggleAllowHuge, config.doAllowHuge);
 }
 
 void togglePrettyPrintAllFiles() {
     dbgln("togglePrettyPrintAllFiles()");
-    ToggleMenuItem(menuitemPrettyPrintAllFiles, config.doPrettyPrintAllOpenFiles);
+    ToggleMenuItem(menuitems.menuitemTogglePrettyPrintAllFiles, config.doPrettyPrintAllOpenFiles);
 }
 
 void manualXMLCheck();
 void manualValidation();
+void previousError();
+void nextError();
 void insertXMLCheckTag();
 void insertXMLCloseTag();
 void insertAutoXMLType();
@@ -159,17 +151,19 @@ void initMenu() {
 
     dbgln("Building plugin menu entries... ", DBG_LEVEL::DBG_INFO);
 
-    menuitemCheckXML = addMenuItem(L"Enable XML syntax auto-check", insertXMLCheckTag, config.doCheckXML);
-    addMenuItem(L"Check XML syntax now", manualXMLCheck);
+    menuitems.menuitemToggleCheckXML = addMenuItem(L"Enable XML syntax auto-check", insertXMLCheckTag, config.doCheckXML);  // 0
+    menuitems.menuitemCheckXML = addMenuItem(L"Check XML syntax now", manualXMLCheck);   // 1
 
+    addMenuSeparator(); // 2
+    
+    menuitems.menuitemToggleValidation = addMenuItem(L"Enable auto-validation", insertValidationTag, config.doValidation);  // 3
+    menuitems.menuitemValidateXML = addMenuItem(L"Validate now", manualValidation, false, createShortcut('M')); // 4
+    menuitems.menuitemPreviousError = addMenuItem(L"Previous error", previousError);  // 5
+    menuitems.menuitemNextError = addMenuItem(L"Next error", nextError);  // 6
+    
     addMenuSeparator();
     
-    menuitemValidation = addMenuItem(L"Enable auto-validation", insertValidationTag, config.doValidation);
-    addMenuItem(L"Validate now", manualValidation, false, createShortcut('M'));
-    
-    addMenuSeparator();
-    
-    menuitemCloseTag = addMenuItem(L"Tag auto-close", insertXMLCloseTag, config.doCloseTag);
+    menuitems.menuitemToggleCloseTag = addMenuItem(L"Tag auto-close", insertXMLCloseTag, config.doCloseTag);    // 6
     
     /*
     Report::strcpy(funcItem[menuentry]._itemName, L"Tag auto-indent");
@@ -188,46 +182,46 @@ void initMenu() {
     */
     addMenuSeparator();
 
-    menuitemAutoXMLType = addMenuItem(L"Set XML type automatically", insertAutoXMLType, config.doAutoXMLType);
-    menuitemPreventXXE = addMenuItem(L"Prevent XXE", togglePreventXXE, config.doPreventXXE);
-    menuitemAllowHuge = addMenuItem(L"Allow huge files", toggleAllowHuge, config.doAllowHuge);
+    menuitems.menuitemToggleAutoXMLType = addMenuItem(L"Set XML type automatically", insertAutoXMLType, config.doAutoXMLType);
+    menuitems.menuitemTogglePreventXXE = addMenuItem(L"Prevent XXE", togglePreventXXE, config.doPreventXXE);
+    menuitems.menuitemToggleAllowHuge = addMenuItem(L"Allow huge files", toggleAllowHuge, config.doAllowHuge);
 
     addMenuSeparator();
 
-    addMenuItem(L"Pretty print", nppPrettyPrintXmlFast, false, createShortcut('B'));
-    addMenuItem(L"Pretty print (indent attributes)", nppPrettyPrintXmlAttrFast, false, createShortcut('A'));
-    addMenuItem(L"Pretty print - indent only", nppPrettyPrintXmlIndentOnlyFast);
-    addMenuItem(L"Linearize", nppLinearizeXmlFast, false, createShortcut('L'));
-    menuitemPrettyPrintAllFiles = addMenuItem(L"Apply to all open files", togglePrettyPrintAllFiles, config.doPrettyPrintAllOpenFiles);
+    menuitems.menuitemPrettyPrint = addMenuItem(L"Pretty print", nppPrettyPrintXmlFast, false, createShortcut('B'));
+    menuitems.menuitemPrettyPrintIndentAttr = addMenuItem(L"Pretty print - indent attributes", nppPrettyPrintXmlAttrFast, false, createShortcut('A'));
+    menuitems.menuitemPrettyPrintIndentOnly = addMenuItem(L"Pretty print - indent only", nppPrettyPrintXmlIndentOnlyFast);
+    menuitems.menuitemLinearize = addMenuItem(L"Linearize", nppLinearizeXmlFast, false, createShortcut('L'));
+    menuitems.menuitemTogglePrettyPrintAllFiles = addMenuItem(L"Apply to all open files", togglePrettyPrintAllFiles, config.doPrettyPrintAllOpenFiles);
     #ifdef _DEBUG
-    addMenuItem(L"Tokenize (debug)", nppTokenizeXmlFast, false);
+    menuitems.menuitemTokenize = addMenuItem(L"Tokenize (debug)", nppTokenizeXmlFast, false);
     #endif
 
     addMenuSeparator();
 
-    addMenuItem(L"Current XML Path", getCurrentXPathStd);
-    addMenuItem(L"Current XML Path with predicates", getCurrentXPathPredicate, false, createShortcut('P'));
-    addMenuItem(L"Evaluate XPath expression...", evaluateXPath);
+    menuitems.menuitemCurrentXMLPath = addMenuItem(L"Current XML Path", getCurrentXPathStd);
+    menuitems.menuitemCurrentXMLPathNS = addMenuItem(L"Current XML Path with predicates", getCurrentXPathPredicate, false, createShortcut('P'));
+    menuitems.menuitemEvalXPath = addMenuItem(L"Evaluate XPath expression...", evaluateXPath);
 
     addMenuSeparator();
 
-    addMenuItem(L"XSL Transformation...", performXSLTransform);
+    menuitems.menuitemXSLTransform = addMenuItem(L"XSL Transformation...", performXSLTransform);
 
     addMenuSeparator();
 
-    addMenuItem(L"Escape characters in selection (<> → &&lt;&&gt;)", nppConvertXML2Text);
-    addMenuItem(L"Unescape characters in selection (&&lt;&&gt; → <>)", nppConvertText2XML);
+    menuitems.menuitemEscape = addMenuItem(L"Escape characters in selection (<> → &&lt;&&gt;)", nppConvertXML2Text);
+    menuitems.menuitemUnescape = addMenuItem(L"Unescape characters in selection (&&lt;&&gt; → <>)", nppConvertText2XML);
 
     addMenuSeparator();
 
-    addMenuItem(L"Comment selection", commentSelection, false, createShortcut('C'));
-    addMenuItem(L"Uncomment selection", uncommentSelection, false, createShortcut('R'));
+    menuitems.menuitemComment = addMenuItem(L"Comment selection", commentSelection, false, createShortcut('C'));
+    menuitems.menuitemUncomment = addMenuItem(L"Uncomment selection", uncommentSelection, false, createShortcut('R'));
 
     addMenuSeparator();
 
-    addMenuItem(L"Options...", optionsDlg);
-    addMenuItem(L"Debug window...", showDebugDlg);
-    addMenuItem(L"About XML Tools / Donate...", aboutBox);
+    menuitems.menuitemOptions = addMenuItem(L"Options...", optionsDlg);
+    menuitems.menuitemDebugWindow = addMenuItem(L"Debug window...", showDebugDlg);
+    menuitems.menuitemAbout = addMenuItem(L"About XML Tools / Donate...", aboutBox);
 
     dbgln("done.", DBG_LEVEL::DBG_INFO);
 }

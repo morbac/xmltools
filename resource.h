@@ -34,20 +34,38 @@
 #define IDC_EXTLIBS_URL4                2019
 #define IDC_EXTLIBS_URL2                2019
 #define IDC_ABOUTTEXT                   2019
+#define IDB_NEXT                        2019
 #define IDC_ABOUTURL                    2020
+#define IDB_PREV                        2020
+#define IDB_CHECKXML                    2021
 #define IDC_CHKENABLEPROXY              2022
+#define IDB_VALIDATEXML                 2022
 #define IDC_EDITPROXYHOST               2023
 #define IDC_EDITPROXYPORT               2024
+#define IDB_COMMENT                     2024
 #define IDC_EDITPROXYUSERNAME           2025
+#define IDB_CURRENTXPATH                2025
 #define IDC_EDITPROXYPASSWORD           2026
+#define IDB_CURRENTXPATHNS              2026
 #define IDC_BUTTON1                     2027
+#define IDB_ESCAPE                      2028
 #define IDC_EDITDEBUG                   2029
+#define IDB_EVALUATEXPATH               2029
 #define IDC_CHKPROHIBITDTD              2030
+#define IDB_LINEARIZE                   2030
 #define IDC_EDIT_NAMESPACE              2031
+#define IDB_OPTIONS                     2031
 #define IDC_STATIC_XPATH                2032
+#define IDB_PRETTYPRINT                 2032
 #define IDC_STATIC_NS                   2033
+#define IDB_PRETTYPRINTINDENTATTR       2033
 #define IDC_STATIC_INFOS                2034
+#define IDB_PRETTYPRINTINDENTONLY       2034
+#define IDB_UNCOMMENT                   2035
 #define IDC_CHKANNOTATIONS              2036
+#define IDB_UNESCAPE                    2036
+#define IDB_XMLTRANSFORM                2037
+#define IDB_XSLTRANSFORM                2037
 #define IDC_EDITANNOTATIONSTYLE         2038
 #define IDC_BTNVIEWANNOTATION           2039
 #define IDC_CHKLT                       2040
@@ -70,7 +88,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        2017
+#define _APS_NEXT_RESOURCE_VALUE        2038
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         2057
 #define _APS_NEXT_SYMED_VALUE           2000

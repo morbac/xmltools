@@ -56,6 +56,46 @@ BEGIN
     END
 END
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_NEXT                BITMAP                  "res\\Next.bmp"
+
+IDB_PREV                BITMAP                  "res\\Previous.bmp"
+
+IDB_CHECKXML            BITMAP                  "res\\CheckXml.bmp"
+
+IDB_VALIDATEXML         BITMAP                  "res\\ValidateXml.bmp"
+
+IDB_COMMENT             BITMAP                  "res\\Comment.bmp"
+
+IDB_CURRENTXPATH        BITMAP                  "res\\CurrentXPath.bmp"
+
+IDB_CURRENTXPATHNS      BITMAP                  "res\\CurrentXPathNS.bmp"
+
+IDB_ESCAPE              BITMAP                  "res\\EscapeXml.bmp"
+
+IDB_EVALUATEXPATH       BITMAP                  "res\\EvaluateXPath.bmp"
+
+IDB_LINEARIZE           BITMAP                  "res\\Linearize.bmp"
+
+IDB_OPTIONS             BITMAP                  "res\\Options.bmp"
+
+IDB_PRETTYPRINT         BITMAP                  "res\\PrettyPrint.bmp"
+
+IDB_PRETTYPRINTINDENTATTR BITMAP                  "res\\PrettyPrintAttr.bmp"
+
+IDB_PRETTYPRINTINDENTONLY BITMAP                  "res\\PrettyPrintIndentOnly.bmp"
+
+IDB_UNCOMMENT           BITMAP                  "res\\Uncomment.bmp"
+
+IDB_UNESCAPE            BITMAP                  "res\\UnescapeXml.bmp"
+
+IDB_XSLTRANSFORM        BITMAP                  "res\\XslTransform.bmp"
+
 #endif    // French (France) resources
 /////////////////////////////////////////////////////////////////////////////
 
