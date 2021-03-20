@@ -17,10 +17,22 @@ struct XSLTransformResultType {
 };
 
 struct ErrorEntryType {
-    long line;           // 0-based line number having the error
-    long linepos;        // 0-based position in line
-    long filepos;        // 0-based position in whole stream
+    bool positioned;     // true if position is revelant
+    size_t line;         // 0-based line number having the error
+    size_t linepos;      // 0-based position in line
+    size_t filepos;      // 0-based position in whole stream
     std::wstring reason; // error description
+};
+
+struct ErrorEntryDesc {
+    HWND view;
+    bool positioned;
+    size_t line;
+    size_t linepos;
+    size_t filepos;
+    size_t numlines;
+    size_t maxannotwidth;
+    size_t width;
 };
 
 enum XmlCapabilityType : int {

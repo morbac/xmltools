@@ -65,8 +65,10 @@ static char THIS_FILE[] = __FILE__;
 const wchar_t PLUGIN_NAME[] = L"XML Tools";
 toolbarIcons  tbCheckXML;
 toolbarIcons  tbValidateXML;
+toolbarIcons  tbFirstError;
 toolbarIcons  tbPrevError;
 toolbarIcons  tbNextError;
+toolbarIcons  tbLastError;
 toolbarIcons  tbPrettyPrint;
 toolbarIcons  tbPrettyPrintIndentAttr;
 toolbarIcons  tbPrettyPrintIndentOnly;
@@ -183,7 +185,7 @@ HMODULE GetCurrentModule() {
 
 static LRESULT CALLBACK KeyboardProc(int ncode, WPARAM wparam, LPARAM lparam) {
   if (ncode == HC_ACTION && wparam == VK_ESCAPE) {
-    clearAnnotations();
+    clearErrors();
   }
 
   return CallNextHookEx(hook, ncode, wparam, lparam); // pass control to next hook in the hook chain
@@ -204,6 +206,11 @@ void onToolBarReady() {
         ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemValidateXML]._cmdID, (LPARAM)&tbValidateXML);
     }
 
+    if (xmltoolsoptions.tbFirstError) {
+        tbFirstError.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_FIRST), IMAGE_BITMAP, 0, 0, style);
+        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemFirstError]._cmdID, (LPARAM)&tbFirstError);
+    }
+
     if (xmltoolsoptions.tbPrevError) {
         tbPrevError.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_PREV), IMAGE_BITMAP, 0, 0, style);
         ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemPreviousError]._cmdID, (LPARAM)&tbPrevError);
@@ -212,6 +219,11 @@ void onToolBarReady() {
     if (xmltoolsoptions.tbNextError) {
         tbNextError.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_NEXT), IMAGE_BITMAP, 0, 0, style);
         ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemNextError]._cmdID, (LPARAM)&tbNextError);
+    }
+
+    if (xmltoolsoptions.tbLastError) {
+        tbLastError.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_LAST), IMAGE_BITMAP, 0, 0, style);
+        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemLastError]._cmdID, (LPARAM)&tbLastError);
     }
 
     if (xmltoolsoptions.tbPrettyPrint) {
@@ -329,6 +341,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
           hook = SetWindowsHookEx(WH_KEYBOARD, KeyboardProc, (HINSTANCE)GetCurrentModule(), ::GetCurrentThreadId());
         }
       }
+      break;
     }
     case NPPN_FILEBEFORESAVE: {
       dbgln("NPP Event: NPPN_FILEBEFORESAVE");
@@ -359,13 +372,12 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
         //if (doAutoIndent && lastChar == '\n') tagAutoIndent();
         //if (doAttrAutoComplete && lastChar == '"') attributeAutoComplete();
       }
-
       break;
     }
     case SCN_MODIFIED: {
       if ((notifyCode->modificationType == SC_MOD_INSERTTEXT || notifyCode->modificationType == SC_MOD_DELETETEXT) && hasCurrentDocAnnotations()) {
         dbgln(Report::str_format("NPP Event: SCN_MODIFIED [%d]", notifyCode->modificationType).c_str());
-        clearAnnotations();
+        clearErrors();
       }
       break;
     }
@@ -391,9 +403,10 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       }
       break;
     }
-    case NPPN_TBMODIFICATION:
-        onToolBarReady();
-        break;
+    case NPPN_TBMODIFICATION: {
+      onToolBarReady();
+      break;
+    }
     case NPPN_SHUTDOWN: {
       CoUninitialize();
 

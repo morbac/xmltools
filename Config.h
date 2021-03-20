@@ -48,8 +48,10 @@ struct struct_xmltoolsoptions {
 
 	bool tbCheckXML = true;
 	bool tbValidateXML = true;
+	bool tbFirstError = true;
 	bool tbPrevError = true;
 	bool tbNextError = true;
+	bool tbLastError = true;
 	bool tbPrettyPrint = true;
 	bool tbPrettyPrintIndentAttr = true;
 	bool tbPrettyPrintIndentOnly = true;
@@ -83,8 +85,10 @@ struct struct_menuitems {
 
 	int menuitemCheckXML = -1;
 	int menuitemValidateXML = -1;
+	int menuitemFirstError = -1;
 	int menuitemPreviousError = -1;
 	int menuitemNextError = -1;
+	int menuitemLastError = -1;
 	int menuitemPrettyPrint = -1;
 	int menuitemPrettyPrintIndentAttr = -1;
 	int menuitemPrettyPrintIndentOnly = -1;

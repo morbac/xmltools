@@ -67,8 +67,10 @@ void XmlToolsConfig::Read(std::wstring _configPath) {
 
 	ReadBool(L"tbCheckXML", xmltoolsoptions.tbCheckXML);
 	ReadBool(L"tbValidateXML", xmltoolsoptions.tbValidateXML);
+	ReadBool(L"tbFirstError", xmltoolsoptions.tbFirstError);
 	ReadBool(L"tbPrevError", xmltoolsoptions.tbPrevError);
 	ReadBool(L"tbNextError", xmltoolsoptions.tbNextError);
+	ReadBool(L"tbLastError", xmltoolsoptions.tbLastError);
 	ReadBool(L"tbPrettyPrint", xmltoolsoptions.tbPrettyPrint);
 	ReadBool(L"tbPrettyPrintIndentAttr", xmltoolsoptions.tbPrettyPrintIndentAttr);
 	ReadBool(L"tbPrettyPrintIndentOnly", xmltoolsoptions.tbPrettyPrintIndentOnly);
@@ -136,8 +138,10 @@ void XmlToolsConfig::Write() {
 
 	WriteBool(L"tbCheckXML", xmltoolsoptions.tbCheckXML);
 	WriteBool(L"tbValidateXML", xmltoolsoptions.tbValidateXML);
+	WriteBool(L"tbFirstError", xmltoolsoptions.tbFirstError);
 	WriteBool(L"tbPrevError", xmltoolsoptions.tbPrevError);
 	WriteBool(L"tbNextError", xmltoolsoptions.tbNextError);
+	WriteBool(L"tbLastError", xmltoolsoptions.tbLastError);
 	WriteBool(L"tbPrettyPrint", xmltoolsoptions.tbPrettyPrint);
 	WriteBool(L"tbPrettyPrintIndentAttr", xmltoolsoptions.tbPrettyPrintIndentAttr);
 	WriteBool(L"tbPrettyPrintIndentOnly", xmltoolsoptions.tbPrettyPrintIndentOnly);

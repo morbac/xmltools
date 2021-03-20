@@ -85,8 +85,10 @@ void togglePrettyPrintAllFiles() {
 
 void manualXMLCheck();
 void manualValidation();
+void firstError();
 void previousError();
 void nextError();
+void lastError();
 void insertXMLCheckTag();
 void insertXMLCloseTag();
 void insertAutoXMLType();
@@ -151,19 +153,21 @@ void initMenu() {
 
     dbgln("Building plugin menu entries... ", DBG_LEVEL::DBG_INFO);
 
-    menuitems.menuitemToggleCheckXML = addMenuItem(L"Enable XML syntax auto-check", insertXMLCheckTag, config.doCheckXML);  // 0
-    menuitems.menuitemCheckXML = addMenuItem(L"Check XML syntax now", manualXMLCheck);   // 1
+    menuitems.menuitemToggleCheckXML = addMenuItem(L"Enable XML syntax auto-check", insertXMLCheckTag, config.doCheckXML);
+    menuitems.menuitemCheckXML = addMenuItem(L"Check XML syntax now", manualXMLCheck);
 
-    addMenuSeparator(); // 2
+    addMenuSeparator();
     
-    menuitems.menuitemToggleValidation = addMenuItem(L"Enable auto-validation", insertValidationTag, config.doValidation);  // 3
-    menuitems.menuitemValidateXML = addMenuItem(L"Validate now", manualValidation, false, createShortcut('M')); // 4
-    menuitems.menuitemPreviousError = addMenuItem(L"Previous error", previousError);  // 5
-    menuitems.menuitemNextError = addMenuItem(L"Next error", nextError);  // 6
+    menuitems.menuitemToggleValidation = addMenuItem(L"Enable auto-validation", insertValidationTag, config.doValidation);
+    menuitems.menuitemValidateXML = addMenuItem(L"Validate now", manualValidation, false, createShortcut('M'));
+    menuitems.menuitemFirstError = addMenuItem(L"First error", firstError);
+    menuitems.menuitemPreviousError = addMenuItem(L"Previous error", previousError);
+    menuitems.menuitemNextError = addMenuItem(L"Next error", nextError);
+    menuitems.menuitemLastError = addMenuItem(L"Last error", lastError);
     
     addMenuSeparator();
     
-    menuitems.menuitemToggleCloseTag = addMenuItem(L"Tag auto-close", insertXMLCloseTag, config.doCloseTag);    // 6
+    menuitems.menuitemToggleCloseTag = addMenuItem(L"Tag auto-close", insertXMLCloseTag, config.doCloseTag);
     
     /*
     Report::strcpy(funcItem[menuentry]._itemName, L"Tag auto-indent");

@@ -197,9 +197,13 @@ BOOL COptionsDlg::OnInitDialog() {
   pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
   pTmpOption = new CMFCPropertyGridProperty(L"Validate now", COleVariant((short)(xmltoolsoptions.tbValidateXML ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Validate now` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbCheckXML);
   pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"First error", COleVariant((short)(xmltoolsoptions.tbFirstError ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `First error` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbFirstError);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
   pTmpOption = new CMFCPropertyGridProperty(L"Previous error", COleVariant((short)(xmltoolsoptions.tbPrevError ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Previous error` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbPrevError);
   pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
   pTmpOption = new CMFCPropertyGridProperty(L"Next error", COleVariant((short)(xmltoolsoptions.tbNextError ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Next error` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbNextError);
+  pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Last error", COleVariant((short)(xmltoolsoptions.tbLastError ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Last error` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbLastError);
   pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
   pTmpOption = new CMFCPropertyGridProperty(L"Pretty print", COleVariant((short)(xmltoolsoptions.tbPrettyPrint ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Pretty print` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbPrettyPrint);
   pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
@@ -300,7 +304,7 @@ void COptionsDlg::OnBnClickedBtnviewannotation() {
   xmltoolsoptions.annotationStyle = this->pAnnotationStyleProperty->GetValue().intVal;
 
   testAnnotation = true;
-  clearAnnotations();
+  clearErrors();
   displayXMLError(L"This is an annotation example.");
 
   xmltoolsoptions.errorDisplayMode = prevStatus;
@@ -309,7 +313,7 @@ void COptionsDlg::OnBnClickedBtnviewannotation() {
 
 BOOL COptionsDlg::OnCommand(WPARAM wParam, LPARAM lParam) {
   if (testAnnotation) {
-    clearAnnotations();
+    clearErrors();
   }
 
   return CDialogEx::OnCommand(wParam, lParam);

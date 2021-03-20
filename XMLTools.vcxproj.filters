@@ -258,5 +258,11 @@
     <Image Include="res\XslTransform.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\First.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Last.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

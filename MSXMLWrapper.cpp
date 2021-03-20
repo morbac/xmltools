@@ -39,6 +39,7 @@ void MSXMLWrapper::addErrorToVector(IXMLDOMParseError2* pXMLErr, const wchar_t* 
     long linepos = 0;
     long filepos = 0;
     BSTR bstrReason = NULL;
+    ErrorEntryType err;
 
     if (pXMLErr != NULL) {
         CHK_HR(pXMLErr->get_line(&line));
@@ -51,12 +52,21 @@ void MSXMLWrapper::addErrorToVector(IXMLDOMParseError2* pXMLErr, const wchar_t* 
             linepos = 1;
         }
 
-        this->errors.push_back({
-            line,
-            linepos,
-            filepos+1,
-            std::wstring((wchar_t*)bstr_t(bstrReason))
-        });
+        if (line >= 0 && linepos >= 0 && filepos >= 0) {
+            err.positioned = TRUE;
+            err.line = (size_t) line;
+            err.linepos = (size_t)linepos;
+            err.filepos = (size_t)filepos + 1;
+        }
+        else {
+            err.positioned = FALSE;
+            err.line = 0;
+            err.linepos = 0;
+            err.filepos = 0;
+        }
+        err.reason = std::wstring((wchar_t*)bstr_t(bstrReason));
+        
+        this->errors.push_back(err);
     }
 
 CleanUp:
@@ -182,19 +192,21 @@ bool MSXMLWrapper::checkValidity(const char* xml, size_t size, std::wstring sche
                 }
                 else {
                     this->errors.push_back({
-                        -1,
-                        -1,
-                        -1,
+                        FALSE,
+                        0,
+                        0,
+                        0,
                         L"Invalid schema or missing namespace."
-                        });
+                    });
                     res = false;
                 }
             }
             else {
                 this->errors.push_back({
-                        -1,
-                        -1,
-                        -1,
+                        FALSE,
+                        0,
+                        0,
+                        0,
                         L"The referenced schema is detected as being invalid. Please fix it before using it as validation schema."
                     });
                 res = false;
@@ -268,9 +280,10 @@ std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, s
             this->buildErrorsVector(pXMLErr);
 
             this->errors.push_back({
-                -1,
-                -1,
-                -1,
+                FALSE,
+                0,
+                0,
+                0,
                 L"Error: error on XPath expression, or missing namespace definition."
             });
 
@@ -447,9 +460,10 @@ bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xsl
 
         if (this->errors.size() == 0) {
             this->errors.push_back({
-                -1,
-                -1,
-                -1,
+                FALSE,
+                0,
+                0,
+                0,
                 L"An error occurred during current source loading. Please check source validity. Transformation aborted."
              });
         }
@@ -550,9 +564,10 @@ bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xsl
                         }
                         else {
                             this->errors.push_back({
-                                -1,
-                                -1,
-                                -1,
+                                FALSE,
+                                0,
+                                0,
+                                0,
                                 L"An unexpected error occurred during XSL transformation"
                             });
                             res = false;
@@ -570,9 +585,10 @@ bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xsl
                 }
                 else {
                     this->errors.push_back({
-                        -1,
-                        -1,
-                        -1,
+                        FALSE,
+                        0,
+                        0,
+                        0,
                         L"An error occurred during XSL transformation"
                     });
                     res = false;
@@ -580,9 +596,10 @@ bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xsl
             }
             else {
                 this->errors.push_back({
-                    -1,
-                    -1,
-                    -1,
+                    FALSE,
+                    0,
+                    0,
+                    0,
                     L"The XSL stylesheet is not valid. Transformation aborted."
                 });
                 res = false;
@@ -601,17 +618,19 @@ bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xsl
         if (this->errors.size() == 0) {
             if (currentDataIsXml) {
                 this->errors.push_back({
-                    -1,
-                    -1,
-                    -1,
+                    FALSE,
+                    0,
+                    0,
+                    0,
                     L"An error occurred during XSL loading. Please check XSL validity. Transformation aborted."
                 });
             }
             else {
                 this->errors.push_back({
-                    -1,
-                    -1,
-                    -1,
+                    FALSE,
+                    0,
+                    0,
+                    0,
                     L"An error occurred during XML loading. Please check XML validity. Transformation aborted."
                 });
             }

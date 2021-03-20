@@ -30,7 +30,7 @@ int performXMLCheck(int informIfNoError) {
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
     HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
 
-    clearAnnotations(hCurrentEditView);
+    clearErrors(hCurrentEditView);
 
     currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 

@@ -424,6 +424,8 @@
     <Image Include="res\empty.bmp" />
     <Image Include="res\EscapeXml.bmp" />
     <Image Include="res\EvaluateXPath.bmp" />
+    <Image Include="res\First.bmp" />
+    <Image Include="res\Last.bmp" />
     <Image Include="res\Linearize.bmp" />
     <Image Include="res\Next.bmp" />
     <Image Include="res\Options.bmp" />

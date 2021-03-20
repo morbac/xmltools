@@ -96,6 +96,10 @@ IDB_UNESCAPE            BITMAP                  "res\\UnescapeXml.bmp"
 
 IDB_XSLTRANSFORM        BITMAP                  "res\\XslTransform.bmp"
 
+IDB_FIRST               BITMAP                  "res\\First.bmp"
+
+IDB_LAST                BITMAP                  "res\\Last.bmp"
+
 #endif    // French (France) resources
 /////////////////////////////////////////////////////////////////////////////
 

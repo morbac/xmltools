@@ -29,11 +29,10 @@
 #define XMLTOOLS_VERSION_STATUS L"unicode Win32"
 #endif
 
-extern void displayXMLError(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDesc = NULL, bool doCenterOnPos = true);
-extern void displayXMLError(std::wstring wmsg, HWND view = NULL, size_t line = NULL, size_t linepos = NULL, size_t filepos = NULL, bool doCenterOnPos = true);
-extern void displayXMLErrors(IXMLDOMParseError* pXMLErr, HWND view, const wchar_t* szDesc = NULL);
+extern void displayXMLError(std::wstring wmsg, HWND view = NULL, size_t line = NULL, size_t linepos = NULL, size_t filepos = NULL);
 extern void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view = NULL, const wchar_t* szDesc = NULL);
-extern void clearAnnotations(HWND view = NULL);
+extern void clearErrors(HWND view = NULL);
+extern void registerError(ErrorEntryDesc err);
 
 void savePluginParams();
 
