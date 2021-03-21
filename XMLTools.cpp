@@ -112,6 +112,7 @@ int performXMLCheck(int informIfNoError);
 void initializePlugin();
 void savePluginParams();
 
+void clearBufferAnnnotation();
 void deleteAnnotations();
 
 /////////////////////////////////////////////////////////////////////////////
@@ -403,6 +404,10 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       }
       break;
     }
+    case NPPN_FILEBEFORECLOSE: {
+        clearBufferAnnnotation();
+        break;
+    }
     case NPPN_TBMODIFICATION: {
       onToolBarReady();
       break;
@@ -434,12 +439,19 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 void optionsDlg() {
   dbgln("optionsDlg()");
 
+#if false
   COptionsDlg* dlg = new COptionsDlg(NULL);
   if (dlg->DoModal() == IDOK) {
-    savePluginParams();
+      savePluginParams();
 
-    updateProxyConfig();
+      updateProxyConfig();
   }
+#else
+  COptionsDlg* dlg = new COptionsDlg(NULL);
+  dlg->Create(COptionsDlg::IDD, NULL);
+  dlg->ShowWindow(SW_SHOW);
+#endif
+
 }
 
 void updateProxyConfig() {

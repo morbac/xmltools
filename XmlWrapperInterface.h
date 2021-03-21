@@ -36,6 +36,7 @@ struct ErrorEntryDesc {
     size_t start;        // start position of the annotation, used to hightlight the annotations
                          // by default the value is 0, but might change if several annotations on a same line
     size_t length;       // length of the annotation
+    int style;           // annotation style
 };
 
 enum XmlCapabilityType : int {

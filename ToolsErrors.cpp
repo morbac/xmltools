@@ -10,8 +10,8 @@
 #include <map>
 
 std::map<LRESULT, bool> hasAnnotations;
-std::vector<ErrorEntryDesc> xmlErrors;
-size_t currentError = 0;
+std::map<LRESULT, std::vector<ErrorEntryDesc>> xmlErrors;
+std::map<LRESULT, size_t> currentError;
 
 // tricky way of centering text on given vertical and horizontal position
 // for vertical position, we get the contol size and estimate the number
@@ -83,10 +83,15 @@ void centerOnPosition(HWND view, size_t line, size_t col) {
 }
 
 void highlightCurrentError() {
+    LRESULT bufferid = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
+    size_t c = currentError[bufferid];
+    dbgln(Report::str_format("highlightCurrentError[%d] %d", bufferid, c).c_str());
+
     if (xmlErrors.size() == 0) return;
 
-    // @todo To be implemented
-    ErrorEntryDesc err = xmlErrors[currentError];
+    std::vector<ErrorEntryDesc> errors = xmlErrors[bufferid];
+    if (errors.size() == 0) return;
+    ErrorEntryDesc err = errors[c];
 
     if (err.positioned) {
         centerOnPosition(err.view, err.line, err.numlines, err.maxannotwidth, err.width);
@@ -95,34 +100,108 @@ void highlightCurrentError() {
             ::SendMessage(err.view, SCI_GOTOPOS, err.filepos - 1, 0);
         }
     }
+
+    if (xmltoolsoptions.errorDisplayMode.compare(L"Annotation") == 0) {
+        int stylesLength;
+        char* styles = NULL;
+
+        std::map<size_t, size_t> annotationsLength;
+        std::map<size_t, char*> annotations;
+
+        // get all annotations length
+        for (std::vector<ErrorEntryDesc>::iterator it = errors.begin(); it != errors.end(); ++it) {
+            stylesLength = (int) ::SendMessage(it->view, SCI_ANNOTATIONGETSTYLES, it->line - 1, NULL);
+            if (stylesLength > annotationsLength[it->line]) {
+                annotationsLength[it->line] = stylesLength;
+            }
+        }
+
+        // allocate styles buffer
+        for (std::map<size_t, size_t>::iterator it = annotationsLength.begin(); it != annotationsLength.end(); ++it) {
+            annotations[it->first] = new char[it->second];
+            memset(annotations[it->first], '\0', it->second*sizeof(char));
+        }
+
+        // restore default annotation styles
+        for (std::vector<ErrorEntryDesc>::iterator it = errors.begin(); it != errors.end(); ++it) {
+            ::SendMessage(it->view, SCI_ANNOTATIONGETSTYLES, it->line - 1, reinterpret_cast<LPARAM>(annotations[it->line]));
+            memset(annotations[it->line] + it->start, (char) it->style, it->length*sizeof(char));
+            ::SendMessage(it->view, SCI_ANNOTATIONSETSTYLES, it->line - 1, reinterpret_cast<LPARAM>(annotations[it->line]));
+        }
+
+        // set hightlight style
+        if (annotations[err.line] != NULL) {
+            memset(annotations[err.line] + err.start, (char) xmltoolsoptions.annotationHighlightStyle, err.length*sizeof(char));
+            ::SendMessage(err.view, SCI_ANNOTATIONSETSTYLES, err.line - 1, reinterpret_cast<LPARAM>(annotations[err.line]));
+        }
+
+        // unalloc styles buffers
+        for (std::map<size_t, char*>::iterator it = annotations.begin(); it != annotations.end(); ++it) {
+            if (it->second != NULL) {
+                delete[] (it->second);
+            }
+        }
+    }
 }
 
-void firstError() {
-    if (xmlErrors.size() == 0) return;
+void highlightFirstError() {
+    LRESULT bufferid = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
+    dbgln(Report::str_format("highlightFirstError[%d]", bufferid).c_str());
 
-    currentError = 0;
+    if (xmlErrors[bufferid].size() == 0) return;
+
+    currentError[bufferid] = 0;
     highlightCurrentError();
 }
 
-void previousError() {
-    if (xmlErrors.size() == 0) return;
+void highlightPreviousError() {
+    LRESULT bufferid = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
+    dbgln(Report::str_format("highlightPreviousError[%d]", bufferid).c_str());
 
-    if (currentError > 0) --currentError;
+    if (xmlErrors[bufferid].size() == 0) return;
+
+    if (currentError[bufferid] > 0) --currentError[bufferid];
     highlightCurrentError();
 }
 
-void nextError() {
-    if (xmlErrors.size() == 0) return;
+void highlightNextError() {
+    LRESULT bufferid = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
+    dbgln(Report::str_format("highlightNextError[%d]", bufferid).c_str());
 
-    if (currentError < xmlErrors.size() - 1) ++currentError;
+    if (xmlErrors[bufferid].size() == 0) return;
+
+    if (currentError[bufferid] < xmlErrors[bufferid].size() - 1) ++currentError[bufferid];
     highlightCurrentError();
 }
 
-void lastError() {
-    if (xmlErrors.size() == 0) return;
+void highlightLastError() {
+    LRESULT bufferid = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
+    dbgln(Report::str_format("highlightLastError[%d]", bufferid).c_str());
 
-    currentError = xmlErrors.size() - 1;
+    if (xmlErrors[bufferid].size() == 0) return;
+
+    currentError[bufferid] = xmlErrors[bufferid].size() - 1;
     highlightCurrentError();
+}
+
+void highlightError(int num) {
+    LRESULT bufferid = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
+    dbgln(Report::str_format("highlightError[%d] %d", bufferid, num).c_str());
+
+    if (num >= 0 && num < xmlErrors[bufferid].size()) {
+        currentError[bufferid] = num;
+        highlightCurrentError();
+    }
+}
+
+void clearBufferAnnnotation() {
+    LRESULT bufferid = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
+    dbgln(Report::str_format("clearBufferAnnnotation[%d]", bufferid).c_str());
+
+    currentError.erase(bufferid);
+    xmlErrors[bufferid].clear();
+    xmlErrors.erase(bufferid);
+    hasAnnotations.erase(bufferid);
 }
 
 void deleteAnnotations() {
@@ -145,8 +224,9 @@ ErrorEntryDesc displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t
     LRESULT bufferid = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
     UniMode encoding = UniMode(::SendMessage(nppData._nppHandle, NPPM_GETBUFFERENCODING, bufferid, 0));
     ErrorEntryDesc res;
-
-    res.view = view;
+    
+    res.view = view; 
+    res.style = xmltoolsoptions.annotationStyle;
 
     if (xmltoolsoptions.errorDisplayMode.compare(L"Annotation") == 0) {
         if (line == NULL) {
@@ -205,7 +285,9 @@ ErrorEntryDesc displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t
         }
 
         // let's see if another annotation is already present on line
-        std::string wannot = "";
+        res.start = 0;              // must be computed
+        std::string msg = "";       // must be built
+
         int annotationLength = (int) ::SendMessage(view, SCI_ANNOTATIONGETTEXT, line - 1, NULL);
         if (annotationLength > 0) {
             char* annotationText = new char[annotationLength+1];
@@ -213,21 +295,43 @@ ErrorEntryDesc displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t
             ::SendMessage(view, SCI_ANNOTATIONGETTEXT, line - 1, reinterpret_cast<LPARAM>(annotationText));
 
             if (annotationText != NULL) {
-                wannot.append(annotationText).append("\r\n");
-                res.start = wannot.length();
+                msg.append(annotationText);
+                msg.append("\r\n");
+
+                // we have appended a "\r\n" at the end of existing annotation
+                // we must apply that modification to the err.length of ErrorEntryDesc
+                std::vector<ErrorEntryDesc> errors = xmlErrors[bufferid];
+                for (std::vector<ErrorEntryDesc>::iterator it = errors.begin(); it != errors.end(); ++it) {
+                    if (it->line == line && it->start + it->length == annotationLength) {
+                        it->length += strlen("\r\n");
+                        break;
+                    }
+                }
+                xmlErrors[bufferid] = errors;
+                res.start = msg.length();
                 delete[] annotationText;
             }
         }
 
-        std::string msg = Report::castChar(wmsg, encoding);
-        res.length = msg.length();
-        ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>((wannot + msg).c_str()));
-        wannot.clear();
+        std::string newmsg = Report::castChar(wmsg, encoding);
+        res.length = newmsg.length();
+        msg.append(newmsg);
+        newmsg.clear();
 
-        ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, line - 1, xmltoolsoptions.annotationStyle);
+        char* styles = new char[res.start + res.length];
+        memset(styles, xmltoolsoptions.annotationStyle, res.start + res.length);
+        int stylesLength = (int) ::SendMessage(view, SCI_ANNOTATIONGETSTYLES, line - 1, reinterpret_cast<LPARAM>(styles));
+
+        ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(msg.c_str()));
+
+        memset(styles + res.start, xmltoolsoptions.annotationStyle, res.length);
+
+        ::SendMessage(view, SCI_ANNOTATIONSETSTYLES, line - 1, reinterpret_cast<LPARAM>(styles));
         ::SendMessage(view, SCI_ANNOTATIONSETVISIBLE, 1, NULL);
 
-        hasAnnotations[::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0)] = true;
+        delete[] styles;
+
+        hasAnnotations[bufferid] = true;
 
         res.positioned = TRUE;
         res.line = line;
@@ -240,6 +344,8 @@ ErrorEntryDesc displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t
             res.width = (size_t) ::SendMessage(view, SCI_TEXTWIDTH, 32, reinterpret_cast<LPARAM>(buffer));
             delete[] buffer;
         }
+
+        msg.clear();
     }
     else {
         if (linepos != NULL) {
@@ -300,13 +406,13 @@ void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view, const wchar
         }
     }
 
-    firstError();
+    highlightFirstError();
 }
 
 bool hasCurrentDocAnnotations() {
     if (xmltoolsoptions.errorDisplayMode.compare(L"Annotation") != 0) return false;
     try {
-        return hasAnnotations.at(::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0));
+        return hasAnnotations[::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0)];
     }
     catch (const std::out_of_range) {}
 
@@ -321,16 +427,19 @@ void clearAnnotations(HWND view) {
             view = getCurrentHScintilla(currentEdit);
         }
         ::SendMessage(view, SCI_ANNOTATIONCLEARALL, NULL, NULL);
-        hasAnnotations[::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0)] = false;
+        LRESULT bufferid = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
+        hasAnnotations[bufferid] = false;
     }
 }
 
 void clearErrors(HWND view) {
-    currentError = 0;
+    LRESULT bufferid = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
+    currentError[bufferid] = 0;
     xmlErrors.clear();
     clearAnnotations(view);
 }
 
 void registerError(ErrorEntryDesc err) {
-    xmlErrors.push_back(err);
+    LRESULT bufferid = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
+    xmlErrors[bufferid].push_back(err);
 }

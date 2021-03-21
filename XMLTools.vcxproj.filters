@@ -181,6 +181,9 @@
     <ClInclude Include="MSXMLWrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="nppMenu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Changes.log" />

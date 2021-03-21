@@ -1,6 +1,6 @@
 ﻿#include "StdAfx.h"
 #include "XMLTools.h"
-#include "nppHelpers.h"
+#include "nppMenu.h"
 #include "Report.h"
 
 #include <assert.h>
@@ -83,41 +83,7 @@ void togglePrettyPrintAllFiles() {
     ToggleMenuItem(menuitems.menuitemTogglePrettyPrintAllFiles, config.doPrettyPrintAllOpenFiles);
 }
 
-void manualXMLCheck();
-void manualValidation();
-void firstError();
-void previousError();
-void nextError();
-void lastError();
-void insertXMLCheckTag();
-void insertXMLCloseTag();
-void insertAutoXMLType();
-void togglePreventXXE();
-void toggleAllowHuge();
-void nppPrettyPrintXmlFast();
-void nppPrettyPrintXmlAttrFast();
-void nppPrettyPrintXmlIndentOnlyFast();
-void nppLinearizeXmlFast();
-void nppTokenizeXmlFast();
-//void insertPrettyPrintTag();
-void togglePrettyPrintAllFiles();
-
-void nppConvertXML2Text();
-void nppConvertText2XML();
-
-void commentSelection();
-void uncommentSelection();
-
-void getCurrentXPathStd();
-void getCurrentXPathPredicate();
-void evaluateXPath();
-
-void performXSLTransform();
-
-void aboutBox();
-void optionsDlg();
-
-int addMenuItem(const wchar_t* title, PFUNCPLUGINCMD action, bool checked = false, ShortcutKey *shortcut = NULL) {
+int addMenuItem(const wchar_t* title, PFUNCPLUGINCMD action, bool checked, ShortcutKey *shortcut) {
     FuncItem item;
     
     wcscpy(item._itemName, title);
@@ -139,7 +105,7 @@ void addMenuSeparator() {
     nppMenu.push_back(item);
 }
 
-ShortcutKey *createShortcut(unsigned char key, bool enableALT = true, bool enableCTRL = true, bool enableSHIFT = true) {
+ShortcutKey *createShortcut(unsigned char key, bool enableALT, bool enableCTRL, bool enableSHIFT) {
     auto shortcut = new ShortcutKey(); // no parentheses needed as it's Plain Old Data (POD) otherwise C4345
     shortcut->_isAlt = enableALT;
     shortcut->_isCtrl = enableCTRL;
@@ -160,10 +126,10 @@ void initMenu() {
     
     menuitems.menuitemToggleValidation = addMenuItem(L"Enable auto-validation", insertValidationTag, config.doValidation);
     menuitems.menuitemValidateXML = addMenuItem(L"Validate now", manualValidation, false, createShortcut('M'));
-    menuitems.menuitemFirstError = addMenuItem(L"First error", firstError);
-    menuitems.menuitemPreviousError = addMenuItem(L"Previous error", previousError);
-    menuitems.menuitemNextError = addMenuItem(L"Next error", nextError);
-    menuitems.menuitemLastError = addMenuItem(L"Last error", lastError);
+    menuitems.menuitemFirstError = addMenuItem(L"First error", highlightFirstError);
+    menuitems.menuitemPreviousError = addMenuItem(L"Previous error", highlightPreviousError);
+    menuitems.menuitemNextError = addMenuItem(L"Next error", highlightNextError);
+    menuitems.menuitemLastError = addMenuItem(L"Last error", highlightLastError);
     
     addMenuSeparator();
     

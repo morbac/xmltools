@@ -34,6 +34,7 @@ protected:
   std::vector<CMFCPropertyGridProperty*> vWStringProperties;
   std::vector<CMFCPropertyGridProperty*> vWChar255Properties;
   CMFCPropertyGridProperty* pAnnotationStyleProperty = NULL;
+  CMFCPropertyGridProperty* pAnnotationHighlightStyleProperty = NULL;
 
   virtual void DoDataExchange(CDataExchange* pDX);    // Prise en charge de DDX/DDV
 

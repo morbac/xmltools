@@ -381,6 +381,7 @@
     <ClInclude Include="MSXMLWrapper.h" />
     <ClInclude Include="Notepad_plus_msgs.h" />
     <ClInclude Include="nppHelpers.h" />
+    <ClInclude Include="nppMenu.h" />
     <ClInclude Include="OptionsDlg.h" />
     <ClInclude Include="PluginInterface.h" />
     <ClInclude Include="Report.h" />

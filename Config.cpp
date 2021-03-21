@@ -56,6 +56,7 @@ void XmlToolsConfig::Read(std::wstring _configPath) {
 	ReadString(L"formatingEngine", xmltoolsoptions.formatingEngine);
 	ReadString(L"errorDisplayMode", xmltoolsoptions.errorDisplayMode);
 	ReadInt(L"annotationStyle", xmltoolsoptions.annotationStyle);
+	ReadInt(L"annotationHighlightStyle", xmltoolsoptions.annotationHighlightStyle);
 	ReadInt(L"maxIndentLevel", xmltoolsoptions.maxIndentLevel);
 	ReadBool(L"convertAmp", xmltoolsoptions.convertAmp);
 	ReadBool(L"convertLt", xmltoolsoptions.convertLt);
@@ -126,7 +127,8 @@ void XmlToolsConfig::Write() {
 
 	WriteString(L"formatingEngine", xmltoolsoptions.formatingEngine);
 	WriteString(L"errorDisplayMode", xmltoolsoptions.errorDisplayMode);
-	WriteInt( L"annotationStyle", xmltoolsoptions.annotationStyle);
+	WriteInt(L"annotationStyle", xmltoolsoptions.annotationStyle);
+	WriteInt(L"annotationHighlightStyle", xmltoolsoptions.annotationHighlightStyle);
 	WriteInt(L"maxIndentLevel", xmltoolsoptions.maxIndentLevel);
 	WriteBool(L"convertAmp", xmltoolsoptions.convertAmp);
 	WriteBool(L"convertLt", xmltoolsoptions.convertLt);

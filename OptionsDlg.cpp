@@ -4,6 +4,7 @@
 #include "StdAfx.h"
 #include "XMLTools.h"
 #include "OptionsDlg.h"
+#include "nppMenu.h"
 #include "afxdialogex.h"
 
 #include <string>
@@ -113,6 +114,8 @@ BOOL COptionsDlg::OnInitDialog() {
   
   this->pAnnotationStyleProperty = new CMFCPropertyGridProperty(L"Annotations style", COleVariant((long) xmltoolsoptions.annotationStyle, VT_INT), L"Error messages style when displayed as annotations.\r\nUse \"Annotation preview\" button below to display an annotation sample.", (DWORD_PTR) &xmltoolsoptions.annotationStyle);
   pGrpOptions->AddSubItem(this->pAnnotationStyleProperty); vIntProperties.push_back(this->pAnnotationStyleProperty);
+  this->pAnnotationHighlightStyleProperty = new CMFCPropertyGridProperty(L"Highlighted annotations style", COleVariant((long)xmltoolsoptions.annotationHighlightStyle, VT_INT), L"Highlighted error messages style when displayed as annotations.\r\nUse \"Annotation preview\" button below to display an annotation sample.", (DWORD_PTR)&xmltoolsoptions.annotationHighlightStyle);
+  pGrpOptions->AddSubItem(this->pAnnotationHighlightStyleProperty); vIntProperties.push_back(this->pAnnotationHighlightStyleProperty);
 
   CMFCPropertyGridProperty* pGrpXml2Txt = new CMFCPropertyGridProperty(L"XML to Text conversion");
   m_wndPropList.AddProperty(pGrpXml2Txt);
@@ -299,16 +302,27 @@ void COptionsDlg::OnBnClickedOk() {
 void COptionsDlg::OnBnClickedBtnviewannotation() {
   std::wstring prevStatus = xmltoolsoptions.errorDisplayMode;
   int prevStyle = xmltoolsoptions.annotationStyle;
+  int prevHighlightStyle = xmltoolsoptions.annotationHighlightStyle;
 
   xmltoolsoptions.errorDisplayMode = L"Annotation";
   xmltoolsoptions.annotationStyle = this->pAnnotationStyleProperty->GetValue().intVal;
+  xmltoolsoptions.annotationHighlightStyle = this->pAnnotationHighlightStyleProperty->GetValue().intVal;
 
   testAnnotation = true;
   clearErrors();
-  displayXMLError(L"This is an annotation example.");
+  registerError(displayXMLError(L"This is an annotation example."));
+  registerError(displayXMLError(L"This is an highlighted annotation example."));
+  
+  for (int i = 0; i < 64; ++i) {
+      xmltoolsoptions.annotationStyle = i;
+      registerError(displayXMLError(Report::str_format(L"Example of annotation style #%d", i)));
+  }
+
+  highlightError(1);
 
   xmltoolsoptions.errorDisplayMode = prevStatus;
   xmltoolsoptions.annotationStyle = prevStyle;
+  xmltoolsoptions.annotationHighlightStyle = prevHighlightStyle;
 }
 
 BOOL COptionsDlg::OnCommand(WPARAM wParam, LPARAM lParam) {
