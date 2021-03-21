@@ -129,7 +129,7 @@ void deleteAnnotations() {
     hasAnnotations.clear();
 }
 
-void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, size_t filepos) {
+ErrorEntryDesc displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, size_t filepos) {
     // clear final \r\n
     std::string::size_type p = wmsg.find_last_not_of(L"\r\n");
     if (p != std::string::npos && p < wmsg.length()) {
@@ -144,6 +144,9 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, 
 
     LRESULT bufferid = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
     UniMode encoding = UniMode(::SendMessage(nppData._nppHandle, NPPM_GETBUFFERENCODING, bufferid, 0));
+    ErrorEntryDesc res;
+
+    res.view = view;
 
     if (xmltoolsoptions.errorDisplayMode.compare(L"Annotation") == 0) {
         if (line == NULL) {
@@ -201,30 +204,64 @@ void displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, 
             }
         }
 
-        ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>(Report::castChar(wmsg, encoding).c_str()));
+        // let's see if another annotation is already present on line
+        std::string wannot = "";
+        int annotationLength = (int) ::SendMessage(view, SCI_ANNOTATIONGETTEXT, line - 1, NULL);
+        if (annotationLength > 0) {
+            char* annotationText = new char[annotationLength+1];
+            memset(annotationText, '\0', annotationLength+1);
+            ::SendMessage(view, SCI_ANNOTATIONGETTEXT, line - 1, reinterpret_cast<LPARAM>(annotationText));
+
+            if (annotationText != NULL) {
+                wannot.append(annotationText).append("\r\n");
+                res.start = wannot.length();
+                delete[] annotationText;
+            }
+        }
+
+        std::string msg = Report::castChar(wmsg, encoding);
+        res.length = msg.length();
+        ::SendMessage(view, SCI_ANNOTATIONSETTEXT, line - 1, reinterpret_cast<LPARAM>((wannot + msg).c_str()));
+        wannot.clear();
 
         ::SendMessage(view, SCI_ANNOTATIONSETSTYLE, line - 1, xmltoolsoptions.annotationStyle);
         ::SendMessage(view, SCI_ANNOTATIONSETVISIBLE, 1, NULL);
 
         hasAnnotations[::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0)] = true;
 
-        size_t width = 0;
+        res.positioned = TRUE;
+        res.line = line;
+        res.linepos = linepos;
+        res.filepos = filepos;
+        res.numlines = (size_t)std::count(wmsg.begin(), wmsg.end(), '\n');
+        res.maxannotwidth = maxannotwidth;
+
         if (buffer != NULL) {
-            width = (size_t) ::SendMessage(view, SCI_TEXTWIDTH, 32, reinterpret_cast<LPARAM>(buffer));
+            res.width = (size_t) ::SendMessage(view, SCI_TEXTWIDTH, 32, reinterpret_cast<LPARAM>(buffer));
             delete[] buffer;
         }
-        ErrorEntryDesc err = { view, TRUE, line, linepos, filepos, (size_t) std::count(wmsg.begin(), wmsg.end(), '\n'), maxannotwidth, width};
     }
     else {
         if (linepos != NULL) {
             Report::_printf_err(Report::str_format(L"Line %d, pos %d:\r\n%s", line, linepos, wmsg.c_str()));
+
+            res.positioned = TRUE;
+            res.line = line;
+            res.linepos = linepos;
+            res.filepos = filepos;
+            res.numlines = (size_t)std::count(wmsg.begin(), wmsg.end(), '\n');
+            res.maxannotwidth = 0;
+            res.width = 0;
         }
         else {
             Report::_printf_err(wmsg);
-        }
 
-        ErrorEntryDesc err = { view, FALSE, 0, 0, 0, (size_t) std::count(wmsg.begin(), wmsg.end(), '\n'), 0, 0 };
+            res.positioned = FALSE;
+            res.numlines = (size_t)std::count(wmsg.begin(), wmsg.end(), '\n');
+        }
     }
+
+    return res;
 }
 
 void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view, const wchar_t* szDesc) {
@@ -258,9 +295,7 @@ void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view, const wchar
                 Report::_printf_err(text);
             }
             else {
-                ErrorEntryDesc err = { view, (*it).positioned, (*it).line, (*it).linepos, (*it).filepos, (size_t) std::count((*it).reason.begin(), (*it).reason.end(), '\n'), 0, 0 };
-                registerError(err);
-                displayXMLError((*it).reason, view, (*it).line, (*it).linepos, (*it).filepos);
+                registerError(displayXMLError((*it).reason, view, (*it).line, (*it).linepos, (*it).filepos));
             }
         }
     }

@@ -95,6 +95,9 @@ void XMLValidation(int informIfNoError) {
     int currentEdit, currentLength;
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
     HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
+
+    clearErrors(hCurrentEditView);
+
     currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
     char* data = new char[currentLength + sizeof(char)];
