@@ -388,9 +388,16 @@ void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view, const wchar
             }
         }
 
+#if false
         CMessageDlg* msgdlg = new CMessageDlg();
         msgdlg->m_sMessage = Report::getLog().c_str();
         msgdlg->DoModal();
+#else
+        CMessageDlg* msgdlg = new CMessageDlg();
+        msgdlg->m_sMessage = Report::getLog().c_str();
+        msgdlg->Create(CMessageDlg::IDD, NULL);
+        msgdlg->ShowWindow(SW_SHOW);
+#endif
     }
     else {
         for (std::vector<ErrorEntryType>::iterator it = errors.begin(); it != errors.end(); ++it) {
