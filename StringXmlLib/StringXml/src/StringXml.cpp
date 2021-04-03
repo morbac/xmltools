@@ -344,7 +344,7 @@ namespace StringXml {
                     curpos -= eolcharpos;   // line break may have several chars
 
                     if (xmllevel > 0) {
-                        long delta = 0;
+                        size_t delta = 0;
                         tmppos = curpos + eolcharlen;
                         if (tmppos < strlen - 1 && this->str->at(tmppos) == '<' && this->str->at(tmppos + 1) == '/') {
                             ++delta;
@@ -354,7 +354,7 @@ namespace StringXml {
                         }
 
                         // apply indentation
-                        for (int i = 0; i < xmllevel - delta; ++i) {
+                        for (size_t i = 0; i < xmllevel - delta; ++i) {
                             this->str->insert(curpos + eolcharlen, this->params.indentChars);
                             curpos += this->params.indentChars.length();
                         }

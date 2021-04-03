@@ -102,7 +102,7 @@ void highlightCurrentError() {
     }
 
     if (xmltoolsoptions.errorDisplayMode.compare(L"Annotation") == 0) {
-        int stylesLength;
+        size_t stylesLength;
         char* styles = NULL;
 
         std::map<size_t, size_t> annotationsLength;
@@ -110,7 +110,7 @@ void highlightCurrentError() {
 
         // get all annotations length
         for (std::vector<ErrorEntryDesc>::iterator it = errors.begin(); it != errors.end(); ++it) {
-            stylesLength = (int) ::SendMessage(it->view, SCI_ANNOTATIONGETSTYLES, it->line - 1, NULL);
+            stylesLength = (size_t) ::SendMessage(it->view, SCI_ANNOTATIONGETSTYLES, it->line - 1, NULL);
             if (stylesLength > annotationsLength[it->line]) {
                 annotationsLength[it->line] = stylesLength;
             }
@@ -184,7 +184,7 @@ void highlightLastError() {
     highlightCurrentError();
 }
 
-void highlightError(int num) {
+void highlightError(size_t num) {
     LRESULT bufferid = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
     dbgln(Report::str_format("highlightError[%d] %d", bufferid, num).c_str());
 
