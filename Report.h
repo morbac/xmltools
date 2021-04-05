@@ -99,8 +99,8 @@ public:
 
   static void char2BSTR(const char* inParam, BSTR* outParam);
   static void char2BSTR(const wchar_t* inParam, BSTR* outParam);
-  static void char2VARIANT(const char* inParam, VARIANT* outParam);
   static void char2BSTR(const CStringW& inParam, BSTR* outParam);
+  static void char2VARIANT(const char* inParam, VARIANT* outParam);
 
   // below methods got from https://github.com/RoelofBerg/Utf8Ucs2Converter
 
