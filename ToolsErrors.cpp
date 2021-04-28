@@ -377,6 +377,13 @@ void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view, const wchar
         Report::registerMessage(L"");
 
         for (std::vector<ErrorEntryType>::iterator it = errors.begin(); it != errors.end(); ++it) {
+            if (xmltoolsoptions.maxErrorsNum >= 0 && it - errors.begin() >= xmltoolsoptions.maxErrorsNum) {
+                size_t nerrors = errors.end() - it;
+                if (nerrors > 1) Report::registerMessage(Report::str_format(L"%d errors follow but are not displayed", nerrors).c_str());
+                else Report::registerMessage(Report::str_format(L"1 error follows but is not displayed").c_str());
+                break;
+            }
+
             if ((*it).line < 0) {
                 registerError({ view, (*it).positioned, (*it).line, (*it).linepos, (*it).filepos, 1, 0, 0 });
                 Report::registerError((*it).reason.c_str());
@@ -401,6 +408,8 @@ void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view, const wchar
     }
     else {
         for (std::vector<ErrorEntryType>::iterator it = errors.begin(); it != errors.end(); ++it) {
+            if (xmltoolsoptions.maxErrorsNum >= 0 && it - errors.begin() >= xmltoolsoptions.maxErrorsNum) break;
+
             if ((*it).line < 0) {
                 std::wstring text = (*it).reason;
                 ErrorEntryDesc err = { view, FALSE, 0, 0, 0, (size_t) std::count(text.begin(), text.end(), '\n'), 0, 0 };
@@ -448,5 +457,6 @@ void clearErrors(HWND view) {
 
 void registerError(ErrorEntryDesc err) {
     LRESULT bufferid = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
+    if (xmltoolsoptions.maxErrorsNum >= 0 && xmlErrors.size() > xmltoolsoptions.maxErrorsNum) return;
     xmlErrors[bufferid].push_back(err);
 }

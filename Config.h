@@ -38,6 +38,7 @@ struct struct_xmltoolsoptions {
 	std::wstring errorDisplayMode = L"Annotation";	// Annotation / Dialog / Alert
 	int annotationStyle = 12;                // 12
 	int annotationHighlightStyle = 13;
+	int maxErrorsNum = 10;
 	int maxIndentLevel = 0;
 	bool convertAmp = true;
 	bool convertLt = true;

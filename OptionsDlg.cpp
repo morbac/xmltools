@@ -116,6 +116,8 @@ BOOL COptionsDlg::OnInitDialog() {
   pGrpOptions->AddSubItem(this->pAnnotationStyleProperty); vIntProperties.push_back(this->pAnnotationStyleProperty);
   this->pAnnotationHighlightStyleProperty = new CMFCPropertyGridProperty(L"Highlighted annotations style", COleVariant((long)xmltoolsoptions.annotationHighlightStyle, VT_INT), L"Highlighted error messages style when displayed as annotations.\r\nUse \"Annotation preview\" button below to display an annotation sample.", (DWORD_PTR)&xmltoolsoptions.annotationHighlightStyle);
   pGrpOptions->AddSubItem(this->pAnnotationHighlightStyleProperty); vIntProperties.push_back(this->pAnnotationHighlightStyleProperty);
+  pTmpOption = new CMFCPropertyGridProperty(L"Max displayed errors", COleVariant((long)xmltoolsoptions.maxErrorsNum, VT_INT), L"Maximum number of displayed errors. You can allow an infinite number of errors by setting the value `-1`, but be aware that it can slow down the application when XML has many errors.", (DWORD_PTR)&xmltoolsoptions.maxErrorsNum);
+  pGrpOptions->AddSubItem(pTmpOption); vIntProperties.push_back(pTmpOption);
 
   CMFCPropertyGridProperty* pGrpXml2Txt = new CMFCPropertyGridProperty(L"XML to Text conversion");
   m_wndPropList.AddProperty(pGrpXml2Txt);
