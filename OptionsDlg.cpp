@@ -200,7 +200,7 @@ BOOL COptionsDlg::OnInitDialog() {
   m_wndPropList.AddProperty(pGrpToolbarOptions);
   pTmpOption = new CMFCPropertyGridProperty(L"Check XML syntax now", COleVariant((short)(xmltoolsoptions.tbCheckXML ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Check XML syntax now` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbCheckXML);
   pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
-  pTmpOption = new CMFCPropertyGridProperty(L"Validate now", COleVariant((short)(xmltoolsoptions.tbValidateXML ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Validate now` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbCheckXML);
+  pTmpOption = new CMFCPropertyGridProperty(L"Validate now", COleVariant((short)(xmltoolsoptions.tbValidateXML ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `Validate now` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbValidateXML);
   pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
   pTmpOption = new CMFCPropertyGridProperty(L"First error", COleVariant((short)(xmltoolsoptions.tbFirstError ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Shows the `First error` icon in toolbar. Change will be applied after NPP restart.", (DWORD_PTR)&xmltoolsoptions.tbFirstError);
   pGrpToolbarOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
