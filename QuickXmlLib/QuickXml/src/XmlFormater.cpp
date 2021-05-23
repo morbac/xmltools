@@ -104,29 +104,39 @@ namespace QuickXml {
 					break;
 				}
 				case XmlTokenType::Whitespace: {
-					if (this->parser->getXmlContext().inOpeningTag) {
+					if (this->params.applySpacePreserve && this->parser->isSpacePreserve()) {
+						lastAppliedTokenType = XmlTokenType::Whitespace;
+						this->out.write(token.chars, token.size);
+					}
+					else if (this->parser->getXmlContext().inOpeningTag) {
 						lastAppliedTokenType = XmlTokenType::Whitespace;
 						this->out << " ";
 					}
 					break;
 				}
 				case XmlTokenType::Text: {
-					std::string tmp(token.chars, token.size);
-					trim(tmp);
-					if (this->params.ensureConformity) {
-						nexttoken = this->parser->getNextToken();
-						if (tmp.length() > 0 ||
-							((nexttoken.type != XmlTokenType::TagOpening &&
-								nexttoken.type != XmlTokenType::Comment &&
-								nexttoken.type != XmlTokenType::Declaration) &&
-								(nexttoken.type != XmlTokenType::TagClosing || lastAppliedTokenType == XmlTokenType::TagOpeningEnd))) {
-							lastAppliedTokenType = XmlTokenType::Text;
-							this->out.write(token.chars, token.size);
-						}
+					if (this->params.applySpacePreserve && this->parser->isSpacePreserve()) {	// whitespace only text nodes must be conserved due to xml:space="preserve"
+						lastAppliedTokenType = XmlTokenType::Text;
+						this->out.write(token.chars, token.size);
 					}
 					else {
-						lastAppliedTokenType = XmlTokenType::Text;
-						this->out << tmp;
+						std::string tmp(token.chars, token.size);
+						trim(tmp);
+						if (this->params.ensureConformity) {
+							nexttoken = this->parser->getNextToken();
+							if (tmp.length() > 0 ||
+								((nexttoken.type != XmlTokenType::TagOpening &&
+									nexttoken.type != XmlTokenType::Comment &&
+									nexttoken.type != XmlTokenType::Declaration) &&
+									(nexttoken.type != XmlTokenType::TagClosing || lastAppliedTokenType == XmlTokenType::TagOpeningEnd))) {
+								lastAppliedTokenType = XmlTokenType::Text;
+								this->out.write(token.chars, token.size);
+							}
+						}
+						else {
+							lastAppliedTokenType = XmlTokenType::Text;
+							this->out << tmp;
+						}
 					}
 					break;
 				}
@@ -296,31 +306,42 @@ namespace QuickXml {
 					break;
 				}
 				case XmlTokenType::Text: {
-					// check if text could be ignored
-					XmlToken nexttoken = this->parser->getNextToken();
-					std::string tmp(token.chars, token.size);
-					if (this->params.indentOnly) {
-						trim_s(tmp);
+					if (this->params.applySpacePreserve && this->parser->isSpacePreserve()) {
+						lastAppliedTokenType = XmlTokenType::Text;
+						this->out.write(token.chars, token.size);
 					}
 					else {
-						trim(tmp);
-					}
-					if (tmp.length() > 0 ||
-						((!(nexttoken.type & (XmlTokenType::TagOpening | XmlTokenType::Comment | XmlTokenType::Declaration))) &&
-							(nexttoken.type != XmlTokenType::TagClosing || lastAppliedTokenType == XmlTokenType::TagOpeningEnd))) {
-						lastAppliedTokenType = XmlTokenType::Text;
+						// check if text could be ignored
+						XmlToken nexttoken = this->parser->getNextToken();
+						std::string tmp(token.chars, token.size);
 						if (this->params.indentOnly) {
-							this->out << tmp;
-							lastTextHasLineBreaks = (tmp.find_first_of("\r\n") != std::string::npos);
+							trim_s(tmp);
 						}
 						else {
-							this->out.write(token.chars, token.size);
+							trim(tmp);
+						}
+
+						if (tmp.length() > 0 ||
+							((!(nexttoken.type & (XmlTokenType::TagOpening | XmlTokenType::Comment | XmlTokenType::Declaration))) &&
+								(nexttoken.type != XmlTokenType::TagClosing || lastAppliedTokenType == XmlTokenType::TagOpeningEnd))) {
+							lastAppliedTokenType = XmlTokenType::Text;
+							if (this->params.indentOnly) {
+								this->out << tmp;
+								lastTextHasLineBreaks = (tmp.find_first_of("\r\n") != std::string::npos);
+							}
+							else {
+								this->out.write(token.chars, token.size);
+							}
 						}
 					}
 					break;
 				}
 				case XmlTokenType::LineBreak: {
-					if (this->params.indentOnly) {
+					if (this->params.applySpacePreserve && this->parser->isSpacePreserve()) {
+						lastAppliedTokenType = XmlTokenType::LineBreak;
+						this->out.write(token.chars, token.size);
+					}
+					else if (this->params.indentOnly) {
 						lastAppliedTokenType = XmlTokenType::LineBreak;
 						this->out.write(token.chars, token.size);
 						lastTextHasLineBreaks = true;
@@ -371,9 +392,10 @@ namespace QuickXml {
 					break;
 				}
 				case XmlTokenType::Whitespace: {
-					// ignore all whitespace
-					// note: whitespaces present in text are not
-					//       tokenized as whitespaces, but as text
+					if (this->params.applySpacePreserve && this->parser->isSpacePreserve()) {
+						lastAppliedTokenType = XmlTokenType::Whitespace;
+						this->out.write(token.chars, token.size);
+					}
 					break;
 				}
 				case XmlTokenType::CDATA:
@@ -522,6 +544,7 @@ namespace QuickXml {
 		params.autoCloseTags = false;
 		params.indentAttributes = false;
 		params.indentOnly = false;
+		params.applySpacePreserve = false;
 		return params;
 	}
 }

@@ -47,6 +47,7 @@ struct struct_xmltoolsoptions {
 	bool convertApos = true;
 	bool ppAutoclose = true;
 	bool ensureConformity = true;
+	bool applySpacePreserve = false;
 
 	bool tbCheckXML = true;
 	bool tbValidateXML = true;

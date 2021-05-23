@@ -13,6 +13,7 @@ namespace QuickXml {
 		bool autoCloseTags = false;			// make the formater change tags like <a></a> into <a/>
 		bool indentAttributes = false;		// make the formater display attributes on separated lines
 		bool indentOnly = false;			// make the formater keep the existing linebreaks and only adjust indentation
+		bool applySpacePreserve = false;    // make the formater apply the xml:space="preserve" when defined
 	};
 
 	class XmlFormater {

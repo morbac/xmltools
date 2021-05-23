@@ -35,6 +35,11 @@ namespace QuickXml {
 		this->nexttoken = { XmlTokenType::Undefined, NULL, 0, 0 };
 	}
 
+	bool XmlParser::isSpacePreserve() {
+		if (this->preserveSpace.empty()) return false;
+		return this->preserveSpace.top();
+	}
+
 	XmlToken XmlParser::getNextStructureToken() {
 		// @fixme Should we consider whitespace and linebreaks has structure token in opening tag ?
 		if (!(this->nexttoken.type & (XmlTokenType::Whitespace | XmlTokenType::LineBreak | XmlTokenType::Text))) {
@@ -171,6 +176,9 @@ namespace QuickXml {
 					// </ns:sample
 					this->currcontext.inOpeningTag = false;
 					this->currcontext.inClosingTag = true;
+					if (!this->preserveSpace.empty()) {
+						this->preserveSpace.pop();
+					}
 					return { XmlTokenType::TagClosing,
 							 this->currpos,
 							 startpos,
@@ -180,6 +188,12 @@ namespace QuickXml {
 					// parsing tag name like "<sample" or "<ns:sample"
 					this->currcontext.inOpeningTag = true;
 					this->currcontext.inClosingTag = false;
+					if (this->preserveSpace.empty()) {
+						this->preserveSpace.push(false);
+					}
+					else {
+						this->preserveSpace.push(this->preserveSpace.top());
+					}
 					return { XmlTokenType::TagOpening,
 							 this->currpos,
 							 startpos,
@@ -304,38 +318,55 @@ namespace QuickXml {
 					if (this->expectAttrValue || currentchar == '"' || currentchar == '\'') {
 						// standard value, delimited with " or '
 						this->expectAttrValue = false;
+						XmlToken tmp;
 						if (currentchar == '"' || currentchar == '\'') {
 							// normal case, let's skip the quoted/apostrophed attribute value
 							char valDelimiter[2] = { currentchar, '\0' };
-							return { XmlTokenType::AttrValue,
-									 this->currpos,
-								     startpos,
-									 this->readUntilFirstOf(valDelimiter, 1, true) }; // skip actual delimiter + parse content
+							tmp = { XmlTokenType::AttrValue,
+								this->currpos,
+								startpos,
+								this->readUntilFirstOf(valDelimiter, 1, true) }; // skip actual delimiter + parse content
 						}
 						else {
 							// we have some unexpected chars between the = and the attribute value
 							// let's read next word of string
-							return { XmlTokenType::AttrValue,
-									 this->currpos,
-									 startpos,
-									 this->readNextWord(true) };
+							tmp = { XmlTokenType::AttrValue,
+								this->currpos,
+								startpos,
+								this->readNextWord(true) };
 						}
+
+						if (!this->preserveSpace.empty() && !strncmp(this->attrName, "xml:space", 9)) {
+							if (!strncmp(tmp.chars + 1, "preserve", 8)) {
+								this->preserveSpace.pop();	// replace the actual stack top
+								this->preserveSpace.push(true);
+							} else if (!strncmp(tmp.chars + 1, "default", 7)) {
+								this->preserveSpace.pop();	// replace the actual stack top
+								this->preserveSpace.push(false);
+							}
+						}
+
+						return tmp;
 					}
 					else {
 						// attribute with no value
 						this->hasAttrName = true;
-						return { XmlTokenType::AttrName,
-								 this->currpos,
-								 startpos,
-								 this->readUntilFirstOf("= /\t\r\n") };
+						XmlToken tmp = { XmlTokenType::AttrName,
+							this->currpos,
+							startpos,
+							this->readUntilFirstOf("= /\t\r\n") };
+						this->attrName = tmp.chars;
+						return tmp;
 					}
 				}
 				else {
 					this->hasAttrName = true;
-					return { XmlTokenType::AttrName,
-							 this->currpos,
-							 startpos,
-							 this->readUntilFirstOf("= /\t\r\n") };
+					XmlToken tmp = { XmlTokenType::AttrName,
+						this->currpos,
+						startpos,
+						this->readUntilFirstOf("= /\t\r\n") };
+					this->attrName = tmp.chars;
+					return tmp;
 				}
 			}
 			else {
@@ -463,26 +494,51 @@ namespace QuickXml {
 	}
 
 	std::string XmlParser::getTokenName() {
-		switch (this->currtoken.type) {
-			case XmlTokenType::TagOpening: return "TAG_OPENING";
-			case XmlTokenType::TagClosing: return "TAG_CLOSING";
-			case XmlTokenType::TagOpeningEnd: return "TAG_OPENING_END";
-			case XmlTokenType::TagClosingEnd: return "TAG_CLOSING_END";
-			case XmlTokenType::TagSelfClosingEnd: return "TAG_SELFCLOSING_END";
-			case XmlTokenType::AttrName: return "ATTR_NAME";
-			case XmlTokenType::AttrValue: return "ATTR_VALUE";
-			case XmlTokenType::Text: return "TEXT";
-			case XmlTokenType::Whitespace: return "WHITESPACE";
-			case XmlTokenType::Instruction: return "INSTRUCTION";
-			case XmlTokenType::Declaration: return "DECLARATION";
-			case XmlTokenType::DeclarationEnd: return "DECLARATION_END";
-			case XmlTokenType::Comment: return "COMMENT";
-			case XmlTokenType::CDATA: return "CDATA";
-			case XmlTokenType::LineBreak: return "LINEBREAK";
-			case XmlTokenType::Equal: return "EQUAL";
-			case XmlTokenType::EndOfFile: return "EOF";
-			case XmlTokenType::Undefined:
-			default: return "UNDEFINED";
+		if (!this->preserveSpace.empty() && this->preserveSpace.top()) {
+			switch (this->currtoken.type) {
+				case XmlTokenType::TagOpening: return "_TAG_OPENING_";
+				case XmlTokenType::TagClosing: return "_TAG_CLOSING_";
+				case XmlTokenType::TagOpeningEnd: return "_TAG_OPENING_END_";
+				case XmlTokenType::TagClosingEnd: return "_TAG_CLOSING_END_";
+				case XmlTokenType::TagSelfClosingEnd: return "_TAG_SELFCLOSING_END_";
+				case XmlTokenType::AttrName: return "_ATTR_NAME_";
+				case XmlTokenType::AttrValue: return "_ATTR_VALUE_";
+				case XmlTokenType::Text: return "_TEXT_";
+				case XmlTokenType::Whitespace: return "_WHITESPACE_";
+				case XmlTokenType::Instruction: return "_INSTRUCTION_";
+				case XmlTokenType::Declaration: return "_DECLARATION_";
+				case XmlTokenType::DeclarationEnd: return "_DECLARATION_END_";
+				case XmlTokenType::Comment: return "_COMMENT_";
+				case XmlTokenType::CDATA: return "_CDATA_";
+				case XmlTokenType::LineBreak: return "_LINEBREAK_";
+				case XmlTokenType::Equal: return "_EQUAL_";
+				case XmlTokenType::EndOfFile: return "_EOF_";
+				case XmlTokenType::Undefined:
+				default: return "_UNDEFINED_";
+			}
+		}
+		else {
+			switch (this->currtoken.type) {
+				case XmlTokenType::TagOpening: return "TAG_OPENING";
+				case XmlTokenType::TagClosing: return "TAG_CLOSING";
+				case XmlTokenType::TagOpeningEnd: return "TAG_OPENING_END";
+				case XmlTokenType::TagClosingEnd: return "TAG_CLOSING_END";
+				case XmlTokenType::TagSelfClosingEnd: return "TAG_SELFCLOSING_END";
+				case XmlTokenType::AttrName: return "ATTR_NAME";
+				case XmlTokenType::AttrValue: return "ATTR_VALUE";
+				case XmlTokenType::Text: return "TEXT";
+				case XmlTokenType::Whitespace: return "WHITESPACE";
+				case XmlTokenType::Instruction: return "INSTRUCTION";
+				case XmlTokenType::Declaration: return "DECLARATION";
+				case XmlTokenType::DeclarationEnd: return "DECLARATION_END";
+				case XmlTokenType::Comment: return "COMMENT";
+				case XmlTokenType::CDATA: return "CDATA";
+				case XmlTokenType::LineBreak: return "LINEBREAK";
+				case XmlTokenType::Equal: return "EQUAL";
+				case XmlTokenType::EndOfFile: return "EOF";
+				case XmlTokenType::Undefined:
+				default: return "UNDEFINED";
+			}
 		}
 	}
 }

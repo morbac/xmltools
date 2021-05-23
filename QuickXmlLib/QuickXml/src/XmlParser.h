@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sstream>
+#include <stack>
 #include <list>
 
 namespace QuickXml {
@@ -58,6 +59,7 @@ namespace QuickXml {
         size_t currpos;             // the current position of the parser
         XmlContext currcontext;     // the actual parsing context
         bool hasAttrName;           // indicates that we got en attribute name
+        const char* attrName;       // the current attribute name
         bool expectAttrValue;       // the paread read an = in tag, then it expects an attribute value
 
         XmlToken prevtoken;         // the previous token
@@ -69,6 +71,8 @@ namespace QuickXml {
         // a queue of read tokens
         std::list<XmlToken> buffer;
 
+        // a stack maintaining xml:space
+        std::stack<bool> preserveSpace;
     public:
         /*
         * Constructor
@@ -94,6 +98,12 @@ namespace QuickXml {
         XmlToken getPrevToken() { return this->prevtoken; }
         XmlToken getCurrToken() { return this->currtoken; }
         XmlToken getNextToken() { return this->nexttoken; }
+
+        /*
+        * Indicates if the current node is in xml:space="preserve" context
+        * @return True when xml:space is in preserve mode.
+        */
+        bool isSpacePreserve();
 
         /*
         * Get the next non-text token

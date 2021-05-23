@@ -66,6 +66,7 @@ void XmlToolsConfig::Read(std::wstring _configPath) {
 	ReadBool(L"convertApos", xmltoolsoptions.convertApos);
 	ReadBool(L"ppAutoclose", xmltoolsoptions.ppAutoclose);
 	ReadBool(L"ensureConformity", xmltoolsoptions.ensureConformity);
+	ReadBool(L"applySpacePreserve", xmltoolsoptions.applySpacePreserve);
 
 	ReadBool(L"tbCheckXML", xmltoolsoptions.tbCheckXML);
 	ReadBool(L"tbValidateXML", xmltoolsoptions.tbValidateXML);
@@ -139,6 +140,7 @@ void XmlToolsConfig::Write() {
 	WriteBool(L"convertApos", xmltoolsoptions.convertApos);
 	WriteBool(L"ppAutoclose", xmltoolsoptions.ppAutoclose);
 	WriteBool(L"ensureConformity", xmltoolsoptions.ensureConformity);
+	WriteBool(L"applySpacePreserve", xmltoolsoptions.applySpacePreserve);
 
 	WriteBool(L"tbCheckXML", xmltoolsoptions.tbCheckXML);
 	WriteBool(L"tbValidateXML", xmltoolsoptions.tbValidateXML);

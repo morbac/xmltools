@@ -23,6 +23,7 @@ void sciDocPrettyPrintQuickXml(ScintillaDoc& doc) {
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
     params.indentAttributes = false;
     params.indentOnly = false;
+    params.applySpacePreserve = xmltoolsoptions.applySpacePreserve;
 
     auto docclock_start = clock();
 
@@ -129,6 +130,7 @@ void sciDocPrettyPrintQuickXmlAttr(ScintillaDoc& doc) {
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
     params.indentAttributes = true;
     params.indentOnly = false;
+    params.applySpacePreserve = xmltoolsoptions.applySpacePreserve;
 
     auto docclock_start = clock();
 
@@ -231,6 +233,7 @@ void sciDocPrettyPrintQuickXml_IndentOnly(ScintillaDoc& doc) {
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
     params.indentAttributes = true;
     params.indentOnly = true;
+    params.applySpacePreserve = xmltoolsoptions.applySpacePreserve;
 
     auto docclock_start = clock();
 
@@ -331,6 +334,7 @@ void sciDocLinearizeQuickXml(ScintillaDoc& doc) {
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
     params.indentAttributes = false;
     params.indentOnly = false;
+    params.applySpacePreserve = xmltoolsoptions.applySpacePreserve;
 
     auto docclock_start = clock();
 
@@ -431,6 +435,7 @@ void sciDocTokenizeQuickXml(ScintillaDoc& doc) {
     params.autoCloseTags = xmltoolsoptions.ppAutoclose;
     params.indentAttributes = false;
     params.indentOnly = false;
+    params.applySpacePreserve = xmltoolsoptions.applySpacePreserve;
 
     auto docclock_start = clock();
 

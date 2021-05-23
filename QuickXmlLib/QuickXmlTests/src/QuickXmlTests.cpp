@@ -146,6 +146,7 @@ namespace QuickXmlTests {
 			params.autoCloseTags = false;
 			params.indentAttributes = false;
 			params.indentOnly = false;
+			params.applySpacePreserve = true;
 
 			testPrettyPrint(xml, ref, params);
 		}
@@ -162,6 +163,7 @@ namespace QuickXmlTests {
 			params.autoCloseTags = true;
 			params.indentAttributes = false;
 			params.indentOnly = false;
+			params.applySpacePreserve = true;
 
 			testPrettyPrint(xml, ref, params);
 		}
@@ -175,6 +177,7 @@ namespace QuickXmlTests {
 			params.autoCloseTags = true;
 			params.indentAttributes = false;
 			params.indentOnly = false;
+			params.applySpacePreserve = true;
 
 			std::string xml = readFile("PrettyPrint\\FullTest.in.xml");
 			std::string ref = readFile("PrettyPrint\\FullTest.out.xml");
@@ -210,6 +213,7 @@ namespace QuickXmlTests {
 			params.autoCloseTags = false;
 			params.indentAttributes = true;
 			params.indentOnly = false;
+			params.applySpacePreserve = true;
 
 			testIndentAttr(xml, ref, params);
 		}
@@ -229,6 +233,7 @@ namespace QuickXmlTests {
 			params.autoCloseTags = false;
 			params.indentAttributes = false;
 			params.indentOnly = true;
+			params.applySpacePreserve = true;
 
 			testIndentOnly(xml, ref, params);
 		}
@@ -245,6 +250,7 @@ namespace QuickXmlTests {
 			params.autoCloseTags = false;
 			params.indentAttributes = false;
 			params.indentOnly = true;
+			params.applySpacePreserve = true;
 
 			testIndentOnly(xml, ref, params);
 		}
@@ -264,6 +270,7 @@ namespace QuickXmlTests {
 			params.autoCloseTags = false;
 			params.indentAttributes = false;
 			params.indentOnly = false;
+			params.applySpacePreserve = true;
 
 			testLinearize(xml, ref, params);
 		}
@@ -280,6 +287,7 @@ namespace QuickXmlTests {
 			params.autoCloseTags = false;
 			params.indentAttributes = false;
 			params.indentOnly = false;
+			params.applySpacePreserve = true;
 
 			testLinearize(xml, ref, params);
 		}
@@ -296,6 +304,7 @@ namespace QuickXmlTests {
 			params.autoCloseTags = true;
 			params.indentAttributes = false;
 			params.indentOnly = false;
+			params.applySpacePreserve = true;
 
 			testLinearize(xml, ref, params);
 		}
@@ -312,6 +321,7 @@ namespace QuickXmlTests {
 			params.autoCloseTags = true;
 			params.indentAttributes = false;
 			params.indentOnly = false;
+			params.applySpacePreserve = true;
 
 			testLinearize(xml, ref, params);
 		}
