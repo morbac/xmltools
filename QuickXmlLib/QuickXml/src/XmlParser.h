@@ -59,7 +59,7 @@ namespace QuickXml {
         size_t currpos;             // the current position of the parser
         XmlContext currcontext;     // the actual parsing context
         bool hasAttrName;           // indicates that we got en attribute name
-        const char* attrName;       // the current attribute name
+        XmlToken attrnametoken;     // a copy of current attribute name token
         bool expectAttrValue;       // the paread read an = in tag, then it expects an attribute value
 
         XmlToken prevtoken;         // the previous token

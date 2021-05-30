@@ -336,11 +336,11 @@ namespace QuickXml {
 								this->readNextWord(true) };
 						}
 
-						if (!this->preserveSpace.empty() && !strncmp(this->attrName, "xml:space", 9)) {
-							if (!strncmp(tmp.chars + 1, "preserve", 8)) {
+						if (!this->preserveSpace.empty() && !strncmp(this->attrnametoken.chars, "xml:space", this->attrnametoken.size)) {
+							if (!strncmp(tmp.chars + 1, "preserve", tmp.size - 2)) {
 								this->preserveSpace.pop();	// replace the actual stack top
 								this->preserveSpace.push(true);
-							} else if (!strncmp(tmp.chars + 1, "default", 7)) {
+							} else if (!strncmp(tmp.chars + 1, "default", tmp.size - 2)) {
 								this->preserveSpace.pop();	// replace the actual stack top
 								this->preserveSpace.push(false);
 							}
@@ -355,7 +355,7 @@ namespace QuickXml {
 							this->currpos,
 							startpos,
 							this->readUntilFirstOf("= /\t\r\n") };
-						this->attrName = tmp.chars;
+						this->attrnametoken = tmp;
 						return tmp;
 					}
 				}
@@ -365,7 +365,7 @@ namespace QuickXml {
 						this->currpos,
 						startpos,
 						this->readUntilFirstOf("= /\t\r\n") };
-					this->attrName = tmp.chars;
+					this->attrnametoken = tmp;
 					return tmp;
 				}
 			}
