@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 
 #include "MSXMLWrapper.h"
+#include "PluginInterface.h"
 #include "Report.h"
 #include <comutil.h>
 
@@ -256,6 +257,7 @@ std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, s
 
     this->resetErrors();
 
+    UniMode encoding = Report::getEncoding(nppData._nppHandle);
     CComBSTR bstrXPath = CComBSTR(xpath.c_str());
     CComBSTR bstrXML = CComBSTR(xml);
 
@@ -315,7 +317,7 @@ std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, s
                         if (nodeType == NODE_TEXT) {
                             VariantClear(&varNodeValue);
                             CHK_HR(pNode->get_nodeValue(&varNodeValue));
-                            value += varNodeValue.bstrVal;
+                            value += Report::castChar(_bstr_t(varNodeValue), encoding);
                         }
                         SAFE_RELEASE(pNode);
                     }
@@ -323,7 +325,7 @@ std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, s
                     break;
                 }
                 default: {
-                    value = varNodeValue.bstrVal;
+                    value = Report::castChar(_bstr_t(varNodeValue), encoding);
                 }
             }
 
