@@ -1,9 +1,9 @@
 #include "StdAfx.h"
 #include "Config.h"
 
-struct struct_proxyoptions proxyoptions = {};
-struct struct_xmltoolsoptions xmltoolsoptions = {};
-struct struct_msxmloptions msxmloptions = {};
+struct struct_proxyoptions proxyoptions;
+struct struct_xmltoolsoptions xmltoolsoptions;
+struct struct_msxmloptions msxmloptions;
 XmlToolsConfig config;
 
 void XmlToolsConfig::WriteString(const wchar_t* name, const std::wstring& value) {

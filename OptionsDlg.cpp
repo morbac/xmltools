@@ -146,7 +146,7 @@ BOOL COptionsDlg::OnInitDialog() {
   pTmpOption = new CMFCPropertyGridProperty(L"Max indent level", COleVariant((long)xmltoolsoptions.maxIndentLevel, VT_INT), L"The max indentation level for pretty print. A zero (0) value means no indentation limit", (DWORD_PTR)&xmltoolsoptions.maxIndentLevel);
   pGrpPrettyPrint->AddSubItem(pTmpOption); vIntProperties.push_back(pTmpOption);
   pTmpOption = new CMFCPropertyGridProperty(L"Apply xml:space=\"preserve\"", COleVariant((short)(xmltoolsoptions.applySpacePreserve ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Make the formating engine take care of xml:space=\"preserve\" and xml:space=\"default\" declarations. Currently only available on QuickXml.", (DWORD_PTR)&xmltoolsoptions.applySpacePreserve);
-  pGrpPrettyPrint->AddSubItem(pTmpOption); vIntProperties.push_back(pTmpOption);
+  pGrpPrettyPrint->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
 
   
 
