@@ -116,10 +116,12 @@ bool MSXMLWrapper::checkSyntax(const char* xml, size_t size) {
     IXMLDOMDocument3* pXMLDom = NULL;
     IXMLDOMParseError2* pXMLErr = NULL;
     VARIANT_BOOL varStatus;
+    CComBSTR bstrXML;
 
     this->resetErrors();
 
-    CComBSTR bstrXML = CComBSTR(xml);
+    Report::char2BSTR(xml, &bstrXML);
+    CHK_ALLOC(bstrXML);
 
     CHK_HR(CreateAndInitDOM(&pXMLDom));
     CHK_HR(pXMLDom->loadXML(bstrXML, &varStatus));
@@ -151,12 +153,14 @@ bool MSXMLWrapper::checkValidity(const char* xml, size_t size, std::wstring sche
     IXMLDOMElement* pElement = NULL;
     IXMLDOMSchemaCollection2* pXS = NULL;
     VARIANT_BOOL varStatus;
+    CComBSTR bstrXML;
     BSTR bstrNodeName = NULL;
     bool res = true;
 
     this->resetErrors();
 
-    CComBSTR bstrXML = CComBSTR(xml);
+    Report::char2BSTR(xml, &bstrXML);
+    CHK_ALLOC(bstrXML);
 
     CHK_HR(CreateAndInitDOM(&pXMLDom, (INIT_OPTION_VALIDATEONPARSE | INIT_OPTION_RESOLVEEXTERNALS)));
     CHK_HR(pXMLDom->loadXML(bstrXML, &varStatus));
@@ -250,6 +254,8 @@ std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, s
     DOMNodeType nodeType;
     BSTR bstrNodeName = NULL;
     BSTR bstrNodeType = NULL;
+    CComBSTR bstrXPath;
+    CComBSTR bstrXML;
     VARIANT varNodeValue;
     std::vector<XPathResultEntryType> res;
     std::wstring value;
@@ -258,10 +264,11 @@ std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, s
     this->resetErrors();
 
     UniMode encoding = Report::getEncoding(nppData._nppHandle);
-    CComBSTR bstrXPath = CComBSTR(xpath.c_str());
-    CComBSTR bstrXML = CComBSTR(xml);
-
+    Report::char2BSTR(xpath.c_str(), &bstrXPath);
     CHK_ALLOC(bstrXPath);
+
+    Report::char2BSTR(xml, &bstrXML);
+    CHK_ALLOC(bstrXML);
 
     CHK_HR(CreateAndInitDOM(&pXMLDom));
     CHK_HR(pXMLDom->loadXML(bstrXML, &varStatus));
@@ -421,6 +428,7 @@ bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xsl
     VARIANT varValue;
     VARIANT_BOOL varStatus;
     BSTR bstrEncoding = NULL;
+    CComBSTR bstrXML;
     long length;
     bool currentDataIsXml = true;
     bool outputAsStream = false;
@@ -430,7 +438,8 @@ bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xsl
 
     V_VT(&varValue) = VT_UNKNOWN;
 
-    CComBSTR bstrXML = CComBSTR(xml);
+    Report::char2BSTR(xml, &bstrXML);
+    CHK_ALLOC(bstrXML);
 
     // active document may either be XML or XSL; if XSL,
     // then m_sSelectedFile refers to an XML file
