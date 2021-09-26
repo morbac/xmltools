@@ -454,6 +454,7 @@ void sciDocTokenizeQuickXml(ScintillaDoc& doc) {
 }
 
 //-----------------------------------------------------------------------------------------------//
+extern LangType setAutoXMLType(bool force = FALSE);
 
 void nppPrettyPrintXmlFast() {
     if (xmltoolsoptions.formatingEngine.compare(L"QuickXml") == 0) {
@@ -465,6 +466,8 @@ void nppPrettyPrintXmlFast() {
     else {
         nppMultiDocumentCommand(L"PrettyPrintFast (simplexml)", sciDocPrettyPrintSimpleXml);
     }
+
+    setAutoXMLType();
 }
 
 void nppPrettyPrintXmlAttrFast() {
@@ -477,6 +480,8 @@ void nppPrettyPrintXmlAttrFast() {
     else {
         nppMultiDocumentCommand(L"PrettyPrintAttrFast (simplexml)", sciDocPrettyPrintSimpleXmlAttr);
     }
+
+    setAutoXMLType();
 }
 
 void nppPrettyPrintXmlIndentOnlyFast() {
@@ -489,6 +494,8 @@ void nppPrettyPrintXmlIndentOnlyFast() {
     else {
         nppMultiDocumentCommand(L"PrettyPrintIndentOnlyFast", sciDocPrettyPrintSimpleXml_IndentOnly);
     }
+
+    setAutoXMLType();
 }
 
 void nppLinearizeXmlFast() {
@@ -501,6 +508,8 @@ void nppLinearizeXmlFast() {
     else {
         nppMultiDocumentCommand(L"LinearizeFast (simplexml)", sciDocLinearizeSimpleXml);
     }
+
+    setAutoXMLType();
 }
 
 void nppTokenizeXmlFast() {

@@ -132,21 +132,26 @@ void tagAutoIndent() {
     }
 }
 
-bool setAutoXMLType() {
+LangType setAutoXMLType(bool force = FALSE) {
     dbgln("setAutoXMLType()");
 
-    int currentEdit;
-    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-    HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
+    LangType docType;
+    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
+    if (force || (config.doAutoXMLType && docType != LangType::L_XML)) {
 
-    // on récupère les 6 premiers caractères du fichier
-    char head[8] = { '\0' };
-    ::SendMessage(hCurrentEditView, SCI_GETTEXT, 7, reinterpret_cast<LPARAM>(&head));
+        int currentEdit;
+        ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
+        HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
 
-    if (strlen(head) >= 6 && !strcmp(head, "<?xml ")) {
-        ::SendMessage(nppData._nppHandle, NPPM_SETCURRENTLANGTYPE, 0, (LPARAM)LangType::L_XML);
-        return true;
+        // on récupère les 6 premiers caractères du fichier
+        char head[8] = { '\0' };
+        ::SendMessage(hCurrentEditView, SCI_GETTEXT, 7, reinterpret_cast<LPARAM>(&head));
+
+        if (strlen(head) >= 6 && !strcmp(head, "<?xml ")) {
+            ::SendMessage(nppData._nppHandle, NPPM_SETCURRENTLANGTYPE, 0, (LPARAM)LangType::L_XML);
+            docType = LangType::L_XML;
+        }
     }
 
-    return false;
+    return docType;
 }

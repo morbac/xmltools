@@ -104,7 +104,7 @@ bool hasCurrentDocAnnotations();
 void autoXMLCheck();
 void autoValidation();
 void closeXMLTag();
-bool setAutoXMLType();
+LangType setAutoXMLType(bool force = FALSE);
 void howtoUse();
 void updateProxyConfig();
 
@@ -358,13 +358,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
     }
     case SCN_CHARADDED: {
       dbgln("NPP Event: SCN_CHARADDED");
-      LangType docType;
-      ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
-      if (config.doAutoXMLType && docType != LangType::L_XML) {
-        if (setAutoXMLType()) {
-          docType = LangType::L_XML;
-        }
-      }
+      LangType docType = setAutoXMLType();
       if (docType == LangType::L_XML) {
         // remarque: le closeXMLTag doit s'exécuter avant les autres
         if (config.doCloseTag && notifyCode->ch == '>') {
@@ -392,16 +386,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
     }
     case NPPN_BUFFERACTIVATED: {
       dbgln("NPP Event: NPPN_BUFFERACTIVATED");
-      if (config.doAutoXMLType) {
-        // si le fichier n'a pas de type défini et qu'il commence par "<?xml ", on lui attribue le type L_XML
-        LangType docType = LangType::L_EXTERNAL;
-        ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
-        dbg("  Current langtype: "); dbgln(std::to_string(static_cast<unsigned long long>(docType)).c_str());
-        //Report::_printf_inf("%s", getLangType(docType));
-        if (docType != LangType::L_XML) {
-          setAutoXMLType();
-        }
-      }
+      setAutoXMLType();
       break;
     }
     case NPPN_FILEBEFORECLOSE: {
