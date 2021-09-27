@@ -68,6 +68,7 @@ void XmlToolsConfig::Read(std::wstring _configPath) {
 	ReadBool(L"ensureConformity", xmltoolsoptions.ensureConformity);
 	ReadBool(L"applySpacePreserve", xmltoolsoptions.applySpacePreserve);
 
+	ReadBool(L"tbEnabled", xmltoolsoptions.tbEnabled);
 	ReadBool(L"tbCheckXML", xmltoolsoptions.tbCheckXML);
 	ReadBool(L"tbValidateXML", xmltoolsoptions.tbValidateXML);
 	ReadBool(L"tbFirstError", xmltoolsoptions.tbFirstError);
@@ -142,6 +143,7 @@ void XmlToolsConfig::Write() {
 	WriteBool(L"ensureConformity", xmltoolsoptions.ensureConformity);
 	WriteBool(L"applySpacePreserve", xmltoolsoptions.applySpacePreserve);
 
+	WriteBool(L"tbEnabled", xmltoolsoptions.tbEnabled);
 	WriteBool(L"tbCheckXML", xmltoolsoptions.tbCheckXML);
 	WriteBool(L"tbValidateXML", xmltoolsoptions.tbValidateXML);
 	WriteBool(L"tbFirstError", xmltoolsoptions.tbFirstError);

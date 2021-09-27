@@ -49,6 +49,7 @@ struct struct_xmltoolsoptions {
 	bool ensureConformity = true;
 	bool applySpacePreserve = false;
 
+	bool tbEnabled = true;
 	bool tbCheckXML = true;
 	bool tbValidateXML = true;
 	bool tbFirstError = true;

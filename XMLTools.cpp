@@ -193,103 +193,105 @@ static LRESULT CALLBACK KeyboardProc(int ncode, WPARAM wparam, LPARAM lparam) {
 }
 
 void onToolBarReady() {
-    UINT style = (LR_SHARED | LR_LOADTRANSPARENT | LR_DEFAULTSIZE | LR_LOADMAP3DCOLORS);
+    if (xmltoolsoptions.tbEnabled) {
+        UINT style = (LR_SHARED | LR_LOADTRANSPARENT | LR_DEFAULTSIZE | LR_LOADMAP3DCOLORS);
 
-    HINSTANCE hInstance = (HINSTANCE)GetCurrentModule();
+        HINSTANCE hInstance = (HINSTANCE)GetCurrentModule();
 
-    if (xmltoolsoptions.tbCheckXML) {
-        tbCheckXML.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_CHECKXML), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemCheckXML]._cmdID, (LPARAM)&tbCheckXML);
-    }
+        if (xmltoolsoptions.tbCheckXML) {
+            tbCheckXML.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_CHECKXML), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemCheckXML]._cmdID, (LPARAM)&tbCheckXML);
+        }
 
-    if (xmltoolsoptions.tbValidateXML) {
-        tbValidateXML.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_VALIDATEXML), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemValidateXML]._cmdID, (LPARAM)&tbValidateXML);
-    }
+        if (xmltoolsoptions.tbValidateXML) {
+            tbValidateXML.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_VALIDATEXML), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemValidateXML]._cmdID, (LPARAM)&tbValidateXML);
+        }
 
-    if (xmltoolsoptions.tbFirstError) {
-        tbFirstError.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_FIRST), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemFirstError]._cmdID, (LPARAM)&tbFirstError);
-    }
+        if (xmltoolsoptions.tbFirstError) {
+            tbFirstError.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_FIRST), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemFirstError]._cmdID, (LPARAM)&tbFirstError);
+        }
 
-    if (xmltoolsoptions.tbPrevError) {
-        tbPrevError.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_PREV), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemPreviousError]._cmdID, (LPARAM)&tbPrevError);
-    }
+        if (xmltoolsoptions.tbPrevError) {
+            tbPrevError.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_PREV), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemPreviousError]._cmdID, (LPARAM)&tbPrevError);
+        }
 
-    if (xmltoolsoptions.tbNextError) {
-        tbNextError.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_NEXT), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemNextError]._cmdID, (LPARAM)&tbNextError);
-    }
+        if (xmltoolsoptions.tbNextError) {
+            tbNextError.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_NEXT), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemNextError]._cmdID, (LPARAM)&tbNextError);
+        }
 
-    if (xmltoolsoptions.tbLastError) {
-        tbLastError.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_LAST), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemLastError]._cmdID, (LPARAM)&tbLastError);
-    }
+        if (xmltoolsoptions.tbLastError) {
+            tbLastError.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_LAST), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemLastError]._cmdID, (LPARAM)&tbLastError);
+        }
 
-    if (xmltoolsoptions.tbPrettyPrint) {
-        tbPrettyPrint.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_PRETTYPRINT), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemPrettyPrint]._cmdID, (LPARAM)&tbPrettyPrint);
-    }
+        if (xmltoolsoptions.tbPrettyPrint) {
+            tbPrettyPrint.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_PRETTYPRINT), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemPrettyPrint]._cmdID, (LPARAM)&tbPrettyPrint);
+        }
 
-    if (xmltoolsoptions.tbPrettyPrintIndentAttr) {
-        tbPrettyPrintIndentAttr.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_PRETTYPRINTINDENTATTR), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemPrettyPrintIndentAttr]._cmdID, (LPARAM)&tbPrettyPrintIndentAttr);
-    }
+        if (xmltoolsoptions.tbPrettyPrintIndentAttr) {
+            tbPrettyPrintIndentAttr.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_PRETTYPRINTINDENTATTR), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemPrettyPrintIndentAttr]._cmdID, (LPARAM)&tbPrettyPrintIndentAttr);
+        }
 
-    if (xmltoolsoptions.tbPrettyPrintIndentOnly) {
-        tbPrettyPrintIndentOnly.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_PRETTYPRINTINDENTONLY), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemPrettyPrintIndentOnly]._cmdID, (LPARAM)&tbPrettyPrintIndentOnly);
-    }
+        if (xmltoolsoptions.tbPrettyPrintIndentOnly) {
+            tbPrettyPrintIndentOnly.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_PRETTYPRINTINDENTONLY), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemPrettyPrintIndentOnly]._cmdID, (LPARAM)&tbPrettyPrintIndentOnly);
+        }
 
-    if (xmltoolsoptions.tbLinearize) {
-        tbLinearize.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_LINEARIZE), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemLinearize]._cmdID, (LPARAM)&tbLinearize);
-    }
+        if (xmltoolsoptions.tbLinearize) {
+            tbLinearize.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_LINEARIZE), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemLinearize]._cmdID, (LPARAM)&tbLinearize);
+        }
 
-    if (xmltoolsoptions.tbCurrentXMLPath) {
-        tbCurrentXMLPath.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_CURRENTXPATH), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemCurrentXMLPath]._cmdID, (LPARAM)&tbCurrentXMLPath);
-    }
+        if (xmltoolsoptions.tbCurrentXMLPath) {
+            tbCurrentXMLPath.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_CURRENTXPATH), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemCurrentXMLPath]._cmdID, (LPARAM)&tbCurrentXMLPath);
+        }
 
-    if (xmltoolsoptions.tbCurrentXMLPathNS) {
-        tbCurrentXMLPathNS.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_CURRENTXPATHNS), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemCurrentXMLPathNS]._cmdID, (LPARAM)&tbCurrentXMLPathNS);
-    }
+        if (xmltoolsoptions.tbCurrentXMLPathNS) {
+            tbCurrentXMLPathNS.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_CURRENTXPATHNS), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemCurrentXMLPathNS]._cmdID, (LPARAM)&tbCurrentXMLPathNS);
+        }
 
-    if (xmltoolsoptions.tbEvalXPath) {
-        tbEvalXPath.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_EVALUATEXPATH), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemEvalXPath]._cmdID, (LPARAM)&tbEvalXPath);
-    }
+        if (xmltoolsoptions.tbEvalXPath) {
+            tbEvalXPath.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_EVALUATEXPATH), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemEvalXPath]._cmdID, (LPARAM)&tbEvalXPath);
+        }
 
-    if (xmltoolsoptions.tbXSLTransform) {
-        tbXSLTransform.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_XSLTRANSFORM), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemXSLTransform]._cmdID, (LPARAM)&tbXSLTransform);
-    }
+        if (xmltoolsoptions.tbXSLTransform) {
+            tbXSLTransform.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_XSLTRANSFORM), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemXSLTransform]._cmdID, (LPARAM)&tbXSLTransform);
+        }
 
-    if (xmltoolsoptions.tbEscape) {
-        tbEscape.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_ESCAPE), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemEscape]._cmdID, (LPARAM)&tbEscape);
-    }
+        if (xmltoolsoptions.tbEscape) {
+            tbEscape.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_ESCAPE), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemEscape]._cmdID, (LPARAM)&tbEscape);
+        }
 
-    if (xmltoolsoptions.tbUnescape) {
-        tbUnescape.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_UNESCAPE), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemUnescape]._cmdID, (LPARAM)&tbUnescape);
-    }
+        if (xmltoolsoptions.tbUnescape) {
+            tbUnescape.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_UNESCAPE), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemUnescape]._cmdID, (LPARAM)&tbUnescape);
+        }
 
-    if (xmltoolsoptions.tbComment) {
-        tbComment.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_COMMENT), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemComment]._cmdID, (LPARAM)&tbComment);
-    }
+        if (xmltoolsoptions.tbComment) {
+            tbComment.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_COMMENT), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemComment]._cmdID, (LPARAM)&tbComment);
+        }
 
-    if (xmltoolsoptions.tbUncomment) {
-        tbUncomment.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_UNCOMMENT), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemUncomment]._cmdID, (LPARAM)&tbUncomment);
-    }
+        if (xmltoolsoptions.tbUncomment) {
+            tbUncomment.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_UNCOMMENT), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemUncomment]._cmdID, (LPARAM)&tbUncomment);
+        }
 
-    if (xmltoolsoptions.tbOptions) {
-        tbOptions.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_OPTIONS), IMAGE_BITMAP, 0, 0, style);
-        ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemOptions]._cmdID, (LPARAM)&tbOptions);
+        if (xmltoolsoptions.tbOptions) {
+            tbOptions.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_OPTIONS), IMAGE_BITMAP, 0, 0, style);
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemOptions]._cmdID, (LPARAM)&tbOptions);
+        }
     }
 
     //NppSettings::get().updatePluginMenu();
