@@ -63,25 +63,25 @@ static char THIS_FILE[] = __FILE__;
 
 // This is the name which will be displayed in Plugins Menu
 const wchar_t PLUGIN_NAME[] = L"XML Tools";
-toolbarIcons  tbCheckXML;
-toolbarIcons  tbValidateXML;
-toolbarIcons  tbFirstError;
-toolbarIcons  tbPrevError;
-toolbarIcons  tbNextError;
-toolbarIcons  tbLastError;
-toolbarIcons  tbPrettyPrint;
-toolbarIcons  tbPrettyPrintIndentAttr;
-toolbarIcons  tbPrettyPrintIndentOnly;
-toolbarIcons  tbLinearize;
-toolbarIcons  tbCurrentXMLPath;
-toolbarIcons  tbCurrentXMLPathNS;
-toolbarIcons  tbEvalXPath;
-toolbarIcons  tbXSLTransform;
-toolbarIcons  tbEscape;
-toolbarIcons  tbUnescape;
-toolbarIcons  tbComment;
-toolbarIcons  tbUncomment;
-toolbarIcons  tbOptions;
+toolbarIconsWithDarkMode  tbCheckXML;
+toolbarIconsWithDarkMode  tbValidateXML;
+toolbarIconsWithDarkMode  tbFirstError;
+toolbarIconsWithDarkMode  tbPrevError;
+toolbarIconsWithDarkMode  tbNextError;
+toolbarIconsWithDarkMode  tbLastError;
+toolbarIconsWithDarkMode  tbPrettyPrint;
+toolbarIconsWithDarkMode  tbPrettyPrintIndentAttr;
+toolbarIconsWithDarkMode  tbPrettyPrintIndentOnly;
+toolbarIconsWithDarkMode  tbLinearize;
+toolbarIconsWithDarkMode  tbCurrentXMLPath;
+toolbarIconsWithDarkMode  tbCurrentXMLPathNS;
+toolbarIconsWithDarkMode  tbEvalXPath;
+toolbarIconsWithDarkMode  tbXSLTransform;
+toolbarIconsWithDarkMode  tbEscape;
+toolbarIconsWithDarkMode  tbUnescape;
+toolbarIconsWithDarkMode  tbComment;
+toolbarIconsWithDarkMode  tbUncomment;
+toolbarIconsWithDarkMode  tbOptions;
 
 //extern int nbFunc;
 //extern FuncItem funcItem[];
@@ -194,103 +194,139 @@ static LRESULT CALLBACK KeyboardProc(int ncode, WPARAM wparam, LPARAM lparam) {
 
 void onToolBarReady() {
     if (xmltoolsoptions.tbEnabled) {
-        UINT style = (LR_SHARED | LR_LOADTRANSPARENT | LR_DEFAULTSIZE | LR_LOADMAP3DCOLORS);
-
         HINSTANCE hInstance = (HINSTANCE)GetCurrentModule();
 
         if (xmltoolsoptions.tbCheckXML) {
-            tbCheckXML.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_CHECKXML), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemCheckXML]._cmdID, (LPARAM)&tbCheckXML);
+            tbCheckXML.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_CHECKXML));
+            tbCheckXML.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CHECKXML));
+            tbCheckXML.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CHECKXML_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemCheckXML]._cmdID, (LPARAM)&tbCheckXML);
         }
 
         if (xmltoolsoptions.tbValidateXML) {
-            tbValidateXML.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_VALIDATEXML), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemValidateXML]._cmdID, (LPARAM)&tbValidateXML);
+            tbValidateXML.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_VALIDATEXML));
+            tbValidateXML.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_VALIDATEXML));
+            tbValidateXML.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_VALIDATEXML_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemValidateXML]._cmdID, (LPARAM)&tbValidateXML);
         }
 
         if (xmltoolsoptions.tbFirstError) {
-            tbFirstError.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_FIRST), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemFirstError]._cmdID, (LPARAM)&tbFirstError);
+            tbFirstError.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_FIRST));
+            tbFirstError.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_FIRST));
+            tbFirstError.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_FIRST_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemFirstError]._cmdID, (LPARAM)&tbFirstError);
         }
 
         if (xmltoolsoptions.tbPrevError) {
-            tbPrevError.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_PREV), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemPreviousError]._cmdID, (LPARAM)&tbPrevError);
+            tbPrevError.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_PREV));
+            tbPrevError.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_PREV));
+            tbPrevError.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_PREV_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemPreviousError]._cmdID, (LPARAM)&tbPrevError);
         }
 
         if (xmltoolsoptions.tbNextError) {
-            tbNextError.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_NEXT), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemNextError]._cmdID, (LPARAM)&tbNextError);
+            tbNextError.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_NEXT));
+            tbNextError.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_NEXT));
+            tbNextError.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_NEXT_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemNextError]._cmdID, (LPARAM)&tbNextError);
         }
 
         if (xmltoolsoptions.tbLastError) {
-            tbLastError.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_LAST), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemLastError]._cmdID, (LPARAM)&tbLastError);
+            tbLastError.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_LAST));
+            tbLastError.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_LAST));
+            tbLastError.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_LAST_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemLastError]._cmdID, (LPARAM)&tbLastError);
         }
 
         if (xmltoolsoptions.tbPrettyPrint) {
-            tbPrettyPrint.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_PRETTYPRINT), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemPrettyPrint]._cmdID, (LPARAM)&tbPrettyPrint);
+            tbPrettyPrint.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_PRETTYPRINT));
+            tbPrettyPrint.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_PRETTYPRINT));
+            tbPrettyPrint.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_PRETTYPRINT_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemPrettyPrint]._cmdID, (LPARAM)&tbPrettyPrint);
         }
 
         if (xmltoolsoptions.tbPrettyPrintIndentAttr) {
-            tbPrettyPrintIndentAttr.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_PRETTYPRINTINDENTATTR), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemPrettyPrintIndentAttr]._cmdID, (LPARAM)&tbPrettyPrintIndentAttr);
+            tbPrettyPrintIndentAttr.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_PRETTYPRINTINDENTATTR));
+            tbPrettyPrintIndentAttr.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_PRETTYPRINTINDENTATTR));
+            tbPrettyPrintIndentAttr.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_PRETTYPRINTINDENTATTR_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemPrettyPrintIndentAttr]._cmdID, (LPARAM)&tbPrettyPrintIndentAttr);
         }
 
         if (xmltoolsoptions.tbPrettyPrintIndentOnly) {
-            tbPrettyPrintIndentOnly.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_PRETTYPRINTINDENTONLY), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemPrettyPrintIndentOnly]._cmdID, (LPARAM)&tbPrettyPrintIndentOnly);
+            tbPrettyPrintIndentOnly.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_PRETTYPRINTINDENTONLY));
+            tbPrettyPrintIndentOnly.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_PRETTYPRINTINDENTONLY));
+            tbPrettyPrintIndentOnly.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_PRETTYPRINTINDENTONLY_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemPrettyPrintIndentOnly]._cmdID, (LPARAM)&tbPrettyPrintIndentOnly);
         }
 
         if (xmltoolsoptions.tbLinearize) {
-            tbLinearize.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_LINEARIZE), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemLinearize]._cmdID, (LPARAM)&tbLinearize);
+            tbLinearize.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_LINEARIZE));
+            tbLinearize.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_LINEARIZE));
+            tbLinearize.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_LINEARIZE_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemLinearize]._cmdID, (LPARAM)&tbLinearize);
         }
 
         if (xmltoolsoptions.tbCurrentXMLPath) {
-            tbCurrentXMLPath.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_CURRENTXPATH), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemCurrentXMLPath]._cmdID, (LPARAM)&tbCurrentXMLPath);
+            tbCurrentXMLPath.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_CURRENTXPATH));
+            tbCurrentXMLPath.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CURRENTXPATH));
+            tbCurrentXMLPath.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CURRENTXPATH_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemCurrentXMLPath]._cmdID, (LPARAM)&tbCurrentXMLPath);
         }
 
         if (xmltoolsoptions.tbCurrentXMLPathNS) {
-            tbCurrentXMLPathNS.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_CURRENTXPATHNS), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemCurrentXMLPathNS]._cmdID, (LPARAM)&tbCurrentXMLPathNS);
+            tbCurrentXMLPathNS.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_CURRENTXPATHNS));
+            tbCurrentXMLPathNS.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CURRENTXPATHNS));
+            tbCurrentXMLPathNS.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CURRENTXPATHNS_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemCurrentXMLPathNS]._cmdID, (LPARAM)&tbCurrentXMLPathNS);
         }
 
         if (xmltoolsoptions.tbEvalXPath) {
-            tbEvalXPath.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_EVALUATEXPATH), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemEvalXPath]._cmdID, (LPARAM)&tbEvalXPath);
+            tbEvalXPath.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_EVALUATEXPATH));
+            tbEvalXPath.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_EVALUATEXPATH));
+            tbEvalXPath.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_EVALUATEXPATH_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemEvalXPath]._cmdID, (LPARAM)&tbEvalXPath);
         }
 
         if (xmltoolsoptions.tbXSLTransform) {
-            tbXSLTransform.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_XSLTRANSFORM), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemXSLTransform]._cmdID, (LPARAM)&tbXSLTransform);
+            tbXSLTransform.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_XSLTRANSFORM));
+            tbXSLTransform.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_XSLTRANSFORM));
+            tbXSLTransform.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_XSLTRANSFORM_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemXSLTransform]._cmdID, (LPARAM)&tbXSLTransform);
         }
 
         if (xmltoolsoptions.tbEscape) {
-            tbEscape.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_ESCAPE), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemEscape]._cmdID, (LPARAM)&tbEscape);
+            tbEscape.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_ESCAPE));
+            tbEscape.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ESCAPE));
+            tbEscape.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ESCAPE_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemEscape]._cmdID, (LPARAM)&tbEscape);
         }
 
         if (xmltoolsoptions.tbUnescape) {
-            tbUnescape.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_UNESCAPE), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemUnescape]._cmdID, (LPARAM)&tbUnescape);
+            tbUnescape.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_UNESCAPE));
+            tbUnescape.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_UNESCAPE));
+            tbUnescape.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_UNESCAPE_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemUnescape]._cmdID, (LPARAM)&tbUnescape);
         }
 
         if (xmltoolsoptions.tbComment) {
-            tbComment.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_COMMENT), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemComment]._cmdID, (LPARAM)&tbComment);
+            tbComment.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_COMMENT));
+            tbComment.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_COMMENT));
+            tbComment.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_COMMENT_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemComment]._cmdID, (LPARAM)&tbComment);
         }
 
         if (xmltoolsoptions.tbUncomment) {
-            tbUncomment.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_UNCOMMENT), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemUncomment]._cmdID, (LPARAM)&tbUncomment);
+            tbUncomment.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_UNCOMMENT));
+            tbUncomment.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_UNCOMMENT));
+            tbUncomment.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_UNCOMMENT_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemUncomment]._cmdID, (LPARAM)&tbUncomment);
         }
 
         if (xmltoolsoptions.tbOptions) {
-            tbOptions.hToolbarBmp = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_OPTIONS), IMAGE_BITMAP, 0, 0, style);
-            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON, nppMenu[menuitems.menuitemOptions]._cmdID, (LPARAM)&tbOptions);
+            tbOptions.hToolbarBmp = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_OPTIONS));
+            tbOptions.hToolbarIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_OPTIONS));
+            tbOptions.hToolbarIconDarkMode = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_OPTIONS_DM));
+            ::SendMessage(nppData._nppHandle, NPPM_ADDTOOLBARICON_FORDARKMODE, nppMenu[menuitems.menuitemOptions]._cmdID, (LPARAM)&tbOptions);
         }
     }
 
