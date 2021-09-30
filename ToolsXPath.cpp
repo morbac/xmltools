@@ -30,6 +30,15 @@ std::wstring currentXPath(int xpathMode) {
     ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
     formater = new XmlFormater(data, currentLength);
+    if ((xpathMode & XPATH_MODE_KEEPIDATTRIBUTE) != 0 && xmltoolsoptions.identityAttributes.length() > 0) {
+        std::wstring temp;
+        std::vector<std::string> parts;
+        std::wstringstream wss(xmltoolsoptions.identityAttributes);
+        while (std::getline(wss, temp, L';')) {
+            parts.push_back(Report::ws2s(temp));
+        }
+        formater->setIdentityAttributes(parts);
+    }
     nodepath = Report::utf8ToUcs2(formater->currentPath(currentPos, xpathMode)->str());
     delete[] data;
     delete formater;

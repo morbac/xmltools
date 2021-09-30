@@ -28,6 +28,9 @@ namespace QuickXml {
 		std::stringstream out;
 		size_t indentLevel;                 // the real applied indent level
 		size_t levelCounter;                // the level counter
+		std::vector<std::string> idattribues;	// a vector of attributes considered as identity (see setIdentityAttributes)
+
+		bool isIdentAttribute(std::string attr);
 
 		/*
 		* Adds an EOL char to output stream
@@ -127,5 +130,12 @@ namespace QuickXml {
 		* @return A default parameters set for formater
 		*/
 		XmlFormaterParamsType getDefaultParams();
+
+		/*
+		* Register attributes names considered as identity. Theses attributes are
+		* required by currentPath when mode XPATH_MODE_KEEPIDATTRIBUTE is enabled.
+		* @param attributes A vector containing attributes names
+		*/
+		void setIdentityAttributes(std::vector<std::string> attributes);
 	};
 }

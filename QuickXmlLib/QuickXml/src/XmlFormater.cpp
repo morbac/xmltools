@@ -33,6 +33,18 @@ namespace QuickXml {
 		rtrim_s(s);
 	}
 
+	bool XmlFormater::isIdentAttribute(std::string attr) {
+		for (std::vector<std::string>::iterator it = this->idattribues.begin(); it != this->idattribues.end(); ++it) {
+			std::string name = Report::to_lowercase(*it);
+			if (Report::ends_with(Report::to_lowercase(attr), ":" + name) ||
+				!Report::to_lowercase(attr).compare(name)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	XmlFormater::XmlFormater(const char* data, size_t length) {
 		this->parser = new XmlParser(data, length);
 
@@ -459,7 +471,7 @@ namespace QuickXml {
 						vPath.pop_back();
 					}
 					std::string attr(token.chars, token.size);
-					if ((xpathMode & XPATH_MODE_KEEPIDATTRIBUTE) != 0 && (Report::ends_with(Report::to_lowercase(attr), ":id") || !Report::to_lowercase(attr).compare("id"))) {
+					if ((xpathMode & XPATH_MODE_KEEPIDATTRIBUTE) != 0 && isIdentAttribute(attr)) {
 						// we must check if attribute is "id"; if true, we must rewrite the
 						// tag name and add the value of @id attribute
 						keep_attr_value = true;
@@ -470,12 +482,20 @@ namespace QuickXml {
 				}
 				case XmlTokenType::AttrValue: {
 					if (keep_attr_value) {
-						std::string value(token.chars+1, token.size-2);
+						std::string value(token.chars, token.size);
 						std::string attr = vPath.back();
 						vPath.pop_back();
 						std::string tag = vPath.back();
 						vPath.pop_back();
-						vPath.push_back(tag + "[" + value + "]");
+						if (Report::ends_with(tag, "]")) {
+							tag.erase(tag.length() - 1, 1);
+							tag += " ";
+						}
+						else {
+							tag += "[";
+						}
+						tag += attr.substr(1) + "=" + value + "]";
+						vPath.push_back(tag);
 						vPath.push_back(attr);
 					}
 					keep_attr_value = false;
@@ -567,5 +587,9 @@ namespace QuickXml {
 		params.indentOnly = false;
 		params.applySpacePreserve = false;
 		return params;
+	}
+
+	void XmlFormater::setIdentityAttributes(std::vector<std::string> attributes) {
+		this->idattribues = attributes;
 	}
 }

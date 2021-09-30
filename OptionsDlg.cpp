@@ -118,8 +118,14 @@ BOOL COptionsDlg::OnInitDialog() {
   pGrpOptions->AddSubItem(this->pAnnotationHighlightStyleProperty); vIntProperties.push_back(this->pAnnotationHighlightStyleProperty);
   pTmpOption = new CMFCPropertyGridProperty(L"Max displayed errors", COleVariant((long)xmltoolsoptions.maxErrorsNum, VT_INT), L"Maximum number of displayed errors. You can allow an infinite number of errors by setting the value `-1`, but be aware that it can slow down the application when XML has many errors.", (DWORD_PTR)&xmltoolsoptions.maxErrorsNum);
   pGrpOptions->AddSubItem(pTmpOption); vIntProperties.push_back(pTmpOption);
+
+
+  CMFCPropertyGridProperty* pGrpStatusbar = new CMFCPropertyGridProperty(L"Status bar");
+  m_wndPropList.AddProperty(pGrpStatusbar);
   pTmpOption = new CMFCPropertyGridProperty(L"Display current XPath in statusbar", COleVariant((short)(xmltoolsoptions.xpathOnStatusbar ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"When enabled, current XPath is automatically printed in statusbar", (DWORD_PTR)&xmltoolsoptions.xpathOnStatusbar);
-  pGrpOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pGrpStatusbar->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Identity attribute names", COleVariant(xmltoolsoptions.identityAttributes.c_str()), L"Specifies a semi-colon separated list of attributes names which could contain identity values. The values of theses attributes are copied into statusbar xpath value. For instance, if attribute \"id\" is referenced and a tag \"<sample id='hello'>\" is present, the status bar will contain \".../sample[id='hello']/...\".", (DWORD_PTR)&xmltoolsoptions.identityAttributes);
+  pGrpStatusbar->AddSubItem(pTmpOption); vWStringProperties.push_back(pTmpOption);
 
   CMFCPropertyGridProperty* pGrpXml2Txt = new CMFCPropertyGridProperty(L"XML to Text conversion");
   m_wndPropList.AddProperty(pGrpXml2Txt);
@@ -149,8 +155,6 @@ BOOL COptionsDlg::OnInitDialog() {
   pGrpPrettyPrint->AddSubItem(pTmpOption); vIntProperties.push_back(pTmpOption);
   pTmpOption = new CMFCPropertyGridProperty(L"Apply xml:space=\"preserve\"", COleVariant((short)(xmltoolsoptions.applySpacePreserve ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Make the formating engine take care of xml:space=\"preserve\" and xml:space=\"default\" declarations. Currently only available on QuickXml.", (DWORD_PTR)&xmltoolsoptions.applySpacePreserve);
   pGrpPrettyPrint->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
-
-  
 
 
   CMFCPropertyGridProperty* pGrpXmlFeatures = new CMFCPropertyGridProperty(L"MSXML Features");
