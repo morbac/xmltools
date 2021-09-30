@@ -118,6 +118,8 @@ BOOL COptionsDlg::OnInitDialog() {
   pGrpOptions->AddSubItem(this->pAnnotationHighlightStyleProperty); vIntProperties.push_back(this->pAnnotationHighlightStyleProperty);
   pTmpOption = new CMFCPropertyGridProperty(L"Max displayed errors", COleVariant((long)xmltoolsoptions.maxErrorsNum, VT_INT), L"Maximum number of displayed errors. You can allow an infinite number of errors by setting the value `-1`, but be aware that it can slow down the application when XML has many errors.", (DWORD_PTR)&xmltoolsoptions.maxErrorsNum);
   pGrpOptions->AddSubItem(pTmpOption); vIntProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Display current XPath in statusbar", COleVariant((short)(xmltoolsoptions.xpathOnStatusbar ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"When enabled, current XPath is automatically printed in statusbar", (DWORD_PTR)&xmltoolsoptions.xpathOnStatusbar);
+  pGrpOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
 
   CMFCPropertyGridProperty* pGrpXml2Txt = new CMFCPropertyGridProperty(L"XML to Text conversion");
   m_wndPropList.AddProperty(pGrpXml2Txt);

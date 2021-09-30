@@ -40,6 +40,9 @@ struct struct_xmltoolsoptions {
 	int annotationHighlightStyle = 13;
 	int maxErrorsNum = 10;
 	int maxIndentLevel = 0;
+
+	bool xpathOnStatusbar = true;
+
 	bool convertAmp = true;
 	bool convertLt = true;
 	bool convertGt = true;

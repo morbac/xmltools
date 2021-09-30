@@ -10,6 +10,7 @@
 #endif // _MSC_VER > 1000
 
 #include <sstream>
+#include <algorithm>
 #include <atlstr.h>
 
 // from NPP source "Parameters.h"
@@ -58,6 +59,9 @@ public:
   static void strcpy(char* dest, std::wstring& src);
   static void strcpy(wchar_t* dest, const wchar_t* src);
   static void strcpy(wchar_t* dest, std::wstring& src);
+
+  static std::string to_lowercase(std::string text);
+  static bool ends_with(std::string const& text, std::string const& suffix);
 
   static std::string narrow(const std::wstring& ws);
   static std::wstring widen(const char* s);

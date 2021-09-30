@@ -378,6 +378,16 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
       }
       break;
     }
+    case SCN_UPDATEUI: {
+        dbgln("NPP Event: SCN_UPDATEUI");
+        if (xmltoolsoptions.xpathOnStatusbar) {
+          LangType docType = setAutoXMLType();
+          if (docType == LangType::L_XML) {
+            printCurrentXPathInStatusbar();
+          }
+        }
+        break;
+    }
     case NPPN_FILEOPENED: {
       dbgln("NPP Event: NPPN_FILEOPENED");
       TCHAR filename[MAX_PATH] = { 0 };

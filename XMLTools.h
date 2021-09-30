@@ -33,6 +33,7 @@ extern ErrorEntryDesc displayXMLError(std::wstring wmsg, HWND view = NULL, size_
 extern void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view = NULL, const wchar_t* szDesc = NULL);
 extern void clearErrors(HWND view = NULL);
 extern void registerError(ErrorEntryDesc err);
+extern void printCurrentXPathInStatusbar();
 
 void savePluginParams();
 

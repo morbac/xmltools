@@ -4,6 +4,10 @@
 #include <vector>
 #include "XmlParser.h"
 
+#define XPATH_MODE_BASIC				(1 << 0)
+#define XPATH_MODE_WITHNAMESPACE		(1 << 1)
+#define XPATH_MODE_KEEPIDATTRIBUTE		(1 << 2)
+
 namespace QuickXml {
 	struct XmlFormaterParamsType {
 		std::string indentChars = "\t";		// indentation char(s)
@@ -113,10 +117,10 @@ namespace QuickXml {
 		/*
 		* Construct the path of given position
 		* @param posiiton The reference position to construct path for
-		* @param keepNamespace Flag that indicates if namespace must be added in output path
+		* @param xpathMode The xpath extraction mode
 		* @return The constructed path
 		*/
-		std::stringstream* currentPath(size_t position, bool keepNamespace = true);
+		std::stringstream* currentPath(size_t position, int xpathMode = XPATH_MODE_WITHNAMESPACE);
 
 		/*
 		* Construct a default formater parameters object

@@ -9,7 +9,7 @@
 
 using namespace QuickXml;
 
-std::wstring currentXPath(bool preciseXPath) {
+std::wstring currentXPath(int xpathMode) {
     dbgln("currentXPath()");
 
     XmlFormater* formater = NULL;
@@ -30,17 +30,29 @@ std::wstring currentXPath(bool preciseXPath) {
     ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
     formater = new XmlFormater(data, currentLength);
-    nodepath = Report::utf8ToUcs2(formater->currentPath(currentPos, preciseXPath)->str());
+    nodepath = Report::utf8ToUcs2(formater->currentPath(currentPos, xpathMode)->str());
     delete[] data;
     delete formater;
 
     return nodepath;
 }
 
+void printCurrentXPathInStatusbar() {
+    dbgln("printCurrentXPathInStatusbar()");
+
+    int currentEdit;
+    ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
+    HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
+
+    std::wstring tmp = currentXPath(XPATH_MODE_WITHNAMESPACE | XPATH_MODE_KEEPIDATTRIBUTE);
+    if (tmp.length() == 0) tmp = L" ";  // empty value has no effect on NPPM_SETSTATUSBAR
+    ::SendMessage(nppData._nppHandle, NPPM_SETSTATUSBAR, STATUSBAR_DOC_TYPE, (LPARAM) tmp.c_str());
+}
+
 void getCurrentXPath(bool precise) {
     dbgln("getCurrentXPath()");
 
-    std::wstring nodepath(currentXPath(precise));
+    std::wstring nodepath(currentXPath(precise ? XPATH_MODE_WITHNAMESPACE : XPATH_MODE_BASIC));
     std::wstring tmpmsg(L"Current node cannot be resolved.");
 
     if (nodepath.length() > 0) {

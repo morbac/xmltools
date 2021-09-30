@@ -260,6 +260,20 @@ void Report::strcpy(wchar_t* dest, std::wstring& src) {
     wcscpy(dest, src.c_str());
 }
 
+std::string Report::to_lowercase(std::string text) {
+    std::transform(text.begin(), text.end(), text.begin(), std::tolower);
+    return text;
+}
+
+bool Report::ends_with(std::string const& text, std::string const& suffix) {
+    if (text.length() >= suffix.length()) {
+        return (0 == text.compare(text.length() - suffix.length(), suffix.length(), suffix));
+    }
+    else {
+        return false;
+    }
+}
+
 std::string Report::narrow(const std::wstring& ws) {
     size_t l = 4 * ws.length();
     char* tmp = new char[l];
