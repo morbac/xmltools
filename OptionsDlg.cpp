@@ -126,6 +126,8 @@ BOOL COptionsDlg::OnInitDialog() {
   pGrpStatusbar->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
   pTmpOption = new CMFCPropertyGridProperty(L"Identity attribute names", COleVariant(xmltoolsoptions.identityAttributes.c_str()), L"Specifies a semi-colon separated list of attributes names which could contain identity values. The values of theses attributes are copied into statusbar xpath value. For instance, if attribute \"id\" is referenced and a tag \"<sample id='hello'>\" is present, the status bar will contain \".../sample[id='hello']/...\".", (DWORD_PTR)&xmltoolsoptions.identityAttributes);
   pGrpStatusbar->AddSubItem(pTmpOption); vWStringProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Dump attributes name", COleVariant((short)(xmltoolsoptions.dumpAttributeName ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Introduce the indentity attributes with their name. When enabled, elements are dumped like \".../sample[id='hello']/...\". When disabled, elements are dumped like \".../sample[hello]/...\".", (DWORD_PTR)&xmltoolsoptions.dumpAttributeName);
+  pGrpStatusbar->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
 
   CMFCPropertyGridProperty* pGrpXml2Txt = new CMFCPropertyGridProperty(L"XML to Text conversion");
   m_wndPropList.AddProperty(pGrpXml2Txt);

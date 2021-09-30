@@ -42,6 +42,7 @@ struct struct_xmltoolsoptions {
 	int maxIndentLevel = 0;
 
 	bool xpathOnStatusbar = true;
+	bool dumpAttributeName = false;
 	std::wstring identityAttributes = L"id;name";
 
 	bool convertAmp = true;

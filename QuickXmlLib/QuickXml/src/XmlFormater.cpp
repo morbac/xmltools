@@ -34,10 +34,9 @@ namespace QuickXml {
 	}
 
 	bool XmlFormater::isIdentAttribute(std::string attr) {
-		for (std::vector<std::string>::iterator it = this->idattribues.begin(); it != this->idattribues.end(); ++it) {
-			std::string name = Report::to_lowercase(*it);
-			if (Report::ends_with(Report::to_lowercase(attr), ":" + name) ||
-				!Report::to_lowercase(attr).compare(name)) {
+		for (std::vector<std::string>::iterator it = this->params.identityAttribues.begin(); it != this->params.identityAttribues.end(); ++it) {
+			std::string lw_attr = Report::to_lowercase(attr);
+			if (!lw_attr.compare(*it) || Report::ends_with(lw_attr, ":" + *it)) {
 				return true;
 			}
 		}
@@ -433,6 +432,12 @@ namespace QuickXml {
 		this->reset();
 		this->parser->reset();
 
+		// for performance optimization, all identity attributes are lowercased
+
+		for (std::vector<std::string>::iterator it = this->params.identityAttribues.begin(); it != this->params.identityAttribues.end(); ++it) {
+			*it = Report::to_lowercase(*it);
+		}
+
 		XmlToken token = undefinedToken;
 		std::vector<std::string> vPath;
 		bool pushed_attr = false;
@@ -482,23 +487,38 @@ namespace QuickXml {
 				}
 				case XmlTokenType::AttrValue: {
 					if (keep_attr_value) {
-						std::string value(token.chars, token.size);
 						std::string attr = vPath.back();
 						vPath.pop_back();
 						std::string tag = vPath.back();
 						vPath.pop_back();
-						if (Report::ends_with(tag, "]")) {
-							tag.erase(tag.length() - 1, 1);
-							tag += " ";
+
+						if (this->params.dumpIdAttributesName) {
+							std::string value(token.chars, token.size);
+							if (Report::ends_with(tag, "]")) {
+								tag.erase(tag.length() - 1, 1);
+								tag += " ";
+							}
+							else {
+								tag += "[";
+							}
+							tag += attr.substr(1) + "=" + value + "]";
 						}
 						else {
-							tag += "[";
+							std::string value(token.chars+1, token.size-2);
+							if (Report::ends_with(tag, "]")) {
+								tag.erase(tag.length() - 1, 1);
+								tag += " | ";
+							}
+							else {
+								tag += "[";
+							}
+							tag += value + "]";
 						}
-						tag += attr.substr(1) + "=" + value + "]";
 						vPath.push_back(tag);
 						vPath.push_back(attr);
 					}
 					keep_attr_value = false;
+					break;
 				}
 				case XmlTokenType::TagOpeningEnd: {
 					if (pushed_attr) {
@@ -586,10 +606,7 @@ namespace QuickXml {
 		params.indentAttributes = false;
 		params.indentOnly = false;
 		params.applySpacePreserve = false;
+		params.dumpIdAttributesName = true;
 		return params;
-	}
-
-	void XmlFormater::setIdentityAttributes(std::vector<std::string> attributes) {
-		this->idattribues = attributes;
 	}
 }

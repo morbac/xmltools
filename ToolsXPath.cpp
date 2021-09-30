@@ -29,16 +29,17 @@ std::wstring currentXPath(int xpathMode) {
     currentPos = long(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
     ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
-    formater = new XmlFormater(data, currentLength);
+    XmlFormaterParamsType params = XmlFormater::getDefaultParams();
     if ((xpathMode & XPATH_MODE_KEEPIDATTRIBUTE) != 0 && xmltoolsoptions.identityAttributes.length() > 0) {
+        params.dumpIdAttributesName = xmltoolsoptions.dumpAttributeName;
+
         std::wstring temp;
-        std::vector<std::string> parts;
         std::wstringstream wss(xmltoolsoptions.identityAttributes);
         while (std::getline(wss, temp, L';')) {
-            parts.push_back(Report::ws2s(temp));
+            params.identityAttribues.push_back(Report::ws2s(temp));
         }
-        formater->setIdentityAttributes(parts);
     }
+    formater = new XmlFormater(data, currentLength, params);
     nodepath = Report::utf8ToUcs2(formater->currentPath(currentPos, xpathMode)->str());
     delete[] data;
     delete formater;

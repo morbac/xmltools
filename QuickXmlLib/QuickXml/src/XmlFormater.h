@@ -18,6 +18,10 @@ namespace QuickXml {
 		bool indentAttributes = false;		// make the formater display attributes on separated lines
 		bool indentOnly = false;			// make the formater keep the existing linebreaks and only adjust indentation
 		bool applySpacePreserve = false;    // make the formater apply the xml:space="preserve" when defined
+
+		std::vector<std::string> identityAttribues;	// a vector of attributes considered as identity (see setIdentityAttributes)
+		bool dumpIdAttributesName = true;	// make the currentPath dump the identity attributes name (when XPATH_MODE_KEEPIDATTRIBUTE active)
+		
 	};
 
 	class XmlFormater {
@@ -28,7 +32,6 @@ namespace QuickXml {
 		std::stringstream out;
 		size_t indentLevel;                 // the real applied indent level
 		size_t levelCounter;                // the level counter
-		std::vector<std::string> idattribues;	// a vector of attributes considered as identity (see setIdentityAttributes)
 
 		bool isIdentAttribute(std::string attr);
 
@@ -129,13 +132,6 @@ namespace QuickXml {
 		* Construct a default formater parameters object
 		* @return A default parameters set for formater
 		*/
-		XmlFormaterParamsType getDefaultParams();
-
-		/*
-		* Register attributes names considered as identity. Theses attributes are
-		* required by currentPath when mode XPATH_MODE_KEEPIDATTRIBUTE is enabled.
-		* @param attributes A vector containing attributes names
-		*/
-		void setIdentityAttributes(std::vector<std::string> attributes);
+		static XmlFormaterParamsType getDefaultParams();
 	};
 }
