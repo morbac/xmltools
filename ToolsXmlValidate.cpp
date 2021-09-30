@@ -125,13 +125,13 @@ void XMLValidation(int informIfNoError) {
             XmlParser parser(data, currentLength);
             XmlToken token = undefinedToken;
             do {
-                token = parser.parseUntil(XmlTokenType::Declaration | XmlTokenType::TagOpening);
-                if (token.type == XmlTokenType::Declaration && !strncmp(token.chars, "<!DOCTYPE", 9)) {
+                token = parser.parseUntil(XmlTokenType::DeclarationBeg | XmlTokenType::TagOpening);
+                if (token.type == XmlTokenType::DeclarationBeg && !strncmp(token.chars, "<!DOCTYPE", 9)) {
                     break;
                 }
             } while (token.type != XmlTokenType::EndOfFile && token.type != XmlTokenType::TagOpening);
 
-            hasSchemaOrDTD = (token.type == XmlTokenType::Declaration);
+            hasSchemaOrDTD = (token.type == XmlTokenType::DeclarationBeg);
         }
 
         if (hasSchemaOrDTD) {

@@ -6,26 +6,27 @@
 
 namespace QuickXml {
     enum XmlTokenType {
-        Undefined         = 1 <<  0,
+        Undefined              = 1 <<  0,
 
-        TagOpening        = 1 <<  1, // <nx:sample
-        TagClosing        = 1 <<  2, // </nx:sample
-        TagOpeningEnd     = 1 <<  3, // > of opening tag
-        TagClosingEnd     = 1 <<  4, // > of closing tag
-        TagSelfClosingEnd = 1 <<  5, // /> of self closing tag
-        AttrName          = 1 <<  6,
-        AttrValue         = 1 <<  7,
-        Text              = 1 <<  8,
-        Whitespace        = 1 <<  9,
-        Instruction       = 1 << 10, // <?..?> / <%..%>
-        Declaration       = 1 << 11, // <!
-        DeclarationEnd    = 1 << 12, // >
-        Comment           = 1 << 13,
-        CDATA             = 1 << 14,
-        LineBreak         = 1 << 15,
-        Equal             = 1 << 16,
+        TagOpening             = 1 <<  1, // <nx:sample
+        TagClosing             = 1 <<  2, // </nx:sample
+        TagOpeningEnd          = 1 <<  3, // > of opening tag
+        TagClosingEnd          = 1 <<  4, // > of closing tag
+        TagSelfClosingEnd      = 1 <<  5, // /> of self closing tag
+        AttrName               = 1 <<  6,
+        AttrValue              = 1 <<  7,
+        Text                   = 1 <<  8,
+        Whitespace             = 1 <<  9,
+        Instruction            = 1 << 10, // <?..?> / <%..%>
+        DeclarationBeg         = 1 << 11, // <!...[
+        DeclarationEnd         = 1 << 12, // ]>
+        DeclarationSelfClosing = 1 << 13, // <!...>
+        Comment                = 1 << 14,
+        CDATA                  = 1 << 15,
+        LineBreak              = 1 << 16,
+        Equal                  = 1 << 17,
 
-        EndOfFile         = 1 << 30
+        EndOfFile              = 1 << 30
     };
 
     typedef int XmlTokensType;  // combined tokens (ex: XmlTokenType::TagOpening | XmlTokenType::Declaration)
@@ -172,6 +173,12 @@ namespace QuickXml {
         * @return Number of readen chars
         */
         size_t readUntilFirstNotOf(const char* characters, size_t offset = 0);
+
+        /*
+        * Reads stream until end of incoming declaration
+        * @return Number of readen chars
+        */
+        size_t readDeclaration();
 
         /*
         * Gets the current token name (for debug)

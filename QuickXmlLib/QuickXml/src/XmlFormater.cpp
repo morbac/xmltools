@@ -1,6 +1,5 @@
 #include <algorithm>
 #include "XmlFormater.h"
-#include "../../../Report.h"
 
 namespace QuickXml {
 	static inline void ltrim(std::string& s) {
@@ -139,7 +138,7 @@ namespace QuickXml {
 							if (tmp.length() > 0 ||
 								((nexttoken.type != XmlTokenType::TagOpening &&
 									nexttoken.type != XmlTokenType::Comment &&
-									nexttoken.type != XmlTokenType::Declaration) &&
+									nexttoken.type != XmlTokenType::DeclarationBeg) &&
 									(nexttoken.type != XmlTokenType::TagClosing || lastAppliedTokenType == XmlTokenType::TagOpeningEnd))) {
 								lastAppliedTokenType = XmlTokenType::Text;
 								this->out.write(token.chars, token.size);
@@ -197,7 +196,7 @@ namespace QuickXml {
 				case XmlTokenType::AttrName:
 				case XmlTokenType::Comment:
 				case XmlTokenType::CDATA:
-				case XmlTokenType::Declaration:
+				case XmlTokenType::DeclarationBeg:
 				case XmlTokenType::DeclarationEnd:
 				case XmlTokenType::AttrValue:
 				case XmlTokenType::Instruction:
@@ -334,7 +333,7 @@ namespace QuickXml {
 						}
 
 						if (tmp.length() > 0 ||
-							((!(nexttoken.type & (XmlTokenType::TagOpening | XmlTokenType::Comment | XmlTokenType::Declaration))) &&
+							((!(nexttoken.type & (XmlTokenType::TagOpening | XmlTokenType::Comment | XmlTokenType::DeclarationBeg))) &&
 								(nexttoken.type != XmlTokenType::TagClosing || lastAppliedTokenType == XmlTokenType::TagOpeningEnd))) {
 							lastAppliedTokenType = XmlTokenType::Text;
 							if (this->params.indentOnly) {
@@ -360,7 +359,9 @@ namespace QuickXml {
 					}
 					break;
 				}
-				case XmlTokenType::Declaration: {
+				case XmlTokenType::DeclarationBeg:
+				case XmlTokenType::DeclarationSelfClosing: {
+					// <!...[
 					if (this->params.indentOnly) {
 						if (lastTextHasLineBreaks) {
 							this->writeIndentation();
@@ -370,9 +371,11 @@ namespace QuickXml {
 						this->writeEOL();
 						this->writeIndentation();
 					}
-					lastAppliedTokenType = XmlTokenType::Declaration;
+					lastAppliedTokenType = token.type;
 					this->out.write(token.chars, token.size);
-					this->updateIndentLevel(1);
+					if (token.type == XmlTokenType::DeclarationBeg) {
+						this->updateIndentLevel(1);
+					}
 					break;
 				}
 				case XmlTokenType::DeclarationEnd: {
@@ -457,13 +460,13 @@ namespace QuickXml {
 					break;
 				}
 				case XmlTokenType::TagClosingEnd: {
-					vPath.pop_back();
+					if (!vPath.empty()) vPath.pop_back();
 					pushed_attr = false;
 					keep_attr_value = false;
 					break;
 				}
 				case XmlTokenType::TagSelfClosingEnd: {
-					if (pushed_attr) {
+					if (pushed_attr && !vPath.empty()) {
 						vPath.pop_back();
 					}
 					vPath.pop_back();
@@ -472,7 +475,7 @@ namespace QuickXml {
 					break;
 				}
 				case XmlTokenType::AttrName: {
-					if (pushed_attr) {
+					if (pushed_attr && !vPath.empty()) {
 						vPath.pop_back();
 					}
 					std::string attr(token.chars, token.size);
@@ -486,7 +489,7 @@ namespace QuickXml {
 					break;
 				}
 				case XmlTokenType::AttrValue: {
-					if (keep_attr_value) {
+					if (keep_attr_value && vPath.size() >= 2) {
 						std::string attr = vPath.back();
 						vPath.pop_back();
 						std::string tag = vPath.back();
@@ -521,9 +524,17 @@ namespace QuickXml {
 					break;
 				}
 				case XmlTokenType::TagOpeningEnd: {
-					if (pushed_attr) {
+					if (pushed_attr && !vPath.empty()) {
 						vPath.pop_back();
 					}
+					pushed_attr = false;
+					keep_attr_value = false;
+					break;
+				}
+				case XmlTokenType::DeclarationBeg:
+				case XmlTokenType::DeclarationEnd: {
+					// declarations might corrupt the vPath construction
+					vPath.clear();
 					pushed_attr = false;
 					keep_attr_value = false;
 					break;

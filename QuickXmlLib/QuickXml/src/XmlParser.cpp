@@ -161,15 +161,32 @@ namespace QuickXml {
 					this->currcontext.inOpeningTag = false;
 					this->currcontext.inClosingTag = false;
 					this->currcontext.declarationObjects++;
+
+					/*
+					// do not parse declarations at all
 					XmlToken token = { XmlTokenType::Declaration,
 									   this->currpos,
-					                   startpos,
-									   this->readUntilFirstOf("[>", (cursor[2] == '[' ? 3 : 2), false) };
+									   startpos,
+									   this->readUntil(">", 0, false, "<") };
 					cursor = this->srcText + this->currpos;
-					if (cursor[0] == '[') {
+					return token;
+					*/
+
+					// parse declarations
+					// we must decide if we have a DeclarationBeg or DeclarationSelfClosing
+					size_t ncharsread = this->readDeclaration();
+					cursor = this->srcText + this->currpos - 1;
+					XmlTokenType tokentype = (cursor[0] == '>' ? XmlTokenType::DeclarationSelfClosing : XmlTokenType::DeclarationBeg);
+					if (tokentype == XmlTokenType::DeclarationSelfClosing) this->currcontext.declarationObjects--;
+
+					XmlToken token = { tokentype,
+									   currpos_bak,
+					                   startpos,
+									   ncharsread };
+					/*if (cursor[0] == '[') {
 						this->readChars(1);
 						token.size++;
-					}
+					}*/
 					return token;
 				}
 				else if (cursor[1] == '/') {
@@ -493,6 +510,50 @@ namespace QuickXml {
 		return res + offset;
 	}
 
+	size_t XmlParser::readDeclaration() {
+		/*
+		* we are starting to parse a declaration like followings
+		*    <![INCLUDE
+		*    <!DOCTYPE
+		*    <!ENTITY
+		*    <![%draft;[
+		*    etc.
+		* based on https://www.w3.org/TR/xml/ analysis, I'll consider three kinds of declarations:
+		* 1) <!...  >
+		* 2) <!... [
+		*    ...
+		*    ]>
+		* 3) <![ ... [
+		*    ...
+		*    ]]>
+		*/
+
+		size_t res = 0;
+		const char* cursor = this->srcText + this->currpos;
+		bool continueloop = true;
+
+		if (cursor[2] == '[') {
+			res += this->readChars(3);
+		}
+		else {
+			res += this->readChars(2);
+		}
+		while (continueloop) {
+			res += this->readUntilFirstOf("[>\"'", 0, false);
+			cursor = this->srcText + this->currpos;
+			if (cursor[0] == '\"') {
+				res += this->readUntil("\"", 1, true);
+			} else if (cursor[0] == '\'') {
+				res += this->readUntil("'", 1, true);
+			}
+			else {
+				res += this->readChars(1);
+				continueloop = false;
+			}
+		}
+		return res;
+	}
+
 	std::string XmlParser::getTokenName() {
 		if (!this->preserveSpace.empty() && this->preserveSpace.top()) {
 			switch (this->currtoken.type) {
@@ -506,7 +567,7 @@ namespace QuickXml {
 				case XmlTokenType::Text: return "_TEXT_";
 				case XmlTokenType::Whitespace: return "_WHITESPACE_";
 				case XmlTokenType::Instruction: return "_INSTRUCTION_";
-				case XmlTokenType::Declaration: return "_DECLARATION_";
+				case XmlTokenType::DeclarationBeg: return "_DECLARATION_";
 				case XmlTokenType::DeclarationEnd: return "_DECLARATION_END_";
 				case XmlTokenType::Comment: return "_COMMENT_";
 				case XmlTokenType::CDATA: return "_CDATA_";
@@ -529,7 +590,7 @@ namespace QuickXml {
 				case XmlTokenType::Text: return "TEXT";
 				case XmlTokenType::Whitespace: return "WHITESPACE";
 				case XmlTokenType::Instruction: return "INSTRUCTION";
-				case XmlTokenType::Declaration: return "DECLARATION";
+				case XmlTokenType::DeclarationBeg: return "DECLARATION";
 				case XmlTokenType::DeclarationEnd: return "DECLARATION_END";
 				case XmlTokenType::Comment: return "COMMENT";
 				case XmlTokenType::CDATA: return "CDATA";

@@ -3,6 +3,7 @@
 #include <sstream>
 #include <vector>
 #include "XmlParser.h"
+#include "../../../Report.h"
 
 #define XPATH_MODE_BASIC				(1 << 0)
 #define XPATH_MODE_WITHNAMESPACE		(1 << 1)
