@@ -673,9 +673,21 @@ bool Report::isEOL(const char cc, const char nc, int mode) {
 */
 
 void Report::char2BSTR(const char* inParam, BSTR* outParam) {
-    std::string tmp(inParam);
-    *outParam = SysAllocString((Report::utf8ToUcs2(tmp)).c_str());
-    tmp.clear();
+    switch (Report::getEncoding((HWND)NULL)) {
+        case UniMode::uniCookie:
+        case UniMode::uniUTF8:
+        case UniMode::uni16BE:
+        case UniMode::uni16LE: {
+            std::string tmp(inParam);
+            *outParam = SysAllocString((Report::utf8ToUcs2(tmp)).c_str());
+            tmp.clear();
+            break;
+        }
+        default: {
+            *outParam = CComBSTR(inParam);
+            break;
+        }
+    }
 }
 
 void Report::char2BSTR(const wchar_t* inParam, BSTR* outParam) {
