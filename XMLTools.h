@@ -21,7 +21,7 @@
 
 //---------------------------------------------------------------------------
 
-#define XMLTOOLS_VERSION_NUMBER L"3.1.1.7"
+#define XMLTOOLS_VERSION_NUMBER L"3.1.1.8"
 #define XMLTOOLS_HOMEPAGE_URL L"https://github.com/morbac/xmltools"
 #ifdef V64BIT
 #define XMLTOOLS_VERSION_STATUS L"unicode 64bit"

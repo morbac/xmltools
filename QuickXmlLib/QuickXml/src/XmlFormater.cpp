@@ -119,7 +119,7 @@ namespace QuickXml {
 						lastAppliedTokenType = XmlTokenType::Whitespace;
 						this->out.write(token.chars, token.size);
 					}
-					else if (this->parser->getXmlContext().inOpeningTag) {
+					else if (token.context.inOpeningTag) {
 						lastAppliedTokenType = XmlTokenType::Whitespace;
 						this->out << " ";
 					}

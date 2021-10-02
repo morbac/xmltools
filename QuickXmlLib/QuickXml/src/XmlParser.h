@@ -5,6 +5,12 @@
 #include <list>
 
 namespace QuickXml {
+    struct XmlContext {
+        bool inOpeningTag;
+        bool inClosingTag;
+        size_t declarationObjects;
+    };
+
     enum XmlTokenType {
         Undefined              = 1 <<  0,
 
@@ -36,6 +42,7 @@ namespace QuickXml {
         size_t pos;             // the token position in stream
         const char* chars;      // a pointer to token chars
         size_t size;            // the token chars length
+        XmlContext context;     // the token parsing context
     };
 
     const XmlToken undefinedToken = {
@@ -43,12 +50,6 @@ namespace QuickXml {
         0,
         "",
         0
-    };
-
-    struct XmlContext {
-        bool inOpeningTag;
-        bool inClosingTag;
-        size_t declarationObjects;
     };
 
     class XmlParser {
@@ -95,13 +96,13 @@ namespace QuickXml {
         /*
         * Getters
         */
-        XmlContext getXmlContext() { return this->currcontext; }
         XmlToken getPrevToken() { return this->prevtoken; }
         XmlToken getCurrToken() { return this->currtoken; }
         XmlToken getNextToken() { return this->nexttoken; }
 
         /*
         * Indicates if the current node is in xml:space="preserve" context
+        * @param contextualized Should the current parsing context be considered
         * @return True when xml:space is in preserve mode.
         */
         bool isSpacePreserve();
