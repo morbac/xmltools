@@ -32,10 +32,24 @@ namespace QuickXml {
 		rtrim_s(s);
 	}
 
+	static inline std::string to_lowercase(std::string text) {
+		std::transform(text.begin(), text.end(), text.begin(), std::tolower);
+		return text;
+	}
+
+	static inline bool ends_with(std::string const& text, std::string const& suffix) {
+		if (text.length() >= suffix.length()) {
+			return (0 == text.compare(text.length() - suffix.length(), suffix.length(), suffix));
+		}
+		else {
+			return false;
+		}
+	}
+
 	bool XmlFormater::isIdentAttribute(std::string attr) {
 		for (std::vector<std::string>::iterator it = this->params.identityAttribues.begin(); it != this->params.identityAttribues.end(); ++it) {
-			std::string lw_attr = Report::to_lowercase(attr);
-			if (!lw_attr.compare(*it) || Report::ends_with(lw_attr, ":" + *it)) {
+			std::string lw_attr = to_lowercase(attr);
+			if (!lw_attr.compare(*it) || ends_with(lw_attr, ":" + *it)) {
 				return true;
 			}
 		}
@@ -438,7 +452,7 @@ namespace QuickXml {
 		// for performance optimization, all identity attributes are lowercased
 
 		for (std::vector<std::string>::iterator it = this->params.identityAttribues.begin(); it != this->params.identityAttribues.end(); ++it) {
-			*it = Report::to_lowercase(*it);
+			*it = to_lowercase(*it);
 		}
 
 		XmlToken token = undefinedToken;
@@ -497,7 +511,7 @@ namespace QuickXml {
 
 						if (this->params.dumpIdAttributesName) {
 							std::string value(token.chars, token.size);
-							if (Report::ends_with(tag, "]")) {
+							if (ends_with(tag, "]")) {
 								tag.erase(tag.length() - 1, 1);
 								tag += " ";
 							}
@@ -508,7 +522,7 @@ namespace QuickXml {
 						}
 						else {
 							std::string value(token.chars+1, token.size-2);
-							if (Report::ends_with(tag, "]")) {
+							if (ends_with(tag, "]")) {
 								tag.erase(tag.length() - 1, 1);
 								tag += " | ";
 							}
