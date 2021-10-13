@@ -684,7 +684,7 @@ void Report::char2BSTR(const char* inParam, BSTR* outParam) {
             break;
         }
         default: {
-            *outParam = CComBSTR(inParam);
+            *outParam = SysAllocString(CComBSTR(inParam));
             break;
         }
     }
