@@ -100,6 +100,90 @@ IDB_FIRST               BITMAP                  "res\\First.bmp"
 
 IDB_LAST                BITMAP                  "res\\Last.bmp"
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_CHECKXML            ICON                    "res\\CheckXml.ico"
+
+IDI_CHECKXML_DM         ICON                    "res\\CheckXml_DM.ico"
+
+IDI_COMMENT             ICON                    "res\\Comment.ico"
+
+IDI_COMMENT_DM          ICON                    "res\\Comment_DM.ico"
+
+IDI_CURRENTXPATH        ICON                    "res\\CurrentXPath.ico"
+
+IDI_CURRENTXPATH_DM     ICON                    "res\\CurrentXPath_DM.ico"
+
+IDI_CURRENTXPATHNS      ICON                    "res\\CurrentXPathNS.ico"
+
+IDI_CURRENTXPATHNS_DM   ICON                    "res\\CurrentXPathNS_DM.ico"
+
+IDI_ESCAPE              ICON                    "res\\EscapeXml.ico"
+
+IDI_ESCAPE_DM           ICON                    "res\\EscapeXml_DM.ico"
+
+IDI_EVALUATEXPATH       ICON                    "res\\EvaluateXPath.ico"
+
+IDI_EVALUATEXPATH_DM    ICON                    "res\\EvaluateXPath_DM.ico"
+
+IDI_FIRST               ICON                    "res\\First.ico"
+
+IDI_FIRST_DM            ICON                    "res\\First_DM.ico"
+
+IDI_LAST                ICON                    "res\\Last.ico"
+
+IDI_LAST_DM             ICON                    "res\\Last_DM.ico"
+
+IDI_LINEARIZE           ICON                    "res\\Linearize.ico"
+
+IDI_LINEARIZE_DM        ICON                    "res\\Linearize_DM.ico"
+
+IDI_NEXT                ICON                    "res\\Next.ico"
+
+IDI_NEXT_DM             ICON                    "res\\Next_DM.ico"
+
+IDI_OPTIONS             ICON                    "res\\Options.ico"
+
+IDI_OPTIONS_DM          ICON                    "res\\Options_DM.ico"
+
+IDI_PRETTYPRINT         ICON                    "res\\PrettyPrint.ico"
+
+IDI_PRETTYPRINT_DM      ICON                    "res\\PrettyPrint_DM.ico"
+
+IDI_PRETTYPRINTINDENTATTR ICON                    "res\\PrettyPrintAttr.ico"
+
+IDI_PRETTYPRINTINDENTATTR_DM ICON                    "res\\PrettyPrintAttr_DM.ico"
+
+IDI_PRETTYPRINTINDENTONLY ICON                    "res\\PrettyPrintIndentOnly.ico"
+
+IDI_PRETTYPRINTINDENTONLY_DM ICON                    "res\\PrettyPrintIndentOnly_DM.ico"
+
+IDI_PREV                ICON                    "res\\Previous.ico"
+
+IDI_PREV_DM             ICON                    "res\\Previous_DM.ico"
+
+IDI_UNCOMMENT           ICON                    "res\\Uncomment.ico"
+
+IDI_UNCOMMENT_DM        ICON                    "res\\Uncomment_DM.ico"
+
+IDI_UNESCAPE            ICON                    "res\\UnescapeXml.ico"
+
+IDI_UNESCAPE_DM         ICON                    "res\\UnescapeXml_DM.ico"
+
+IDI_VALIDATEXML         ICON                    "res\\ValidateXml.ico"
+
+IDI_VALIDATEXML_DM      ICON                    "res\\ValidateXml_DM.ico"
+
+IDI_XSLTRANSFORM        ICON                    "res\\XslTransform.ico"
+
+IDI_XSLTRANSFORM_DM     ICON                    "res\\XslTransform_DM.ico"
+
 #endif    // French (France) resources
 /////////////////////////////////////////////////////////////////////////////
 

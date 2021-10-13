@@ -1,54 +1,42 @@
 // This file is part of Notepad++ project
-// Copyright (C)2003 Don HO <don.h@free.fr>
-//
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either
-// version 2 of the License, or (at your option) any later version.
-//
-// Note that the GPL places important restrictions on "derived works", yet
-// it does not provide a detailed definition of that term.  To avoid
-// misunderstandings, we consider an application to constitute a
-// "derivative work" for the purpose of this license if it does any of the
-// following:
-// 1. Integrates source code from Notepad++.
-// 2. Integrates/includes/aggregates Notepad++ into a proprietary executable
-//    installer, such as those produced by InstallShield.
-// 3. Links to a library or executes a program that does any of the above.
+// Copyright (C)2021 Don HO <don.h@free.fr>
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// at your option any later version.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-#ifndef NOTEPAD_PLUS_MSGS_H
-#define NOTEPAD_PLUS_MSGS_H
+#pragma once
 
 #include <windows.h>
 #include <tchar.h>
 
-enum class LangType {
-  L_TEXT, L_PHP, L_C, L_CPP, L_CS, L_OBJC, L_JAVA, L_RC, \
-  L_HTML, L_XML, L_MAKEFILE, L_PASCAL, L_BATCH, L_INI, L_ASCII, L_USER, \
-  L_ASP, L_SQL, L_VB, L_JS, L_CSS, L_PERL, L_PYTHON, L_LUA, \
-  L_TEX, L_FORTRAN, L_BASH, L_FLASH, L_NSIS, L_TCL, L_LISP, L_SCHEME, \
-  L_ASM, L_DIFF, L_PROPS, L_PS, L_RUBY, L_SMALLTALK, L_VHDL, L_KIX, L_AU3, \
-  L_CAML, L_ADA, L_VERILOG, L_MATLAB, L_HASKELL, L_INNO, L_SEARCHRESULT, \
-  L_CMAKE, L_YAML, L_COBOL, L_GUI4CLI, L_D, L_POWERSHELL, L_R, L_JSP, \
-  L_COFFEESCRIPT, L_JSON, L_JAVASCRIPT, L_FORTRAN_77, L_BAANC, L_SREC, \
-  L_IHEX, L_TEHEX, L_SWIFT, \
-  L_ASN1, L_AVS, L_BLITZBASIC, L_PUREBASIC, L_FREEBASIC, \
-  L_CSOUND, L_ERLANG, L_ESCRIPT, L_FORTH, L_LATEX, \
-  L_MMIXAL, L_NIMROD, L_NNCRONTAB, L_OSCRIPT, L_REBOL, \
-  L_REGISTRY, L_RUST, L_SPICE, L_TXT2TAGS, L_VISUALPROLOG, \
-  // Don't use L_JS, use L_JAVASCRIPT instead
-  // The end of enumated language type, so it should be always at the end
-  L_EXTERNAL
+enum LangType {
+	L_TEXT, L_PHP, L_C, L_CPP, L_CS, L_OBJC, L_JAVA, L_RC, \
+	L_HTML, L_XML, L_MAKEFILE, L_PASCAL, L_BATCH, L_INI, L_ASCII, L_USER, \
+	L_ASP, L_SQL, L_VB, L_JS, L_CSS, L_PERL, L_PYTHON, L_LUA, \
+	L_TEX, L_FORTRAN, L_BASH, L_FLASH, L_NSIS, L_TCL, L_LISP, L_SCHEME, \
+	L_ASM, L_DIFF, L_PROPS, L_PS, L_RUBY, L_SMALLTALK, L_VHDL, L_KIX, L_AU3, \
+	L_CAML, L_ADA, L_VERILOG, L_MATLAB, L_HASKELL, L_INNO, L_SEARCHRESULT, \
+	L_CMAKE, L_YAML, L_COBOL, L_GUI4CLI, L_D, L_POWERSHELL, L_R, L_JSP, \
+	L_COFFEESCRIPT, L_JSON, L_JAVASCRIPT, L_FORTRAN_77, L_BAANC, L_SREC, \
+	L_IHEX, L_TEHEX, L_SWIFT, \
+	L_ASN1, L_AVS, L_BLITZBASIC, L_PUREBASIC, L_FREEBASIC, \
+	L_CSOUND, L_ERLANG, L_ESCRIPT, L_FORTH, L_LATEX, \
+	L_MMIXAL, L_NIM, L_NNCRONTAB, L_OSCRIPT, L_REBOL, \
+	L_REGISTRY, L_RUST, L_SPICE, L_TXT2TAGS, L_VISUALPROLOG, L_TYPESCRIPT, \
+	// Don't use L_JS, use L_JAVASCRIPT instead
+	// The end of enumated language type, so it should be always at the end
+	L_EXTERNAL
 };
 
 enum winVer { WV_UNKNOWN, WV_WIN32S, WV_95, WV_98, WV_ME, WV_NT, WV_W2K, WV_XP, WV_S2003, WV_XPX64, WV_VISTA, WV_WIN7, WV_WIN8, WV_WIN81, WV_WIN10 };
@@ -56,7 +44,6 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64 };
 
 
 
-//Here you can find how to use these messages : http://docs.notepad-plus-plus.org/index.php/Messages_And_Notifications
 #define NPPMSG  (WM_USER + 1000)
 
 #define NPPM_GETCURRENTSCINTILLA  (NPPMSG + 4)
@@ -81,9 +68,9 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64 };
 #define NPPM_SAVECURRENTSESSION (NPPMSG + 16)
 
 struct sessionInfo {
-  TCHAR* sessionFilePathName;
-  int nbFile;
-  TCHAR** files;
+	TCHAR* sessionFilePathName;
+	int nbFile;
+	TCHAR** files;
 };
 
 #define NPPM_GETOPENFILENAMESPRIMARY (NPPMSG + 17)
@@ -160,11 +147,13 @@ struct sessionInfo {
 #define NPPM_SETMENUITEMCHECK	(NPPMSG + 40)
 //void WM_PIMENU_CHECK(UINT	funcItem[X]._cmdID, TRUE/FALSE)
 
-#define NPPM_ADDTOOLBARICON (NPPMSG + 41)
-//void WM_ADDTOOLBARICON(UINT funcItem[X]._cmdID, toolbarIcons icon)
+#define NPPM_ADDTOOLBARICON_DEPRECATED (NPPMSG + 41)
+//void NPPM_ADDTOOLBARICON(UINT funcItem[X]._cmdID, toolbarIcons iconHandles) -- DEPRECATED : use NPPM_ADDTOOLBARICON_FORDARKMODE instead
+//2 formats of icon are needed: .ico & .bmp 
+//Both handles below should be set so the icon will be displayed correctly if toolbar icon sets are changed by users
 struct toolbarIcons {
-  HBITMAP	hToolbarBmp;
-  HICON	hToolbarIcon;
+	HBITMAP	hToolbarBmp;
+	HICON	hToolbarIcon;
 };
 
 #define NPPM_GETWINDOWSVERSION (NPPMSG + 42)
@@ -193,9 +182,9 @@ struct toolbarIcons {
 // return value is TRUE when the message arrive to the destination plugins.
 // if destModule or info is NULL, then return value is FALSE
 struct CommunicationInfo {
-  long internalMsg;
-  const TCHAR* srcModuleName;
-  void* info; // defined by plugin
+	long internalMsg;
+	const TCHAR* srcModuleName;
+	void* info; // defined by plugin
 };
 
 #define NPPM_MENUCOMMAND (NPPMSG + 48)
@@ -256,7 +245,6 @@ struct CommunicationInfo {
 // Reloads Buffer
 // wParam: Buffer to reload
 // lParam: 0 if no alert, else alert
-
 
 #define NPPM_GETBUFFERLANGTYPE (NPPMSG + 64)
 // INT NPPM_GETBUFFERLANGTYPE(UINT_PTR bufferID, 0)
@@ -353,22 +341,23 @@ struct CommunicationInfo {
 // Use to identify if subclassing is necessary
 
 #define NPPM_ALLOCATECMDID   (NPPMSG + 81)
-  // BOOL NPPM_ALLOCATECMDID(int numberRequested, int* startNumber)
-  // sets startNumber to the initial command ID if successful
-  // Returns: TRUE if successful, FALSE otherwise. startNumber will also be set to 0 if unsuccessful
+// BOOL NPPM_ALLOCATECMDID(int numberRequested, int* startNumber)
+// sets startNumber to the initial command ID if successful
+// Returns: TRUE if successful, FALSE otherwise. startNumber will also be set to 0 if unsuccessful
 
 #define NPPM_ALLOCATEMARKER  (NPPMSG + 82)
-  // BOOL NPPM_ALLOCATEMARKER(int numberRequested, int* startNumber)
-  // sets startNumber to the initial command ID if successful
-  // Allocates a marker number to a plugin
-  // Returns: TRUE if successful, FALSE otherwise. startNumber will also be set to 0 if unsuccessful
+// BOOL NPPM_ALLOCATEMARKER(int numberRequested, int* startNumber)
+// sets startNumber to the initial command ID if successful
+// Allocates a marker number to a plugin: if a plugin need to add a marker on Notepad++'s Scintilla marker margin,
+// it has to use this message to get marker number, in order to prevent from the conflict with the other plugins.
+// Returns: TRUE if successful, FALSE otherwise. startNumber will also be set to 0 if unsuccessful
 
 #define NPPM_GETLANGUAGENAME  (NPPMSG + 83)
 // INT NPPM_GETLANGUAGENAME(int langType, TCHAR *langName)
 // Get programming language name from the given language type (LangType)
 // Return value is the number of copied character / number of character to copy (\0 is not included)
 // You should call this function 2 times - the first time you pass langName as NULL to get the number of characters to copy.
-  // You allocate a buffer of the length of (the number of characters + 1) then call NPPM_GETLANGUAGENAME function the 2nd time
+// You allocate a buffer of the length of (the number of characters + 1) then call NPPM_GETLANGUAGENAME function the 2nd time
 // by passing allocated buffer as argument langName
 
 #define NPPM_GETLANGUAGEDESC  (NPPMSG + 84)
@@ -376,17 +365,17 @@ struct CommunicationInfo {
 // Get programming language short description from the given language type (LangType)
 // Return value is the number of copied character / number of character to copy (\0 is not included)
 // You should call this function 2 times - the first time you pass langDesc as NULL to get the number of characters to copy.
-  // You allocate a buffer of the length of (the number of characters + 1) then call NPPM_GETLANGUAGEDESC function the 2nd time
+// You allocate a buffer of the length of (the number of characters + 1) then call NPPM_GETLANGUAGEDESC function the 2nd time
 // by passing allocated buffer as argument langDesc
 
-#define NPPM_SHOWDOCSWITCHER    (NPPMSG + 85)
-// VOID NPPM_ISDOCSWITCHERSHOWN(0, BOOL toShowOrNot)
-// Send this message to show or hide doc switcher.
-// if toShowOrNot is TRUE then show doc switcher, otherwise hide it.
+#define NPPM_SHOWDOCLIST    (NPPMSG + 85)
+// VOID NPPM_SHOWDOCLIST(0, BOOL toShowOrNot)
+// Send this message to show or hide Document List.
+// if toShowOrNot is TRUE then show Document List, otherwise hide it.
 
-#define NPPM_ISDOCSWITCHERSHOWN    (NPPMSG + 86)
-// BOOL NPPM_ISDOCSWITCHERSHOWN(0, 0)
-// Check to see if doc switcher is shown.
+#define NPPM_ISDOCLISTSHOWN    (NPPMSG + 86)
+// BOOL NPPM_ISDOCLISTSHOWN(0, 0)
+// Check to see if Document List is shown.
 
 #define NPPM_GETAPPDATAPLUGINSALLOWED    (NPPMSG + 87)
 // BOOL NPPM_GETAPPDATAPLUGINSALLOWED(0, 0)
@@ -396,9 +385,13 @@ struct CommunicationInfo {
 // INT NPPM_GETCURRENTVIEW(0, 0)
 // Return: current edit view of Notepad++. Only 2 possible values: 0 = Main, 1 = Secondary
 
-#define NPPM_DOCSWITCHERDISABLECOLUMN    (NPPMSG + 89)
-// VOID NPPM_DOCSWITCHERDISABLECOLUMN(0, BOOL disableOrNot)
-// Disable or enable extension column of doc switcher
+#define NPPM_DOCLISTDISABLEEXTCOLUMN    (NPPMSG + 89)
+// VOID NPPM_DOCLISTDISABLEEXTCOLUMN(0, BOOL disableOrNot)
+// Disable or enable extension column of Document List
+
+#define NPPM_DOCLISTDISABLEPATHCOLUMN    (NPPMSG + 102)
+// VOID NPPM_DOCLISTDISABLEPATHCOLUMN(0, BOOL disableOrNot)
+// Disable or enable path column of Document List
 
 #define NPPM_GETEDITORDEFAULTFOREGROUNDCOLOR    (NPPMSG + 90)
 // INT NPPM_GETEDITORDEFAULTFOREGROUNDCOLOR(0, 0)
@@ -433,6 +426,49 @@ struct CommunicationInfo {
 // Users should call it with pluginRootPath be NULL to get the required number of TCHAR (not including the terminating nul character),
 // allocate pluginRootPath buffer with the return value + 1, then call it again to get the path.
 
+#define NPPM_GETSETTINGSONCLOUDPATH (NPPMSG + 98)
+// INT NPPM_GETSETTINGSCLOUDPATH(size_t strLen, TCHAR *settingsOnCloudPath)
+// Get settings on cloud path. It's useful if plugins want to store its settings on Cloud, if this path is set.
+// Returns the number of TCHAR copied/to copy. If the return value is 0, then this path is not set, or the "strLen" is not enough to copy the path.
+// Users should call it with settingsCloudPath be NULL to get the required number of TCHAR (not including the terminating nul character),
+// allocate settingsCloudPath buffer with the return value + 1, then call it again to get the path.
+
+#define NPPM_SETLINENUMBERWIDTHMODE    (NPPMSG + 99)
+#define LINENUMWIDTH_DYNAMIC     0
+#define LINENUMWIDTH_CONSTANT    1
+// BOOL NPPM_SETLINENUMBERWIDTHMODE(0, INT widthMode)
+// Set line number margin width in dynamic width mode (LINENUMWIDTH_DYNAMIC) or constant width mode (LINENUMWIDTH_CONSTANT)
+// It may help some plugins to disable non-dynamic line number margins width to have a smoothly visual effect while vertical scrolling the content in Notepad++
+// If calling is successful return TRUE, otherwise return FALSE.
+
+#define NPPM_GETLINENUMBERWIDTHMODE    (NPPMSG + 100)
+// INT NPPM_GETLINENUMBERWIDTHMODE(0, 0)
+// Get line number margin width in dynamic width mode (LINENUMWIDTH_DYNAMIC) or constant width mode (LINENUMWIDTH_CONSTANT)
+
+#define NPPM_ADDTOOLBARICON_FORDARKMODE (NPPMSG + 101)
+// VOID NPPM_ADDTOOLBARICON_FORDARKMODE(UINT funcItem[X]._cmdID, toolbarIconsWithDarkMode iconHandles)
+// Use NPPM_ADDTOOLBARICON_FORDARKMODE instead obsolete NPPM_ADDTOOLBARICON which doesn't support the dark mode
+// 2 formats / 3 icons are needed:  1 * BMP + 2 * ICO 
+// All 3 handles below should be set so the icon will be displayed correctly if toolbar icon sets are changed by users, also in dark mode
+struct toolbarIconsWithDarkMode {
+	HBITMAP	hToolbarBmp;
+	HICON	hToolbarIcon;
+	HICON	hToolbarIconDarkMode;
+};
+
+#define VAR_NOT_RECOGNIZED 0
+#define FULL_CURRENT_PATH 1
+#define CURRENT_DIRECTORY 2
+#define FILE_NAME 3
+#define NAME_PART 4
+#define EXT_PART 5
+#define CURRENT_WORD 6
+#define NPP_DIRECTORY 7
+#define CURRENT_LINE 8
+#define CURRENT_COLUMN 9
+#define NPP_FULL_FILE_PATH 10
+#define GETFILENAMEATCURSOR 11
+
 #define	RUNCOMMAND_USER    (WM_USER + 3000)
 #define NPPM_GETFULLCURRENTPATH		(RUNCOMMAND_USER + FULL_CURRENT_PATH)
 #define NPPM_GETCURRENTDIRECTORY	(RUNCOMMAND_USER + CURRENT_DIRECTORY)
@@ -457,18 +493,6 @@ struct CommunicationInfo {
 
 #define NPPM_GETNPPFULLFILEPATH			(RUNCOMMAND_USER + NPP_FULL_FILE_PATH)
 
-#define VAR_NOT_RECOGNIZED 0
-#define FULL_CURRENT_PATH 1
-#define CURRENT_DIRECTORY 2
-#define FILE_NAME 3
-#define NAME_PART 4
-#define EXT_PART 5
-#define CURRENT_WORD 6
-#define NPP_DIRECTORY 7
-#define CURRENT_LINE 8
-#define CURRENT_COLUMN 9
-#define NPP_FULL_FILE_PATH 10
-#define GETFILENAMEATCURSOR 11
 
 
 // Notification code
@@ -479,7 +503,7 @@ struct CommunicationInfo {
 //scnNotification->nmhdr.idFrom = 0;
 
 #define NPPN_TBMODIFICATION (NPPN_FIRST + 2) // To notify plugins that toolbar icons can be registered
-//scnNotification->nmhdr.code = NPPN_TB_MODIFICATION;
+//scnNotification->nmhdr.code = NPPN_TBMODIFICATION;
 //scnNotification->nmhdr.hwndFrom = hwndNpp;
 //scnNotification->nmhdr.idFrom = 0;
 
@@ -537,13 +561,13 @@ struct CommunicationInfo {
 //scnNotification->nmhdr.code = NPPN_SHORTCUTSREMAPPED;
 //scnNotification->nmhdr.hwndFrom = ShortcutKeyStructurePointer;
 //scnNotification->nmhdr.idFrom = cmdID;
-  //where ShortcutKeyStructurePointer is pointer of struct ShortcutKey:
-  //struct ShortcutKey {
-  //	bool _isCtrl;
-  //	bool _isAlt;
-  //	bool _isShift;
-  //	UCHAR _key;
-  //};
+	//where ShortcutKeyStructurePointer is pointer of struct ShortcutKey:
+	//struct ShortcutKey {
+	//	bool _isCtrl;
+	//	bool _isAlt;
+	//	bool _isShift;
+	//	UCHAR _key;
+	//};
 
 #define NPPN_FILEBEFORELOAD (NPPN_FIRST + 14) // To notify plugins that the current file is about to be loaded
 //scnNotification->nmhdr.code = NPPN_FILEBEFOREOPEN;
@@ -559,8 +583,8 @@ struct CommunicationInfo {
 //scnNotification->nmhdr.code = NPPN_READONLYCHANGED;
 //scnNotification->nmhdr.hwndFrom = bufferID;
 //scnNotification->nmhdr.idFrom = docStatus;
-  // where bufferID is BufferID
-  //       docStatus can be combined by DOCSTATUS_READONLY and DOCSTATUS_BUFFERDIRTY
+	// where bufferID is BufferID
+	//       docStatus can be combined by DOCSTATUS_READONLY and DOCSTATUS_BUFFERDIRTY
 
 #define DOCSTATUS_READONLY 1
 #define DOCSTATUS_BUFFERDIRTY 2
@@ -614,5 +638,3 @@ struct CommunicationInfo {
 //scnNotification->nmhdr.code = NPPN_FILEDELETED;
 //scnNotification->nmhdr.hwndFrom = hwndNpp;
 //scnNotification->nmhdr.idFrom = BufferID;
-
-#endif //NOTEPAD_PLUS_MSGS_H

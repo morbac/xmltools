@@ -267,5 +267,125 @@
     <Image Include="res\Last.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\CheckXml.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\CheckXml_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Comment.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Comment_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\CurrentXPath.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\CurrentXPath_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\CurrentXPathNS.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\CurrentXPathNS_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\empty.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\empty_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\EscapeXml.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\EscapeXml_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\EvaluateXPath.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\EvaluateXPath_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\First.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\First_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Last.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Last_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Linearize.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Linearize_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Next.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Next_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Options.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Options_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\PrettyPrint.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\PrettyPrint_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\PrettyPrintAttr.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\PrettyPrintAttr_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\PrettyPrintIndentOnly.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\PrettyPrintIndentOnly_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Previous.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Previous_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Uncomment.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Uncomment_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\UnescapeXml.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\UnescapeXml_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ValidateXml.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ValidateXml_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\XslTransform.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\XslTransform_DM.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
