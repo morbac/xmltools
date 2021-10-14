@@ -25,8 +25,8 @@ LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,1,1,9
- PRODUCTVERSION 3,1,1,9
+ FILEVERSION 3,1,1,10
+ PRODUCTVERSION 3,1,1,10
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -42,12 +42,12 @@ BEGIN
         BLOCK "040004b0"
         BEGIN
             VALUE "FileDescription", "XMLTools"
-            VALUE "FileVersion", "3.1.1.9"
+            VALUE "FileVersion", "3.1.1.10"
             VALUE "InternalName", "XMLTools"
             VALUE "LegalCopyright", "Copyright (C) 2005-2021"
             VALUE "OriginalFilename", "XMLTools.dll"
             VALUE "ProductName", "XMLTools"
-            VALUE "ProductVersion", "3.1.1.9"
+            VALUE "ProductVersion", "3.1.1.10"
         END
     END
     BLOCK "VarFileInfo"

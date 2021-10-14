@@ -104,7 +104,7 @@ int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
         print_xpath_nodes(nodes);
     }
     else {
-        displayXMLErrors(errors, hCurrentEditView, L"Error: unable to parse XML");
+        displayXMLErrors(errors, hCurrentEditView, L"Error: unable to parse XML", ERRORS_DISPLAY_MODE_ALERT);
     }
 
     delete[] data;

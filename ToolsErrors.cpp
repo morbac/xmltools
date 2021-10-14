@@ -208,7 +208,7 @@ void deleteAnnotations() {
     hasAnnotations.clear();
 }
 
-ErrorEntryDesc displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, size_t filepos) {
+ErrorEntryDesc displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t linepos, size_t filepos, int forcedMode) {
     // clear final \r\n
     std::string::size_type p = wmsg.find_last_not_of(L"\r\n");
     if (p != std::string::npos && p < wmsg.length()) {
@@ -228,7 +228,7 @@ ErrorEntryDesc displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t
     res.view = view; 
     res.style = xmltoolsoptions.annotationStyle;
 
-    if (xmltoolsoptions.errorDisplayMode.compare(L"Annotation") == 0) {
+    if (forcedMode == ERRORS_DISPLAY_MODE_ANNOTATION || (forcedMode == ERRORS_DISPLAY_MODE_DEFAULT && xmltoolsoptions.errorDisplayMode.compare(L"Annotation") == 0)) {
         if (line == NULL) {
             line = (size_t) ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLINE, 0, 0) + 1;
         }
@@ -370,8 +370,8 @@ ErrorEntryDesc displayXMLError(std::wstring wmsg, HWND view, size_t line, size_t
     return res;
 }
 
-void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view, const wchar_t* szDesc) {
-    if (xmltoolsoptions.errorDisplayMode.compare(L"Dialog") == 0) {
+void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view, const wchar_t* szDesc, int forcedMode) {
+    if (forcedMode == ERRORS_DISPLAY_MODE_DIALOG || (forcedMode == ERRORS_DISPLAY_MODE_DEFAULT && xmltoolsoptions.errorDisplayMode.compare(L"Dialog") == 0)) {
         Report::clearLog();
         Report::registerMessage(szDesc);
         Report::registerMessage(L"");
@@ -417,12 +417,14 @@ void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view, const wchar
                 Report::_printf_err(text);
             }
             else {
-                registerError(displayXMLError((*it).reason, view, (*it).line, (*it).linepos, (*it).filepos));
+                registerError(displayXMLError((*it).reason, view, (*it).line, (*it).linepos, (*it).filepos, forcedMode));
             }
         }
     }
 
-    highlightFirstError();
+    if (forcedMode != ERRORS_DISPLAY_MODE_ALERT && xmltoolsoptions.errorDisplayMode.compare(L"Alert") != 0) {
+        highlightFirstError();
+    }
 }
 
 bool hasCurrentDocAnnotations() {

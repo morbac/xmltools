@@ -21,7 +21,7 @@
 
 //---------------------------------------------------------------------------
 
-#define XMLTOOLS_VERSION_NUMBER L"3.1.1.9"
+#define XMLTOOLS_VERSION_NUMBER L"3.1.1.10"
 #define XMLTOOLS_HOMEPAGE_URL L"https://github.com/morbac/xmltools"
 #ifdef V64BIT
 #define XMLTOOLS_VERSION_STATUS L"unicode 64bit"
@@ -29,8 +29,8 @@
 #define XMLTOOLS_VERSION_STATUS L"unicode Win32"
 #endif
 
-extern ErrorEntryDesc displayXMLError(std::wstring wmsg, HWND view = NULL, size_t line = NULL, size_t linepos = NULL, size_t filepos = NULL);
-extern void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view = NULL, const wchar_t* szDesc = NULL);
+extern ErrorEntryDesc displayXMLError(std::wstring wmsg, HWND view = NULL, size_t line = NULL, size_t linepos = NULL, size_t filepos = NULL, int forcedMode = ERRORS_DISPLAY_MODE_DEFAULT);
+extern void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view = NULL, const wchar_t* szDesc = NULL, int forcedMode = ERRORS_DISPLAY_MODE_DEFAULT);
 extern void clearErrors(HWND view = NULL);
 extern void registerError(ErrorEntryDesc err);
 extern void printCurrentXPathInStatusbar();

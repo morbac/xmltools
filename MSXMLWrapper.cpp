@@ -324,7 +324,9 @@ std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, s
                         if (nodeType == NODE_TEXT) {
                             VariantClear(&varNodeValue);
                             CHK_HR(pNode->get_nodeValue(&varNodeValue));
-                            value += (wchar_t*)_bstr_t(varNodeValue);
+                            if (varNodeValue.vt != VT_NULL) {
+                                value += (wchar_t*)_bstr_t(varNodeValue);
+                            }
                         }
                         SAFE_RELEASE(pNode);
                     }
@@ -332,7 +334,9 @@ std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, s
                     break;
                 }
                 default: {
-                    value = (wchar_t*)_bstr_t(varNodeValue);
+                    if (varNodeValue.vt != VT_NULL) {
+                        value = (wchar_t*)_bstr_t(varNodeValue);
+                    }
                 }
             }
 

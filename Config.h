@@ -3,6 +3,11 @@
 
 #include "Debug.h"
 
+#define ERRORS_DISPLAY_MODE_DEFAULT    0
+#define ERRORS_DISPLAY_MODE_ANNOTATION 1
+#define ERRORS_DISPLAY_MODE_DIALOG     2
+#define ERRORS_DISPLAY_MODE_ALERT      3
+
 struct struct_proxyoptions {
 	bool status;
 	std::wstring host = L"192.168.0.1";
