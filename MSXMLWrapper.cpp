@@ -43,31 +43,33 @@ void MSXMLWrapper::addErrorToVector(IXMLDOMParseError2* pXMLErr, const wchar_t* 
     ErrorEntryType err;
 
     if (pXMLErr != NULL) {
-        CHK_HR(pXMLErr->get_line(&line));
-        CHK_HR(pXMLErr->get_linepos(&linepos));
-        CHK_HR(pXMLErr->get_filepos(&filepos));
         CHK_HR(pXMLErr->get_reason(&bstrReason));
+        if (bstrReason != NULL) {
+            CHK_HR(pXMLErr->get_line(&line));
+            CHK_HR(pXMLErr->get_linepos(&linepos));
+            CHK_HR(pXMLErr->get_filepos(&filepos));
 
-        if (line == 0 || linepos == 0) {
-            line = 1;
-            linepos = 1;
-        }
+            if (line == 0 || linepos == 0) {
+                line = 1;
+                linepos = 1;
+            }
 
-        if (line >= 0 && linepos >= 0 && filepos >= 0) {
-            err.positioned = TRUE;
-            err.line = (size_t) line;
-            err.linepos = (size_t)linepos;
-            err.filepos = (size_t)filepos + 1;
+            if (line >= 0 && linepos >= 0 && filepos >= 0) {
+                err.positioned = TRUE;
+                err.line = (size_t) line;
+                err.linepos = (size_t)linepos;
+                err.filepos = (size_t)filepos + 1;
+            }
+            else {
+                err.positioned = FALSE;
+                err.line = 0;
+                err.linepos = 0;
+                err.filepos = 0;
+            }
+
+            err.reason = std::wstring((wchar_t*)bstr_t(bstrReason));
+            this->errors.push_back(err);
         }
-        else {
-            err.positioned = FALSE;
-            err.line = 0;
-            err.linepos = 0;
-            err.filepos = 0;
-        }
-        err.reason = std::wstring((wchar_t*)bstr_t(bstrReason));
-        
-        this->errors.push_back(err);
     }
 
 CleanUp:
