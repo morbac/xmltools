@@ -427,7 +427,7 @@ namespace SimpleXml {
 
             default: {
                 //WriteEatToken();
-                throw std::exception("This should not happen.. please get in touch with the developers @ https://github.com/morbac/XMLTools");
+                throw std::exception("The pretty print parser encountered an unexpected error. This might be caused by invalid XML structure. Please try using another formating engine, for instance QuickXml, in pretty print options (go in XMLTools options dialog in order to change formating engine). If issue still happens, please get in touch with the developers @ https://github.com/morbac/XMLTools");
             }
             }
         }
