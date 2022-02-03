@@ -511,7 +511,27 @@ bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xsl
                     SAFE_RELEASE(pNode);
                     SAFE_RELEASE(pNodes);
 
-                    outputAsStream = TRUE;
+                    /* disabled */ //outputAsStream = TRUE;
+                    /*
+                    * @fixme : outputAsStream might make the transformation processor crash.
+                    * For instance, transforming
+                    * 
+                    *   <?xml version="1.0" encoding="ISO-8859-1"?>
+                    *   <a>&#8240;</a>
+                    * 
+                    * with following stylesheet:
+                    * 
+                    *   <?xml version="1.0" encoding="ISO-8859-1"?>
+                    *   <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                    *     <xsl:output method="text" encoding="ISO-8859-1"/>
+                    * 
+                    *     <xsl:template match="/">
+                    *       <xsl:value-of select="."/>
+                    *     </xsl:template>
+                    *   </xsl:stylesheet>
+                    * 
+                    * fails because of xsl:output encoding.
+                    */
                 }
                 else {
                     // get encoding of source file
