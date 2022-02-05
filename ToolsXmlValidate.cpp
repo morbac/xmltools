@@ -26,13 +26,13 @@ int performXMLCheck(int informIfNoError) {
         dbgln(currenPath);
     }
 
-    int currentEdit, currentLength, res = 0;
+    int currentEdit, res = 0;
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
     HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
 
     clearErrors(hCurrentEditView);
 
-    currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+    size_t currentLength = (size_t) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
     char* data = new char[currentLength + sizeof(char)];
     if (!data) return -1;  // allocation error, abort check
@@ -92,13 +92,13 @@ void XMLValidation(int informIfNoError) {
     // 1. check xml syntax
     //bool abortValidation = false;
     std::string xml_schema("");
-    int currentEdit, currentLength;
+    int currentEdit;
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
     HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
 
     clearErrors(hCurrentEditView);
 
-    currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+    size_t currentLength = (size_t) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
     char* data = new char[currentLength + sizeof(char)];
     if (!data) return;  // allocation error, abort check

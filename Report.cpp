@@ -679,12 +679,13 @@ void Report::char2BSTR(const char* inParam, BSTR* outParam) {
         case UniMode::uni16BE:
         case UniMode::uni16LE: {
             std::string tmp(inParam);
-            *outParam = SysAllocString((Report::utf8ToUcs2(tmp)).c_str());
+            *outParam = CComBSTR((Report::utf8ToUcs2(tmp)).c_str()).Detach();
             tmp.clear();
             break;
         }
         default: {
-            *outParam = SysAllocString(CComBSTR(inParam));
+            // *outParam = CComBSTR(inParam).Detach();
+            *outParam = CComBSTR(inParam).Detach();
             break;
         }
     }

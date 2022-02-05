@@ -12,8 +12,8 @@ struct ScintillaDoc
 	struct sciWorkText
 	{
 		char* text;
-		long length;
-		long selstart;
+		intptr_t length;
+		intptr_t selstart;
 
 		operator bool() {
 			return text != NULL;
@@ -74,12 +74,12 @@ struct ScintillaDoc
 		}
 	}
 
-	long SelectionStart() {
-		return (long) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
+	size_t SelectionStart() {
+		return (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
 	}
 
-	long SelectionEnd() {
-		return (long) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
+	size_t SelectionEnd() {
+		return (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
 	}
 
 	void SetCurrentPosition(size_t selstart) {
@@ -98,11 +98,11 @@ struct ScintillaDoc
 		::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(text));
 	}
 
-	long GetTextLength() {
-		return (long) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+	size_t GetTextLength() {
+		return (size_t) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 	}
 
-	char *GetSelectedText(long length) {
+	char *GetSelectedText(size_t length) {
 		char *text = new char[length + sizeof(char)];
 		if (text == NULL) return false;  // allocation error, abort check;
 		text[length] = 0;
@@ -116,12 +116,12 @@ struct ScintillaDoc
 		if (selend > selstart)
 		{
 			auto len = selend - selstart;
-			return { GetSelectedText(len), len, selstart };
+			return { GetSelectedText(len), (intptr_t) len, (intptr_t)selstart };
 		}
 		return { NULL,0,0 };
 	}
 
-	char *GetText(long length) {
+	char *GetText(size_t length) {
 		char *text = new char[length + sizeof(char)];
 		if (text == NULL) return false;  // allocation error, abort check
 		text[length] = 0;
@@ -140,8 +140,8 @@ struct ScintillaDoc
 		range.chrg.cpMax = offset+length;
 		range.lpstrText = target;
 
-		if (range.chrg.cpMax > (int)max)
-			range.chrg.cpMax = (int)max;
+		if (range.chrg.cpMax > (Sci_PositionCR)max)
+			range.chrg.cpMax = (Sci_PositionCR)max;
 		
 
 		return ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&range));

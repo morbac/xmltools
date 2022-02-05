@@ -75,11 +75,11 @@ void CXSLTransformDlg::OnBtnTransform() {
         return;
     }
 
-    int currentEdit, currentLength;
+    int currentEdit;
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
     HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
     
-    currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+    size_t currentLength = (size_t) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
     char* data = new char[currentLength + sizeof(char)];
     if (!data) return;  // allocation error, abort check

@@ -14,19 +14,18 @@ std::wstring currentXPath(int xpathMode) {
 
     XmlFormater* formater = NULL;
     int currentEdit;
-    std::string::size_type currentLength, currentPos;
     std::wstring nodepath(L"");
 
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
     HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-    currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+    size_t currentLength = (size_t) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
     char* data = new char[currentLength + sizeof(char)];
     if (!data) return nodepath;  // allocation error, abort check
     size_t size = (currentLength + sizeof(char)) * sizeof(char);
     memset(data, '\0', size);
 
-    currentPos = long(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
+    size_t currentPos = size_t(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
     ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
     XmlFormaterParamsType params = XmlFormater::getDefaultParams();

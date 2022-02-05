@@ -84,11 +84,11 @@ void CXPathEvalDlg::OnBtnEvaluate() {
  * Returns 0 on success and a negative value otherwise.
  */
 int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
-    int currentEdit, currentLength;
+    int currentEdit;
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
     HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
 
-    currentLength = (int) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+    size_t currentLength = (size_t) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 
     char* data = new char[currentLength + sizeof(char)];
     if (!data) return(-1);  // allocation error, abort check

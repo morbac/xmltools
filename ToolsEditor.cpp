@@ -11,10 +11,10 @@ void closeXMLTag() {
     int currentEdit;
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
     HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-    int currentPos = int(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
-    int beginPos = currentPos - (sizeof(buf) - 1);
-    int startPos = (beginPos > 0) ? beginPos : 0;
-    int size = currentPos - startPos;
+    size_t currentPos = size_t(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
+    size_t beginPos = currentPos - (sizeof(buf) - 1);
+    size_t startPos = (beginPos > 0) ? beginPos : 0;
+    size_t size = currentPos - startPos;
     //int insertStringSize = 2;
 
 #define MAX_TAGNAME_LENGTH 516
@@ -79,10 +79,10 @@ void tagAutoIndent() {
     int currentEdit;
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
     HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-    int currentPos = int(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
-    int beginPos = currentPos - (sizeof(buf) - 1);
-    int startPos = (beginPos > 0) ? beginPos : 0;
-    int size = currentPos - startPos;
+    size_t currentPos = size_t(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
+    size_t beginPos = currentPos - (sizeof(buf) - 1);
+    size_t startPos = (beginPos > 0) ? beginPos : 0;
+    size_t size = currentPos - startPos;
 
     struct TextRange tr = { {startPos, currentPos}, buf };
     ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
