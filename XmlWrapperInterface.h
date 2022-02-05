@@ -90,9 +90,19 @@ protected:
     }
 
 public:
+    /*
+    * Contructor
+    * @param xml A pointer on the begin of xml buffer
+    * @param size The xml buffer length
+    */
+    XmlWrapperInterface(const char* xml, size_t size) {}
+
+    /* Default contructor */
     XmlWrapperInterface() {}
+
+    /* Default destructor */
     virtual ~XmlWrapperInterface() {
-        this->errors.clear();
+        this->resetErrors();
     }
 
     /*
@@ -103,36 +113,28 @@ public:
 
     /*
     * Perform syntax check
-    * @param xml A pointer on the begin of xml buffer
-    * @param size The xml buffer length
     * @return Return true if xml is well formed, otherwise false
     */
-    virtual bool checkSyntax(const char* xml, size_t size) = 0;
+    virtual bool checkSyntax() = 0;
 
     /*
     * Perform validity check
-    * @param xml A pointer on the begin of xml buffer
-    * @param size The xml buffer length
     * @param schemaFilename Optional. A schema file path; required if schema is not declared in root element
     * @param validationNamespace Optional. A validation namespace
     * @return Return true if xml is valid, otherwise false
     */
-    virtual bool checkValidity(const char* xml, size_t size, std::wstring schemaFilename = L"", std::wstring validationNamespace = L"") = 0;
+    virtual bool checkValidity(std::wstring schemaFilename = L"", std::wstring validationNamespace = L"") = 0;
 
     /*
     * Perform xpath evaluation
-    * @param xml A pointer on the begin of xml buffer
-    * @param size The xml buffer length
     * @param xpath The expression to be evaluated
     * @param ns An optional string describing the required namespaces (ex: "xmlns:npp='http://notepad-plus-plus.org' xmlns:a='another-namespace'")
     * @param A vector containing all evaluation occurrences
     */
-    virtual std::vector<XPathResultEntryType> xpathEvaluate(const char* xml, size_t size, std::wstring xpath, std::wstring ns = L"") = 0;
+    virtual std::vector<XPathResultEntryType> xpathEvaluate(std::wstring xpath, std::wstring ns = L"") = 0;
 
     /*
     * Perform xsl transformation
-    * @param xml A pointer on the begin of xml buffer
-    * @param xmllen The xml buffer length
     * @param xslfile The path of XSL transformation stylesheet
     * @param out A reference to the output object; the output object is updated with transformation result
     * @param options Parameters passed to transformer
@@ -140,7 +142,7 @@ public:
     * @param The transformation result as a XSLTransformResultType object
     * @return The function retruns true if transformation could be done without error; if errors occurred, it returns false
     */
-    virtual bool xslTransform(const char* xml, size_t xmllen, std::wstring xslfile, XSLTransformResultType* out, std::wstring options = L"", UniMode srcEncoding = UniMode::uniEnd) = 0;
+    virtual bool xslTransform(std::wstring xslfile, XSLTransformResultType* out, std::wstring options = L"", UniMode srcEncoding = UniMode::uniEnd) = 0;
 
     /*
     * Get errors of last executed action

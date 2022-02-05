@@ -96,8 +96,10 @@ int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
 
     ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
-    XmlWrapperInterface* wrapper = new MSXMLWrapper();
-    std::vector<XPathResultEntryType> nodes = wrapper->xpathEvaluate(data, currentLength, xpathExpr.GetString(), m_sNamespace.GetString());
+    XmlWrapperInterface* wrapper = new MSXMLWrapper(data, currentLength);
+    delete[] data; data = NULL;
+
+    std::vector<XPathResultEntryType> nodes = wrapper->xpathEvaluate(xpathExpr.GetString(), m_sNamespace.GetString());
 
     std::vector<ErrorEntryType> errors = wrapper->getLastErrors();
     if (errors.empty()) {
@@ -106,9 +108,6 @@ int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
     else {
         displayXMLErrors(errors, hCurrentEditView, L"Error: unable to parse XML", ERRORS_DISPLAY_MODE_ALERT);
     }
-
-    delete[] data;
-    data = NULL;
 
     delete wrapper;
 

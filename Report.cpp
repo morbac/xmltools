@@ -338,6 +338,12 @@ std::wstring Report::wtrim(const std::wstring& s) {
     return Report::wtrimleft(Report::wtrimright(s));
 }
 
+void Report::char2wchar(const char* s, size_t size, CComBSTR& dest) {
+    size_t origsize = size + 1;
+    dest.m_str = ::SysAllocStringLen(NULL, origsize);
+    mbstowcs(dest.m_str, s, _TRUNCATE);
+}
+
 wchar_t* Report::char2wchar(const char* s) {
     size_t origsize = strlen(s) + 1;
     wchar_t* ws = new wchar_t[origsize];
@@ -672,20 +678,17 @@ bool Report::isEOL(const char cc, const char nc, int mode) {
 }
 */
 
-void Report::char2BSTR(const char* inParam, BSTR* outParam) {
+void Report::char2BSTR(const char* inParam, size_t size, CComBSTR& outParam) {
     switch (Report::getEncoding((HWND)NULL)) {
         case UniMode::uniCookie:
         case UniMode::uniUTF8:
         case UniMode::uni16BE:
         case UniMode::uni16LE: {
-            std::string tmp(inParam);
-            *outParam = CComBSTR((Report::utf8ToUcs2(tmp)).c_str()).Detach();
-            tmp.clear();
+            Report::utf8ToUcs2(inParam, size, outParam);
             break;
         }
         default: {
-            // *outParam = CComBSTR(inParam).Detach();
-            *outParam = CComBSTR(inParam).Detach();
+            Report::char2wchar(inParam, size, outParam);
             break;
         }
     }
@@ -805,6 +808,22 @@ void Report::ucs2CharToUtf8Char(const wchar_t ucs2Char, char* utf8Tok) {
         utf8TokUs[1] = static_cast<unsigned char>(0x80 | (ucs2CharValue & 0x3F));
         ucs2CharValue = (ucs2CharValue >> 6);
         utf8TokUs[0] = static_cast<unsigned char>(0xE0 | ucs2CharValue);
+    }
+}
+
+void Report::utf8ToUcs2(const char* utf8Str, size_t size, CComBSTR &dest) {
+    wchar_t ucs2CharToStrBuf[] = { 0, 0 };
+    const char* cursor = utf8Str;
+    const char* const end = utf8Str + size;
+
+    while (end > cursor) {
+        uint32_t utf8TokLen = 1;
+        utf8CharToUcs2Char(cursor, &ucs2CharToStrBuf[0], &utf8TokLen);
+        dest.Append(ucs2CharToStrBuf[0]);
+        if (ucs2CharToStrBuf[1] != 0) {
+            dest.Append(ucs2CharToStrBuf[1]);
+        }
+        cursor += utf8TokLen;
     }
 }
 

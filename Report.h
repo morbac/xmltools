@@ -75,6 +75,7 @@ public:
   static std::wstring wtrimright(const std::wstring& s);
   static std::wstring wtrim(const std::wstring& s);
 
+  static void char2wchar(const char* s, size_t size, CComBSTR& dest);
   static wchar_t* char2wchar(const char* s);
   static char* wchar2char(const wchar_t* ws);
   static std::wstring s2ws(const std::string& s);
@@ -101,7 +102,7 @@ public:
   static bool isEOL(const std::string& txt, const std::string::size_type txtlength, unsigned int pos, int mode);
   static bool isEOL(const char cc, const char nc, int mode);
 
-  static void char2BSTR(const char* inParam, BSTR* outParam);
+  static void char2BSTR(const char* inParam, size_t size, CComBSTR& outParam);
   static void char2BSTR(const wchar_t* inParam, BSTR* outParam);
   static void char2BSTR(const CStringW& inParam, BSTR* outParam);
   static void char2VARIANT(const char* inParam, VARIANT* outParam);
@@ -110,6 +111,7 @@ public:
 
   static bool utf8CharToUcs2Char(const char* utf8Tok, wchar_t* ucs2Char, uint32_t* utf8TokLen);
   static void ucs2CharToUtf8Char(const wchar_t ucs2Char, char* utf8Tok);
+  static void utf8ToUcs2(const char* utf8Str, size_t size, CComBSTR &dest);
   static std::wstring utf8ToUcs2(const std::string& utf8Str);
   static std::string ucs2ToUtf8(const std::wstring& ucs2Str);
 };

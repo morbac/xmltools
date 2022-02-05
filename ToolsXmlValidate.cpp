@@ -42,9 +42,10 @@ int performXMLCheck(int informIfNoError) {
 
     auto t_start = clock();
 
-    XmlWrapperInterface* wrapper = new MSXMLWrapper();
+    XmlWrapperInterface* wrapper = new MSXMLWrapper(data, currentLength);
+    delete[] data; data = NULL;
 
-    bool isok = wrapper->checkSyntax(data, currentLength);
+    bool isok = wrapper->checkSyntax();
 
     auto t_end = clock();
     dbgln(L"crunch time: " + std::to_wstring(t_end - t_start) + L" ms", DBG_LEVEL::DBG_INFO);
@@ -106,16 +107,18 @@ void XMLValidation(int informIfNoError) {
 
     ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
-    XmlWrapperInterface* wrapper = new MSXMLWrapper();
-    bool isok = wrapper->checkSyntax(data, currentLength);
+    XmlWrapperInterface* wrapper = new MSXMLWrapper(data, currentLength);
+    delete[] data; data = NULL;
+
+    bool isok = wrapper->checkSyntax();
 
     if (isok) {
         // check if a schema prompt is requested
-        std::vector<XPathResultEntryType> nodes = wrapper->xpathEvaluate(data, currentLength, L"/*/@xsi:noNamespaceSchemaLocation", L"xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'");
+        std::vector<XPathResultEntryType> nodes = wrapper->xpathEvaluate(L"/*/@xsi:noNamespaceSchemaLocation", L"xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'");
         bool nnsl = (nodes.size() > 0);
         nodes.clear();
 
-        nodes = wrapper->xpathEvaluate(data, currentLength, L"/*/@xsi:schemaLocation", L"xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'");
+        nodes = wrapper->xpathEvaluate(L"/*/@xsi:schemaLocation", L"xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'");
         bool sl = (nodes.size() > 0);
 
         bool hasSchemaOrDTD = (nnsl || sl);
@@ -135,7 +138,7 @@ void XMLValidation(int informIfNoError) {
         }
 
         if (hasSchemaOrDTD) {
-            if (!wrapper->checkValidity(data, currentLength)) {
+            if (!wrapper->checkValidity()) {
                 std::vector<ErrorEntryType> errors = wrapper->getLastErrors();
                 displayXMLErrors(errors, hCurrentEditView, L"XML Validation error");
             }
@@ -153,7 +156,7 @@ void XMLValidation(int informIfNoError) {
 
             CStringW rootSample = "<";
             nodes.clear();
-            nodes = wrapper->xpathEvaluate(data, currentLength, L"/*", L"");
+            nodes = wrapper->xpathEvaluate(L"/*", L"");
             if (nodes.size() == 1) {
                 pSelectFileDlg->m_sRootElementName = nodes.at(0).name.c_str();
             }
@@ -163,7 +166,7 @@ void XMLValidation(int informIfNoError) {
 
             if (pSelectFileDlg->DoModal() == IDOK) {
                 //lastXMLSchema = pSelectFileDlg->m_sSelectedFilename;
-                if (!wrapper->checkValidity(data, currentLength, pSelectFileDlg->m_sSelectedFilename.GetString(), pSelectFileDlg->m_sValidationNamespace.GetString())) {
+                if (!wrapper->checkValidity(pSelectFileDlg->m_sSelectedFilename.GetString(), pSelectFileDlg->m_sValidationNamespace.GetString())) {
                     std::vector<ErrorEntryType> errors = wrapper->getLastErrors();
                     displayXMLErrors(errors, hCurrentEditView, L"XML Validation error");
                 }
@@ -177,7 +180,6 @@ void XMLValidation(int informIfNoError) {
         Report::_printf_inf(L"Please fix xml syntax first.");
     }
 
-    delete[] data;
     delete wrapper;
 }
 

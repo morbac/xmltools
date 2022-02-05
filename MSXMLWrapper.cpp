@@ -5,7 +5,9 @@
 #include "Report.h"
 #include <comutil.h>
 
-MSXMLWrapper::MSXMLWrapper() {
+MSXMLWrapper::MSXMLWrapper(const char* xml, size_t size) {
+    Report::char2BSTR(xml, size, this->m_sXml);
+
     std::map<std::string, std::string> tristate{ { "-1", "default" }, { "0", "false" }, { "1", "true" } };
 
     this->options["allowDocumentFunction"] = {
@@ -24,10 +26,15 @@ MSXMLWrapper::MSXMLWrapper() {
         OptionFormatType::OPTION_FORMAT_COMBO,
         tristate
     };
+
 }
 
 MSXMLWrapper::~MSXMLWrapper() {
     this->resetErrors();
+
+    this->m_sXml.Empty();
+    //wchar_t* tmp = this->m_sXml.Detach();
+    //if (tmp != NULL) delete[] tmp;
 }
 
 int MSXMLWrapper::getCapabilities() {
@@ -110,7 +117,7 @@ CleanUp:
     SAFE_RELEASE(pTmpErr);
 }
 
-bool MSXMLWrapper::checkSyntax(const char* xml, size_t size) {
+bool MSXMLWrapper::checkSyntax() {
     bool res = true;
 
     //updateProxyConfig();
@@ -118,15 +125,11 @@ bool MSXMLWrapper::checkSyntax(const char* xml, size_t size) {
     IXMLDOMDocument3* pXMLDom = NULL;
     IXMLDOMParseError2* pXMLErr = NULL;
     VARIANT_BOOL varStatus;
-    CComBSTR bstrXML;
 
-    this->resetErrors();
-
-    Report::char2BSTR(xml, &bstrXML);
-    CHK_ALLOC(bstrXML);
+    this->resetErrors();    
 
     CHK_HR(CreateAndInitDOM(&pXMLDom));
-    CHK_HR(pXMLDom->loadXML(bstrXML, &varStatus));
+    CHK_HR(pXMLDom->loadXML(this->m_sXml, &varStatus));
 
     res = (varStatus == VARIANT_TRUE);
 
@@ -138,12 +141,11 @@ bool MSXMLWrapper::checkSyntax(const char* xml, size_t size) {
 CleanUp:
     SAFE_RELEASE(pXMLDom);
     SAFE_RELEASE(pXMLErr);
-    bstrXML.Empty();
 
 	return res;
 }
 
-bool MSXMLWrapper::checkValidity(const char* xml, size_t size, std::wstring schemaFilename, std::wstring validationNamespace) {
+bool MSXMLWrapper::checkValidity(std::wstring schemaFilename, std::wstring validationNamespace) {
     // source: https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ms754649(v=vs.85)
 
     HRESULT hr = S_OK;
@@ -155,17 +157,13 @@ bool MSXMLWrapper::checkValidity(const char* xml, size_t size, std::wstring sche
     IXMLDOMElement* pElement = NULL;
     IXMLDOMSchemaCollection2* pXS = NULL;
     VARIANT_BOOL varStatus;
-    CComBSTR bstrXML;
     BSTR bstrNodeName = NULL;
     bool res = true;
 
     this->resetErrors();
 
-    Report::char2BSTR(xml, &bstrXML);
-    CHK_ALLOC(bstrXML);
-
     CHK_HR(CreateAndInitDOM(&pXMLDom, (INIT_OPTION_VALIDATEONPARSE | INIT_OPTION_RESOLVEEXTERNALS)));
-    CHK_HR(pXMLDom->loadXML(bstrXML, &varStatus));
+    CHK_HR(pXMLDom->loadXML(this->m_sXml, &varStatus));
 
     if (varStatus == VARIANT_TRUE) {
         if (!schemaFilename.empty()) {
@@ -186,7 +184,7 @@ bool MSXMLWrapper::checkValidity(const char* xml, size_t size, std::wstring sche
                     pXMLDom->put_resolveExternals(VARIANT_TRUE);
                     */
 
-                    CHK_HR(pXMLDom->loadXML(bstrXML, &varStatus));
+                    CHK_HR(pXMLDom->loadXML(this->m_sXml, &varStatus));
                     if (varStatus != VARIANT_TRUE) {
                         CHK_HR(pXMLDom->get_parseError((IXMLDOMParseError**)&pXMLErr));
                         this->buildErrorsVector(pXMLErr);
@@ -241,12 +239,11 @@ CleanUp:
     SAFE_RELEASE(pElement);
     SAFE_RELEASE(pXS);
     SysFreeString(bstrNodeName);
-    bstrXML.Empty();
 
 	return res;
 }
 
-std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, size_t size, std::wstring xpath, std::wstring ns) {
+std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(std::wstring xpath, std::wstring ns) {
     HRESULT hr = S_OK;
     IXMLDOMDocument3* pXMLDom = NULL;
     IXMLDOMNodeList* pNodes = NULL;
@@ -257,7 +254,6 @@ std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, s
     BSTR bstrNodeName = NULL;
     BSTR bstrNodeType = NULL;
     CComBSTR bstrXPath;
-    CComBSTR bstrXML;
     VARIANT varNodeValue;
     std::vector<XPathResultEntryType> res;
     std::wstring value;
@@ -269,11 +265,8 @@ std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(const char* xml, s
     Report::char2BSTR(xpath.c_str(), &bstrXPath);
     CHK_ALLOC(bstrXPath);
 
-    Report::char2BSTR(xml, &bstrXML);
-    CHK_ALLOC(bstrXML);
-
     CHK_HR(CreateAndInitDOM(&pXMLDom));
-    CHK_HR(pXMLDom->loadXML(bstrXML, &varStatus));
+    CHK_HR(pXMLDom->loadXML(this->m_sXml, &varStatus));
     if (varStatus == VARIANT_TRUE) {
         CHK_HR(pXMLDom->setProperty(L"SelectionNamespaces", _variant_t(ns.c_str())));
         CHK_HR(pXMLDom->setProperty(L"SelectionLanguage", _variant_t(L"XPath")));
@@ -363,7 +356,6 @@ CleanUp:
     SAFE_RELEASE(pNodes);
     SAFE_RELEASE(pXMLErr);
     bstrXPath.Empty();
-    bstrXML.Empty();
 
     SAFE_RELEASE(pNode);
     SysFreeString(bstrNodeName);
@@ -418,7 +410,7 @@ std::string::size_type getNextParam(std::wstring& str, std::string::size_type st
     return valendpos;
 }
 
-bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xslfile, XSLTransformResultType* out, std::wstring options, UniMode srcEncoding) {
+bool MSXMLWrapper::xslTransform(std::wstring xslfile, XSLTransformResultType* out, std::wstring options, UniMode srcEncoding) {
     // inspired from https://www.codeguru.com/cpp/data/data-misc/xml/article.php/c4565/Doing-XSLT-with-MSXML-in-C.htm
     // and msxsl tool source code (https://www.microsoft.com/en-us/download/details.aspx?id=21714)
     HRESULT hr = S_OK;
@@ -434,7 +426,6 @@ bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xsl
     VARIANT varValue;
     VARIANT_BOOL varStatus;
     BSTR bstrEncoding = NULL;
-    CComBSTR bstrXML;
     long length;
     bool currentDataIsXml = true;
     bool outputAsStream = false;
@@ -444,13 +435,10 @@ bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xsl
 
     V_VT(&varValue) = VT_UNKNOWN;
 
-    Report::char2BSTR(xml, &bstrXML);
-    CHK_ALLOC(bstrXML);
-
     // active document may either be XML or XSL; if XSL,
     // then m_sSelectedFile refers to an XML file
     CHK_HR(CreateAndInitDOM(&pXml));
-    CHK_HR(pXml->loadXML(bstrXML, &varStatus));
+    CHK_HR(pXml->loadXML(this->m_sXml, &varStatus));
     if (varStatus == VARIANT_TRUE) {
         CHK_HR(pXml->setProperty(L"SelectionNamespaces", variant_t(L"xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"")));
         if (SUCCEEDED(pXml->selectNodes(L"/xsl:stylesheet", &pNodes))) {
@@ -484,7 +472,7 @@ bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xsl
     // load xml
     CHK_HR(CreateAndInitDOM(&pXml));
     if (currentDataIsXml) {
-        CHK_HR(pXml->loadXML(bstrXML, &varStatus));
+        CHK_HR(pXml->loadXML(this->m_sXml, &varStatus));
     }
     else {
         CHK_HR(pXml->load(_variant_t(xslfile.c_str()), &varStatus));
@@ -496,7 +484,7 @@ bool MSXMLWrapper::xslTransform(const char* xml, size_t xmllen, std::wstring xsl
             CHK_HR(pXslt->load(_variant_t(xslfile.c_str()), &varStatus));
         }
         else {
-            CHK_HR(pXslt->loadXML(bstrXML, &varStatus));
+            CHK_HR(pXslt->loadXML(this->m_sXml, &varStatus));
         }
         if (varStatus == VARIANT_TRUE) {
             // detect output encoding
@@ -675,7 +663,6 @@ CleanUp:
     SAFE_RELEASE(pNodes);
     SAFE_RELEASE(pNode);
     SysFreeString(bstrEncoding);
-    bstrXML.Empty();
 
     return res;
 }

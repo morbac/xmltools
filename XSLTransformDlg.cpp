@@ -87,9 +87,11 @@ void CXSLTransformDlg::OnBtnTransform() {
 
     ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
-    XmlWrapperInterface* wrapper = new MSXMLWrapper();
+    XmlWrapperInterface* wrapper = new MSXMLWrapper(data, currentLength);
+    delete[] data; data = NULL;
+
     XSLTransformResultType res;
-    if (wrapper->xslTransform(data, currentLength, m_sSelectedFile.GetString(), &res, m_sXSLTOptions.GetString())) {
+    if (wrapper->xslTransform(m_sSelectedFile.GetString(), &res, m_sXSLTOptions.GetString())) {
         ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FILE_NEW);
         if (res.encoding != UniMode::uniEnd) Report::setEncoding(res.encoding, hCurrentEditView);
         ::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(res.data.c_str()));
@@ -98,9 +100,6 @@ void CXSLTransformDlg::OnBtnTransform() {
         std::vector<ErrorEntryType> errors = wrapper->getLastErrors();
         displayXMLErrors(errors, hCurrentEditView, L"Error while XSL transformation");
     }
-
-    delete[] data;
-    data = NULL;
 
     delete wrapper;
 }
