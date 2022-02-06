@@ -3,14 +3,12 @@
 
 #include <string>
 
-struct ScintillaDoc
-{
+struct ScintillaDoc {
 	HWND hCurrentEditView;
 
 	bool inSelection;
 
-	struct sciWorkText
-	{
+	struct sciWorkText {
 		char* text;
 		intptr_t length;
 		intptr_t selstart;
@@ -47,18 +45,16 @@ struct ScintillaDoc
 		return (bool) ::SendMessage(hCurrentEditView, SCI_GETUSETABS, 0, 0);
 	}
 
-	std::string Tab()
-	{
-		if (UseTabs())
-		{
+	std::string Tab() {
+		if (UseTabs()) {
 			return "\t";
 		}
-		else
-		{
+		else {
 			std::string tab;
 			int tabwidth = GetTabWidth();
-			for (int i = 0; i < tabwidth; i++)
+			for (int i = 0; i < tabwidth; i++) {
 				tab.append(" ");
+			}
 
 			return tab;
 		}
@@ -90,6 +86,10 @@ struct ScintillaDoc
 		::SendMessage(hCurrentEditView, SCI_SETANCHOR, selend, 0);
 	}
 
+	void ClearAll() {
+		::SendMessage(hCurrentEditView, SCI_CLEARALL, 0, 0);
+	}
+
 	void SetText(const char* text) {
 		::SendMessage(hCurrentEditView, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(text));
 	}
@@ -113,8 +113,7 @@ struct ScintillaDoc
 	sciWorkText GetSelectedText() {
 		auto selstart = SelectionStart();
 		auto selend = SelectionEnd();
-		if (selend > selstart)
-		{
+		if (selend > selstart) {
 			auto len = selend - selstart;
 			return { GetSelectedText(len), (intptr_t) len, (intptr_t)selstart };
 		}
@@ -140,8 +139,9 @@ struct ScintillaDoc
 		range.chrg.cpMax = offset+length;
 		range.lpstrText = target;
 
-		if (range.chrg.cpMax > (Sci_PositionCR)max)
+		if (range.chrg.cpMax > (Sci_PositionCR)max) {
 			range.chrg.cpMax = (Sci_PositionCR)max;
+		}
 		
 
 		return ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&range));
@@ -184,5 +184,9 @@ struct ScintillaDoc
 
 	void SetScrollWidth(int width) {
 		::SendMessage(hCurrentEditView, SCI_SETSCROLLWIDTH, width, 0);
+	}
+
+	void EmptyUndoBuffer() {
+		::SendMessage(hCurrentEditView, SCI_EMPTYUNDOBUFFER, 0, 0);
 	}
 };

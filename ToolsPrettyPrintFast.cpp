@@ -28,7 +28,7 @@ void sciDocPrettyPrintQuickXml(ScintillaDoc& doc) {
     auto docclock_start = clock();
 
     QuickXml::XmlFormater formater(inText.text, inText.length, params);
-    std::string& outText = formater.prettyPrint()->str();
+    std::stringstream* outText = formater.prettyPrint();
 
     auto docclock_end = clock();
 
@@ -39,7 +39,8 @@ void sciDocPrettyPrintQuickXml(ScintillaDoc& doc) {
     }
 
     inText.FreeMemory();
-    doc.SetWorkText(outText.c_str());
+    doc.SetWorkText(outText->str().c_str());
+    outText->str(std::string());
     doc.SetScrollWidth(80);
 }
 
@@ -78,8 +79,9 @@ void sciDocPrettyPrintSimpleXml(ScintillaDoc& doc) {
     }
 
     // Send formatted string to scintilla
-    const std::string& outText = prettyTextStream->str();
+    std::string& outText = prettyTextStream->str();
     doc.SetWorkText(outText.c_str());
+    outText.clear();
     doc.SetScrollWidth(80); // 80 is arbitrary
 }
 
@@ -135,7 +137,7 @@ void sciDocPrettyPrintQuickXmlAttr(ScintillaDoc& doc) {
     auto docclock_start = clock();
 
     QuickXml::XmlFormater formater(inText.text, inText.length, params);
-    std::string& outText = formater.prettyPrint()->str();
+    std::stringstream* outText = formater.prettyPrint();
 
     auto docclock_end = clock();
 
@@ -146,12 +148,12 @@ void sciDocPrettyPrintQuickXmlAttr(ScintillaDoc& doc) {
     }
 
     inText.FreeMemory();
-    doc.SetWorkText(outText.c_str());
+    doc.SetWorkText(outText->str().c_str());
+    outText->str(std::string());
     doc.SetScrollWidth(80);
 }
 
 void sciDocPrettyPrintSimpleXmlAttr(ScintillaDoc& doc) {
-
     SimpleXml::PrettyPrintParms parms;
     parms.eol = doc.EOL();
     parms.tab = doc.Tab();
@@ -181,8 +183,9 @@ void sciDocPrettyPrintSimpleXmlAttr(ScintillaDoc& doc) {
     }
 
     // Send formatted string to scintilla
-    const std::string& outText = prettyTextStream->str();
+    std::string& outText = prettyTextStream->str();
     doc.SetWorkText(outText.c_str());
+    outText.clear();
     doc.SetScrollWidth(80); // 80 is arbitrary
 }
 
@@ -238,7 +241,7 @@ void sciDocPrettyPrintQuickXml_IndentOnly(ScintillaDoc& doc) {
     auto docclock_start = clock();
 
     QuickXml::XmlFormater formater(inText.text, inText.length, params);
-    std::string& outText = formater.prettyPrint()->str();
+    std::stringstream* outText = formater.prettyPrint();
 
     auto docclock_end = clock();
 
@@ -249,7 +252,8 @@ void sciDocPrettyPrintQuickXml_IndentOnly(ScintillaDoc& doc) {
     }
 
     inText.FreeMemory();
-    doc.SetWorkText(outText.c_str());
+    doc.SetWorkText(outText->str().c_str());
+    outText->str(std::string());
     doc.SetScrollWidth(80);
 }
 
@@ -283,8 +287,9 @@ void sciDocPrettyPrintSimpleXml_IndentOnly(ScintillaDoc& doc) {
     }
 
     // Send formatted string to scintilla
-    const std::string& outText = prettyTextStream->str();
+    std::string& outText = prettyTextStream->str();
     doc.SetWorkText(outText.c_str());
+    outText.clear();
 }
 
 void sciDocPrettyPrintStringXml_IndentOnly(ScintillaDoc& doc) {
@@ -339,7 +344,7 @@ void sciDocLinearizeQuickXml(ScintillaDoc& doc) {
     auto docclock_start = clock();
 
     QuickXml::XmlFormater formater(inText.text, inText.length, params);
-    std::string& outText = formater.linearize()->str();
+    std::stringstream* outText = formater.linearize();
 
     auto docclock_end = clock();
 
@@ -350,7 +355,8 @@ void sciDocLinearizeQuickXml(ScintillaDoc& doc) {
     }
 
     inText.FreeMemory();
-    doc.SetWorkText(outText.c_str());
+    doc.SetWorkText(outText->str().c_str());
+    outText->str(std::string());
     doc.SetScrollWidth(80);
 }
 
@@ -384,8 +390,9 @@ void sciDocLinearizeSimpleXml(ScintillaDoc& doc) {
     }
 
     // Send formatted string to scintilla
-    const std::string& outText = prettyTextStream->str();
+    std::string& outText = prettyTextStream->str();
     doc.SetWorkText(outText.c_str());
+    outText.clear();
 }
 
 void sciDocLinearizeStringXml(ScintillaDoc& doc) {
@@ -451,6 +458,7 @@ void sciDocTokenizeQuickXml(ScintillaDoc& doc) {
     }
 
     dbgln(outText.c_str(), DBG_LEVEL::DBG_ERROR);
+    outText.clear();
 }
 
 //-----------------------------------------------------------------------------------------------//
