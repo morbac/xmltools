@@ -342,9 +342,7 @@ void COptionsDlg::OnBnClickedBtnviewannotation() {
 }
 
 BOOL COptionsDlg::OnCommand(WPARAM wParam, LPARAM lParam) {
-  if (testAnnotation) {
-    clearErrors();
-  }
+  clearErrors(NULL, true);
 
   return CDialogEx::OnCommand(wParam, lParam);
 }

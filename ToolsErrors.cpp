@@ -437,8 +437,8 @@ bool hasCurrentDocAnnotations() {
     return false;
 }
 
-void clearAnnotations(HWND view) {
-    if (hasCurrentDocAnnotations()) {
+void clearAnnotations(HWND view, bool force = false) {
+    if (force || hasCurrentDocAnnotations()) {
         if (view == NULL) {
             int currentEdit;
             ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
@@ -450,11 +450,11 @@ void clearAnnotations(HWND view) {
     }
 }
 
-void clearErrors(HWND view) {
+void clearErrors(HWND view, bool force) {
     LRESULT bufferid = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
     currentError[bufferid] = 0;
     xmlErrors.clear();
-    clearAnnotations(view);
+    clearAnnotations(view, force);
 }
 
 void registerError(ErrorEntryDesc err) {
