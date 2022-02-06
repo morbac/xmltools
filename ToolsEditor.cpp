@@ -11,10 +11,10 @@ void closeXMLTag() {
     int currentEdit;
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
     HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-    size_t currentPos = size_t(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
-    size_t beginPos = currentPos - (sizeof(buf) - 1);
-    size_t startPos = (beginPos > 0) ? beginPos : 0;
-    size_t size = currentPos - startPos;
+    Sci_PositionCR currentPos = Sci_PositionCR(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
+    Sci_PositionCR beginPos = currentPos - (sizeof(buf) - 1);
+    Sci_PositionCR startPos = (beginPos > 0) ? beginPos : 0;
+    Sci_PositionCR size = currentPos - startPos;
     //int insertStringSize = 2;
 
 #define MAX_TAGNAME_LENGTH 516
@@ -79,10 +79,10 @@ void tagAutoIndent() {
     int currentEdit;
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
     HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-    size_t currentPos = size_t(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
-    size_t beginPos = currentPos - (sizeof(buf) - 1);
-    size_t startPos = (beginPos > 0) ? beginPos : 0;
-    size_t size = currentPos - startPos;
+    Sci_PositionCR currentPos = Sci_PositionCR(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
+    Sci_PositionCR beginPos = currentPos - (sizeof(buf) - 1);
+    Sci_PositionCR startPos = (beginPos > 0) ? beginPos : 0;
+    Sci_PositionCR size = currentPos - startPos;
 
     struct TextRange tr = { {startPos, currentPos}, buf };
     ::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);

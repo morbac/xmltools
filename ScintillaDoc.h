@@ -70,19 +70,19 @@ struct ScintillaDoc {
 		}
 	}
 
-	size_t SelectionStart() {
-		return (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
+	Sci_PositionCR SelectionStart() {
+		return (Sci_PositionCR) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONSTART, 0, 0);
 	}
 
-	size_t SelectionEnd() {
-		return (size_t) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
+	Sci_PositionCR SelectionEnd() {
+		return (Sci_PositionCR) ::SendMessage(hCurrentEditView, SCI_GETSELECTIONEND, 0, 0);
 	}
 
-	void SetCurrentPosition(size_t selstart) {
+	void SetCurrentPosition(Sci_PositionCR selstart) {
 		::SendMessage(hCurrentEditView, SCI_SETCURRENTPOS, selstart, 0);
 	}
 
-	void SetAnchor(size_t selend) {
+	void SetAnchor(Sci_PositionCR selend) {
 		::SendMessage(hCurrentEditView, SCI_SETANCHOR, selend, 0);
 	}
 
@@ -98,8 +98,8 @@ struct ScintillaDoc {
 		::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(text));
 	}
 
-	size_t GetTextLength() {
-		return (size_t) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
+	Sci_PositionCR GetTextLength() {
+		return (Sci_PositionCR) ::SendMessage(hCurrentEditView, SCI_GETLENGTH, 0, 0);
 	}
 
 	char *GetSelectedText(size_t length) {
@@ -120,7 +120,7 @@ struct ScintillaDoc {
 		return { NULL,0,0 };
 	}
 
-	char *GetText(size_t length) {
+	char* GetText(Sci_PositionCR length) {
 		char *text = new char[length + sizeof(char)];
 		if (text == NULL) return false;  // allocation error, abort check
 		text[length] = 0;
