@@ -1,16 +1,6 @@
 #include "XmlParser.h"
 
 namespace QuickXml {
-	static inline bool contains(const char* characters, char element) {
-		size_t len = strlen(characters);
-		for (size_t i = 0; i < len; ++i) {
-			if (characters[i] == element) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	XmlParser::XmlParser(const char* data, size_t length) {
 		this->srcText = data;
 		this->srcLength = length;
@@ -485,20 +475,11 @@ namespace QuickXml {
 		return res + offset;
 	}
 
+
 	size_t XmlParser::readUntilFirstNotOf(const char* characters, size_t offset) {
-		// @todo optimize this
-		size_t res = 0;
-		char cursor;
 		if (offset > 0) offset = this->readChars(offset);
-		size_t len = strlen(characters);
-		while (this->currpos < this->srcLength) {
-			cursor = (this->srcText + this->currpos)[0];
-			if (!contains(characters, cursor)) {
-				return res;
-			}
-			++res;
-			++this->currpos;
-		}
+		size_t res = strspn(this->srcText + this->currpos, characters);
+		this->currpos += res;
 		return res + offset;
 	}
 
