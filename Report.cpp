@@ -21,6 +21,69 @@ const int MAX_BUFFER = 4096;
 std::wstring currentLog;
 UniMode currentEncoding = UniMode::uniEnd;
 
+// ------------------------------------------------------------------------------------------------
+
+#define WIN32_ALLOC_ALIGN (16 - 1)
+HRESULT CbSysStringSize(ULONG cchSize, BOOL isByteLen, ULONG* result) {
+    // Source: https://github.com/svick/coreclr/blob/master/tests/src/Common/Platform/platformdefines.cpp
+
+    if (result == NULL) return E_INVALIDARG;
+
+    // +2 for the null terminator
+    // + DWORD_PTR to store the byte length of the string
+    int constant = sizeof(WCHAR) + sizeof(DWORD_PTR) + WIN32_ALLOC_ALIGN;
+
+    if (isByteLen) {
+        if (SUCCEEDED(ULongAdd(constant, cchSize, result))) {
+            *result = *result & ~WIN32_ALLOC_ALIGN;
+            return S_OK;
+        }
+    }
+    else {
+        ULONG temp = 0; // should not use in-place addition in ULongAdd
+        if (SUCCEEDED(ULongMult(cchSize, sizeof(WCHAR), &temp)) &
+            SUCCEEDED(ULongAdd(temp, constant, result))) {
+            *result = *result & ~WIN32_ALLOC_ALIGN;
+            return S_OK;
+        }
+    }
+
+    return INTSAFE_E_ARITHMETIC_OVERFLOW;
+}
+
+BSTR TP_SysAllocStringLen(LPWSTR psz, size_t len) {
+    // This method is prefered to ::SysAllocStringLen because the size is specified
+    // as size_t instead of UINT. This should allow allocations larger than 4GB
+    
+    // Source: https://github.com/svick/coreclr/blob/master/tests/src/Common/Platform/platformdefines.cpp
+
+    ULONG cbTotal = 0;
+    if (FAILED(CbSysStringSize((ULONG)len, FALSE, &cbTotal))) return NULL;
+    BSTR bstr = (BSTR)malloc(cbTotal);
+
+    if (bstr != NULL) {
+#if defined(_WIN64)
+        // NOTE: There are some apps which peek back 4 bytes to look at the size of the BSTR. So, in case of 64-bit code,
+        // we need to ensure that the BSTR length can be found by looking one DWORD before the BSTR pointer. 
+        * (DWORD_PTR*)bstr = (DWORD_PTR)0;
+        bstr = (BSTR)((char*)bstr + sizeof(DWORD));
+#endif
+        * (DWORD*)bstr = (DWORD)len * sizeof(OLECHAR);
+
+        bstr = (BSTR)((char*)bstr + sizeof(DWORD));
+
+        if (psz != NULL) {
+            memcpy(bstr, psz, len * sizeof(OLECHAR));
+        }
+
+        bstr[len] = '\0'; // always 0 terminate
+    }
+
+    return bstr;
+}
+
+// ------------------------------------------------------------------------------------------------
+
 Report::Report() {
 }
 
@@ -339,8 +402,7 @@ std::wstring Report::wtrim(const std::wstring& s) {
 }
 
 void Report::char2wchar(const char* s, size_t size, CComBSTR& dest) {
-    size_t origsize = size + 1;
-    dest.m_str = ::SysAllocStringLen(NULL, origsize);
+    dest.m_str = TP_SysAllocStringLen(NULL, size + 1);
     mbstowcs(dest.m_str, s, _TRUNCATE);
 }
 
