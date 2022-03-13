@@ -108,7 +108,6 @@ void XMLValidation(int informIfNoError) {
     ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
     XmlWrapperInterface* wrapper = new MSXMLWrapper(data, currentLength);
-    delete[] data; data = NULL;
 
     bool isok = wrapper->checkSyntax();
 
@@ -179,6 +178,8 @@ void XMLValidation(int informIfNoError) {
     else {
         Report::_printf_inf(L"Please fix xml syntax first.");
     }
+
+    delete[] data; data = NULL;
 
     delete wrapper;
 }
