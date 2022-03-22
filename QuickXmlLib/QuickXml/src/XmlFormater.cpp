@@ -474,12 +474,11 @@ namespace QuickXml {
 					std::string pathElement = std::string(token.chars + 1, token.size - 1);
 
 					if ((xpathMode & XPATH_MODE_WITHNODEINDEX) != 0) {
-						
+
 						std::map<std::string, size_t> depthMap;
 						// Push a new map for the new layer onto the depthElementMap
 						depthElementMap.push_back(depthMap);
-						
-						
+
 						if (depthElementMap.size() > 1) {
 							// increase amount of elements at current depth
 							depthElementMap.at(depthElementMap.size() - 2)[pathElement]++;
@@ -489,7 +488,6 @@ namespace QuickXml {
 								pathElement+= "[" + std::to_string(elementsInPosition) + "]";
 							}
 						}
-					
 					}
 
 					vPath.push_back(pathElement);
@@ -505,16 +503,11 @@ namespace QuickXml {
 					break;
 				}
 				case XmlTokenType::TagSelfClosingEnd: {
-					if (pushed_attr && !vPath.empty()) {
-						vPath.pop_back();
-					}
+					if (pushed_attr && !vPath.empty()) vPath.pop_back();
+					if ((xpathMode & XPATH_MODE_WITHNODEINDEX) != 0) depthElementMap.pop_back();
 					vPath.pop_back();
 					pushed_attr = false;
 					keep_attr_value = false;
-
-					if ((xpathMode & XPATH_MODE_WITHNODEINDEX) != 0) {
-						depthElementMap.pop_back();
-					}
 					break;
 				}
 				case XmlTokenType::AttrName: {
