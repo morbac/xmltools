@@ -459,6 +459,9 @@ namespace QuickXml {
 		std::vector<std::string> vPath;
 		bool pushed_attr = false;
 		bool keep_attr_value = false;
+		
+		// count elements of every depth layer in a map
+		std::vector<std::map<std::string, size_t>> depthElementMap;
 
 		while ((token = this->parser->parseNext()).type != XmlTokenType::EndOfFile) {
 			if (token.pos >= position) {
@@ -468,21 +471,40 @@ namespace QuickXml {
 
 			switch (token.type) {
 				case XmlTokenType::TagOpening: {
-					vPath.push_back(std::string(token.chars+1, token.size-1));
+					std::string pathElement = std::string(token.chars + 1, token.size - 1);
+
+					if ((xpathMode & XPATH_MODE_WITHNODEINDEX) != 0) {
+
+						std::map<std::string, size_t> depthMap;
+						// Push a new map for the new layer onto the depthElementMap
+						depthElementMap.push_back(depthMap);
+
+						if (depthElementMap.size() > 1) {
+							// increase amount of elements at current depth
+							depthElementMap.at(depthElementMap.size() - 2)[pathElement]++;
+							int elementsInPosition = depthElementMap.at(depthElementMap.size() - 2)[pathElement];
+							// only show for index > 2, to minimize XPath
+							if (elementsInPosition > 1) {
+								pathElement+= "[" + std::to_string(elementsInPosition) + "]";
+							}
+						}
+					}
+
+					vPath.push_back(pathElement);
 					pushed_attr = false;
 					keep_attr_value = false;
 					break;
 				}
 				case XmlTokenType::TagClosingEnd: {
 					if (!vPath.empty()) vPath.pop_back();
+					if ((xpathMode & XPATH_MODE_WITHNODEINDEX) != 0) depthElementMap.pop_back();
 					pushed_attr = false;
 					keep_attr_value = false;
 					break;
 				}
 				case XmlTokenType::TagSelfClosingEnd: {
-					if (pushed_attr && !vPath.empty()) {
-						vPath.pop_back();
-					}
+					if (pushed_attr && !vPath.empty()) vPath.pop_back();
+					if ((xpathMode & XPATH_MODE_WITHNODEINDEX) != 0) depthElementMap.pop_back();
 					vPath.pop_back();
 					pushed_attr = false;
 					keep_attr_value = false;

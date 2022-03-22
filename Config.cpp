@@ -61,6 +61,7 @@ void XmlToolsConfig::Read(std::wstring _configPath) {
 	ReadInt(L"maxIndentLevel", xmltoolsoptions.maxIndentLevel);
 	ReadBool(L"xpathOnStatusbar", xmltoolsoptions.xpathOnStatusbar);
 	ReadBool(L"dumpAttributeName", xmltoolsoptions.dumpAttributeName);
+	ReadBool(L"printXPathIndex", xmltoolsoptions.printXPathIndex);
 	ReadString(L"identityAttributes", xmltoolsoptions.identityAttributes);
 
 	ReadBool(L"convertAmp", xmltoolsoptions.convertAmp);
@@ -140,6 +141,7 @@ void XmlToolsConfig::Write() {
 	WriteInt(L"maxErrorsNum", xmltoolsoptions.maxErrorsNum);
 	WriteBool(L"xpathOnStatusbar", xmltoolsoptions.xpathOnStatusbar);
 	WriteBool(L"dumpAttributeName", xmltoolsoptions.dumpAttributeName);
+	WriteBool(L"printXPathIndex", xmltoolsoptions.printXPathIndex);
 	WriteString(L"identityAttributes", xmltoolsoptions.identityAttributes);
 
 	WriteBool(L"convertAmp", xmltoolsoptions.convertAmp);

@@ -128,6 +128,8 @@ BOOL COptionsDlg::OnInitDialog() {
   pGrpStatusbar->AddSubItem(pTmpOption); vWStringProperties.push_back(pTmpOption);
   pTmpOption = new CMFCPropertyGridProperty(L"Dump attributes name", COleVariant((short)(xmltoolsoptions.dumpAttributeName ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Introduce the indentity attributes with their name. When enabled, elements are dumped like \".../sample[id='hello']/...\". When disabled, elements are dumped like \".../sample[hello]/...\".", (DWORD_PTR)&xmltoolsoptions.dumpAttributeName);
   pGrpStatusbar->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Show XPath Element Index", COleVariant((short)(xmltoolsoptions.printXPathIndex ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Additionally shows the XPath Index of the current node. When enabled, the XPath of \"<a><b></b><b>Content</b></a>\" will resolve to \"/a/b[2]\" instead of \"/a/b\".", (DWORD_PTR)&xmltoolsoptions.printXPathIndex);
+  pGrpStatusbar->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
 
   CMFCPropertyGridProperty* pGrpXml2Txt = new CMFCPropertyGridProperty(L"XML to Text conversion");
   m_wndPropList.AddProperty(pGrpXml2Txt);
