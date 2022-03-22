@@ -334,13 +334,13 @@ namespace QuickXmlTests {
 			std::string ref("/x:a/x:b/d");
 
 			XmlFormater formater(xml.c_str(), xml.length());
-			std::stringstream* out = formater.currentPath(34, true);
+			std::stringstream* out = formater.currentPath(34, XPATH_MODE_WITHNAMESPACE);
 			std::string tmp(out->str());
 
 			Assert::IsTrue(0 == tmp.compare(ref.c_str()));
 
 			ref = "/a/b/d";
-			out = formater.currentPath(34, false);
+			out = formater.currentPath(34, XPATH_MODE_BASIC);
 			tmp = out->str();
 
 			Assert::IsTrue(0 == tmp.compare(ref.c_str()));
@@ -351,7 +351,7 @@ namespace QuickXmlTests {
 			std::string ref("/x:a/x:b/d");
 
 			XmlFormater formater(xml.c_str(), xml.length());
-			std::stringstream* out = formater.currentPath(33, true);
+			std::stringstream* out = formater.currentPath(33, XPATH_MODE_WITHNAMESPACE);
 			std::string tmp(out->str());
 
 			Assert::IsTrue(0 == tmp.compare(ref.c_str()));
@@ -368,13 +368,13 @@ namespace QuickXmlTests {
 			std::string ref("/x:a/x:b");
 
 			XmlFormater formater(xml.c_str(), xml.length());
-			std::stringstream* out = formater.currentPath(31, true);
+			std::stringstream* out = formater.currentPath(31, XPATH_MODE_WITHNAMESPACE);
 			std::string tmp(out->str());
 
 			Assert::IsTrue(0 == tmp.compare(ref.c_str()));
 
 			ref = "/a/b";
-			out = formater.currentPath(31, false);
+			out = formater.currentPath(31, XPATH_MODE_BASIC);
 			tmp = out->str();
 
 			Assert::IsTrue(0 == tmp.compare(ref.c_str()));
@@ -385,13 +385,30 @@ namespace QuickXmlTests {
 			std::string ref("/x:a/x:b/d/@x:x");
 
 			XmlFormater formater(xml.c_str(), xml.length());
-			std::stringstream* out = formater.currentPath(58, true);
+			std::stringstream* out = formater.currentPath(58, XPATH_MODE_WITHNAMESPACE);
 			std::string tmp(out->str());
 
 			Assert::IsTrue(0 == tmp.compare(ref.c_str()));
 
 			ref = "/a/b/d/@x";
 			out = formater.currentPath(58, false);
+			tmp = out->str();
+
+			Assert::IsTrue(0 == tmp.compare(ref.c_str()));
+		}
+
+		TEST_METHOD(CurrentPathTest05) {
+			std::string xml("<root><div></div><div>test123</div></root>");
+			std::string ref("/root/div[2]");
+
+			XmlFormater formater(xml.c_str(), xml.length());
+			std::stringstream* out = formater.currentPath(24, XPATH_MODE_WITHNODEINDEX);
+			std::string tmp(out->str());
+
+			Assert::IsTrue(0 == tmp.compare(ref.c_str()));
+
+			ref = "/root/div";
+			out = formater.currentPath(24, XPATH_MODE_BASIC);
 			tmp = out->str();
 
 			Assert::IsTrue(0 == tmp.compare(ref.c_str()));

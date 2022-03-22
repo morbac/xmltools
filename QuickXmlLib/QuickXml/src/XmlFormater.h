@@ -2,11 +2,13 @@
 
 #include <sstream>
 #include <vector>
+#include <map>
 #include "XmlParser.h"
 
 #define XPATH_MODE_BASIC				(1 << 0)
 #define XPATH_MODE_WITHNAMESPACE		(1 << 1)
 #define XPATH_MODE_KEEPIDATTRIBUTE		(1 << 2)
+#define XPATH_MODE_WITHNODEINDEX		(1 << 3)
 
 namespace QuickXml {
 	struct XmlFormaterParamsType {

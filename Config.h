@@ -48,6 +48,7 @@ struct struct_xmltoolsoptions {
 
 	bool xpathOnStatusbar = true;
 	bool dumpAttributeName = false;
+	bool printXPathIndex = false;
 	std::wstring identityAttributes = L"id;name";
 
 	bool convertAmp = true;

@@ -52,8 +52,13 @@ void printCurrentXPathInStatusbar() {
     int currentEdit;
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
     HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
-
-    std::wstring tmp = currentXPath(XPATH_MODE_WITHNAMESPACE | XPATH_MODE_KEEPIDATTRIBUTE);
+    
+    int xpathmode = XPATH_MODE_WITHNAMESPACE | XPATH_MODE_KEEPIDATTRIBUTE;
+    if (xmltoolsoptions.printXPathIndex) {
+        xpathmode |= XPATH_MODE_WITHNODEINDEX;
+    }
+   
+    std::wstring tmp = currentXPath(xpathmode);
     if (tmp.length() == 0) tmp = L" ";  // empty value has no effect on NPPM_SETSTATUSBAR
     ::SendMessage(nppData._nppHandle, NPPM_SETSTATUSBAR, STATUSBAR_DOC_TYPE, (LPARAM) tmp.c_str());
 }
