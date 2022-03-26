@@ -483,10 +483,7 @@ namespace QuickXml {
 							// increase amount of elements at current depth
 							depthElementMap.at(depthElementMap.size() - 2)[pathElement]++;
 							int elementsInPosition = depthElementMap.at(depthElementMap.size() - 2)[pathElement];
-							// only show for index > 2, to minimize XPath
-							if (elementsInPosition > 1) {
-								pathElement+= "[" + std::to_string(elementsInPosition) + "]";
-							}
+							pathElement+= "[" + std::to_string(elementsInPosition) + "]";
 						}
 					}
 
@@ -511,6 +508,9 @@ namespace QuickXml {
 					break;
 				}
 				case XmlTokenType::AttrName: {
+					// We dont need Attributes, when we have an exact Path with Indices to the Node.
+					if (xpathMode & XPATH_MODE_WITHNODEINDEX) break;
+
 					if (pushed_attr && !vPath.empty()) {
 						vPath.pop_back();
 					}

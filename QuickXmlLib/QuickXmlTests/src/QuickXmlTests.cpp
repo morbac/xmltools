@@ -412,6 +412,12 @@ namespace QuickXmlTests {
 			tmp = out->str();
 
 			Assert::IsTrue(0 == tmp.compare(ref.c_str()));
+
+			ref = "/root/div[1]";
+			out = formater.currentPath(11, XPATH_MODE_WITHNODEINDEX);
+			tmp = out->str();
+
+			Assert::IsTrue(0 == tmp.compare(ref.c_str()));
 		}
 	};
 }
