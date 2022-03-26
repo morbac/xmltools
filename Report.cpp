@@ -877,19 +877,10 @@ void Report::ucs2CharToUtf8Char(const wchar_t ucs2Char, char* utf8Tok) {
 }
 
 void Report::utf8ToUcs2(const char* utf8Str, size_t size, CComBSTR &dest) {
-    wchar_t ucs2CharToStrBuf[] = { 0, 0 };
-    const char* cursor = utf8Str;
-    const char* const end = utf8Str + size;
-
-    while (end > cursor) {
-        uint32_t utf8TokLen = 1;
-        utf8CharToUcs2Char(cursor, &ucs2CharToStrBuf[0], &utf8TokLen);
-        dest.Append(ucs2CharToStrBuf[0]);
-        if (ucs2CharToStrBuf[1] != 0) {
-            dest.Append(ucs2CharToStrBuf[1]);
-        }
-        cursor += utf8TokLen;
-    }
+    int len = MultiByteToWideChar(CP_UTF8, 0, utf8Str, size + 1, 0, 0);
+    dest.Empty();
+    dest.m_str = SysAllocStringLen(NULL, len);
+    MultiByteToWideChar(CP_UTF8, 0, utf8Str, size + 1, dest.m_str, len);
 }
 
 std::wstring Report::utf8ToUcs2(const std::string& utf8Str) {
