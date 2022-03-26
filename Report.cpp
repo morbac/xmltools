@@ -23,6 +23,7 @@ UniMode currentEncoding = UniMode::uniEnd;
 
 // ------------------------------------------------------------------------------------------------
 
+/*
 #define WIN32_ALLOC_ALIGN (16 - 1)
 HRESULT CbSysStringSize(ULONG cchSize, BOOL isByteLen, ULONG* result) {
     // Source: https://github.com/svick/coreclr/blob/master/tests/src/Common/Platform/platformdefines.cpp
@@ -81,6 +82,7 @@ BSTR TP_SysAllocStringLen(LPWSTR psz, size_t len) {
 
     return bstr;
 }
+*/
 
 // ------------------------------------------------------------------------------------------------
 
@@ -402,8 +404,9 @@ std::wstring Report::wtrim(const std::wstring& s) {
 }
 
 void Report::char2wchar(const char* s, size_t size, CComBSTR& dest) {
-    dest.m_str = TP_SysAllocStringLen(NULL, size + 1);
-    mbstowcs(dest.m_str, s, _TRUNCATE);
+    wchar_t* m_str = SysAllocStringLen(NULL, size + 1);
+    mbstowcs(m_str, s, _TRUNCATE);
+    dest.Attach(m_str);
 }
 
 wchar_t* Report::char2wchar(const char* s) {
