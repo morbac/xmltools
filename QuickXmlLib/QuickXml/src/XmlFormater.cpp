@@ -482,7 +482,7 @@ namespace QuickXml {
 						if (depthElementMap.size() > 1) {
 							// increase amount of elements at current depth
 							depthElementMap.at(depthElementMap.size() - 2)[pathElement]++;
-							int elementsInPosition = depthElementMap.at(depthElementMap.size() - 2)[pathElement];
+							size_t elementsInPosition = depthElementMap.at(depthElementMap.size() - 2)[pathElement];
 							pathElement+= "[" + std::to_string(elementsInPosition) + "]";
 						}
 					}
