@@ -184,25 +184,31 @@ namespace StringXml {
                             }
                         }
                         // skip attribute text
-                        curpos = str->find(cc, curpos + 1);
+                        tmppos = str->find(cc, curpos + 1);
+                        if (tmppos != std::string::npos && tmppos < strlen) {
+                            curpos = tmppos;
 
-                        // trim spaces after attribute
-                        tmppos = str->find_first_not_of("\t\n\v\f\r ", curpos + 1);
-                        if (tmppos != std::string::npos) {
-                            char endtag = '/';
-                            if (in_header) endtag = '?';
+                            // trim spaces after attribute
+                            tmppos = str->find_first_not_of("\t\n\v\f\r ", curpos + 1);
+                            if (tmppos != std::string::npos) {
+                                char endtag = '/';
+                                if (in_header) endtag = '?';
 
-                            // add line break if not the last attribute
-                            if (!indentOnly && breaktags && !in_header && str->at(tmppos) != '>' && str->at(tmppos) != endtag) {
-                                str->insert(curpos + 1, eolchar);
-                            }
-                            else if (!breaktags) {
-                                str->erase(curpos + 1, tmppos - curpos - 1);
-                                if (str->at(curpos + 1) != '>' && str->at(curpos + 1) != endtag) {
-                                    str->insert(curpos + 1, " ");
-                                    ++curpos;
+                                // add line break if not the last attribute
+                                if (!indentOnly && breaktags && !in_header && str->at(tmppos) != '>' && str->at(tmppos) != endtag) {
+                                    str->insert(curpos + 1, eolchar);
+                                }
+                                else if (!breaktags) {
+                                    str->erase(curpos + 1, tmppos - curpos - 1);
+                                    if (str->at(curpos + 1) != '>' && str->at(curpos + 1) != endtag) {
+                                        str->insert(curpos + 1, " ");
+                                        ++curpos;
+                                    }
                                 }
                             }
+                        }
+                        else {
+                            curpos = strlen - 1;
                         }
                     }
                     break;
@@ -335,7 +341,13 @@ namespace StringXml {
                 case '\'': {
                     if (in_tag) {
                         // skip attribute text
-                        curpos = this->str->find(cc, curpos + 1);
+                        tmppos = this->str->find(cc, curpos + 1);
+                        if (tmppos != std::string::npos && tmppos < strlen) {
+                            curpos = tmppos;
+                        }
+                        else {
+                            curpos = strlen - 1;
+                        }
                     }
                     break;
                 }
