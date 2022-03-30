@@ -33,7 +33,8 @@ namespace QuickXml {
 	struct XmlFormaterXPathEntry {
 		std::string name;
 		size_t position;
-		std::vector<XmlFormaterKeyValType> attributes;
+		std::string attr;					// last attribute parsed
+		std::vector<XmlFormaterKeyValType> attributes;	// ident attributes 
 	};
 
 	class XmlFormater {

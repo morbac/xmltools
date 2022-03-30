@@ -514,18 +514,19 @@ namespace QuickXml {
 						// tag name and add the value of @id attribute
 						keep_attr_value = true;
 					}
-					vPath.back().attributes.push_back({ attr, "" });
+					vPath.back().attr = attr;
 					break;
 				}
 				case XmlTokenType::AttrValue: {
 					if (keep_attr_value && vPath.size() >= 2 && this->params.dumpIdAttributesName) {
-						vPath.back().attributes.back().val = std::string(token.chars, token.size);
+						vPath.back().attributes.push_back({ vPath.back().attr, std::string(token.chars, token.size) });
 					}
 					keep_attr_value = false;
 					break;
 				}
 				case XmlTokenType::TagOpeningEnd: {
 					keep_attr_value = false;
+					vPath.back().attr = "";
 					break;
 				}
 				case XmlTokenType::DeclarationBeg:
@@ -594,15 +595,13 @@ namespace QuickXml {
 				this->out << "[" << tmp.position << "]";
 			}
 
-			for (XmlFormaterKeyValType attr : tmp.attributes) {
-				if (!attr.key.empty()) {
-					p = attr.key.find(":");
-					if ((xpathMode & XPATH_MODE_WITHNAMESPACE) == 0 && p != std::string::npos) {
-						this->out << "/@" << attr.key.substr(p + 1);
-					}
-					else {
-						this->out << "/@" << attr.key;
-					}
+			if (!tmp.attr.empty()) {
+				p = tmp.attr.find(":");
+				if ((xpathMode & XPATH_MODE_WITHNAMESPACE) == 0 && p != std::string::npos) {
+					this->out << "/@" << tmp.attr.substr(p + 1);
+				}
+				else {
+					this->out << "/@" << tmp.attr;
 				}
 			}
 		}
