@@ -456,8 +456,7 @@ namespace QuickXml {
 		}
 
 		XmlToken token = undefinedToken;
-		std::vector<std::string> vPath;
-		bool pushed_attr = false;
+		std::vector<XmlFormaterXPathEntry> vPath;
 		bool keep_attr_value = false;
 		
 		// count elements of every depth layer in a map
@@ -471,99 +470,61 @@ namespace QuickXml {
 
 			switch (token.type) {
 				case XmlTokenType::TagOpening: {
-					std::string pathElement = std::string(token.chars + 1, token.size - 1);
+					std::string nodename = std::string(token.chars + 1, token.size - 1);
+					XmlFormaterXPathEntry pathElement;
+					pathElement.name = nodename;
+					pathElement.position = 0;
 
 					if ((xpathMode & XPATH_MODE_WITHNODEINDEX) != 0) {
-
 						std::map<std::string, size_t> depthMap;
 						// Push a new map for the new layer onto the depthElementMap
 						depthElementMap.push_back(depthMap);
+						size_t dem = depthElementMap.size();
 
-						if (depthElementMap.size() > 1) {
+						if (dem > 1) {
 							// increase amount of elements at current depth
-							depthElementMap.at(depthElementMap.size() - 2)[pathElement]++;
-							size_t elementsInPosition = depthElementMap.at(depthElementMap.size() - 2)[pathElement];
-							pathElement+= "[" + std::to_string(elementsInPosition) + "]";
+							pathElement.position = ++(depthElementMap.at(dem - 2)[nodename]);
 						}
 					}
 
 					vPath.push_back(pathElement);
-					pushed_attr = false;
 					keep_attr_value = false;
 					break;
 				}
 				case XmlTokenType::TagClosingEnd: {
 					if (!vPath.empty()) vPath.pop_back();
-					if ((xpathMode & XPATH_MODE_WITHNODEINDEX) != 0) depthElementMap.pop_back();
-					pushed_attr = false;
+					if ((xpathMode & XPATH_MODE_WITHNODEINDEX) != 0) {
+						depthElementMap.pop_back();
+					}
 					keep_attr_value = false;
 					break;
 				}
 				case XmlTokenType::TagSelfClosingEnd: {
-					if (pushed_attr && !vPath.empty()) vPath.pop_back();
-					if ((xpathMode & XPATH_MODE_WITHNODEINDEX) != 0) depthElementMap.pop_back();
+					if ((xpathMode & XPATH_MODE_WITHNODEINDEX) != 0) {
+						depthElementMap.pop_back();
+					}
 					vPath.pop_back();
-					pushed_attr = false;
 					keep_attr_value = false;
 					break;
 				}
 				case XmlTokenType::AttrName: {
-					// We dont need Attributes, when we have an exact Path with Indices to the Node.
-					if (xpathMode & XPATH_MODE_WITHNODEINDEX) break;
-
-					if (pushed_attr && !vPath.empty()) {
-						vPath.pop_back();
-					}
 					std::string attr(token.chars, token.size);
 					if ((xpathMode & XPATH_MODE_KEEPIDATTRIBUTE) != 0 && isIdentAttribute(attr)) {
 						// we must check if attribute is "id"; if true, we must rewrite the
 						// tag name and add the value of @id attribute
 						keep_attr_value = true;
 					}
-					vPath.push_back("@" + attr);
-					pushed_attr = true;
+					vPath.back().attributes.push_back({ attr, "" });
 					break;
 				}
 				case XmlTokenType::AttrValue: {
-					if (keep_attr_value && vPath.size() >= 2) {
-						std::string attr = vPath.back();
-						vPath.pop_back();
-						std::string tag = vPath.back();
-						vPath.pop_back();
-
-						if (this->params.dumpIdAttributesName) {
-							std::string value(token.chars, token.size);
-							if (ends_with(tag, "]")) {
-								tag.erase(tag.length() - 1, 1);
-								tag += " ";
-							}
-							else {
-								tag += "[";
-							}
-							tag += attr.substr(1) + "=" + value + "]";
-						}
-						else {
-							std::string value(token.chars+1, token.size-2);
-							if (ends_with(tag, "]")) {
-								tag.erase(tag.length() - 1, 1);
-								tag += " | ";
-							}
-							else {
-								tag += "[";
-							}
-							tag += value + "]";
-						}
-						vPath.push_back(tag);
-						vPath.push_back(attr);
+					if (keep_attr_value && vPath.size() >= 2 && this->params.dumpIdAttributesName) {
+						vPath.back().attributes.back().val = std::string(token.chars, token.size);
 					}
 					keep_attr_value = false;
 					break;
 				}
 				case XmlTokenType::TagOpeningEnd: {
-					if (pushed_attr && !vPath.empty()) {
-						vPath.pop_back();
-					}
-					pushed_attr = false;
 					keep_attr_value = false;
 					break;
 				}
@@ -571,7 +532,6 @@ namespace QuickXml {
 				case XmlTokenType::DeclarationEnd: {
 					// declarations might corrupt the vPath construction
 					vPath.clear();
-					pushed_attr = false;
 					keep_attr_value = false;
 					break;
 				}
@@ -593,15 +553,57 @@ namespace QuickXml {
 		size_t size = vPath.size();
 		for (size_t i = 0; i < size; ++i) {
 			this->out << "/";
-			std::string tmp = vPath.at(i);
-			std::string::size_type p = tmp.find(':');
-			if ((xpathMode & XPATH_MODE_WITHNAMESPACE) == 0 && tmp.at(0) == '@' && p != std::string::npos) {
-				this->out << "@" << tmp.substr(p + 1);
-			} else if ((xpathMode & XPATH_MODE_WITHNAMESPACE) == 0 && p != std::string::npos) {
-				this->out << tmp.substr(p + 1);
+			XmlFormaterXPathEntry tmp = vPath.at(i);
+			std::string::size_type p = tmp.name.find(':');
+
+			if ((xpathMode & XPATH_MODE_WITHNAMESPACE) == 0 && p != std::string::npos) {
+				this->out << tmp.name.substr(p + 1);
 			}
 			else {
-				this->out << tmp;
+				this->out << tmp.name; 
+			}
+
+			std::stringstream out_attr;
+
+			if ((xpathMode & XPATH_MODE_KEEPIDATTRIBUTE) != 0 && tmp.attributes.size() > 0) {
+				for (std::size_t i = 0; i < tmp.attributes.size(); ++i) {
+					XmlFormaterKeyValType attr = tmp.attributes[i];
+					if (!attr.val.empty()) {	// only ident attributes have a value
+						p = attr.key.find(":");
+						std::string key = attr.key;
+						if (p != std::string::npos) {
+							key = attr.key.substr(p + 1);
+						}
+						if (this->params.dumpIdAttributesName) {
+							if (i > 0) out_attr << " ";
+							out_attr << key << "=" << attr.val;
+						}
+						else {
+							if (i > 0) out_attr << " | ";
+							out_attr << key;
+						}
+					}
+				}
+			}
+
+			if (!out_attr.str().empty()) {
+				this->out << "[" << out_attr.str() << "]";
+				out_attr.clear();
+			}
+			else if ((xpathMode & XPATH_MODE_WITHNODEINDEX) != 0 && tmp.position > 0) {
+				this->out << "[" << tmp.position << "]";
+			}
+
+			for (XmlFormaterKeyValType attr : tmp.attributes) {
+				if (!attr.key.empty()) {
+					p = attr.key.find(":");
+					if ((xpathMode & XPATH_MODE_WITHNAMESPACE) == 0 && p != std::string::npos) {
+						this->out << "/@" << attr.key.substr(p + 1);
+					}
+					else {
+						this->out << "/@" << attr.key;
+					}
+				}
 			}
 		}
 

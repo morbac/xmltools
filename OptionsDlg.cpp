@@ -118,6 +118,8 @@ BOOL COptionsDlg::OnInitDialog() {
   pGrpOptions->AddSubItem(this->pAnnotationHighlightStyleProperty); vIntProperties.push_back(this->pAnnotationHighlightStyleProperty);
   pTmpOption = new CMFCPropertyGridProperty(L"Max displayed errors", COleVariant((long)xmltoolsoptions.maxErrorsNum, VT_INT), L"Maximum number of displayed errors. You can allow an infinite number of errors by setting the value `-1`, but be aware that it can slow down the application when XML has many errors.", (DWORD_PTR)&xmltoolsoptions.maxErrorsNum);
   pGrpOptions->AddSubItem(pTmpOption); vIntProperties.push_back(pTmpOption);
+  pTmpOption = new CMFCPropertyGridProperty(L"Add node position in XPath", COleVariant((short)(xmltoolsoptions.printXPathIndex ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Additionally shows the nodes position in XPath. When enabled, the XPath of \"<a><b></b><b>Content</b></a>\" will resolve to \"/a/b[2]\" instead of \"/a/b\".", (DWORD_PTR)&xmltoolsoptions.printXPathIndex);
+  pGrpOptions->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
 
 
   CMFCPropertyGridProperty* pGrpStatusbar = new CMFCPropertyGridProperty(L"Status bar");
@@ -127,8 +129,6 @@ BOOL COptionsDlg::OnInitDialog() {
   pTmpOption = new CMFCPropertyGridProperty(L"Identity attribute names", COleVariant(xmltoolsoptions.identityAttributes.c_str()), L"Specifies a semi-colon separated list of attributes names which could contain identity values. The values of theses attributes are copied into statusbar xpath value. For instance, if attribute \"id\" is referenced and a tag \"<sample id='hello'>\" is present, the status bar will contain \".../sample[id='hello']/...\".", (DWORD_PTR)&xmltoolsoptions.identityAttributes);
   pGrpStatusbar->AddSubItem(pTmpOption); vWStringProperties.push_back(pTmpOption);
   pTmpOption = new CMFCPropertyGridProperty(L"Dump attributes name", COleVariant((short)(xmltoolsoptions.dumpAttributeName ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Introduce the indentity attributes with their name. When enabled, elements are dumped like \".../sample[id='hello']/...\". When disabled, elements are dumped like \".../sample[hello]/...\".", (DWORD_PTR)&xmltoolsoptions.dumpAttributeName);
-  pGrpStatusbar->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
-  pTmpOption = new CMFCPropertyGridProperty(L"Show XPath Element Index", COleVariant((short)(xmltoolsoptions.printXPathIndex ? VARIANT_TRUE : VARIANT_FALSE), VT_BOOL), L"Additionally shows the XPath Index of the current node. When enabled, the XPath of \"<a><b></b><b>Content</b></a>\" will resolve to \"/a/b[2]\" instead of \"/a/b\". This will disable other attributes.", (DWORD_PTR)&xmltoolsoptions.printXPathIndex);
   pGrpStatusbar->AddSubItem(pTmpOption); vBoolProperties.push_back(pTmpOption);
 
   CMFCPropertyGridProperty* pGrpXml2Txt = new CMFCPropertyGridProperty(L"XML to Text conversion");

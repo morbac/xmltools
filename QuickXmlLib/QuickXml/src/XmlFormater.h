@@ -23,7 +23,17 @@ namespace QuickXml {
 
 		std::vector<std::string> identityAttribues;	// a vector of attributes considered as identity (see setIdentityAttributes)
 		bool dumpIdAttributesName = true;	// make the currentPath dump the identity attributes name (when XPATH_MODE_KEEPIDATTRIBUTE active)
-		
+	};
+
+	struct XmlFormaterKeyValType {
+		std::string key;
+		std::string val;
+	};
+
+	struct XmlFormaterXPathEntry {
+		std::string name;
+		size_t position;
+		std::vector<XmlFormaterKeyValType> attributes;
 	};
 
 	class XmlFormater {
