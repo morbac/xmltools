@@ -404,7 +404,7 @@ std::wstring Report::wtrim(const std::wstring& s) {
 }
 
 void Report::char2wchar(const char* s, size_t size, CComBSTR& dest) {
-    wchar_t* m_str = SysAllocStringLen(NULL, size + 1);
+    wchar_t* m_str = SysAllocStringLen(NULL, (UINT) size + 1);
     mbstowcs(m_str, s, _TRUNCATE);
     dest.Attach(m_str);
 }
@@ -877,10 +877,10 @@ void Report::ucs2CharToUtf8Char(const wchar_t ucs2Char, char* utf8Tok) {
 }
 
 void Report::utf8ToUcs2(const char* utf8Str, size_t size, CComBSTR &dest) {
-    int len = MultiByteToWideChar(CP_UTF8, 0, utf8Str, size + 1, 0, 0);
+    int len = MultiByteToWideChar(CP_UTF8, 0, utf8Str, (int) size + 1, 0, 0);
     dest.Empty();
     dest.m_str = SysAllocStringLen(NULL, len);
-    MultiByteToWideChar(CP_UTF8, 0, utf8Str, size + 1, dest.m_str, len);
+    MultiByteToWideChar(CP_UTF8, 0, utf8Str, (int) size + 1, dest.m_str, len);
 }
 
 std::wstring Report::utf8ToUcs2(const std::string& utf8Str) {
