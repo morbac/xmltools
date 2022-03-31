@@ -518,8 +518,13 @@ namespace QuickXml {
 					break;
 				}
 				case XmlTokenType::AttrValue: {
-					if (keep_attr_value && vPath.size() >= 2 && this->params.dumpIdAttributesName) {
-						vPath.back().attributes.push_back({ vPath.back().attr, std::string(token.chars, token.size) });
+					if (keep_attr_value && vPath.size() >= 2) {
+						if (this->params.dumpIdAttributesName) {
+							vPath.back().attributes.push_back({ vPath.back().attr, std::string(token.chars, token.size) });
+						}
+						else {
+							vPath.back().attributes.push_back({ vPath.back().attr, std::string(token.chars+1, token.size-2) });
+						}
 					}
 					keep_attr_value = false;
 					break;
@@ -581,7 +586,7 @@ namespace QuickXml {
 						}
 						else {
 							if (i > 0) out_attr << " | ";
-							out_attr << key;
+							out_attr << attr.val;
 						}
 					}
 				}
