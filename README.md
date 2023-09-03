@@ -25,6 +25,7 @@ Plugin Usage - ARM64
 
 **Building instructions**
 ------------
+The modifications for ARM64 are in the jg/arm64 branch. Check this one out if you want to build it.
 - Build with Visual Studio 2022 on an ARM machine, select "ARM64" as target. Cross-building will probably fail on the post-build event (copying the newly compiled XMLTools.dll to the plugins\XMLTools folder), or at the latest if you try to use it in notepad++. You can disable it, of course, and do the copying manually to the right target.
   -  To make the copy process work notepad++ needs to be closed, and you need to have full access rights to the plugins\ directory.
--  The target ARM64EC and ARM64X doesn't work yet, something od with the #ifdefs in winnt.h
+-  The target ARM64EC and ARM64X doesn't work yet, something odd with the #ifdefs in winnt.h
