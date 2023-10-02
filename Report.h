@@ -80,6 +80,7 @@ public:
   static char* wchar2char(const wchar_t* ws);
   static std::wstring s2ws(const std::string& s);
   static std::string ws2s(const std::wstring& s);
+  static std::string BSTRtoUTF8(BSTR bstr);
 
   static UniMode getEncoding(HWND npp = NULL);
   static UniMode getEncoding(BSTR encoding = NULL);
