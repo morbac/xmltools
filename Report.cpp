@@ -445,6 +445,17 @@ std::string Report::ws2s(const std::wstring& s) {
     return r;
 }
 
+std::string Report::BSTRtoUTF8(BSTR bstr) {
+    int len = SysStringLen(bstr);
+    // special case because a NULL BSTR is a valid zero-length BSTR,
+    // but regular string functions would balk on it
+    if (len == 0) return "";
+    int size_needed = WideCharToMultiByte(CP_UTF8, 0, bstr, len, NULL, 0, NULL, NULL);
+    std::string ret(size_needed, '\0');
+    WideCharToMultiByte(CP_UTF8, 0, bstr, len, ret.data(), (int) ret.size(), NULL, NULL);
+    return ret;
+}
+
 
 UniMode Report::getEncoding(HWND npp) {
     HWND nppwnd = (npp == NULL ? nppData._nppHandle : npp);

@@ -586,7 +586,12 @@ bool MSXMLWrapper::xslTransform(std::wstring xslfile, XSLTransformResultType* ou
                     }
                     else {
                         pProcessor->get_output(&varValue);
-                        out->data = _com_util::ConvertBSTRToString(_bstr_t(varValue));
+                        if (out->encoding == UniMode::uniCookie || out->encoding == UniMode::uniUTF8) {
+                            out->data = Report::BSTRtoUTF8(_bstr_t(varValue));
+                        }
+                        else {
+                            out->data = _com_util::ConvertBSTRToString(_bstr_t(varValue));
+                        }
                         VariantClear(&varValue);
                     }
 
