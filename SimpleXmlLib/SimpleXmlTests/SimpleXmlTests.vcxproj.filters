@@ -87,9 +87,9 @@
     <ClInclude Include="src\resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ResourceCompile Include="src\Resource.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="src\Resource.rc" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
