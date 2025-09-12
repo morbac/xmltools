@@ -493,17 +493,17 @@ namespace QuickXml {
 				}
 				case XmlTokenType::TagClosingEnd: {
 					if (!vPath.empty()) vPath.pop_back();
-					if ((xpathMode & XPATH_MODE_WITHNODEINDEX) != 0) {
+					if ((xpathMode & XPATH_MODE_WITHNODEINDEX) != 0 && !depthElementMap.empty()) {
 						depthElementMap.pop_back();
 					}
 					keep_attr_value = false;
 					break;
 				}
 				case XmlTokenType::TagSelfClosingEnd: {
-					if ((xpathMode & XPATH_MODE_WITHNODEINDEX) != 0) {
+					if ((xpathMode & XPATH_MODE_WITHNODEINDEX) != 0 && !depthElementMap.empty()) {
 						depthElementMap.pop_back();
 					}
-					vPath.pop_back();
+					if (!vPath.empty()) vPath.pop_back();
 					keep_attr_value = false;
 					break;
 				}
