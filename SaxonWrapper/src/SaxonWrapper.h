@@ -2,8 +2,7 @@
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 
-#include "XmlWrapperInterface.h"
-//#include <libsaxon-hec-12.5.0.h>
+#include "../../XmlWrapperInterface.h"
 
 class SaxonWrapper : public XmlWrapperInterface {
 	CComBSTR m_sXml;

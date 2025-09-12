@@ -11,7 +11,7 @@
 #define SAXONCGLUE2_H
 
 #include "saxonc_export.h"
-#include <saxonc/saxonc-core.h>
+#include "saxonc/saxonc-core.h"
 
 #include <stdint.h>
 #include <stdio.h>

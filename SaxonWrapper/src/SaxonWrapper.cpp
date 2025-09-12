@@ -1,5 +1,7 @@
 #include "SaxonWrapper.h"
 
+#include "saxonc/SaxonProcessor.h"
+
 SaxonWrapper::SaxonWrapper(const char* xml, size_t size) {
     Report::char2BSTR(xml, size, this->m_sXml);
 }
@@ -17,7 +19,7 @@ bool SaxonWrapper::checkSyntax() {
 
     this->resetErrors();
 
-    //SaxonProcessor* processor = new SaxonProcessor(false);
+    SaxonProcessor* processor = new SaxonProcessor(false);
 
     return res;
 }
