@@ -335,7 +335,6 @@
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="MSXMLWrapper.cpp" />
     <ClCompile Include="nppMenu.cpp" />
-    <ClCompile Include="SaxonWrapper.cpp" />
     <ClCompile Include="ToolsComment.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="ToolsConvert.cpp" />
@@ -387,7 +386,6 @@
     <ClInclude Include="PluginInterface.h" />
     <ClInclude Include="Report.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="SaxonWrapper.h" />
     <ClInclude Include="Scintilla.h" />
     <ClInclude Include="ScintillaDoc.h" />
     <ClInclude Include="Sci_Position.h" />

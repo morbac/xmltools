@@ -1,5 +1,7 @@
 #pragma once
 
+#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+
 #include "XmlWrapperInterface.h"
 //#include <libsaxon-hec-12.5.0.h>
 
