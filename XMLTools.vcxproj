@@ -94,11 +94,11 @@
     <GenerateManifest>true</GenerateManifest>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
     <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;$(LibraryPath);$(SolutionDir)libs</LibraryPath>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;$(LibraryPath);$(SolutionDir)libs</LibraryPath>
     <ExecutablePath>$(VC_ExecutablePath_x64);$(WindowsSdk_71A_ExecutablePath);$(WindowsSDK_ExecutablePath);$(VS_ExecutablePath);$(MSBuild_ExecutablePath);$(FxCopDir);$(PATH);</ExecutablePath>
     <ExcludePath>$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);$(WindowsSDK_IncludePath);$(MSBuild_ExecutablePath);$(VC_LibraryPath_x64);</ExcludePath>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
@@ -233,7 +233,7 @@
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(SolutionDir)QuickXmlLib\QuickXml\src;$(SolutionDir)SimpleXmlLib\SimpleXml\src;$(SolutionDir)StringXmlLib\StringXml\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\libs;$(SolutionDir)QuickXmlLib\QuickXml\src;$(SolutionDir)SimpleXmlLib\SimpleXml\src;$(SolutionDir)StringXmlLib\StringXml\src</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -294,7 +294,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <ExpandAttributedSource>false</ExpandAttributedSource>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)QuickXmlLib\QuickXml\src;$(SolutionDir)SimpleXmlLib\SimpleXml\src;$(SolutionDir)StringXmlLib\StringXml\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\libs;$(SolutionDir)QuickXmlLib\QuickXml\src;$(SolutionDir)SimpleXmlLib\SimpleXml\src;$(SolutionDir)StringXmlLib\StringXml\src</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -335,6 +335,7 @@
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="MSXMLWrapper.cpp" />
     <ClCompile Include="nppMenu.cpp" />
+    <ClCompile Include="SaxonWrapper.cpp" />
     <ClCompile Include="ToolsComment.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="ToolsConvert.cpp" />
@@ -386,6 +387,7 @@
     <ClInclude Include="PluginInterface.h" />
     <ClInclude Include="Report.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SaxonWrapper.h" />
     <ClInclude Include="Scintilla.h" />
     <ClInclude Include="ScintillaDoc.h" />
     <ClInclude Include="Sci_Position.h" />
