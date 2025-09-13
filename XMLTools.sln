@@ -1,11 +1,12 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36429.23 d17.14
+VisualStudioVersion = 17.14.36429.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLTools", "XMLTools.vcxproj", "{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}"
 	ProjectSection(ProjectDependencies) = postProject
 		{729DF6D2-7831-4608-8AFB-D4FCE5872A88} = {729DF6D2-7831-4608-8AFB-D4FCE5872A88}
 		{BB49204A-8B5A-4B83-BD96-A55DEEE3F205} = {BB49204A-8B5A-4B83-BD96-A55DEEE3F205}
+		{EE7DC5E5-3FA7-4476-8B8F-0EA67F22A47E} = {EE7DC5E5-3FA7-4476-8B8F-0EA67F22A47E}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleXml", "SimpleXmlLib\SimpleXml\SimpleXml.vcxproj", "{C7CF5DA7-16D1-4E03-936A-B71CAC37D26C}"
@@ -26,6 +27,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StringXmlTests", "StringXmlLib\StringXmlTests\StringXmlTests.vcxproj", "{A3F154D3-1E5D-429D-B666-F1E7E47B7BE7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SaxonWrapper", "SaxonWrapper\SaxonWrapper.vcxproj", "{BB49204A-8B5A-4B83-BD96-A55DEEE3F205}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MSXMLWrapper", "MSXMLWrapper\MSXMLWrapper.vcxproj", "{EE7DC5E5-3FA7-4476-8B8F-0EA67F22A47E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -107,6 +110,14 @@ Global
 		{BB49204A-8B5A-4B83-BD96-A55DEEE3F205}.Release|Win32.Build.0 = Release|Win32
 		{BB49204A-8B5A-4B83-BD96-A55DEEE3F205}.Release|x64.ActiveCfg = Release|x64
 		{BB49204A-8B5A-4B83-BD96-A55DEEE3F205}.Release|x64.Build.0 = Release|x64
+		{EE7DC5E5-3FA7-4476-8B8F-0EA67F22A47E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EE7DC5E5-3FA7-4476-8B8F-0EA67F22A47E}.Debug|Win32.Build.0 = Debug|Win32
+		{EE7DC5E5-3FA7-4476-8B8F-0EA67F22A47E}.Debug|x64.ActiveCfg = Debug|x64
+		{EE7DC5E5-3FA7-4476-8B8F-0EA67F22A47E}.Debug|x64.Build.0 = Debug|x64
+		{EE7DC5E5-3FA7-4476-8B8F-0EA67F22A47E}.Release|Win32.ActiveCfg = Release|Win32
+		{EE7DC5E5-3FA7-4476-8B8F-0EA67F22A47E}.Release|Win32.Build.0 = Release|Win32
+		{EE7DC5E5-3FA7-4476-8B8F-0EA67F22A47E}.Release|x64.ActiveCfg = Release|x64
+		{EE7DC5E5-3FA7-4476-8B8F-0EA67F22A47E}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -54,9 +54,6 @@
     <ClCompile Include="DebugDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MSXMLHelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CMyPropertyGridCtrl.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
@@ -94,9 +91,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ToolsErrors.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MSXMLWrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -157,9 +151,6 @@
     <ClInclude Include="Sci_Position.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MSXMLHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CMyPropertyGridCtrl.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
@@ -176,9 +167,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="XmlWrapperInterface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MSXMLWrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="nppMenu.h">

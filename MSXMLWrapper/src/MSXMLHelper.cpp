@@ -1,8 +1,8 @@
-#include "StdAfx.h"
+#include "../../StdAfx.h"
 
 #include "MSXMLHelper.h"
-#include "XMLTools.h"
-#include "Report.h"
+#include "../../XMLTools.h"
+#include "../../Report.h"
 
 // Helper function to create a VT_BSTR variant from a null terminated string.
 HRESULT VariantFromString(PCWSTR wszValue, VARIANT& Variant) {
@@ -37,22 +37,22 @@ void ApplyOptions(IXMLDOMDocument3** ppDoc, int options) {
     (*ppDoc)->put_resolveExternals(options & INIT_OPTION_RESOLVEEXTERNALS ? VARIANT_TRUE : VARIANT_FALSE);
     (*ppDoc)->put_preserveWhiteSpace(options & INIT_OPTION_PRESERVEWHITESPACE ? VARIANT_TRUE : VARIANT_FALSE);
 
-    if (msxmloptions.allowDocumentFunction >= 0) (*ppDoc)->setProperty(L"AllowDocumentFunction", _variant_t(msxmloptions.allowDocumentFunction > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (msxmloptions.allowXsltScript >= 0) (*ppDoc)->setProperty(L"AllowXsltScript", _variant_t(msxmloptions.allowXsltScript > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (msxmloptions.forceResync >= 0) (*ppDoc)->setProperty(L"ForceResync", _variant_t(msxmloptions.forceResync > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (msxmloptions.maxElementDepth >= 0) (*ppDoc)->setProperty(L"MaxElementDepth", _variant_t(msxmloptions.maxElementDepth));
-    if (msxmloptions.maxXMLSize >= 0) (*ppDoc)->setProperty(L"MaxXMLSize", _variant_t(msxmloptions.maxXMLSize));
-    if (msxmloptions.multipleErrorMessages >= 0) (*ppDoc)->setProperty(L"MultipleErrorMessages", _variant_t(msxmloptions.multipleErrorMessages > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (msxmloptions.newParser >= 0) (*ppDoc)->setProperty(L"NewParser", _variant_t(msxmloptions.newParser > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (msxmloptions.normalizeAttributeValues >= 0) (*ppDoc)->setProperty(L"NormalizeAttributeValues", _variant_t(msxmloptions.normalizeAttributeValues > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (msxmloptions.populateElementDefaultValues >= 0) (*ppDoc)->setProperty(L"PopulateElementDefaultValues", _variant_t(msxmloptions.populateElementDefaultValues > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (msxmloptions.prohibitDTD >= 0) (*ppDoc)->setProperty(L"ProhibitDTD", _variant_t(msxmloptions.prohibitDTD > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (msxmloptions.resolveExternals >= 0) (*ppDoc)->setProperty(L"ResolveExternals", _variant_t(msxmloptions.resolveExternals > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (msxmloptions.selectionLanguage.length() >= 0) (*ppDoc)->setProperty(L"SelectionLanguage", _variant_t(msxmloptions.selectionLanguage.c_str()));
-    if (msxmloptions.selectionNamespace.length() >= 0) (*ppDoc)->setProperty(L"SelectionNamespace", _variant_t(msxmloptions.selectionNamespace.c_str()));
-    if (msxmloptions.serverHTTPRequest >= 0) (*ppDoc)->setProperty(L"ServerHTTPRequest", _variant_t(msxmloptions.serverHTTPRequest > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (msxmloptions.useInlineSchema >= 0) (*ppDoc)->setProperty(L"UseInlineSchema", _variant_t(msxmloptions.useInlineSchema > 0 ? VARIANT_TRUE : VARIANT_FALSE));
-    if (msxmloptions.validateOnParse >= 0) (*ppDoc)->setProperty(L"ValidateOnParse", _variant_t(msxmloptions.validateOnParse > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.allowDocumentFunction >= 0) (*ppDoc)->setProperty(_bstr_t(L"AllowDocumentFunction"), _variant_t(msxmloptions.allowDocumentFunction > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.allowXsltScript >= 0) (*ppDoc)->setProperty(_bstr_t(L"AllowXsltScript"), _variant_t(msxmloptions.allowXsltScript > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.forceResync >= 0) (*ppDoc)->setProperty(_bstr_t(L"ForceResync"), _variant_t(msxmloptions.forceResync > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.maxElementDepth >= 0) (*ppDoc)->setProperty(_bstr_t(L"MaxElementDepth"), _variant_t(msxmloptions.maxElementDepth));
+    if (msxmloptions.maxXMLSize >= 0) (*ppDoc)->setProperty(_bstr_t(L"MaxXMLSize"), _variant_t(msxmloptions.maxXMLSize));
+    if (msxmloptions.multipleErrorMessages >= 0) (*ppDoc)->setProperty(_bstr_t(L"MultipleErrorMessages"), _variant_t(msxmloptions.multipleErrorMessages > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.newParser >= 0) (*ppDoc)->setProperty(_bstr_t(L"NewParser"), _variant_t(msxmloptions.newParser > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.normalizeAttributeValues >= 0) (*ppDoc)->setProperty(_bstr_t(L"NormalizeAttributeValues"), _variant_t(msxmloptions.normalizeAttributeValues > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.populateElementDefaultValues >= 0) (*ppDoc)->setProperty(_bstr_t(L"PopulateElementDefaultValues"), _variant_t(msxmloptions.populateElementDefaultValues > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.prohibitDTD >= 0) (*ppDoc)->setProperty(_bstr_t(L"ProhibitDTD"), _variant_t(msxmloptions.prohibitDTD > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.resolveExternals >= 0) (*ppDoc)->setProperty(_bstr_t(L"ResolveExternals"), _variant_t(msxmloptions.resolveExternals > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.selectionLanguage.length() >= 0) (*ppDoc)->setProperty(_bstr_t(L"SelectionLanguage"), _variant_t(msxmloptions.selectionLanguage.c_str()));
+    if (msxmloptions.selectionNamespace.length() >= 0) (*ppDoc)->setProperty(_bstr_t(L"SelectionNamespace"), _variant_t(msxmloptions.selectionNamespace.c_str()));
+    if (msxmloptions.serverHTTPRequest >= 0) (*ppDoc)->setProperty(_bstr_t(L"ServerHTTPRequest"), _variant_t(msxmloptions.serverHTTPRequest > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.useInlineSchema >= 0) (*ppDoc)->setProperty(_bstr_t(L"UseInlineSchema"), _variant_t(msxmloptions.useInlineSchema > 0 ? VARIANT_TRUE : VARIANT_FALSE));
+    if (msxmloptions.validateOnParse >= 0) (*ppDoc)->setProperty(_bstr_t(L"ValidateOnParse"), _variant_t(msxmloptions.validateOnParse > 0 ? VARIANT_TRUE : VARIANT_FALSE));
 }
 
 // Helper function to create a DOM instance.

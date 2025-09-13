@@ -1,32 +1,10 @@
-#include "StdAfx.h"
-
 #include "MSXMLWrapper.h"
-#include "PluginInterface.h"
-#include "Report.h"
+#include "../../PluginInterface.h"
+#include "../../Report.h"
 #include <comutil.h>
 
 MSXMLWrapper::MSXMLWrapper(const char* xml, size_t size) {
     Report::char2BSTR(xml, size, this->m_sXml);
-
-    std::map<std::string, std::string> tristate{ { "-1", "default" }, { "0", "false" }, { "1", "true" } };
-
-    this->options["allowDocumentFunction"] = {
-        L"Allow document function",
-        L"",
-        L"-1",
-        OptionDataType::OPTION_TYPE_INTEGER,
-        OptionFormatType::OPTION_FORMAT_COMBO,
-        tristate
-    };
-    this->options["allowXsltScript"] = {
-        L"Allow Xslt Script",
-        L"",
-        L"-1",
-        OptionDataType::OPTION_TYPE_INTEGER,
-        OptionFormatType::OPTION_FORMAT_COMBO,
-        tristate
-    };
-
 }
 
 MSXMLWrapper::~MSXMLWrapper() {
@@ -264,8 +242,8 @@ std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(std::wstring xpath
     CHK_HR(CreateAndInitDOM(&pXMLDom));
     CHK_HR(pXMLDom->loadXML(this->m_sXml.m_str, &varStatus));
     if (varStatus == VARIANT_TRUE) {
-        CHK_HR(pXMLDom->setProperty(L"SelectionNamespaces", _variant_t(ns.c_str())));
-        CHK_HR(pXMLDom->setProperty(L"SelectionLanguage", _variant_t(L"XPath")));
+        CHK_HR(pXMLDom->setProperty(_bstr_t(L"SelectionNamespaces"), _variant_t(ns.c_str())));
+        CHK_HR(pXMLDom->setProperty(_bstr_t(L"SelectionLanguage"), _variant_t(L"XPath")));
         hr = pXMLDom->selectNodes(bstrXPath, &pNodes);
         if (FAILED(hr)) {
             CHK_HR(pXMLDom->get_parseError((IXMLDOMParseError**)&pXMLErr));
@@ -436,8 +414,8 @@ bool MSXMLWrapper::xslTransform(std::wstring xslfile, XSLTransformResultType* ou
     CHK_HR(CreateAndInitDOM(&pXml));
     CHK_HR(pXml->loadXML(this->m_sXml.m_str, &varStatus));
     if (varStatus == VARIANT_TRUE) {
-        CHK_HR(pXml->setProperty(L"SelectionNamespaces", variant_t(L"xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"")));
-        if (SUCCEEDED(pXml->selectNodes(L"/xsl:stylesheet", &pNodes))) {
+        CHK_HR(pXml->setProperty(_bstr_t(L"SelectionNamespaces"), variant_t(L"xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"")));
+        if (SUCCEEDED(pXml->selectNodes(_bstr_t(L"/xsl:stylesheet"), &pNodes))) {
             CHK_HR(pNodes->get_length(&length));
             if (length == 1) {
                 // the active document is an XSL one; let's invert both files
@@ -484,8 +462,8 @@ bool MSXMLWrapper::xslTransform(std::wstring xslfile, XSLTransformResultType* ou
         }
         if (varStatus == VARIANT_TRUE) {
             // detect output encoding
-            CHK_HR(pXslt->setProperty(L"SelectionNamespaces", variant_t(L"xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"")));
-            if (SUCCEEDED(pXslt->selectNodes(L"/xsl:stylesheet/xsl:output/@encoding", &pNodes))) {
+            CHK_HR(pXslt->setProperty(_bstr_t(L"SelectionNamespaces"), variant_t(L"xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"")));
+            if (SUCCEEDED(pXslt->selectNodes(_bstr_t(L"/xsl:stylesheet/xsl:output/@encoding"), &pNodes))) {
                 CHK_HR(pNodes->get_length(&length));
                 if (length == 1) {
                     // get encoding from output declaration
@@ -523,7 +501,7 @@ bool MSXMLWrapper::xslTransform(std::wstring xslfile, XSLTransformResultType* ou
                     outputAsStream = FALSE;
                 }
             }
-            CHK_HR(pXslt->setProperty(L"SelectionNamespaces", variant_t(L"")));
+            CHK_HR(pXslt->setProperty(_bstr_t(L"SelectionNamespaces"), variant_t(L"")));
 
             // build template
             CHK_HR(CreateAndInitXSLTemplate(&pTemplate));

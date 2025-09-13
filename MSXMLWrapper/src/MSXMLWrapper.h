@@ -1,6 +1,6 @@
 #pragma once
 
-#include "XmlWrapperInterface.h"
+#include "../../XmlWrapperInterface.h"
 #include "MSXMLHelper.h"
 
 class MSXMLWrapper : public XmlWrapperInterface {

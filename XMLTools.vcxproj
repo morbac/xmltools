@@ -120,7 +120,7 @@
       <Optimization>MaxSpeed</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(SolutionDir)QuickXmlLib\QuickXml\src;$(SolutionDir)SimpleXmlLib\SimpleXml\src;$(SolutionDir)StringXmlLib\StringXml\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)QuickXmlLib\QuickXml\src;$(SolutionDir)SimpleXmlLib\SimpleXml\src;$(SolutionDir)StringXmlLib\StringXml\src;$(SolutionDir)MSXMLWrapper\src;$(SolutionDir)SaxonWrapper\src</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -184,7 +184,7 @@
       <ExpandAttributedSource>false</ExpandAttributedSource>
       <MinimalRebuild>false</MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)QuickXmlLib\QuickXml\src;$(SolutionDir)SimpleXmlLib\SimpleXml\src;$(SolutionDir)StringXmlLib\StringXml\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)QuickXmlLib\QuickXml\src;$(SolutionDir)SimpleXmlLib\SimpleXml\src;$(SolutionDir)StringXmlLib\StringXml\src;$(SolutionDir)MSXMLWrapper\src;$(SolutionDir)SaxonWrapper\src</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -233,7 +233,7 @@
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(SolutionDir)\libs;$(SolutionDir)QuickXmlLib\QuickXml\src;$(SolutionDir)SimpleXmlLib\SimpleXml\src;$(SolutionDir)StringXmlLib\StringXml\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\libs;$(SolutionDir)QuickXmlLib\QuickXml\src;$(SolutionDir)SimpleXmlLib\SimpleXml\src;$(SolutionDir)StringXmlLib\StringXml\src;$(SolutionDir)MSXMLWrapper\src;$(SolutionDir)SaxonWrapper\src</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -294,7 +294,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <ExpandAttributedSource>false</ExpandAttributedSource>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)\libs;$(SolutionDir)QuickXmlLib\QuickXml\src;$(SolutionDir)SimpleXmlLib\SimpleXml\src;$(SolutionDir)StringXmlLib\StringXml\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\libs;$(SolutionDir)QuickXmlLib\QuickXml\src;$(SolutionDir)SimpleXmlLib\SimpleXml\src;$(SolutionDir)StringXmlLib\StringXml\src;$(SolutionDir)MSXMLWrapper\src;$(SolutionDir)SaxonWrapper\src</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -333,13 +333,11 @@
     <ClCompile Include="AboutBoxDlg.cpp" />
     <ClCompile Include="CMyPropertyGridCtrl.cpp" />
     <ClCompile Include="Debug.cpp" />
-    <ClCompile Include="MSXMLWrapper.cpp" />
     <ClCompile Include="nppMenu.cpp" />
     <ClCompile Include="ToolsComment.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="ToolsConvert.cpp" />
     <ClCompile Include="DebugDlg.cpp" />
-    <ClCompile Include="MSXMLHelper.cpp" />
     <ClCompile Include="nppHelpers.cpp" />
     <ClCompile Include="OptionsDlg.cpp" />
     <ClCompile Include="ToolsEditor.cpp" />
@@ -377,8 +375,6 @@
     <ClInclude Include="Config.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="DebugDlg.h" />
-    <ClInclude Include="MSXMLHelper.h" />
-    <ClInclude Include="MSXMLWrapper.h" />
     <ClInclude Include="Notepad_plus_msgs.h" />
     <ClInclude Include="nppHelpers.h" />
     <ClInclude Include="nppMenu.h" />
@@ -412,6 +408,12 @@
     </ProjectReference>
     <ProjectReference Include="StringXmlLib\StringXml\StringXml.vcxproj">
       <Project>{a3961ad9-8311-4929-bab7-d022452944a8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="MSXMLWrapper\MSXMLWrapper.vcxproj">
+      <Project>{ee7dc5e5-3fa7-4476-8b8f-0ea67f22a47e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="SaxonWrapper\SaxonWrapper.vcxproj">
+      <Project>{bb49204a-8b5a-4b83-bd96-a55deee3f205}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
