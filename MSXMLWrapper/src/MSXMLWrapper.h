@@ -12,6 +12,9 @@ public:
 	MSXMLWrapper(const char* xml, size_t size);
 	~MSXMLWrapper();
 
+	void loadOptions();
+	void saveOptions();
+
 	int getCapabilities();
 	bool checkSyntax();
 	bool checkValidity(std::wstring schemaFilename = L"", std::wstring validationNamespace = L"");

@@ -19,6 +19,11 @@
 #include "Debug.h"
 #include <string>
 
+#pragma comment(lib, "saxonc-he.lib")
+#pragma comment(lib, "saxonc-core-he.lib")
+#include "MSXMLWrapper/src/MSXMLWrapper.h"
+#include "SaxonWrapper/src/SaxonWrapper.h"
+
 //---------------------------------------------------------------------------
 
 #define XMLTOOLS_VERSION_NUMBER L"3.1.1.14 beta"
@@ -34,6 +39,7 @@ extern void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view = NUL
 extern void clearErrors(HWND view = NULL, bool force = false);
 extern void registerError(ErrorEntryDesc err);
 extern void printCurrentXPathInStatusbar();
+extern XmlWrapperInterface* getXmlWrapperInstance(const char* xml, size_t size);
 
 void savePluginParams();
 

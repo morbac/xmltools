@@ -11,6 +11,14 @@ MSXMLWrapper::~MSXMLWrapper() {
     this->resetErrors();
 }
 
+void MSXMLWrapper::loadOptions() {
+
+}
+
+void MSXMLWrapper::saveOptions() {
+
+}
+
 int MSXMLWrapper::getCapabilities() {
     return XmlCapabilityType::ALL_OPTIONS;
 }

@@ -87,7 +87,7 @@ void CXSLTransformDlg::OnBtnTransform() {
 
     ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
-    XmlWrapperInterface* wrapper = new MSXMLWrapper(data, currentLength);
+    XmlWrapperInterface* wrapper = getXmlWrapperInstance(data, currentLength);
     delete[] data; data = NULL;
 
     XSLTransformResultType res;

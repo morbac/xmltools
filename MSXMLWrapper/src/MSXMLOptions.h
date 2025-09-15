@@ -19,6 +19,4 @@ struct struct_msxmloptions {                // default value
 	int serverHTTPRequest = -1;             // False
 	int useInlineSchema = -1;               // False
 	int validateOnParse = -1;               // True
-
-	// xmltools options
 };

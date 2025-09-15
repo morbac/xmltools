@@ -104,6 +104,10 @@ BOOL COptionsDlg::OnInitDialog() {
 
   CMFCPropertyGridProperty* pGrpOptions = new CMFCPropertyGridProperty(L"Options");
   m_wndPropList.AddProperty(pGrpOptions);
+  
+  pTmpOption = new CMFCPropertyGridProperty(L"XML engine", COleVariant(xmltoolsoptions.xmlEngine.c_str()), L"This property let you choose the backend XML engine", (DWORD_PTR)&xmltoolsoptions.xmlEngine);
+  pTmpOption->AddOption(L"MSXML"); pTmpOption->AddOption(L"Saxon HE");
+  pGrpOptions->AddSubItem(pTmpOption); vWStringProperties.push_back(pTmpOption);
 
   pTmpOption = new CMFCPropertyGridProperty(L"Debug level", COleVariant((long)config.dbgLevel, VT_INT), L"0 = TRACE, 1 = INFO, 2 = WARNINGS, 3 = ERRORS", (DWORD_PTR)&config.dbgLevel);
   pGrpOptions->AddSubItem(pTmpOption); vIntProperties.push_back(pTmpOption);
@@ -163,6 +167,8 @@ BOOL COptionsDlg::OnInitDialog() {
 
   CMFCPropertyGridProperty* pGrpXmlFeatures = new CMFCPropertyGridProperty(L"MSXML Features");
   m_wndPropList.AddProperty(pGrpXmlFeatures);
+
+
 
   pTmpOption = new CMFCPropertyGridProperty(L"Allow document function", (msxmloptions.allowDocumentFunction > 0 ? L"True" : (msxmloptions.allowDocumentFunction == 0 ? L"False" : L"Default")), L"Enables (true) or disables (false) the document function in XLST. Attempts to call the disabled document function will result in an \"Access Denied\" error.\r\nFor more information, see MSXML Security Overview (https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ms754611%28v%3dvs.85%29) and DOM Security (https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ms761392%28v%3dvs.85%29).", (DWORD_PTR)&msxmloptions.allowDocumentFunction);
   pTmpOption->AddOption(L"Default"); pTmpOption->AddOption(L"True"); pTmpOption->AddOption(L"False"); pTmpOption->AllowEdit(FALSE);

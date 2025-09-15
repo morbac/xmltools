@@ -20,5 +20,6 @@
   </PropertyGroup>
   <PropertyGroup>
     <RESOURCE_FILE>XMLTools.rc</RESOURCE_FILE>
+    <ShowAllFiles>false</ShowAllFiles>
   </PropertyGroup>
 </Project>

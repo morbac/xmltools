@@ -19,6 +19,7 @@ struct struct_proxyoptions {
 
 struct struct_xmltoolsoptions {
 	std::wstring formatingEngine = L"QuickXml";
+	std::wstring xmlEngine = L"MSXML";
 	std::wstring errorDisplayMode = L"Annotation";	// Annotation / Dialog / Alert
 	int annotationStyle = 12;                // 12
 	int annotationHighlightStyle = 13;

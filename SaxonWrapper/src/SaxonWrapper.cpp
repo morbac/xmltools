@@ -10,6 +10,14 @@ SaxonWrapper::~SaxonWrapper() {
     this->resetErrors();
 }
 
+void SaxonWrapper::loadOptions() {
+
+}
+
+void SaxonWrapper::saveOptions() {
+
+}
+
 int SaxonWrapper::getCapabilities() {
     return XmlCapabilityType::ALL_OPTIONS;
 }

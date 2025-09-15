@@ -49,6 +49,29 @@ enum XmlCapabilityType : int {
     ALL_OPTIONS       = GET_ERROR_DETAILS | CHECK_SYNTAX | CHECK_VALIDITY | EVALUATE_XPATH | XSL_TRANSFORM
 };
 
+// Option related types
+enum class OptionDataType {
+    OPTION_TYPE_INTEGER,
+    OPTION_TYPE_DOUBLE,
+    OPTION_TYPE_BOOLEAN,
+    OPTION_TYPE_STRING
+};
+
+enum class OptionFormatType {
+    OPTION_FORMAT_TEXT,
+    OPTION_FORMAT_COMBO,
+    OPTION_FORMAT_CHECKBOX
+};
+
+struct XmlWrapperOptionType {
+    std::wstring label;                                             // the option name or label
+    std::wstring description;                                       // a text describing the option
+    std::wstring defaultValue;                                      // the option default value
+    OptionDataType type = OptionDataType::OPTION_TYPE_STRING;       // the option data type
+    OptionFormatType format = OptionFormatType::OPTION_FORMAT_TEXT; // the option format (when displayed in options dialog)
+    std::map<std::string, std::string> options;                     // a map with value and caption of combo entries
+};
+
 /*
 * This abstract class is the interface for external XML-API wrappers.
 * The purpose of this interface is to define the expected methods for
@@ -78,6 +101,16 @@ public:
     virtual ~XmlWrapperInterface() {
         this->resetErrors();
     }
+
+    /*
+    * Load wrapper options (not used currently)
+    */
+    virtual void loadOptions() = 0;
+
+    /*
+    * Save wrapper options (not used currently)
+    */
+    virtual void saveOptions() = 0;
 
     /*
     * Inform about the interface capabilities

@@ -1,6 +1,6 @@
 #pragma once
 
-#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+#define SAXONC_EXPORT
 
 #include "../../XmlWrapperInterface.h"
 
@@ -10,6 +10,9 @@ class SaxonWrapper : public XmlWrapperInterface {
 public:
 	SaxonWrapper(const char* xml, size_t size);
 	~SaxonWrapper();
+
+	void loadOptions();
+	void saveOptions();
 
 	int getCapabilities();
 	bool checkSyntax();

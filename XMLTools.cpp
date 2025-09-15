@@ -129,67 +129,78 @@ END_MESSAGE_MAP()
 // CXMLToolsApp construction
 
 CXMLToolsApp::CXMLToolsApp() {
-  dbgln("XML Tools plugin");
-  dbg("version "); dbg(XMLTOOLS_VERSION_NUMBER); dbg(" "); dbgln(XMLTOOLS_VERSION_STATUS);
+    dbgln("XML Tools plugin");
+    dbg("version "); dbg(XMLTOOLS_VERSION_NUMBER); dbg(" "); dbgln(XMLTOOLS_VERSION_STATUS);
 }
 
 CXMLToolsApp::~CXMLToolsApp() {
-  // Don't forget to de-allocate your shortcut here
+    // Don't forget to de-allocate your shortcut here
     destroyMenu();
 }
 
+/*
+* Create Wrapper instance matching xml engine option
+* @param xml A pointer on the begin of xml buffer
+* @param size The xml buffer length
+*/
+XmlWrapperInterface* getXmlWrapperInstance(const char* xml, size_t size) {
+    if (xmltoolsoptions.xmlEngine.compare(L"Saxon HE") == 0) {
+        return new SaxonWrapper(xml, size);
+    }
+    return new MSXMLWrapper(xml, size);
+}
+
 void initializePlugin() {
+    createDebugDlg();
 
-  createDebugDlg();
+    dbgln("initializePlugin()");
+    /*
+    dbg("Get plugin home dir... ");
+    ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINHOMEPATH, MAX_PATH, (LPARAM)pluginHomePath);
+    PathAppend(pluginHomePath, L"\\XMLTools");
+    dbgln(pluginHomePath);
+    */
+    dbg("Get plugin config dir... ");
+    wchar_t pluginConfigPath[MAX_PATH] = { 0 };
+    ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)pluginConfigPath);
+    dbgln(pluginConfigPath);
 
-  dbgln("initializePlugin()");
-  /*
-  dbg("Get plugin home dir... ");
-  ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINHOMEPATH, MAX_PATH, (LPARAM)pluginHomePath);
-  PathAppend(pluginHomePath, L"\\XMLTools");
-  dbgln(pluginHomePath);
-  */
-  dbg("Get plugin config dir... ");
-  wchar_t pluginConfigPath[MAX_PATH] = { 0 };
-  ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)pluginConfigPath);
-  dbgln(pluginConfigPath);
+    dbgln ("Reading configuration... ", DBG_LEVEL::DBG_INFO);
+    config.Read(pluginConfigPath);
 
-  dbgln ("Reading configuration... ", DBG_LEVEL::DBG_INFO);
-  config.Read(pluginConfigPath);
+    initMenu();
 
-  initMenu();
+    auto result = CoInitialize(NULL);
+    if (result != S_OK && result != S_FALSE && result != RPC_E_CHANGED_MODE) {
+        dbgln("CoInitialize failed", DBG_LEVEL::DBG_ERROR);
+    }
 
-  auto result = CoInitialize(NULL);
-  if (result != S_OK && result != S_FALSE && result != RPC_E_CHANGED_MODE) {
-      dbgln("CoInitialize failed", DBG_LEVEL::DBG_ERROR);
-  }
+    updateProxyConfig();
 
-  updateProxyConfig();
-
-  dbgln("Initialization finished.", DBG_LEVEL::DBG_INFO);
+    dbgln("Initialization finished.", DBG_LEVEL::DBG_INFO);
 }
 
 void savePluginParams() {
-  dbgln("savePluginParams()");
-  config.Write();
+    dbgln("savePluginParams()");
+    config.Write();
 }
 
 HMODULE GetCurrentModule() {
-  HMODULE hModule = NULL;
-  GetModuleHandleEx(
-    GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-    (LPCTSTR)GetCurrentModule,
-    &hModule);
+    HMODULE hModule = NULL;
+    GetModuleHandleEx(
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+        (LPCTSTR)GetCurrentModule,
+        &hModule);
 
-  return hModule;
+    return hModule;
 }
 
 static LRESULT CALLBACK KeyboardProc(int ncode, WPARAM wparam, LPARAM lparam) {
-  if (ncode == HC_ACTION && wparam == VK_ESCAPE) {
-    clearErrors();
-  }
+    if (ncode == HC_ACTION && wparam == VK_ESCAPE) {
+        clearErrors();
+    }
 
-  return CallNextHookEx(hook, ncode, wparam, lparam); // pass control to next hook in the hook chain
+    return CallNextHookEx(hook, ncode, wparam, lparam); // pass control to next hook in the hook chain
 }
 
 void onToolBarReady() {
