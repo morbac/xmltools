@@ -6,3 +6,7 @@
 **/Debug/
 **/Release/
 /packages/*
+
+tests/
+
+XMLTools.aps
