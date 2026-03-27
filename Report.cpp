@@ -100,7 +100,7 @@ void Report::_printf_err(const wchar_t* s, ...) {
 
 
     va_start(msg, s);
-    _vsntprintf(buffer, MAX_BUFFER - 1, s, msg);
+    _vsnwprintf_s(buffer, MAX_BUFFER, _TRUNCATE, s, msg);
     va_end(msg);
 
     buffer[MAX_BUFFER - 1] = 0;
@@ -116,7 +116,7 @@ void Report::_fprintf_err(void* ctx, const wchar_t* s, ...) {
     wchar_t buffer[MAX_BUFFER];
 
     va_start(msg, s);
-    _vsntprintf(buffer, MAX_BUFFER - 1, s, msg);
+    _vsnwprintf_s(buffer, MAX_BUFFER, _TRUNCATE, s, msg);
     buffer[MAX_BUFFER - 1] = 0;
     va_end(msg);
 
@@ -132,7 +132,7 @@ void Report::_printf_inf(const wchar_t* s, ...) {
     wchar_t buffer[MAX_BUFFER];
 
     va_start(msg, s);
-    _vsntprintf(buffer, MAX_BUFFER - 1, s, msg);
+    _vsnwprintf_s(buffer, MAX_BUFFER, _TRUNCATE, s, msg);
     buffer[MAX_BUFFER - 1] = 0;
     va_end(msg);
 
@@ -164,7 +164,7 @@ void Report::_fprintf_inf(void* ctx, const wchar_t* s, ...) {
     wchar_t buffer[MAX_BUFFER];
 
     va_start(msg, s);
-    _vsntprintf(buffer, MAX_BUFFER - 1, s, msg);
+    _vsnwprintf_s(buffer, MAX_BUFFER, _TRUNCATE, s, msg);
     buffer[MAX_BUFFER - 1] = 0;
     va_end(msg);
 
@@ -180,7 +180,7 @@ std::wstring Report::str_format(const wchar_t* s, ...) {
     wchar_t buffer[MAX_BUFFER];
 
     va_start(msg, s);
-    _vsntprintf(buffer, MAX_BUFFER - 1, s, msg);
+    _vsnwprintf_s(buffer, MAX_BUFFER, _TRUNCATE, s, msg);
     buffer[MAX_BUFFER - 1] = 0;
     va_end(msg);
 
@@ -196,8 +196,7 @@ std::string Report::str_format(const char* s, ...) {
 
     va_list msg;
     va_start(msg, s);
-    //vsnprintf(buffer + strlen(buffer), s, msg);
-    _vsnprintf(buffer, MAX_BUFFER - 1, s, msg);
+    vsnprintf_s(buffer, MAX_BUFFER, _TRUNCATE, s, msg);
     buffer[MAX_BUFFER - 1] = 0;
     va_end(msg);
 
@@ -213,7 +212,7 @@ CStringW Report::cstring(const wchar_t* s, ...) {
     wchar_t buffer[MAX_BUFFER];
 
     va_start(msg, s);
-    _vsntprintf(buffer, MAX_BUFFER - 1, s, msg);
+    _vsnwprintf_s(buffer, MAX_BUFFER, _TRUNCATE, s, msg);
     buffer[MAX_BUFFER - 1] = 0;
     va_end(msg);
 
@@ -312,8 +311,8 @@ void Report::strcpy(char* dest, const wchar_t* src) {
 }
 
 void Report::strcpy(char* dest, std::wstring& src) {
-    //strcpy(params[nbparams], key.c_str());
-    wcstombs(dest, src.c_str(), src.length());
+    size_t outCount = 0;
+    wcstombs_s(&outCount, dest, nbChar, src.c_str(), _TRUNCATE);
 }
 
 void Report::strcpy(wchar_t* dest, const wchar_t* src) {
@@ -321,8 +320,7 @@ void Report::strcpy(wchar_t* dest, const wchar_t* src) {
 }
 
 void Report::strcpy(wchar_t* dest, std::wstring& src) {
-    //strcpy(params[nbparams], key.c_str());
-    wcscpy(dest, src.c_str());
+    wcsncpy_s(dest, nbChar, src.c_str(), _TRUNCATE);
 }
 
 std::string Report::to_lowercase(std::string text) {
@@ -342,7 +340,8 @@ bool Report::ends_with(std::string const& text, std::string const& suffix) {
 std::string Report::narrow(const std::wstring& ws) {
     size_t l = 4 * ws.length();
     char* tmp = new char[l];
-    wcstombs(tmp, ws.c_str(), l);
+    size_t outCount = 0;
+    wcstombs_s(&outCount, tmp, l, ws.c_str(), _TRUNCATE);
     std::string res(tmp);
     delete[] tmp;
     return res;
@@ -412,14 +411,16 @@ void Report::char2wchar(const char* s, size_t size, CComBSTR& dest) {
 wchar_t* Report::char2wchar(const char* s) {
     size_t origsize = strlen(s) + 1;
     wchar_t* ws = new wchar_t[origsize];
-    mbstowcs(ws, s, _TRUNCATE);
+    size_t outCount = 0;
+    mbstowcs_s(&outCount, ws, origsize, s, _TRUNCATE);
     return ws;
 }
 
 char* Report::wchar2char(const wchar_t* ws) {
     size_t origsize = wcslen(ws) + 1;
     char* s = new char[origsize];
-    wcstombs(s, ws, _TRUNCATE);
+    size_t outCount = 0;
+    wcstombs_s(&outCount, s, origsize, ws, _TRUNCATE);
     return s;
 }
 

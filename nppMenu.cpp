@@ -85,8 +85,8 @@ void togglePrettyPrintAllFiles() {
 
 int addMenuItem(const wchar_t* title, PFUNCPLUGINCMD action, bool checked, ShortcutKey *shortcut) {
     FuncItem item;
-    
-    wcscpy(item._itemName, title);
+
+    wcsncpy_s(item._itemName, nbChar, title, _TRUNCATE);
     item._pFunc = action;
     item._init2Check = checked;
     item._pShKey = shortcut;
