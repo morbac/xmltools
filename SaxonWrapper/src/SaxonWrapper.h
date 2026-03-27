@@ -3,9 +3,11 @@
 #define SAXONC_EXPORT
 
 #include "../../XmlWrapperInterface.h"
+#include "saxonc/SaxonProcessor.h"
 
 class SaxonWrapper : public XmlWrapperInterface {
-	CComBSTR m_sXml;
+	std::string data;
+	void buildErrorsVector(SaxonApiException& exception, const wchar_t* szDesc = L"An unexpected error occurred");
 
 public:
 	SaxonWrapper(const char* xml, size_t size);
