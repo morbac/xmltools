@@ -1,4 +1,4 @@
-// XpathEvalDlg.cpp : implementation file
+﻿// XpathEvalDlg.cpp : implementation file
 //
 
 #include "StdAfx.h"
@@ -66,7 +66,7 @@ void CXPathEvalDlg::OnBtnEvaluate() {
   this->UpdateData();
   this->m_sResult = _T("");
   if (!m_sExpression.GetLength()) {
-      Report::_printf_err(L"Empty expression; evaluation aborted.");
+      Report::_printf_err(Lang_Str(IDS_MSG_XPATH_EMPTY));
   }
   else {
       execute_xpath_expression(m_sExpression);
@@ -145,9 +145,9 @@ BOOL CXPathEvalDlg::OnInitDialog() {
   CListCtrl *listresults = (CListCtrl*) this->GetDlgItem(IDC_LIST_XPATHRESULTS);
 
   // Initialize the destination list control
-  listresults->InsertColumn(0, L"Type", LVCFMT_LEFT, 100);
-  listresults->InsertColumn(1, L"Name", LVCFMT_LEFT, 150);
-  listresults->InsertColumn(2, L"Value", LVCFMT_LEFT, 400);
+  listresults->InsertColumn(0, Lang_Str(IDS_DLG_XPATH_TYPE), LVCFMT_LEFT, 100);
+  listresults->InsertColumn(1, Lang_Str(IDS_DLG_XPATH_NAME), LVCFMT_LEFT, 150);
+  listresults->InsertColumn(2, Lang_Str(IDS_DLG_XPATH_VALUE), LVCFMT_LEFT, 400);
 
   listresults->DeleteAllItems();
 
@@ -255,7 +255,7 @@ void CXPathEvalDlg::OnSize(UINT nType, int cx, int cy) {
 
 void CXPathEvalDlg::OnBnClickedBtnCopy2clipboard() {
   if (this->m_sResult.IsEmpty()) {
-    MessageBox(L"Result is empty.");
+    MessageBox(Lang_Str(IDS_MSG_RESULT_EMPTY));
   } else {
     ::OpenClipboard(NULL);
     ::EmptyClipboard();
@@ -272,7 +272,7 @@ void CXPathEvalDlg::OnBnClickedBtnCopy2clipboard() {
     }
     ::CloseClipboard();
 
-    MessageBox(L"Result has been copied into clipboard.");
+    MessageBox(Lang_Str(IDS_MSG_RESULT_COPIED));
   }
 }
 

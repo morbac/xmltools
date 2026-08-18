@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+﻿#include "StdAfx.h"
 #include <sstream>
 #include "XMLTools.h"
 #include "PluginInterface.h"

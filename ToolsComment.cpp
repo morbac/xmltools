@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+﻿#include "StdAfx.h"
 #include "XMLTools.h"
 #include "nppHelpers.h"
 #include "Report.h"
@@ -183,9 +183,7 @@ void uncommentSelection() {
 
     int errflag = validateSelectionForComment(str, sellength);
     if (errflag != 0) {
-        wchar_t msg[512];
-        swprintf(msg, 512, L"Unable to uncomment the current selection.\nError code is %d.", errflag);
-        Report::_printf_err(msg);
+        Report::_printf_err(Lang_LoadStrFmt(IDS_MSG_UNABLE_UNCOMMENT, errflag).c_str());
         str.clear();
         return;
     }

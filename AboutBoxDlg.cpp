@@ -1,4 +1,4 @@
-// AboutBoxDlg.cpp : fichier d'implémentation
+ï»¿// AboutBoxDlg.cppÂ : fichier d'implÃ©mentation
 //
 
 #include "StdAfx.h"
@@ -8,7 +8,7 @@
 
 #include "Report.h"
 
-// Boîte de dialogue CAboutBoxDlg
+// BoÃ®te de dialogue CAboutBoxDlg
 
 IMPLEMENT_DYNAMIC(CAboutBoxDlg, CDialogEx)
 
@@ -43,17 +43,17 @@ BOOL CAboutBoxDlg::OnInitDialog()
   CDialog::OnInitDialog();
 
   #ifdef _DEBUG
-    SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s\r\n%s (debug)\r\n\r\nXML engine: MSXML",
-          XMLTOOLS_VERSION_NUMBER, XMLTOOLS_VERSION_STATUS).c_str());
+    SetDlgItemTextW(IDC_ABOUTTEXT, (Lang_LoadStrFmt(IDS_MSG_ABOUT_LINE1, XMLTOOLS_VERSION_NUMBER, XMLTOOLS_VERSION_STATUS) + Lang_Str(IDS_MSG_ABOUT_DEBUG) + Lang_LoadStr(IDS_MSG_ABOUT_ENGINE)).c_str());
   #else
-    SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s\r\n%s\r\n\r\nXML engine: MSXML",
-        XMLTOOLS_VERSION_NUMBER, XMLTOOLS_VERSION_STATUS).c_str());
+    SetDlgItemTextW(IDC_ABOUTTEXT, (Lang_LoadStrFmt(IDS_MSG_ABOUT_LINE1, XMLTOOLS_VERSION_NUMBER, XMLTOOLS_VERSION_STATUS) + Lang_LoadStr(IDS_MSG_ABOUT_ENGINE)).c_str());
   #endif
+
+  SetWindowText(Lang_Str(IDS_DLG_ABOUT_CAPTION));
 
   GetDlgItem(IDC_LNKHOMEPAGE)->SetWindowText(Report::str_format(L"<a href=\"%s\">%s</a>", XMLTOOLS_HOMEPAGE_URL, XMLTOOLS_HOMEPAGE_URL).c_str());
 
   return TRUE;  // return TRUE unless you set the focus to a control
-  // EXCEPTION : les pages de propriétés OCX devraient retourner FALSE
+  // EXCEPTIONÂ : les pages de propriÃ©tÃ©s OCX devraient retourner FALSE
 }
 
 void CAboutBoxDlg::OnBnClickedButton1() {

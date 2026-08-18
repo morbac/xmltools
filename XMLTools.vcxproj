@@ -335,6 +335,7 @@
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="MSXMLWrapper.cpp" />
     <ClCompile Include="nppMenu.cpp" />
+    <ClCompile Include="Lang.cpp" />
     <ClCompile Include="ToolsComment.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="ToolsConvert.cpp" />

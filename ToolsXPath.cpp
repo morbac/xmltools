@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+﻿#include "StdAfx.h"
 #include "XMLTools.h"
 #include "Scintilla.h"
 #include "nppHelpers.h"
@@ -68,11 +68,11 @@ void getCurrentXPath(bool precise) {
     if (xmltoolsoptions.printXPathIndex) xpathmode |= XPATH_MODE_WITHNODEINDEX;
 
     std::wstring nodepath(currentXPath(xpathmode));
-    std::wstring tmpmsg(L"Current node cannot be resolved.");
+    std::wstring tmpmsg(Lang_Str(IDS_MSG_UNABLE_RESOLVE));
 
     if (nodepath.length() > 0) {
         tmpmsg = nodepath;
-        tmpmsg += L"\n\n(Path has been copied into clipboard)";
+        tmpmsg += Lang_Str(IDS_MSG_PATH_COPIED);
 
         ::OpenClipboard(NULL);
         ::EmptyClipboard();

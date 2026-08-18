@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+﻿#include "StdAfx.h"
 #include "Scintilla.h"
 #include "PluginInterface.h"
 #include "nppHelpers.h"
@@ -380,7 +380,7 @@ void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view, const wchar
             if (xmltoolsoptions.maxErrorsNum >= 0 && (it - errors.begin()) >= xmltoolsoptions.maxErrorsNum) {
                 size_t nerrors = errors.end() - it;
                 if (nerrors > 1) Report::registerMessage(Report::str_format(L"%d errors follow but are not displayed", nerrors).c_str());
-                else Report::registerMessage(Report::str_format(L"1 error follows but is not displayed").c_str());
+                else Report::registerMessage(Report::str_format(Lang_Str(IDS_MSG_ERRORS_FOLLOW_ONE)).c_str());
                 break;
             }
 
@@ -391,7 +391,7 @@ void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view, const wchar
             else {
                 std::wstring text = (*it).reason;
                 registerError({ view, (*it).positioned, (*it).line, (*it).linepos, (*it).filepos, 1, 0, 0 });
-                Report::registerError(Report::str_format(L"Line %d, pos %d: %s", (*it).line, (*it).linepos, text.c_str()).c_str());
+                Report::registerError(Report::str_format(Lang_Str(IDS_MSG_LINE_POS), (*it).line, (*it).linepos, text.c_str()).c_str());
             }
         }
 

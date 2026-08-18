@@ -39,6 +39,8 @@ struct struct_msxmloptions {                // default value
 };
 
 struct struct_xmltoolsoptions {
+	std::wstring language = L"auto";
+
 	std::wstring formatingEngine = L"QuickXml";
 	std::wstring errorDisplayMode = L"Annotation";	// Annotation / Dialog / Alert
 	int annotationStyle = 12;                // 12

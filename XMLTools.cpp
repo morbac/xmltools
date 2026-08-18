@@ -157,6 +157,9 @@ void initializePlugin() {
   dbgln ("Reading configuration... ", DBG_LEVEL::DBG_INFO);
   config.Read(pluginConfigPath);
 
+  // Initialize language support (must be after config read, before menu init)
+  Lang_Init(AfxGetResourceHandle(), xmltoolsoptions.language.c_str());
+
   initMenu();
 
   auto result = CoInitialize(NULL);
