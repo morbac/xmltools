@@ -13,10 +13,16 @@
 
 #include <string>
 
+#include <direct.h>
+
 using namespace QuickXml;
 
 int performXMLCheck(int informIfNoError) {
     dbgln("performXMLCheck()");
+
+    // Save process preexisting current working directory and drive.
+    int prevDrive = _getdrive();
+    wchar_t* prevPath = _wgetdcwd(prevDrive, NULL, MAX_PATH);
 
     // 0. change current folder
     TCHAR currenPath[MAX_PATH] = { '\0' };
@@ -57,6 +63,13 @@ int performXMLCheck(int informIfNoError) {
     }
     else {
         displayXMLErrors(wrapper->getLastErrors(), hCurrentEditView, L"XML Parsing error");
+    }
+
+    // Restore process preexisting current working directory (drive restored implicitly).
+    if (prevPath)
+    {
+        _wchdir(prevPath);
+        free(prevPath);
     }
 
     delete wrapper;
