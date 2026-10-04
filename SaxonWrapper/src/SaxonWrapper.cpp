@@ -9,12 +9,15 @@
 #include "saxonc/XdmNode.h"
 #include "saxonc/XdmValue.h"
 
-SaxonWrapper::SaxonWrapper(const char* xml, size_t size) {
-    this->data = std::string(xml, size);
+SaxonWrapper::SaxonWrapper() {
 }
 
 SaxonWrapper::~SaxonWrapper() {
     this->resetErrors();
+}
+
+void SaxonWrapper::initialize(const char* xml, size_t size) {
+	this->data = std::string(xml, size);
 }
 
 void SaxonWrapper::loadOptions() {
@@ -26,10 +29,15 @@ void SaxonWrapper::saveOptions() {
 }
 
 int SaxonWrapper::getCapabilities() {
-    return XmlCapabilityType::ALL_OPTIONS;
+    return XmlCapabilityType::XSL_TRANSFORM;
 }
 
 bool SaxonWrapper::checkSyntax() {
+    // xml syntax check is not performed by SaxonC because version HE does not report
+    // errors line number.
+    return false;
+
+    /*
     bool res = true;
     this->resetErrors();
 
@@ -59,6 +67,7 @@ bool SaxonWrapper::checkSyntax() {
     if (processor != nullptr) delete processor;
 
     return res;
+    */
 }
 
 bool SaxonWrapper::checkValidity(std::wstring schemaFilename, std::wstring validationNamespace) {

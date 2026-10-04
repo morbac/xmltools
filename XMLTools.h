@@ -39,7 +39,7 @@ extern void displayXMLErrors(std::vector<ErrorEntryType> errors, HWND view = NUL
 extern void clearErrors(HWND view = NULL, bool force = false);
 extern void registerError(ErrorEntryDesc err);
 extern void printCurrentXPathInStatusbar();
-extern XmlWrapperInterface* getXmlWrapperInstance(const char* xml, size_t size);
+extern XmlWrapperInterface* getXmlWrapperInstance(const char* xml, size_t size, XmlCapabilityType capabilities);
 
 void savePluginParams();
 

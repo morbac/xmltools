@@ -142,12 +142,23 @@ CXMLToolsApp::~CXMLToolsApp() {
 * Create Wrapper instance matching xml engine option
 * @param xml A pointer on the begin of xml buffer
 * @param size The xml buffer length
+* @param capabilities The XML capabilities to check
 */
-XmlWrapperInterface* getXmlWrapperInstance(const char* xml, size_t size) {
+XmlWrapperInterface* getXmlWrapperInstance(const char* xml, size_t size, XmlCapabilityType capabilities) {
+    XmlWrapperInterface* wrapper;
     if (xmltoolsoptions.xmlEngine.compare(L"Saxon HE") == 0) {
-        return new SaxonWrapper(xml, size);
+         wrapper = new SaxonWrapper();
+         if (wrapper->getCapabilities() & capabilities) {
+             wrapper->initialize(xml, size);
+             return wrapper;
+         }
+         delete wrapper;
     }
-    return new MSXMLWrapper(xml, size);
+
+	// fallback to MSXML
+    wrapper = new MSXMLWrapper();
+	wrapper->initialize(xml, size);
+	return wrapper;
 }
 
 void initializePlugin() {

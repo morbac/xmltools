@@ -9,8 +9,10 @@ class MSXMLWrapper : public XmlWrapperInterface {
 	void buildErrorsVector(IXMLDOMParseError2* pXMLErr, const wchar_t* szDesc = L"An unexpected error occurred");
 
 public:
-	MSXMLWrapper(const char* xml, size_t size);
+	MSXMLWrapper();
 	~MSXMLWrapper();
+
+	void initialize(const char* xml, size_t size);
 
 	void loadOptions();
 	void saveOptions();

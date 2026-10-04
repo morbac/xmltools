@@ -87,13 +87,6 @@ protected:
     }
 
 public:
-    /*
-    * Contructor
-    * @param xml A pointer on the begin of xml buffer
-    * @param size The xml buffer length
-    */
-    XmlWrapperInterface(const char* xml, size_t size) {}
-
     /* Default contructor */
     XmlWrapperInterface() {}
 
@@ -101,6 +94,11 @@ public:
     virtual ~XmlWrapperInterface() {
         this->resetErrors();
     }
+
+    /*
+	* Initialize the wrapper with xml data
+    */
+    virtual void initialize(const char* xml, size_t size) = 0;
 
     /*
     * Load wrapper options (not used currently)

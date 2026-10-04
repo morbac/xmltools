@@ -3,12 +3,15 @@
 #include "../../Report.h"
 #include <comutil.h>
 
-MSXMLWrapper::MSXMLWrapper(const char* xml, size_t size) {
-    Report::char2BSTR(xml, size, this->m_sXml);
+MSXMLWrapper::MSXMLWrapper() {
 }
 
 MSXMLWrapper::~MSXMLWrapper() {
     this->resetErrors();
+}
+
+void MSXMLWrapper::initialize(const char* xml, size_t size) {
+	Report::char2BSTR(xml, size, this->m_sXml);
 }
 
 void MSXMLWrapper::loadOptions() {

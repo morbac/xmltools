@@ -10,9 +10,10 @@ class SaxonWrapper : public XmlWrapperInterface {
 	void buildErrorsVector(SaxonApiException& exception, const wchar_t* szDesc = L"An unexpected error occurred");
 
 public:
-	SaxonWrapper(const char* xml, size_t size);
+	SaxonWrapper();
 	~SaxonWrapper();
 
+	void initialize(const char* xml, size_t size);
 	void loadOptions();
 	void saveOptions();
 
