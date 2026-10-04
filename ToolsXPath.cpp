@@ -64,7 +64,7 @@ void printCurrentXPathInStatusbar() {
 void getCurrentXPath(bool precise) {
     dbgln("getCurrentXPath()");
 
-    int xpathmode = precise ? XPATH_MODE_WITHNAMESPACE : XPATH_MODE_BASIC;
+    int xpathmode = precise ? (XPATH_MODE_WITHNAMESPACE | XPATH_MODE_KEEPIDATTRIBUTE) : XPATH_MODE_BASIC;
     if (xmltoolsoptions.printXPathIndex) xpathmode |= XPATH_MODE_WITHNODEINDEX;
 
     std::wstring nodepath(currentXPath(xpathmode));
