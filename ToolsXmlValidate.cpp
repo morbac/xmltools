@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+﻿#include "StdAfx.h"
 #include "Scintilla.h"
 #include "PluginInterface.h"
 #include "nppHelpers.h"
@@ -52,7 +52,7 @@ int performXMLCheck(int informIfNoError) {
 
     if (isok) {
         if (informIfNoError) {
-            Report::_printf_inf(L"No error detected.");
+            Report::_printf_inf(Lang_Str(IDS_MSG_NO_ERROR));
         }
     }
     else {
@@ -139,10 +139,10 @@ void XMLValidation(int informIfNoError) {
         if (hasSchemaOrDTD) {
             if (!wrapper->checkValidity()) {
                 std::vector<ErrorEntryType> errors = wrapper->getLastErrors();
-                displayXMLErrors(errors, hCurrentEditView, L"XML Validation error");
+                displayXMLErrors(errors, hCurrentEditView, Lang_Str(IDS_MSG_XML_VALIDATION_ERROR));
             }
             else {
-                Report::_printf_inf(L"No error detected.");
+                Report::_printf_inf(Lang_Str(IDS_MSG_NO_ERROR));
             }
         }
         else {
@@ -167,10 +167,10 @@ void XMLValidation(int informIfNoError) {
                 //lastXMLSchema = pSelectFileDlg->m_sSelectedFilename;
                 if (!wrapper->checkValidity(pSelectFileDlg->m_sSelectedFilename.GetString(), pSelectFileDlg->m_sValidationNamespace.GetString())) {
                     std::vector<ErrorEntryType> errors = wrapper->getLastErrors();
-                    displayXMLErrors(errors, hCurrentEditView, L"XML Validation error");
+                    displayXMLErrors(errors, hCurrentEditView, Lang_Str(IDS_MSG_XML_VALIDATION_ERROR));
                 }
                 else {
-                    Report::_printf_inf(L"No error detected.");
+                    Report::_printf_inf(Lang_Str(IDS_MSG_NO_ERROR));
                 }
             }
         }

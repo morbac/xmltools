@@ -41,5 +41,8 @@
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
+// Language support (multilingual UI)
+#include "Lang.h"
+
 #endif // !defined(AFX_STDAFX_H__BE9E83F7_EE0F_4CF6_AFD2_432CBD75A5BE__INCLUDED_)
 #include <afxcontrolbars.h>

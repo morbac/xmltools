@@ -1,4 +1,4 @@
-// Report.cpp: implementation of the Report class.
+﻿// Report.cpp: implementation of the Report class.
 //
 //////////////////////////////////////////////////////////////////////
 

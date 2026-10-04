@@ -560,6 +560,817 @@ BEGIN
 END
 
 #endif    // French (Switzerland) resources
+
+/////////////////////////////////////////////////////////////////////////////
+// English (US) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENGLISH)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+STRINGTABLE
+BEGIN
+    30000,  "Enable XML syntax auto-check"
+    30001,  "Check XML syntax now"
+    30002,  "Enable auto-validation"
+    30003,  "Validate now"
+    30004,  "First error"
+    30005,  "Previous error"
+    30006,  "Next error"
+    30007,  "Last error"
+    30008,  "Tag auto-close"
+    30009,  "Set XML type automatically"
+    30010,  "Prevent XXE"
+    30011,  "Allow huge files"
+    30012,  "Pretty print"
+    30013,  "Pretty print - indent attributes"
+    30014,  "Pretty print - indent only"
+    30015,  "Linearize"
+END
+
+STRINGTABLE
+BEGIN
+    30016,  "Apply to all open files"
+    30017,  "Tokenize (debug)"
+    30018,  "Current XML Path"
+    30019,  "Current XML Path with predicates"
+    30020,  "Evaluate XPath expression..."
+    30021,  "XSL Transformation..."
+    30022,  "Escape characters in selection (<> -> &lt;&gt;)"
+    30023,  "Unescape characters in selection (&lt;&gt; -> <>)"
+    30024,  "Comment selection"
+    30025,  "Uncomment selection"
+    30026,  "Options..."
+    30027,  "Debug window..."
+    30028,  "About XML Tools / Donate..."
+    30029,  ""
+    30030,  ""
+    30031,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30032,  ""
+    30033,  ""
+    30034,  ""
+    30035,  ""
+    30036,  ""
+    30037,  ""
+    30038,  ""
+    30039,  ""
+    30040,  ""
+    30041,  ""
+    30042,  ""
+    30043,  ""
+    30044,  ""
+    30045,  ""
+    30046,  ""
+    30047,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30048,  ""
+    30049,  ""
+    30050,  "This function is in alpha state and might disappear in future release."
+    30051,  "Please select text to transform before you call the function."
+    30052,  "No error detected."
+    30053,  "Please fix xml syntax first."
+    30054,  "Unable to uncomment the current selection.
+Error code is %d."
+    30055,  "Empty expression; evaluation aborted."
+    30056,  "No result"
+    30057,  "Result has been copied into clipboard."
+    30058,  "Result is empty."
+    30059,  "Cannot continue, missing parameters. Please select a file."
+    30060,  "Error while XSL transformation"
+    30061,  "Error: unable to parse XML"
+    30062,  "Line %d, pos %d: %s"
+    30063,  "%d errors follow but are not displayed"
+END
+
+STRINGTABLE
+BEGIN
+    30064,  "1 error follows but is not displayed"
+    30065,  "This is an annotation example."
+    30066,  "This is an highlighted annotation example."
+    30067,  "Example of annotation style #%d"
+    30068,  "XML Parsing error"
+    30069,  "XML Validation error"
+    30070,  "Current node cannot be resolved."
+    30071,  "
+
+(Path has been copied into clipboard)"
+    30072,  "ERROR - "
+    30073,  "WARN - "
+    30074,  "XML Tools plugin"
+    30075,  "XML Tools Plugin
+version %s
+%s"
+    30076,  "
+
+XML engine: MSXML"
+    30077,  " (debug)"
+    30078,  "If your expression requires namespaces, please declare them in ""Namespace definition"" field the same way you declare namespaces in xml, for instance:
+xmlns:npp='http://notepad-plus-plus.org' xmlns:a='another-namespace'"
+    30079,  "You can enter up to 16 options using following syntax:"
+END
+
+STRINGTABLE
+BEGIN
+    30080,  "Select either XSL or XML. If active document is XML then select the XSL Stylesheet to use for transformation; if active document is XSL then select XML you want to transform using active XSL."
+    30081,  "An error occurred during XSL loading. Please check XSL validity. Transformation aborted."
+    30082,  "The XSL stylesheet is not valid. Transformation aborted."
+    30083,  "An unexpected error occurred during XSL transformation"
+    30084,  "An error occurred during current source loading. Please check source validity. Transformation aborted."
+    30085,  "Invalid schema or missing namespace."
+    30086,  "The referenced schema is detected as being invalid. Please fix it before using it as validation schema."
+    30087,  "Select XML schema (XSD)"
+    30088,  "This dialog box is displayed because default validation schema cannot be found in XML root element. To avoid having to specify the XSD for every validation, please define the default XML schema in your root element using following syntax:"
+    30089,  "Error: error on XPath expression, or missing namespace definition."
+    30090,  "An unexpected error occurred"
+    30091,  ""
+    30092,  ""
+    30093,  ""
+    30094,  ""
+    30095,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30096,  ""
+    30097,  ""
+    30098,  ""
+    30099,  ""
+    30100,  "OK"
+    30101,  "Cancel"
+    30102,  "Close"
+    30103,  "Clear"
+    30104,  "Copy"
+    30105,  "Evaluate"
+    30106,  "Transform"
+    30107,  "Donate"
+    30108,  "Home page:"
+    30109,  "Annotation preview"
+    30110,  "Debug"
+    30111,  "Options"
+END
+
+STRINGTABLE
+BEGIN
+    30112,  "About XML Tools"
+    30113,  "Information"
+    30114,  "Default"
+    30115,  "True"
+    30116,  "False"
+    30117,  "Type"
+    30118,  "Name"
+    30119,  "Value"
+    30120,  "Language"
+    30121,  "Auto"
+    30122,  "English"
+    30123,  "Chinese (Simplified)"
+    30124,  "Display language for the plugin. Auto follows system language."
+    30125,  ""
+    30126,  ""
+    30127,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30128,  ""
+    30129,  ""
+    30130,  ""
+    30131,  ""
+    30132,  ""
+    30133,  ""
+    30134,  ""
+    30135,  ""
+    30136,  ""
+    30137,  ""
+    30138,  ""
+    30139,  ""
+    30140,  ""
+    30141,  ""
+    30142,  ""
+    30143,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30144,  ""
+    30145,  ""
+    30146,  ""
+    30147,  ""
+    30148,  ""
+    30149,  ""
+    30150,  "Debug level"
+    30151,  "0 = TRACE, 1 = INFO, 2 = WARNINGS, 3 = ERRORS"
+    30152,  "Error display mode"
+    30153,  "This property let you choose the mode use to report errors.
+- Annotation: make errors display inline. Use Annotations style option below to customize the annotations style.
+- Dialog: make the error display in a scrollable dialog. All errors are display in a single dialog.
+- Alert: display error in a single alert dialog."
+    30154,  "Annotations style"
+    30155,  "Error messages style when displayed as annotations.
+Use ""Annotation preview"" button below to display an annotation sample."
+    30156,  "Highlighted annotations style"
+    30157,  "Highlighted error messages style when displayed as annotations.
+Use ""Annotation preview"" button below to display an annotation sample."
+    30158,  "Max displayed errors"
+    30159,  "Maximum number of displayed errors. You can allow an infinite number of errors by setting the value `-1`, but be aware that it can slow down the application when XML has many errors."
+END
+
+STRINGTABLE
+BEGIN
+    30160,  "Add node position in XPath"
+    30161,  "Additionally shows the nodes position in XPath. When enabled, the XPath of ""<a><b></b><b>Content</b></a>"" will resolve to ""/a/b[2]"" instead of ""/a/b""."
+    30162,  "Display current XPath in statusbar"
+    30163,  "When enabled, current XPath is automatically printed in statusbar"
+    30164,  "Identity attribute names"
+    30165,  "Specifies a semi-colon separated list of attributes names which could contain identity values. The values of theses attributes are copied into statusbar xpath value. For instance, if attribute ""id"" is referenced and a tag ""<sample id='hello'>"" is present, the status bar will contain "".../sample[id='hello']/...""."
+    30166,  "Dump attributes name"
+    30167,  "Introduce the indentity attributes with their name. When enabled, elements are dumped like "".../sample[id='hello']/..."". When disabled, elements are dumped like "".../sample[hello]/...""."
+    30168,  "Formating engine"
+    30169,  "This property let you choose the pretty print and linearize formating engine. Currently, you have choice between:
+- SimpleXml: A fast and low memory engine developped by LetMeSleepAlready (https://github.com/LetMeSleepAlready)
+- QuickXml: A quick and simple engine which focus on conformity
+- StringXml: An engine based on string processing. This engine is more permissive on invalid xml, but very slow on big xml files."
+    30170,  "Auto-close tags"
+    30171,  "Enable auto-close tags on pretty print. For instance, when enabled, ""<sample></sample>"" is replaced with ""<sample/>""."
+    30172,  "Ensure conformity"
+    30173,  "Make the prettyprint/linearize engine maintain XML conformity. Whitespace are trimmed and linebreaks are added only if it does not modify the xml structure. Currently only available on QuickXml."
+    30174,  "Max indent level"
+    30175,  "The max indentation level for pretty print. A zero (0) value means no indentation limit"
+END
+
+STRINGTABLE
+BEGIN
+    30176,  "Apply xml:space=""preserve"""
+    30177,  "Make the formating engine take care of xml:space=""preserve"" and xml:space=""default"" declarations. Currently only available on QuickXml."
+    30178,  ""
+    30179,  ""
+    30180,  ""
+    30181,  ""
+    30182,  ""
+    30183,  ""
+    30184,  ""
+    30185,  ""
+    30186,  ""
+    30187,  ""
+    30188,  ""
+    30189,  ""
+    30190,  ""
+    30191,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30192,  ""
+    30193,  ""
+    30194,  ""
+    30195,  ""
+    30196,  ""
+    30197,  ""
+    30198,  ""
+    30199,  ""
+    30200,  "Options"
+    30201,  "Status bar"
+    30202,  "XML to Text conversion"
+    30203,  "Pretty print options"
+    30204,  "MSXML Features"
+    30205,  "Toolbar"
+    30206,  "Proxy options (disabled)"
+    30207,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30208,  ""
+    30209,  ""
+    30210,  "Allow document function"
+    30211,  "Allow Xslt script"
+    30212,  "Force resync"
+    30213,  "Max element depth"
+    30214,  "Max XML size"
+    30215,  "Multiple error messages"
+    30216,  "New parser"
+    30217,  "Normalize attribute values"
+    30218,  "Populate element default values"
+    30219,  "Prohibit DTD"
+    30220,  "Resolve externals"
+    30221,  "Selection language"
+    30222,  "Selection namespaces"
+    30223,  "Server HTTP Request"
+END
+
+STRINGTABLE
+BEGIN
+    30224,  "Use inline schema"
+    30225,  "Validate on parse"
+    30226,  ""
+    30227,  ""
+    30228,  ""
+    30229,  ""
+    30230,  "Enable toolbar icons"
+    30231,  "Enable toolbar icons. All options below are ignored if toolbar is disabled. Change will be applied upon NPP restart."
+    30232,  ""
+    30233,  ""
+    30234,  ""
+    30235,  ""
+    30236,  ""
+    30237,  ""
+    30238,  ""
+    30239,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30240,  "Enabled"
+    30241,  "Activate proxy"
+    30242,  "Proxy host"
+    30243,  "Proxy port"
+    30244,  "Username"
+    30245,  "Password"
+    30246,  ""
+    30247,  ""
+    30248,  ""
+    30249,  ""
+    30250,  "XPath Expression Evaluation"
+    30251,  "XPath expression"
+    30252,  "Namespace definition"
+    30253,  "Options:"
+    30254,  "Important:"
+    30255,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30256,  ""
+    30257,  ""
+    30258,  ""
+    30259,  ""
+    30260,  "XSL Transformation settings"
+    30261,  "Namespace URI:"
+    30262,  "Please select XML schema (XSD):"
+    30263,  "Select file..."
+    30264,  ""
+    30265,  ""
+    30266,  ""
+    30267,  ""
+    30268,  ""
+    30269,  ""
+    30270,  "Unable to load libXML and/or libXSLT."
+    30271,  "Please install external DLLs into NPP root directory (same directory as Notepad++.exe) or into ""%appdata%\\Notepad++"" folder and restart NPP."
+END
+
+STRINGTABLE
+BEGIN
+    30272,  "These libraries are available in the subfolder ""ext_libs"" of the xmltools zip archive."
+    30273,  ""
+    30274,  ""
+    30275,  ""
+    30276,  ""
+    30277,  ""
+    30278,  ""
+    30279,  ""
+    30280,  "Dialog"
+    30281,  "Annotation"
+    30282,  "Alert"
+    30283,  ""
+    30284,  ""
+    30285,  ""
+    30286,  ""
+    30287,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30288,  ""
+    30289,  ""
+    30290,  "Home page:"
+    30291,  ""
+    30292,  ""
+    30293,  ""
+    30294,  ""
+    30295,  ""
+    30296,  ""
+    30297,  ""
+    30298,  ""
+    30299,  ""
+    30300,  "How to use"
+    30301,  "XML Tools plugin provides several XML features, for more informations, see homepage (About)."
+    30302,  ""
+    30303,  ""
+END
+
+#endif    // English (US) resources
+
+/////////////////////////////////////////////////////////////////////////////
+// Chinese (Simplified) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHINESE)
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+
+STRINGTABLE
+BEGIN
+    30000,  "启用XML语法自动检查"
+    30001,  "立即检查XML语法"
+    30002,  "启用自动验证"
+    30003,  "立即验证"
+    30004,  "第一个错误"
+    30005,  "上一个错误"
+    30006,  "下一个错误"
+    30007,  "最后一个错误"
+    30008,  "标签自动闭合"
+    30009,  "自动设置XML类型"
+    30010,  "防止XXE攻击"
+    30011,  "允许超大文件"
+    30012,  "美化排版"
+    30013,  "美化排版 - 属性缩进"
+    30014,  "美化排版 - 仅缩进"
+    30015,  "线性化"
+END
+
+STRINGTABLE
+BEGIN
+    30016,  "应用到所有打开的文件"
+    30017,  "分词（调试）"
+    30018,  "当前XML路径"
+    30019,  "带谓词的当前XML路径"
+    30020,  "计算XPath表达式..."
+    30021,  "XSL转换..."
+    30022,  "转义选中字符（<> -> &lt;&gt;）"
+    30023,  "反转义选中字符（&lt;&gt; -> <>）"
+    30024,  "注释选中内容"
+    30025,  "取消选中内容注释"
+    30026,  "选项..."
+    30027,  "调试窗口..."
+    30028,  "关于XML工具 / 捐赠..."
+    30029,  ""
+    30030,  ""
+    30031,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30032,  ""
+    30033,  ""
+    30034,  ""
+    30035,  ""
+    30036,  ""
+    30037,  ""
+    30038,  ""
+    30039,  ""
+    30040,  ""
+    30041,  ""
+    30042,  ""
+    30043,  ""
+    30044,  ""
+    30045,  ""
+    30046,  ""
+    30047,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30048,  ""
+    30049,  ""
+    30050,  "此功能处于alpha测试阶段，可能在未来版本中移除。"
+    30051,  "调用此函数前请先选择要转换的文本。"
+    30052,  "未检测到错误。"
+    30053,  "请先修复XML语法错误。"
+    30054,  "无法取消当前选中内容的注释。
+错误代码：%d。"
+    30055,  "表达式为空；计算已中止。"
+    30056,  "无结果"
+    30057,  "结果已复制到剪贴板。"
+    30058,  "结果为空。"
+    30059,  "无法继续，缺少参数。请选择一个文件。"
+    30060,  "XSL转换时出错"
+    30061,  "错误：无法解析XML"
+    30062,  "第 %d 行，第 %d 列：%s"
+    30063,  "还有 %d 个错误未显示"
+END
+
+STRINGTABLE
+BEGIN
+    30064,  "还有 1 个错误未显示"
+    30065,  "这是一个批注示例。"
+    30066,  "这是一个高亮批注示例。"
+    30067,  "批注样式示例 #%d"
+    30068,  "XML解析错误"
+    30069,  "XML验证错误"
+    30070,  "无法解析当前节点。"
+    30071,  "
+
+（路径已复制到剪贴板）"
+    30072,  "错误 - "
+    30073,  "警告 - "
+    30074,  "XML工具插件"
+    30075,  "XML工具插件
+版本 %s
+%s"
+    30076,  "
+
+XML引擎：MSXML"
+    30077,  "（调试版）"
+    30078,  "如果您的表达式需要命名空间，请在“命名空间定义”字段中声明它们，声明方式与在XML中声明命名空间相同，例如：
+xmlns:npp='http://notepad-plus-plus.org' xmlns:a='another-namespace'"
+    30079,  "您最多可以输入16个选项，使用以下语法："
+END
+
+STRINGTABLE
+BEGIN
+    30080,  "选择XSL或XML。如果活动文档是XML，则选择要用于转换的XSL样式表；如果活动文档是XSL，则选择要使用活动XSL进行转换的XML。"
+    30081,  "XSL加载期间发生错误。请检查XSL的有效性。转换已中止。"
+    30082,  "XSL样式表无效。转换已中止。"
+    30083,  "XSL转换期间发生意外错误"
+    30084,  "当前源加载时发生错误。请检查源的有效性。转换已中止。"
+    30085,  "架构无效或缺少命名空间。"
+    30086,  "检测到引用的架构无效。请先修复它，然后再将其用做验证架构。"
+    30087,  "选择XML架构（XSD）"
+    30088,  "显示此对话框是因为在XML根元素中找不到默认验证架构。要避免每次验证都指定XSD，请使用以下语法在根元素中定义默认XML架构："
+    30089,  "错误：XPath表达式错误，或缺少命名空间定义。"
+    30090,  "发生意外错误"
+    30091,  ""
+    30092,  ""
+    30093,  ""
+    30094,  ""
+    30095,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30096,  ""
+    30097,  ""
+    30098,  ""
+    30099,  ""
+    30100,  "确定"
+    30101,  "取消"
+    30102,  "关闭"
+    30103,  "清空"
+    30104,  "复制"
+    30105,  "计算"
+    30106,  "转换"
+    30107,  "捐赠"
+    30108,  "主页："
+    30109,  "批注预览"
+    30110,  "调试"
+    30111,  "选项"
+END
+
+STRINGTABLE
+BEGIN
+    30112,  "关于XML工具"
+    30113,  "信息"
+    30114,  "默认"
+    30115,  "True"
+    30116,  "False"
+    30117,  "类型"
+    30118,  "名称"
+    30119,  "值"
+    30120,  "语言"
+    30121,  "自动"
+    30122,  "英语"
+    30123,  "中文（简体）"
+    30124,  "插件显示语言。自动模式跟随系统语言。"
+    30125,  ""
+    30126,  ""
+    30127,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30128,  ""
+    30129,  ""
+    30130,  ""
+    30131,  ""
+    30132,  ""
+    30133,  ""
+    30134,  ""
+    30135,  ""
+    30136,  ""
+    30137,  ""
+    30138,  ""
+    30139,  ""
+    30140,  ""
+    30141,  ""
+    30142,  ""
+    30143,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30144,  ""
+    30145,  ""
+    30146,  ""
+    30147,  ""
+    30148,  ""
+    30149,  ""
+    30150,  "调试级别"
+    30151,  "0 = 跟踪, 1 = 信息, 2 = 警告, 3 = 错误"
+    30152,  "错误显示模式"
+    30153,  "此属性用于选择错误报告的显示方式。
+- 批注：在代码行内显示错误。使用下方的批注样式选项来自定义批注样式。
+- 对话框：在可滚动的对话框中显示错误。所有错误显示在一个对话框中。
+- 警报：在单个警报对话框中显示错误。"
+    30154,  "批注样式"
+    30155,  "以批注形式显示时的错误消息样式。
+使用下方的“批注预览”按钮显示批注示例。"
+    30156,  "高亮批注样式"
+    30157,  "以批注形式显示时的高亮错误消息样式。
+使用下方的“批注预览”按钮显示批注示例。"
+    30158,  "最大显示错误数"
+    30159,  "显示的最大错误数量。设置为 -1 可允许无限数量的错误，但请注意当XML有很多错误时可能会降低应用程序速度。"
+END
+
+STRINGTABLE
+BEGIN
+    30160,  "在XPath中添加节点位置"
+    30161,  "在XPath中额外显示节点位置。启用后，""<a><b></b><b>Content</b></a>""的XPath将解析为""/a/b[2]""而不是""/a/b""。"
+    30162,  "在状态栏显示当前XPath"
+    30163,  "启用后，当前XPath会自动显示在状态栏中"
+    30164,  "标识属性名称"
+    30165,  "指定以分号分隔的属性名称列表，这些属性可能包含标识值。这些属性的值将复制到状态栏的XPath值中。例如，如果引用了属性""id""并且存在标签""<sample id='hello'>""，则状态栏将包含"".../sample[id='hello']/...""。"
+    30166,  "显示属性名称"
+    30167,  "在显示标识属性时包含其名称。启用时，元素显示为"".../sample[id='hello']/...""。禁用时，元素显示为"".../sample[hello]/...""。"
+    30168,  "格式化引擎"
+    30169,  "此属性用于选择美化排版和线性化的格式化引擎。目前可选：
+- SimpleXml：由LetMeSleepAlready开发的快速低内存引擎（https://github.com/LetMeSleepAlready）
+- QuickXml：专注于一致性的快速简单引擎
+- StringXml：基于字符串处理的引擎。该引擎对无效XML更宽容，但在大XML文件上速度很慢。"
+    30170,  "自动闭合标签"
+    30171,  "在美化排版时启用自动闭合标签。例如，启用后，""<sample></sample>""将替换为""<sample/>""。"
+    30172,  "确保一致性"
+    30173,  "使美化排版/线性化引擎保持XML一致性。仅在不修改XML结构的情况下才修剪空白和添加换行符。目前仅在QuickXml上可用。"
+    30174,  "最大缩进级别"
+    30175,  "美化排版的最大缩进级别。值为0表示没有缩进限制"
+END
+
+STRINGTABLE
+BEGIN
+    30176,  "应用xml:space=""preserve"""
+    30177,  "使格式化引擎遵守xml:space=""preserve""和xml:space=""default""声明。目前仅在QuickXml上可用。"
+    30178,  ""
+    30179,  ""
+    30180,  ""
+    30181,  ""
+    30182,  ""
+    30183,  ""
+    30184,  ""
+    30185,  ""
+    30186,  ""
+    30187,  ""
+    30188,  ""
+    30189,  ""
+    30190,  ""
+    30191,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30192,  ""
+    30193,  ""
+    30194,  ""
+    30195,  ""
+    30196,  ""
+    30197,  ""
+    30198,  ""
+    30199,  ""
+    30200,  "常规选项"
+    30201,  "状态栏"
+    30202,  "XML与文本转换"
+    30203,  "美化排版选项"
+    30204,  "MSXML功能"
+    30205,  "工具栏"
+    30206,  "代理选项（已禁用）"
+    30207,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30208,  ""
+    30209,  ""
+    30210,  "允许document函数"
+    30211,  "允许Xslt脚本"
+    30212,  "强制重新同步"
+    30213,  "最大元素深度"
+    30214,  "最大XML大小"
+    30215,  "多重错误消息"
+    30216,  "新解析器"
+    30217,  "规范化属性值"
+    30218,  "填充元素默认值"
+    30219,  "禁止DTD"
+    30220,  "解析外部资源"
+    30221,  "选择语言"
+    30222,  "选择命名空间"
+    30223,  "服务器HTTP请求"
+END
+
+STRINGTABLE
+BEGIN
+    30224,  "使用内联架构"
+    30225,  "解析时验证"
+    30226,  ""
+    30227,  ""
+    30228,  ""
+    30229,  ""
+    30230,  "启用工具栏图标"
+    30231,  "启用工具栏图标。如果禁用工具栏，以下所有选项将被忽略。更改将在Notepad++重启后生效。"
+    30232,  ""
+    30233,  ""
+    30234,  ""
+    30235,  ""
+    30236,  ""
+    30237,  ""
+    30238,  ""
+    30239,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30240,  "已启用"
+    30241,  "激活代理"
+    30242,  "代理主机"
+    30243,  "代理端口"
+    30244,  "用户名"
+    30245,  "密码"
+    30246,  ""
+    30247,  ""
+    30248,  ""
+    30249,  ""
+    30250,  "XPath表达式计算"
+    30251,  "XPath表达式"
+    30252,  "命名空间定义"
+    30253,  "选项："
+    30254,  "重要提示："
+    30255,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30256,  ""
+    30257,  ""
+    30258,  ""
+    30259,  ""
+    30260,  "XSL转换设置"
+    30261,  "命名空间URI："
+    30262,  "请选择XML架构（XSD）："
+    30263,  "选择文件..."
+    30264,  ""
+    30265,  ""
+    30266,  ""
+    30267,  ""
+    30268,  ""
+    30269,  ""
+    30270,  "无法加载libXML和/或libXSLT。"
+    30271,  "请将外部DLL安装到Notepad++根目录（与Notepad++.exe相同的目录）或""%appdata%\\Notepad++""文件夹中，然后重启Notepad++。"
+END
+
+STRINGTABLE
+BEGIN
+    30272,  "这些库位于xmltools压缩包的""ext_libs""子文件夹中。"
+    30273,  ""
+    30274,  ""
+    30275,  ""
+    30276,  ""
+    30277,  ""
+    30278,  ""
+    30279,  ""
+    30280,  "对话框"
+    30281,  "批注"
+    30282,  "警报"
+    30283,  ""
+    30284,  ""
+    30285,  ""
+    30286,  ""
+    30287,  ""
+END
+
+STRINGTABLE
+BEGIN
+    30288,  ""
+    30289,  ""
+    30290,  "主页："
+    30291,  ""
+    30292,  ""
+    30293,  ""
+    30294,  ""
+    30295,  ""
+    30296,  ""
+    30297,  ""
+    30298,  ""
+    30299,  ""
+    30300,  "使用说明"
+    30301,  "XML工具插件提供多种XML功能，更多信息请查看主页（关于）。"
+    30302,  ""
+    30303,  ""
+END
+
+#endif    // Chinese (Simplified) resources
+
 /////////////////////////////////////////////////////////////////////////////
 
 

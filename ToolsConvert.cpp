@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+﻿#include "StdAfx.h"
 #include "XMLTools.h"
 #include "nppHelpers.h"
 #include "Report.h"
@@ -18,7 +18,7 @@ void sciConvertText2XML(ScintillaDoc &doc) {
     auto seltext = doc.GetSelectedText();
 
     if (!seltext) {
-        Report::_printf_err(L"Please select text to transform before you call the function.");
+        Report::_printf_err(Lang_Str(IDS_MSG_SELECT_TEXT));
         return;
     }
 
@@ -64,7 +64,7 @@ void sciConvertXML2Text(ScintillaDoc &doc) {
     auto seltext = doc.GetSelectedText();
 
     if (!seltext) {
-        Report::_printf_err(L"Please select text to transform before you call the function.");
+        Report::_printf_err(Lang_Str(IDS_MSG_SELECT_TEXT));
         return;
     }
 

@@ -1,4 +1,4 @@
-// XSLTransformDlg.cpp : implementation file
+﻿// XSLTransformDlg.cpp : implementation file
 //
 
 #include "StdAfx.h"
@@ -71,7 +71,7 @@ void CXSLTransformDlg::OnBtnTransform() {
     this->UpdateData();
 
     if (this->m_sSelectedFile.GetLength() <= 0) {
-        Report::_printf_err(L"Cannot continue, missing parameters. Please select a file.");
+        Report::_printf_err(Lang_Str(IDS_MSG_XSL_MISSING_PARAM));
         return;
     }
 
@@ -98,7 +98,7 @@ void CXSLTransformDlg::OnBtnTransform() {
     }
     else {
         std::vector<ErrorEntryType> errors = wrapper->getLastErrors();
-        displayXMLErrors(errors, hCurrentEditView, L"Error while XSL transformation");
+        displayXMLErrors(errors, hCurrentEditView, Lang_Str(IDS_MSG_XSL_ERROR));
     }
 
     delete wrapper;
