@@ -11,6 +11,7 @@
 #include "XmlWrapperInterface.h"
 #include "MSXMLWrapper.h"
 
+#include <algorithm>
 #include <string>
 
 using namespace QuickXml;
@@ -113,14 +114,15 @@ void XMLValidation(int informIfNoError) {
 
     if (isok) {
         // check if a schema prompt is requested
+        std::vector<XPathResultEntryType> schemaLocations;
+
         std::vector<XPathResultEntryType> nodes = wrapper->xpathEvaluate(L"/*/@xsi:noNamespaceSchemaLocation", L"xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'");
-        bool nnsl = (nodes.size() > 0);
+        schemaLocations.insert(schemaLocations.end(), nodes.begin(), nodes.end());
         nodes.clear();
 
         nodes = wrapper->xpathEvaluate(L"/*/@xsi:schemaLocation", L"xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'");
-        bool sl = (nodes.size() > 0);
-
-        bool hasSchemaOrDTD = (nnsl || sl);
+        schemaLocations.insert(schemaLocations.end(), nodes.begin(), nodes.end());
+        bool hasSchemaOrDTD = !schemaLocations.empty();
 
         if (!hasSchemaOrDTD) {
             // search for DTD - this will be done using QuickXml
@@ -137,7 +139,9 @@ void XMLValidation(int informIfNoError) {
         }
 
         if (hasSchemaOrDTD) {
-            if (!wrapper->checkValidity()) {
+            // TODO correctly handle result from xsi:schemaLocation
+            std::wstring& schemaLocation = schemaLocations.begin()->value;
+            if (!wrapper->checkValidity(schemaLocation)) {
                 std::vector<ErrorEntryType> errors = wrapper->getLastErrors();
                 displayXMLErrors(errors, hCurrentEditView, L"XML Validation error");
             }
