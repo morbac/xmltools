@@ -72,7 +72,7 @@ void tagAutoIndent() {
     // On n'indente que si l'on est dans un noeud (au niveau de l'attribut ou
     // au niveau du contenu. Donc on recherche le dernier < ou >. S'il s'agit
     // d'un >, on regarde qu'il n'y ait pas de / avant (sinon on se retrouve
-    // au même niveau et il n'y a pas d'indentation à faire)
+    // au mÃªme niveau et il n'y a pas d'indentation Ã  faire)
     // Si le dernier symbole que l'on trouve est un <, alors on indente.
 
     char buf[512];
@@ -107,7 +107,7 @@ void tagAutoIndent() {
             char insertString[516] = { '\0' };
 
             --pCur;
-            // on récupère l'indentation actuelle
+            // on rÃ©cupÃ¨re l'indentation actuelle
             while (pCur > pBegin && *pCur != '\n' && *pCur != '\r') {
                 if (*pCur == '\t') insertString[insertStringSize++] = '\t';
                 else insertString[insertStringSize++] = ' ';
@@ -125,7 +125,7 @@ void tagAutoIndent() {
 
             currentPos += insertStringSize;
 
-            // on a trouvé le <, il reste à insérer une indentation après le curseur
+            // on a trouvÃ© le <, il reste Ã  insÃ©rer une indentation aprÃ¨s le curseur
             ::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, (LPARAM)insertString);
             ::SendMessage(hCurrentEditView, SCI_SETSEL, currentPos, currentPos);
         }
@@ -143,11 +143,11 @@ LangType setAutoXMLType(bool force = FALSE) {
         ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
         HWND hCurrentEditView = getCurrentHScintilla(currentEdit);
 
-        // on récupère les 6 premiers caractères du fichier
+        // on rÃ©cupÃ¨re les 6 premiers caractÃ¨res du fichier
         char head[8] = { '\0' };
         ::SendMessage(hCurrentEditView, SCI_GETTEXT, 7, reinterpret_cast<LPARAM>(&head));
 
-        if (strlen(head) >= 6 && !strcmp(head, "<?xml ")) {
+        if (strlen(head) >= 6 && !strcmp(head, "<?xml ", 6)) {
             ::SendMessage(nppData._nppHandle, NPPM_SETCURRENTLANGTYPE, 0, (LPARAM)LangType::L_XML);
             docType = LangType::L_XML;
         }
